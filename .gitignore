@@ -46,3 +46,8 @@ qdrant_storage/
 # ---- Local scratch ----
 .scratch/
 tmp/
+
+# Playwright / temp screenshots
+.playwright-mcp/
+/cluster-reveal*.png
+/rag-flight.png

@@ -27,10 +27,13 @@ rejecting logins, boletos failing to generate — operations asks two questions:
 
 ## Demo
 
-![incident-sense demo](docs/assets/demo.gif)
+| Recurrence detection (clustering) | Resolution suggestion (RAG) |
+| --- | --- |
+| ![Recurrence map](docs/assets/cluster-reveal.png) | ![RAG suggestion](docs/assets/rag-suggest.png) |
 
-> _(placeholder — replace with a GIF/screenshot of the animated map and the
-> suggestion panel.)_
+On the left, recent incidents grouped on an animated map with AI-generated
+cluster names. On the right, a new incident "flies" to its closest neighbors
+while the panel streams each reasoning step.
 
 ## Quickstart (one command)
 

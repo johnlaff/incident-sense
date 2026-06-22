@@ -28,10 +28,13 @@ O **incident-sense** ataca as duas:
 
 ## Demo
 
-![Demo do incident-sense](docs/assets/demo.gif)
+| Detecção de recorrência (clustering) | Sugestão de resolução (RAG) |
+| --- | --- |
+| ![Mapa de recorrência](docs/assets/cluster-reveal.png) | ![Sugestão RAG](docs/assets/rag-suggest.png) |
 
-> _(placeholder — substituir pelo GIF/screenshot do mapa animado e do painel de
-> sugestão.)_
+À esquerda, os incidentes recentes agrupados num mapa animado com nomes de grupo
+gerados por IA. À direita, um novo incidente "voa" até seus vizinhos mais
+parecidos enquanto o painel mostra cada passo do raciocínio.
 
 ## Começar (um comando)
 
