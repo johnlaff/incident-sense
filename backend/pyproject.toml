@@ -1,0 +1,131 @@
+# =============================================================================
+# incident-sense backend — packaging, dependencies and tooling configuration.
+#
+# We use a "src layout" (the package lives in src/incident_sense) so that tests
+# always run against the *installed* package, never against loose files in the
+# working directory. Dependencies are split on purpose:
+#   - [project.dependencies]      → what the running API needs.
+#   - [optional] clustering / gen → heavy or script-only tools, installed on
+#                                    demand (the served /api/clusters reads a
+#                                    committed JSON, so the API does not need
+#                                    BERTopic/UMAP/HDBSCAN at runtime).
+#   - [dependency-groups.dev]     → linting, typing and testing.
+# =============================================================================
+
+[project]
+name = "incident-sense"
+version = "0.1.0"
+description = "Resolution suggestion (RAG) and recurrence detection (clustering) for a fictional bank's IT incidents."
+requires-python = ">=3.12,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "John Laff" }]
+
+dependencies = [
+    # Web API
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    # Configuration & validation
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    # Structured logging
+    "structlog>=24.1",
+    # LLM / embedding access (OpenAI + OpenAI-compatible OpenRouter)
+    "openai>=1.40",
+    # RAG orchestration
+    "llama-index-core>=0.11",
+    "llama-index-llms-openai-like>=0.2",
+    "llama-index-embeddings-openai>=0.2",
+    "llama-index-vector-stores-qdrant>=0.3",
+    # Vector database client
+    "qdrant-client>=1.10",
+    # Numerics (embeddings, similarity, precomputed arrays)
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+# Recurrence clustering pipeline. Only needed to *recompute* the committed
+# clustering result (scripts/precompute.py), never to serve it.
+clustering = [
+    "bertopic>=0.17",
+    "umap-learn>=0.5.7",
+    "hdbscan>=0.8.40",
+    "scikit-learn>=1.5",
+    # Pin the numba/llvmlite/pynndescent chain to modern versions. Without these
+    # floors the resolver backtracks to an ancient numba that drags in an
+    # llvmlite which refuses to build on Python 3.12.
+    "numba>=0.61",
+    "pynndescent>=0.6",
+]
+# Synthetic dataset generation (scripts/generate_dataset.py).
+gen = [
+    "faker>=25.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+    "httpx2>=2.4.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/incident_sense"]
+
+# --- Linting & formatting -----------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+# A pragmatic, readable rule set: pycodestyle/pyflakes (E,F), import sorting (I),
+# pyupgrade (UP), bugbear (B), comprehensions (C4), simplify (SIM), naming (N),
+# and docstring presence on public modules/classes/functions (D, relaxed).
+select = ["E", "F", "I", "UP", "B", "C4", "SIM", "N", "D"]
+ignore = [
+    "D203", # one-blank-line-before-class (conflicts with D211)
+    "D213", # multi-line-summary-second-line (conflicts with D212)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests and scripts do not need full docstring coverage.
+"tests/*" = ["D"]
+"scripts/*" = ["D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# --- Static typing ------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+warn_return_any = true
+pretty = true
+
+# Third-party libraries without bundled type hints. We keep our own code strict
+# but do not fail on missing stubs for the ML/RAG ecosystem.
+[[tool.mypy.overrides]]
+module = [
+    "bertopic.*",
+    "umap.*",
+    "hdbscan.*",
+    "sklearn.*",
+    "llama_index.*",
+    "qdrant_client.*",
+    "faker.*",
+]
+ignore_missing_imports = true
+
+# --- Tests --------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q"
