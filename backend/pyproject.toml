@@ -92,6 +92,7 @@ select = ["E", "F", "I", "UP", "B", "C4", "SIM", "N", "D"]
 ignore = [
     "D203", # one-blank-line-before-class (conflicts with D211)
     "D213", # multi-line-summary-second-line (conflicts with D212)
+    "D107", # missing docstring in __init__ (covered by the class docstring)
 ]
 
 [tool.ruff.lint.per-file-ignores]

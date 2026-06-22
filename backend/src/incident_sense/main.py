@@ -10,6 +10,7 @@ where startup work (logging setup, and later self-seeding Qdrant) happens.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -38,6 +39,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         llm_configured=settings.has_llm,
         embeddings_configured=settings.has_openai,
     )
+    if settings.auto_seed:
+        # Seed Qdrant from the committed embeddings (no API calls). Imported
+        # lazily so the app and tests don't pull in the vector store unless
+        # seeding actually runs. Runs in a thread to avoid blocking the loop.
+        from incident_sense.data.ingest import ensure_seeded
+
+        seeded = await asyncio.to_thread(ensure_seeded, settings)
+        log.info("seed_complete", points=seeded)
     yield
     log.info("shutdown")
 

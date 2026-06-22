@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     # --- Vector database ------------------------------------------------------
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "incidents_resolved"
+    # On startup, seed Qdrant from the committed embeddings if the collection is
+    # empty (so `docker compose up` is self-contained). Disable for local API
+    # dev when Qdrant is not running.
+    auto_seed: bool = True
 
     # --- Retrieval thresholds (illustrative example values) -------------------
     # Return at most this many candidates from vector search...
@@ -90,8 +94,8 @@ class Settings(BaseSettings):
 
     @property
     def embeddings_path(self) -> Path:
-        """Committed incident embeddings (id -> 3072-dim vector)."""
-        return self.precomputed_dir / "embeddings.json"
+        """Committed incident embeddings (compressed NumPy archive of id+vector)."""
+        return self.precomputed_dir / "embeddings.npz"
 
     @property
     def clusters_path(self) -> Path:

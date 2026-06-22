@@ -16,10 +16,15 @@ from incident_sense.main import create_app
 
 
 @pytest.fixture
-def client() -> Iterator[TestClient]:
-    """A TestClient bound to a freshly built app."""
+def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
+    """A TestClient bound to a freshly built app.
+
+    Auto-seeding is disabled so tests never try to reach Qdrant.
+    """
+    monkeypatch.setenv("AUTO_SEED", "false")
     # Settings are cached process-wide; clear so each test sees current env.
     get_settings.cache_clear()
     app = create_app()
     with TestClient(app) as test_client:
         yield test_client
+    get_settings.cache_clear()
