@@ -66,9 +66,7 @@ class LLMPostFilter(BaseNodePostprocessor):
         # Keep all nodes for transparency, surviving ones first.
         return sorted(nodes, key=lambda node: not node.node.metadata.get("survived", True))
 
-    def _judge(
-        self, new_incident: str, nodes: list[NodeWithScore]
-    ) -> dict[str, tuple[bool, str]]:
+    def _judge(self, new_incident: str, nodes: list[NodeWithScore]) -> dict[str, tuple[bool, str]]:
         """Ask the LLM for a relevance verdict per candidate (one call)."""
         listing = "\n".join(
             f"- {node.node.metadata.get('number', '')}: "
