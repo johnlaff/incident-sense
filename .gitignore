@@ -1,0 +1,48 @@
+# ---- Secrets (NEVER commit) ----
+.env
+.env.*
+!.env.example
+*.key
+secrets/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.python-version
+
+# ---- Node / Next.js ----
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+.eslintcache
+coverage/
+.vitest/
+
+# ---- Editors / OS ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Docker / runtime ----
+qdrant_storage/
+*.log
+
+# ---- Local scratch ----
+.scratch/
+tmp/

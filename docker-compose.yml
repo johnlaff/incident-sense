@@ -1,0 +1,65 @@
+# =============================================================================
+# incident-sense — one-command local stack: Qdrant + API + Web.
+#
+#   cp .env.example .env   # then add your keys
+#   docker compose up      # open http://localhost:3000
+#
+# The clustering map renders from committed data (no API calls). The API
+# self-seeds Qdrant on startup from the committed embeddings, so the live
+# "suggest" demo works without any manual ingestion step. Only an actual
+# /api/suggest request makes live LLM/embedding calls.
+#
+# Note: the Compose Spec no longer uses a top-level `version:` key.
+# =============================================================================
+
+name: incident-sense
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.18.2
+    restart: unless-stopped
+    ports:
+      - "6333:6333" # REST API / dashboard
+      - "6334:6334" # gRPC
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    # Secrets and model config come from the root .env (gitignored).
+    env_file: .env
+    environment:
+      # Inside the Compose network the API reaches Qdrant by service name,
+      # overriding whatever QDRANT_URL is in .env (which targets localhost).
+      QDRANT_URL: http://qdrant:6333
+    depends_on:
+      - qdrant
+    ports:
+      - "8000:8000"
+    healthcheck:
+      # python is always present in the image, so we avoid needing curl/wget.
+      test:
+        ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # NEXT_PUBLIC_* values are inlined into the client bundle at build time.
+        # The browser runs on the host, so it reaches the API at localhost.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+volumes:
+  qdrant_storage:
