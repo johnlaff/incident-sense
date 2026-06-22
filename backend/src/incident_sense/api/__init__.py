@@ -8,10 +8,12 @@ from fastapi import APIRouter
 
 from .clusters import router as clusters_router
 from .health import router as health_router
+from .incidents import router as incidents_router
 from .suggest import router as suggest_router
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(health_router)
+api_router.include_router(incidents_router)
 api_router.include_router(clusters_router)
 api_router.include_router(suggest_router)
 

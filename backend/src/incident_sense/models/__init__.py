@@ -17,6 +17,7 @@ from .incident import (
     Priority,
     Urgency,
 )
+from .incident_list import IncidentListResponse, IncidentSummary
 from .suggest import (
     Classification,
     RetrievedCandidate,
@@ -33,7 +34,9 @@ __all__ = [
     "ClustersResponse",
     "Impact",
     "Incident",
+    "IncidentListResponse",
     "IncidentState",
+    "IncidentSummary",
     "Priority",
     "RetrievedCandidate",
     "SuggestRequest",
