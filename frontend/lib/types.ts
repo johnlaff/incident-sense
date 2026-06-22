@@ -1,0 +1,62 @@
+// Types mirroring the backend API responses (keep in sync with the pydantic models).
+
+export type Classification = "PROCEDENTE" | "IMPROCEDENTE";
+
+export interface ClusterPoint {
+  id: string;
+  x: number;
+  y: number;
+  cluster_id: number;
+  cluster_label: string;
+  is_outlier: boolean;
+  short_description: string;
+  priority: number;
+}
+
+export interface ClusterSummary {
+  cluster_id: number;
+  label: string;
+  size: number;
+}
+
+export interface ClustersResponse {
+  points: ClusterPoint[];
+  clusters: ClusterSummary[];
+  total: number;
+  outliers: number;
+}
+
+export interface SuggestRequest {
+  short_description: string;
+  description: string;
+  category?: string | null;
+  cmdb_ci?: string | null;
+  priority?: number | null;
+}
+
+export interface RetrievedCandidate {
+  number: string;
+  short_description: string;
+  cmdb_ci: string;
+  category: string;
+  similarity: number;
+  resolution_notes?: string | null;
+  close_code?: string | null;
+  survived_postfilter: boolean;
+  postfilter_reason?: string | null;
+}
+
+export interface SuggestResponse {
+  summarized_query: string;
+  classification: Classification;
+  suggestion: string | null;
+  candidates: RetrievedCandidate[];
+  referenced_incidents: string[];
+}
+
+export interface Health {
+  status: string;
+  version: string;
+  llm_configured: boolean;
+  embeddings_configured: boolean;
+}

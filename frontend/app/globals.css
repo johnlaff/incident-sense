@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* Tailwind v4 theme: tokens here become utilities (bg-surface, text-muted, …). */
+@theme {
+  --color-bg: #070b16;
+  --color-surface: #0f1626;
+  --color-surface-2: #151d31;
+  --color-border: #1e293b;
+  --color-fg: #e6edf6;
+  --color-muted: #93a1b5;
+  --color-accent: #38bdf8;
+  --color-accent-2: #a78bfa;
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(56, 189, 248, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(167, 139, 250, 0.08), transparent 55%),
+    var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin, dark scrollbars to match the surface. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+/* Pulsing neighbor-connection lines in the RAG flight. */
+@keyframes pulse-line {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.connection-line {
+  animation: pulse-line 1.6s ease-in-out infinite;
+}
