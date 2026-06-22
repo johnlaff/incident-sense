@@ -1,0 +1,4363 @@
+{
+  "points": [
+    {
+      "id": "INC0052917",
+      "x": 21.53398323059082,
+      "y": -1.9692469835281372,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Problema no ramal telefôinco da sala 304",
+      "priority": 4
+    },
+    {
+      "id": "INC0052667",
+      "x": -5.179854393005371,
+      "y": 11.594982147216797,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Lag em crescimento no Kafka devido a bloqueio do consumidor",
+      "priority": 3
+    },
+    {
+      "id": "INC0052670",
+      "x": -5.1742262840271,
+      "y": 11.228494644165039,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Notificações atrasadas devido a falha em fila do Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052184",
+      "x": 0.27465900778770447,
+      "y": -1.3185274600982666,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Clientes impossibilitados de logar após atualização do app",
+      "priority": 1
+    },
+    {
+      "id": "INC0052233",
+      "x": 0.9380242228507996,
+      "y": -2.022880792617798,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Dificuldades em logar no app após deploy recente",
+      "priority": 1
+    },
+    {
+      "id": "INC0052622",
+      "x": -5.654481410980225,
+      "y": 11.583224296569824,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Fila acumulando mensagens no Kafka.",
+      "priority": 4
+    },
+    {
+      "id": "INC0051968",
+      "x": -11.376100540161133,
+      "y": 0.05595507472753525,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Pagamentos via Pix falhando com clientes",
+      "priority": 2
+    },
+    {
+      "id": "INC0052407",
+      "x": 16.629785537719727,
+      "y": 17.296749114990234,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusas de cartões com saldo disponíveis",
+      "priority": 2
+    },
+    {
+      "id": "INC0052741",
+      "x": 3.4030344486236572,
+      "y": 12.226736068725586,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Falha no compartilhamento de dados",
+      "priority": 3
+    },
+    {
+      "id": "INC0052101",
+      "x": 15.834395408630371,
+      "y": 10.638882637023926,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Acesso ao Internet Banking ineficiente",
+      "priority": 1
+    },
+    {
+      "id": "INC0052656",
+      "x": -5.6152024269104,
+      "y": 11.48841667175293,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Kafka com mensagens retidas por travamento do consumidor",
+      "priority": 4
+    },
+    {
+      "id": "INC0051986",
+      "x": -11.900958061218262,
+      "y": 0.300001323223114,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Pix pendente sem comprovante gerado",
+      "priority": 3
+    },
+    {
+      "id": "INC0052963",
+      "x": 20.388505935668945,
+      "y": -2.3031704425811768,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Problema com ar-condicionado na sala de reuniões",
+      "priority": 4
+    },
+    {
+      "id": "INC0052390",
+      "x": 8.878095626831055,
+      "y": 1.7610070705413818,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Falha na geração de boletos para pagamento",
+      "priority": 4
+    },
+    {
+      "id": "INC0052531",
+      "x": 9.615195274353027,
+      "y": -7.21636438369751,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato inconsistente para clientes",
+      "priority": 1
+    },
+    {
+      "id": "INC0052227",
+      "x": 0.4601430296897888,
+      "y": -1.2465312480926514,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro ao tentar logarn o app após nova atualização",
+      "priority": 1
+    },
+    {
+      "id": "INC0052870",
+      "x": 20.233789443969727,
+      "y": -1.9700912237167358,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Elevador apresentando barulho excessivo",
+      "priority": 4
+    },
+    {
+      "id": "INC0052901",
+      "x": 20.961414337158203,
+      "y": -1.3231043815612793,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Licença de software específica não está ativa",
+      "priority": 4
+    },
+    {
+      "id": "INC0052662",
+      "x": -5.479762077331543,
+      "y": 11.488113403320312,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Problema de processamento no Kafka devido a mensagem malformada",
+      "priority": 3
+    },
+    {
+      "id": "INC0052747",
+      "x": 2.7405455112457275,
+      "y": 11.633742332458496,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Erro 503 nas chamadas de Open Finance",
+      "priority": 4
+    },
+    {
+      "id": "INC0052492",
+      "x": 16.6107234954834,
+      "y": 17.213626861572266,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusas de cartões nos pontos de venda",
+      "priority": 2
+    },
+    {
+      "id": "INC0052618",
+      "x": -5.609806060791016,
+      "y": 11.562102317810059,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Consumo parado no Kafka.",
+      "priority": 4
+    },
+    {
+      "id": "INC0052425",
+      "x": 16.49472999572754,
+      "y": 17.95951271057129,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusasi ndevidas de transações",
+      "priority": 3
+    },
+    {
+      "id": "INC0052226",
+      "x": 0.43270304799079895,
+      "y": -1.2563519477844238,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Login falha com erro de token após atualização do app",
+      "priority": 1
+    },
+    {
+      "id": "INC0052951",
+      "x": 20.743371963500977,
+      "y": -2.088730812072754,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Projetor sem sinal",
+      "priority": 3
+    },
+    {
+      "id": "INC0052967",
+      "x": 20.201932907104492,
+      "y": -2.694183588027954,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Cafetiera sem ufncionamento",
+      "priority": 4
+    },
+    {
+      "id": "INC0052685",
+      "x": -5.577646255493164,
+      "y": 11.738393783569336,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Filad o Kafka não processa mensagens",
+      "priority": 3
+    },
+    {
+      "id": "INC0052554",
+      "x": 9.31197738647461,
+      "y": -7.051514625549316,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Cliente percebe lançamento sumido",
+      "priority": 3
+    },
+    {
+      "id": "INC0052589",
+      "x": 9.362557411193848,
+      "y": -7.699243545532227,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Cliente reporta saldo não correspondente ao extrato",
+      "priority": 3
+    },
+    {
+      "id": "INC0052832",
+      "x": 20.91073989868164,
+      "y": -1.358290672302246,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Certificado de sistema interno expirado",
+      "priority": 3
+    },
+    {
+      "id": "INC0052776",
+      "x": 2.8087069988250732,
+      "y": 11.700464248657227,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Falha na agregação de contas através de Open Finance",
+      "priority": 4
+    },
+    {
+      "id": "INC0052689",
+      "x": -5.146037578582764,
+      "y": 11.269287109375,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Atrasos em eventos de notificação no Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052978",
+      "x": 9.399373054504395,
+      "y": -7.679541110992432,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Divergência na nota fiscal de fornecedor",
+      "priority": 4
+    },
+    {
+      "id": "INC0052673",
+      "x": -5.424850940704346,
+      "y": 11.58407211303711,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Problema com consumidor do Kafka gera mensagens não processadas",
+      "priority": 4
+    },
+    {
+      "id": "INC0052809",
+      "x": 20.41230583190918,
+      "y": -2.322373390197754,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Ar-condicionado da sala de reuniões não está resfriando",
+      "priority": 4
+    },
+    {
+      "id": "INC0052149",
+      "x": 16.242521286010742,
+      "y": 10.940707206726074,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Internet banking fora do ar intermitentemente",
+      "priority": 3
+    },
+    {
+      "id": "INC0052328",
+      "x": 9.0014066696167,
+      "y": 1.7056748867034912,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Mensagem de erro ao gerar boleto",
+      "priority": 2
+    },
+    {
+      "id": "INC0052326",
+      "x": 9.276368141174316,
+      "y": 2.1702919006347656,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro ao emitir segunda via de boleto",
+      "priority": 4
+    },
+    {
+      "id": "INC0052540",
+      "x": 9.447067260742188,
+      "y": -7.379166603088379,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Saldo no aplicativo não confere com extrato bancário",
+      "priority": 3
+    },
+    {
+      "id": "INC0052887",
+      "x": 20.7250919342041,
+      "y": -2.0645031929016113,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Projetor da sala de treinamento não projeta imagem",
+      "priority": 4
+    },
+    {
+      "id": "INC0052054",
+      "x": 15.968615531921387,
+      "y": 10.454275131225586,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Clientes enfrentam lentidão generalizada no Internet Banking.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052798",
+      "x": 3.4229953289031982,
+      "y": 12.106893539428711,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Problema com consentimento e compartilhamento de dados",
+      "priority": 4
+    },
+    {
+      "id": "INC0052948",
+      "x": 21.542573928833008,
+      "y": -1.9694132804870605,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Ramal telefônico inoperante",
+      "priority": 4
+    },
+    {
+      "id": "INC0052340",
+      "x": 7.886222839355469,
+      "y": 1.097501277923584,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto gerado incompleto",
+      "priority": 4
+    },
+    {
+      "id": "INC0052411",
+      "x": 16.63810920715332,
+      "y": 17.213775634765625,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusa de transações em lojas físicas",
+      "priority": 2
+    },
+    {
+      "id": "INC0052821",
+      "x": 21.545576095581055,
+      "y": -1.967909812927246,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Ramal telefônico específico não está funcionando",
+      "priority": 4
+    },
+    {
+      "id": "INC0052062",
+      "x": 15.897363662719727,
+      "y": 10.578386306762695,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Acesso ao Internet Banking com problemas de demora.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052676",
+      "x": -5.432117938995361,
+      "y": 11.513219833374023,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Fila do Kafka parada devido a consumidor travado",
+      "priority": 2
+    },
+    {
+      "id": "INC0052333",
+      "x": 8.906875610351562,
+      "y": 1.7338149547576904,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Problemas na geração de boleto",
+      "priority": 3
+    },
+    {
+      "id": "INC0052694",
+      "x": -5.210439205169678,
+      "y": 11.227731704711914,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Constrangimentos na entrega de notificações Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052162",
+      "x": 16.06248664855957,
+      "y": 11.179506301879883,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro 500 ao abrir página de saldo",
+      "priority": 3
+    },
+    {
+      "id": "INC0052188",
+      "x": 0.9370200037956238,
+      "y": -2.0105557441711426,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de token inválido ao logar no app",
+      "priority": 1
+    },
+    {
+      "id": "INC0052380",
+      "x": 9.109662055969238,
+      "y": 1.9702856540679932,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro ao tentar reemitir boleto",
+      "priority": 3
+    },
+    {
+      "id": "INC0052208",
+      "x": 0.2308681309223175,
+      "y": -1.4083603620529175,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Clientes enfrentam falha no login após nova versão do app",
+      "priority": 1
+    },
+    {
+      "id": "INC0052849",
+      "x": 20.580663681030273,
+      "y": -1.6793887615203857,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Câmera de segurança sem imagem",
+      "priority": 3
+    },
+    {
+      "id": "INC0051919",
+      "x": -11.99030876159668,
+      "y": 0.21112951636314392,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Problemas com a geração de comprovantes Pix",
+      "priority": 1
+    },
+    {
+      "id": "INC0052935",
+      "x": 20.947444915771484,
+      "y": -1.3241345882415771,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Solicitação de licença de software",
+      "priority": 4
+    },
+    {
+      "id": "INC0052304",
+      "x": 9.255817413330078,
+      "y": 2.1568756103515625,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Problemas na emissão de segunda via de boleto.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052899",
+      "x": 20.268821716308594,
+      "y": -2.3496387004852295,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Necessidade de dedetização no prédio",
+      "priority": 4
+    },
+    {
+      "id": "INC0052613",
+      "x": -5.445570945739746,
+      "y": 11.803718566894531,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Lag crescente na fila do Kafka.",
+      "priority": 2
+    },
+    {
+      "id": "INC0052840",
+      "x": 20.211000442504883,
+      "y": -2.6147830486297607,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Falta de água na copa",
+      "priority": 4
+    },
+    {
+      "id": "INC0052448",
+      "x": 16.63806915283203,
+      "y": 17.7540225982666,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Compras negadas por erro no sistema de antifraude",
+      "priority": 2
+    },
+    {
+      "id": "INC0052794",
+      "x": 2.772545337677002,
+      "y": 11.67940902709961,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Erro 503 em tentativas de consentimento Open Finance",
+      "priority": 2
+    },
+    {
+      "id": "INC0052937",
+      "x": 20.401037216186523,
+      "y": -2.308614492416382,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Problema com o ar-condicionado na sala de reuniões",
+      "priority": 3
+    },
+    {
+      "id": "INC0052047",
+      "x": 16.30161476135254,
+      "y": 10.906733512878418,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro de timeout ao acessar dados no Internet Banking.",
+      "priority": 2
+    },
+    {
+      "id": "INC0052611",
+      "x": -5.056698322296143,
+      "y": 11.328497886657715,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Notificações atrasadas devido ao Kafka.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052273",
+      "x": 0.9182158708572388,
+      "y": -2.0041725635528564,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Dificuldade para logar no app após novo deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0051984",
+      "x": -11.742514610290527,
+      "y": 0.1659473180770874,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Falhas nas operações de pagamento Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052090",
+      "x": 15.810083389282227,
+      "y": 10.448750495910645,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Problemas de conectividade no Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0051908",
+      "x": -12.02564525604248,
+      "y": 0.19510406255722046,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Comprovante não gerado em transações Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052928",
+      "x": 20.180856704711914,
+      "y": -1.8711042404174805,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Elevaodr fora de serviço",
+      "priority": 4
+    },
+    {
+      "id": "INC0052653",
+      "x": -5.223865032196045,
+      "y": 11.678430557250977,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Crescimento do lag no Kafka sem processamento",
+      "priority": 3
+    },
+    {
+      "id": "INC0052640",
+      "x": -5.472679615020752,
+      "y": 11.046442985534668,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Eventos em fila sem processamento.",
+      "priority": 4
+    },
+    {
+      "id": "INC0052052",
+      "x": 16.00910758972168,
+      "y": 10.960592269897461,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Problemas de carregamento de páginas no Internet Banking.",
+      "priority": 1
+    },
+    {
+      "id": "INC0052138",
+      "x": 15.795762062072754,
+      "y": 10.690595626831055,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Sistema bancário lento e ineficiente",
+      "priority": 2
+    },
+    {
+      "id": "INC0052401",
+      "x": 16.312456130981445,
+      "y": 17.721715927124023,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Transações online negadas sem justificativa",
+      "priority": 2
+    },
+    {
+      "id": "INC0052651",
+      "x": -5.432127952575684,
+      "y": 11.005046844482422,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Eventos de conta não processados por falha no consumidor",
+      "priority": 3
+    },
+    {
+      "id": "INC0052290",
+      "x": 7.971074104309082,
+      "y": 1.18638277053833,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto gerado sem código de barras.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052021",
+      "x": -11.376747131347656,
+      "y": 0.4886533319950104,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erro de timeout em pagamentos Pix frequentes",
+      "priority": 2
+    },
+    {
+      "id": "INC0052550",
+      "x": 9.299642562866211,
+      "y": -7.002925395965576,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato com valores incorretos",
+      "priority": 2
+    },
+    {
+      "id": "INC0052709",
+      "x": 3.4459962844848633,
+      "y": 12.231561660766602,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Falha ao consentir para compartilhamento de dados",
+      "priority": 3
+    },
+    {
+      "id": "INC0052342",
+      "x": 9.253667831420898,
+      "y": 2.0905356407165527,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Dificuldades na reemissão de boletos",
+      "priority": 3
+    },
+    {
+      "id": "INC0052982",
+      "x": 20.077816009521484,
+      "y": -0.7243523597717285,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Mouse sem fio não reconhecido pelo computador",
+      "priority": 4
+    },
+    {
+      "id": "INC0052110",
+      "x": 16.04863166809082,
+      "y": 11.030210494995117,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Lentidão no Internet Banking",
+      "priority": 1
+    },
+    {
+      "id": "INC0052705",
+      "x": 3.046513795852661,
+      "y": 11.89850902557373,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Timeout ao acessar dados de outra instituição",
+      "priority": 4
+    },
+    {
+      "id": "INC0052134",
+      "x": 15.805814743041992,
+      "y": 10.281527519226074,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Falhas de conexão no Internet Banking",
+      "priority": 3
+    },
+    {
+      "id": "INC0051963",
+      "x": -11.5386381149292,
+      "y": 0.4134834408760071,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Transações Pix com falah de confirmação",
+      "priority": 1
+    },
+    {
+      "id": "INC0052372",
+      "x": 9.310790061950684,
+      "y": 2.2030162811279297,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Segunda via de boleto retorna erro",
+      "priority": 2
+    },
+    {
+      "id": "INC0052558",
+      "x": 9.230735778808594,
+      "y": -7.33786153793335,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Erro no saldo e no extrato do cliente",
+      "priority": 2
+    },
+    {
+      "id": "INC0052865",
+      "x": 9.89513111114502,
+      "y": -5.505442142486572,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Erro em relatório de RH com coluna de salário",
+      "priority": 3
+    },
+    {
+      "id": "INC0052766",
+      "x": 2.9060781002044678,
+      "y": 11.67994499206543,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Falhas em transações de Open Finance",
+      "priority": 3
+    },
+    {
+      "id": "INC0052109",
+      "x": 16.147096633911133,
+      "y": 11.199324607849121,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro 500 no Internet Banikng persistetne",
+      "priority": 1
+    },
+    {
+      "id": "INC0051953",
+      "x": -11.649937629699707,
+      "y": 0.19060149788856506,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erros na finalização de pagamentos via Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052880",
+      "x": 20.503738403320312,
+      "y": -1.6128764152526855,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Câmera de segurança com imagem cortada",
+      "priority": 4
+    },
+    {
+      "id": "INC0052792",
+      "x": 2.72356915473938,
+      "y": 11.614110946655273,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Instabilidades em chamadas às APIs de Open Finance",
+      "priority": 3
+    },
+    {
+      "id": "INC0052769",
+      "x": 3.4626402854919434,
+      "y": 12.161663055419922,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Dificuldades no compartilhamento de informações bancárias",
+      "priority": 3
+    },
+    {
+      "id": "INC0052562",
+      "x": 9.47909927368164,
+      "y": -7.429452896118164,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Saldo do aplicativo desatualizado",
+      "priority": 2
+    },
+    {
+      "id": "INC0052521",
+      "x": 9.54993724822998,
+      "y": -7.473766326904297,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato não bate com saldo em conta",
+      "priority": 3
+    },
+    {
+      "id": "INC0052780",
+      "x": 3.071993112564087,
+      "y": 11.887606620788574,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Timeout na conexão com outras instituições financeiras",
+      "priority": 4
+    },
+    {
+      "id": "INC0051937",
+      "x": -11.209600448608398,
+      "y": 0.22749197483062744,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Problemas recorrentes no sistema de pagamentos Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0051922",
+      "x": -11.211419105529785,
+      "y": 0.2789095640182495,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Pagamento via Pix falhando com erro de timeout",
+      "priority": 2
+    },
+    {
+      "id": "INC0052713",
+      "x": 2.6786234378814697,
+      "y": 11.6993408203125,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Open Finance indisponível para novos consentimentos",
+      "priority": 4
+    },
+    {
+      "id": "INC0052099",
+      "x": 16.196985244750977,
+      "y": 10.780583381652832,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Exaustão do pool de conexões no Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052597",
+      "x": 9.32363224029541,
+      "y": -7.7804179191589355,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Cliente constata saldo incorreto no extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052385",
+      "x": 8.812137603759766,
+      "y": 1.835703730583191,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Geração de boleto falha",
+      "priority": 3
+    },
+    {
+      "id": "INC0052124",
+      "x": 16.2360897064209,
+      "y": 10.841781616210938,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Conexões presas no banco de dados",
+      "priority": 1
+    },
+    {
+      "id": "INC0052507",
+      "x": 16.51936912536621,
+      "y": 17.484779357910156,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "lBoqueio indevido de compras com cartão de crédito",
+      "priority": 2
+    },
+    {
+      "id": "INC0052244",
+      "x": 0.9854250550270081,
+      "y": -1.5704652070999146,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Falha na autenticação do aplicativo mobile",
+      "priority": 1
+    },
+    {
+      "id": "INC0052762",
+      "x": 3.6025376319885254,
+      "y": 11.992827415466309,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Comprometimento da agregação de contas",
+      "priority": 3
+    },
+    {
+      "id": "INC0052861",
+      "x": 20.744319915771484,
+      "y": -2.0332863330841064,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Projetor com imagem desfocada",
+      "priority": 4
+    },
+    {
+      "id": "INC0052513",
+      "x": 9.189735412597656,
+      "y": -7.114481449127197,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato com lançamentos inconsistentes",
+      "priority": 2
+    },
+    {
+      "id": "INC0052237",
+      "x": 0.21447889506816864,
+      "y": -1.2951269149780273,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Falha na autenticação de clientes após atualização do app",
+      "priority": 2
+    },
+    {
+      "id": "INC0052292",
+      "x": 9.080759048461914,
+      "y": 2.11720871925354,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Instabilidade no registro de boletos para clientes.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052010",
+      "x": -11.376885414123535,
+      "y": 0.3966882526874542,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Falhas em pagamentos via Pix com timeout",
+      "priority": 2
+    },
+    {
+      "id": "INC0051994",
+      "x": -11.560388565063477,
+      "y": -0.0992550477385521,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Latência elevada em pagamentos Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052548",
+      "x": 9.620111465454102,
+      "y": -7.547809600830078,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Diferença entre saldo e extrato",
+      "priority": 3
+    },
+    {
+      "id": "INC0052217",
+      "x": 0.34948474168777466,
+      "y": -1.4115080833435059,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Dificuldade de login após nova versão do app móvel",
+      "priority": 1
+    },
+    {
+      "id": "INC0051941",
+      "x": -11.766084671020508,
+      "y": 0.06115325167775154,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Experiência de pagamento negativa via Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052002",
+      "x": -11.574836730957031,
+      "y": 0.16011548042297363,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Clientes enfrentando erros em pagamentos por Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0051936",
+      "x": -11.252700805664062,
+      "y": 0.2084726244211197,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erros em pagamentos Pix devido a timeout",
+      "priority": 2
+    },
+    {
+      "id": "INC0052359",
+      "x": 8.852921485900879,
+      "y": 1.8720744848251343,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Sem geração de boleto: erro constante",
+      "priority": 2
+    },
+    {
+      "id": "INC0052738",
+      "x": 2.7444653511047363,
+      "y": 11.720108032226562,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Timeout nas APIs de Open Finance",
+      "priority": 2
+    },
+    {
+      "id": "INC0052680",
+      "x": -5.215272426605225,
+      "y": 11.685800552368164,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Crescimento contínuo do lag no Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052463",
+      "x": 16.754268646240234,
+      "y": 17.855876922607422,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusa de cartões durante transações legítimas",
+      "priority": 1
+    },
+    {
+      "id": "INC0052854",
+      "x": 20.180591583251953,
+      "y": -1.4392443895339966,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Catraca de acesso com falha de leitura de crachá",
+      "priority": 4
+    },
+    {
+      "id": "INC0052310",
+      "x": 8.952509880065918,
+      "y": 2.043231964111328,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro recorrente na emissão de boletos.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052807",
+      "x": 2.99833607673645,
+      "y": 11.710663795471191,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Conexão com outros bancos falhando",
+      "priority": 3
+    },
+    {
+      "id": "INC0052071",
+      "x": 16.007896423339844,
+      "y": 10.856465339660645,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Banco de dados do Internet Banking lento",
+      "priority": 3
+    },
+    {
+      "id": "INC0052177",
+      "x": 0.29681962728500366,
+      "y": -1.3328243494033813,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Problemas de login: token inválido após update",
+      "priority": 1
+    },
+    {
+      "id": "INC0052660",
+      "x": -5.146951675415039,
+      "y": 11.201725006103516,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Atraso nas notificações devido a erro no consumidor Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052723",
+      "x": 2.667004346847534,
+      "y": 11.604162216186523,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Erro 503 ao acessar APIs de Open Finance",
+      "priority": 4
+    },
+    {
+      "id": "INC0052242",
+      "x": 0.861588180065155,
+      "y": -1.9453470706939697,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Usuários sem acesso ao app após deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0052717",
+      "x": 3.2313172817230225,
+      "y": 12.267833709716797,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Sistema retorna erro ao conectar outra instituição financeira",
+      "priority": 3
+    },
+    {
+      "id": "INC0052679",
+      "x": -5.38355016708374,
+      "y": 10.97952938079834,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Eventos de conta não processados no Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052197",
+      "x": 0.7878726124763489,
+      "y": -1.7658437490463257,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de tkoen ao tentar acessar pap mobile",
+      "priority": 1
+    },
+    {
+      "id": "INC0052573",
+      "x": 9.208858489990234,
+      "y": -7.1485772132873535,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Clientes reportam erros no extrato bancário",
+      "priority": 1
+    },
+    {
+      "id": "INC0052614",
+      "x": -5.402163028717041,
+      "y": 10.973542213439941,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Eventos de conta não processados pela fila.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052922",
+      "x": 20.060531616210938,
+      "y": -0.6522356271743774,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Mouse sem fio sem conexão",
+      "priority": 4
+    },
+    {
+      "id": "INC0052259",
+      "x": 0.8675124645233154,
+      "y": -1.7805674076080322,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Problema de acesso ao aplicativo mobile após novo deploy",
+      "priority": 2
+    },
+    {
+      "id": "INC0052156",
+      "x": 16.273990631103516,
+      "y": 10.69473648071289,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Usuários enfrentam timeout no internet banking",
+      "priority": 1
+    },
+    {
+      "id": "INC0052829",
+      "x": 9.377431869506836,
+      "y": -7.750479221343994,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Divergência em nota fiscal de fornecedor",
+      "priority": 4
+    },
+    {
+      "id": "INC0052489",
+      "x": 16.660430908203125,
+      "y": 17.332321166992188,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusas de cartões em compras com saldo disponível",
+      "priority": 3
+    },
+    {
+      "id": "INC0052017",
+      "x": -11.399824142456055,
+      "y": 0.006978167686611414,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Problemas de latência afetam pagamentos via Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052629",
+      "x": -5.267199516296387,
+      "y": 11.217527389526367,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Notificações e eventos travados no Kafka.",
+      "priority": 3
+    },
+    {
+      "id": "INC0051944",
+      "x": -11.470721244812012,
+      "y": 0.4132137894630432,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Falha na confirmação de pagamentos via Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052635",
+      "x": -5.487407207489014,
+      "y": 11.477829933166504,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Excesso de lag na fila do Kafka.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052516",
+      "x": 9.642462730407715,
+      "y": -7.328056335449219,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Saldo discrepante de acordo com o extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052576",
+      "x": 9.50536823272705,
+      "y": -7.060832500457764,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Movimentações sem correspondência no extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052429",
+      "x": 16.754480361938477,
+      "y": 17.812686920166016,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Transações legítimas bloqueadas por antifraude",
+      "priority": 3
+    },
+    {
+      "id": "INC0052905",
+      "x": 20.43625831604004,
+      "y": -1.6251519918441772,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Câmera de segurança fora de operação",
+      "priority": 3
+    },
+    {
+      "id": "INC0052084",
+      "x": 15.853718757629395,
+      "y": 10.886927604675293,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Desempenho degradado no acesso ao extrato",
+      "priority": 3
+    },
+    {
+      "id": "INC0052817",
+      "x": 20.177335739135742,
+      "y": -2.729522943496704,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Cafeteira da copa está vazando água",
+      "priority": 4
+    },
+    {
+      "id": "INC0052959",
+      "x": 20.199026107788086,
+      "y": -2.5890276432037354,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Água para escritório não foi entregue",
+      "priority": 3
+    },
+    {
+      "id": "INC0052457",
+      "x": 16.669721603393555,
+      "y": 17.652494430541992,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Erro frequente em transações com cartões de crédito",
+      "priority": 2
+    },
+    {
+      "id": "INC0052309",
+      "x": 8.873994827270508,
+      "y": 1.8519840240478516,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Falha ao gerar boleto solicitado pelo cliente.",
+      "priority": 4
+    },
+    {
+      "id": "INC0052727",
+      "x": 3.2127444744110107,
+      "y": 12.209206581115723,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Problema na jornada de consentimento de dados",
+      "priority": 3
+    },
+    {
+      "id": "INC0051949",
+      "x": -11.22932243347168,
+      "y": 0.624979555606842,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Transações Pix não finalizadas corretamente",
+      "priority": 2
+    },
+    {
+      "id": "INC0052752",
+      "x": 3.4914753437042236,
+      "y": 12.127364158630371,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Inconsistência no consentimento de dados",
+      "priority": 2
+    },
+    {
+      "id": "INC0052280",
+      "x": 0.9370580315589905,
+      "y": -2.049877882003784,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de autenticação no app depois do deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0052606",
+      "x": 9.344694137573242,
+      "y": -7.781244277954102,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Cliente insatisfeito com saldo e extrato divergentes",
+      "priority": 3
+    },
+    {
+      "id": "INC0052813",
+      "x": 20.15403175354004,
+      "y": -1.3634095191955566,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Catrcaa ed entrada travada",
+      "priority": 4
+    },
+    {
+      "id": "INC0052641",
+      "x": -5.090092182159424,
+      "y": 11.297489166259766,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Notificações atrasadas no Kafka.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052213",
+      "x": 0.3769471049308777,
+      "y": -1.2796854972839355,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Eror ao logar no app mobile após atualização",
+      "priority": 1
+    },
+    {
+      "id": "INC0051933",
+      "x": -11.349539756774902,
+      "y": 0.5820603966712952,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Dificuldade em finalizar transações Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052105",
+      "x": 15.981219291687012,
+      "y": 10.55799674987793,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Lentidão severa no carregamento do Internet Banking",
+      "priority": 1
+    },
+    {
+      "id": "INC0052067",
+      "x": 15.99746036529541,
+      "y": 11.004854202270508,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Falta de resposta ao acessar informações no Internet Banking.",
+      "priority": 2
+    },
+    {
+      "id": "INC0052885",
+      "x": 20.266159057617188,
+      "y": -2.6031908988952637,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Cafeteira não está aquecendo água",
+      "priority": 4
+    },
+    {
+      "id": "INC0052381",
+      "x": 8.933141708374023,
+      "y": 1.8544909954071045,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Problema na liquidação de boletos",
+      "priority": 2
+    },
+    {
+      "id": "INC0052266",
+      "x": 0.8350362181663513,
+      "y": -1.8520352840423584,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Usuários sem acesso ao app mobile após atualização",
+      "priority": 1
+    },
+    {
+      "id": "INC0052517",
+      "x": 9.50690746307373,
+      "y": -7.059150218963623,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Movimentações ausentes no extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052012",
+      "x": -11.626862525939941,
+      "y": 0.47823333740234375,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Timeout em transações Pix com débito não comprovado",
+      "priority": 2
+    },
+    {
+      "id": "INC0052733",
+      "x": 3.356752872467041,
+      "y": 12.307938575744629,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Consentimento não avança devido a falhas",
+      "priority": 3
+    },
+    {
+      "id": "INC0052455",
+      "x": 16.734477996826172,
+      "y": 17.936479568481445,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Transações legítimas bloqueadas por novo sistema antifraude",
+      "priority": 2
+    },
+    {
+      "id": "INC0052639",
+      "x": -5.5242600440979,
+      "y": 11.727767944335938,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Fila Kafka parada sem processamento.",
+      "priority": 4
+    },
+    {
+      "id": "INC0052258",
+      "x": 0.7840235233306885,
+      "y": -1.6964795589447021,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Dificuldades de login no app após deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0051930",
+      "x": -11.227649688720703,
+      "y": 0.15556876361370087,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Clientes experimentam falhas com Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0051987",
+      "x": -11.552268028259277,
+      "y": 0.4381799101829529,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Problema crônico em pagamentos via Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0051947",
+      "x": -11.924966812133789,
+      "y": 0.1762445867061615,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Pagamentos Pix pendentes e sem comprovante",
+      "priority": 1
+    },
+    {
+      "id": "INC0052091",
+      "x": 16.148422241210938,
+      "y": 11.226689338684082,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro 500 recorrente ao acessar serviços do banco",
+      "priority": 2
+    },
+    {
+      "id": "INC0052431",
+      "x": 16.442096710205078,
+      "y": 17.467374801635742,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Aumento de recusas de carteõs e mcompras",
+      "priority": 1
+    },
+    {
+      "id": "INC0052909",
+      "x": 20.241247177124023,
+      "y": -1.4404116868972778,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Catraca de acesso com falha",
+      "priority": 3
+    },
+    {
+      "id": "INC0052555",
+      "x": 9.512141227722168,
+      "y": -7.473106384277344,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Saldo niconsistência com etxrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052758",
+      "x": 3.1001100540161133,
+      "y": 11.808755874633789,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Erros constantes ao puxar dados financeiros",
+      "priority": 3
+    },
+    {
+      "id": "INC0052223",
+      "x": 0.4824121594429016,
+      "y": -1.2654547691345215,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Problemas de sessão após atualização do app mobile",
+      "priority": 1
+    },
+    {
+      "id": "INC0052171",
+      "x": 0.7891193628311157,
+      "y": -1.9750251770019531,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Clientes não conseguem acessar o app após atualização",
+      "priority": 2
+    },
+    {
+      "id": "INC0052843",
+      "x": 20.917749404907227,
+      "y": -1.3567217588424683,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Licença de software de edição de imagem vencida",
+      "priority": 3
+    },
+    {
+      "id": "INC0052569",
+      "x": 9.271750450134277,
+      "y": -7.329641819000244,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Inconsistência no saldo e extrato dos clientes",
+      "priority": 2
+    },
+    {
+      "id": "INC0052230",
+      "x": 0.4808661937713623,
+      "y": -1.2482585906982422,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Login falho no app mobile por mudança de token",
+      "priority": 1
+    },
+    {
+      "id": "INC0051976",
+      "x": -11.78618049621582,
+      "y": 0.17963546514511108,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Problemas de latência nas transações Pix",
+      "priority": 1
+    },
+    {
+      "id": "INC0052756",
+      "x": 3.0567145347595215,
+      "y": 11.765027046203613,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Dificuldades na conexão com outros bancos",
+      "priority": 4
+    },
+    {
+      "id": "INC0051945",
+      "x": -11.300043106079102,
+      "y": 0.4972039461135864,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erro de timeout em pagamentos Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052873",
+      "x": 20.239782333374023,
+      "y": -2.5319650173187256,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Falta de água para ddeetização",
+      "priority": 4
+    },
+    {
+      "id": "INC0052367",
+      "x": 7.886907577514648,
+      "y": 1.0998084545135498,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "PDF do boleto sem linha digitável",
+      "priority": 2
+    },
+    {
+      "id": "INC0052218",
+      "x": 0.7692298293113708,
+      "y": -1.7585954666137695,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Autenticação falha após o deploy do aplicativo",
+      "priority": 2
+    },
+    {
+      "id": "INC0052509",
+      "x": 9.458617210388184,
+      "y": -7.605597019195557,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Divergência entre saldo e extrato de conta",
+      "priority": 1
+    },
+    {
+      "id": "INC0052043",
+      "x": 16.004446029663086,
+      "y": 10.422518730163574,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Conexões com o banco de dados estão lentas ou nã orespondem.",
+      "priority": 1
+    },
+    {
+      "id": "INC0052781",
+      "x": 2.7995312213897705,
+      "y": 11.610716819763184,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Sistema Open Finance fora do ra temporariamente",
+      "priority": 2
+    },
+    {
+      "id": "INC0051962",
+      "x": -11.302559852600098,
+      "y": 0.0482967384159565,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Sistemas d epagamento Pix letnos e falhando",
+      "priority": 1
+    },
+    {
+      "id": "INC0052394",
+      "x": 7.808383464813232,
+      "y": 1.0187561511993408,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Problemas ao gerar boleto para cliente",
+      "priority": 4
+    },
+    {
+      "id": "INC0051998",
+      "x": -11.534613609313965,
+      "y": 0.5590032935142517,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Timeout nas confirmações de Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052789",
+      "x": 3.2240710258483887,
+      "y": 11.964540481567383,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Dificuldade na integração com outros bancos",
+      "priority": 3
+    },
+    {
+      "id": "INC0052858",
+      "x": 20.20562744140625,
+      "y": -2.7085509300231934,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Cafeteira da cozinha apresenta vazamento",
+      "priority": 3
+    },
+    {
+      "id": "INC0052362",
+      "x": 7.96226692199707,
+      "y": 1.1757060289382935,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto gerado sem código de barras",
+      "priority": 4
+    },
+    {
+      "id": "INC0052322",
+      "x": 9.174565315246582,
+      "y": 2.1870317459106445,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Dificuldades em gerar boletos na segunda via.",
+      "priority": 4
+    },
+    {
+      "id": "INC0051926",
+      "x": -11.425536155700684,
+      "y": -0.16191184520721436,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Latência nos pagamentos via Pix em horários de pico",
+      "priority": 2
+    },
+    {
+      "id": "INC0052025",
+      "x": -11.87902545928955,
+      "y": 0.14377206563949585,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Dificuldades em pagamentos Pix com comprovante ausente",
+      "priority": 1
+    },
+    {
+      "id": "INC0052131",
+      "x": 15.959778785705566,
+      "y": 11.036111831665039,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Páginas lentas e erros no Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052556",
+      "x": 9.312503814697266,
+      "y": -7.060493469238281,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato com lançamentos faltando",
+      "priority": 1
+    },
+    {
+      "id": "INC0052264",
+      "x": 0.9134069681167603,
+      "y": -2.0604770183563232,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de token inválido após atualização do app",
+      "priority": 1
+    },
+    {
+      "id": "INC0052751",
+      "x": 2.8705034255981445,
+      "y": 11.581111907958984,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Open Finance fora do ar",
+      "priority": 3
+    },
+    {
+      "id": "INC0052976",
+      "x": 9.895651817321777,
+      "y": -5.503507137298584,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Erro em relatório de RH",
+      "priority": 3
+    },
+    {
+      "id": "INC0052646",
+      "x": -5.352165222167969,
+      "y": 11.626486778259277,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Consumidor Kafka inativo, causando crescimento no lag",
+      "priority": 4
+    },
+    {
+      "id": "INC0052608",
+      "x": -5.579642295837402,
+      "y": 11.658623695373535,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Fila do Kafka acumulando mensagens.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052444",
+      "x": 16.7115535736084,
+      "y": 18.021821975708008,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Bloqueios indevidos em compras online e presenciais",
+      "priority": 2
+    },
+    {
+      "id": "INC0052602",
+      "x": 9.588885307312012,
+      "y": -7.223987102508545,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Divergência significativa nos dados do extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052306",
+      "x": 7.809750556945801,
+      "y": 1.0194681882858276,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto com falhas na linha digitável.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052461",
+      "x": 16.79749870300293,
+      "y": 17.566715240478516,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Dificuldades de compra com cartão por erro no sistema",
+      "priority": 2
+    },
+    {
+      "id": "INC0051913",
+      "x": -11.65658187866211,
+      "y": 0.41301223635673523,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Transações Pix pendentes por longos períodos",
+      "priority": 2
+    },
+    {
+      "id": "INC0052006",
+      "x": -11.900604248046875,
+      "y": 0.3185849189758301,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Problemas com comprovantes em transferências Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052538",
+      "x": 9.507878303527832,
+      "y": -7.139093399047852,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Relatos de extrato com movimentações falhas",
+      "priority": 1
+    },
+    {
+      "id": "INC0052376",
+      "x": 7.830798149108887,
+      "y": 1.0309834480285645,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto com geração incompleta",
+      "priority": 2
+    },
+    {
+      "id": "INC0052931",
+      "x": 20.450611114501953,
+      "y": -1.6229335069656372,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Câmera de segurança sem visualização",
+      "priority": 3
+    },
+    {
+      "id": "INC0052566",
+      "x": 9.553174018859863,
+      "y": -7.108547687530518,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato com diferenciais de movimentação",
+      "priority": 1
+    },
+    {
+      "id": "INC0052882",
+      "x": 20.156198501586914,
+      "y": -1.3845473527908325,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Catraca de entrada apresentando falha",
+      "priority": 4
+    },
+    {
+      "id": "INC0052209",
+      "x": 1.0102277994155884,
+      "y": -2.081476926803589,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Problemas de login após implementação de novo deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0052198",
+      "x": 0.604443371295929,
+      "y": -1.2850267887115479,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Incidente de autenticação no app após nova versão",
+      "priority": 1
+    },
+    {
+      "id": "INC0052148",
+      "x": 16.110383987426758,
+      "y": 11.141831398010254,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro 500 no extrato do internet banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052180",
+      "x": 0.9913222193717957,
+      "y": -1.6949586868286133,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Incidente de login no app mobile pós-deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0052262",
+      "x": 0.15294675529003143,
+      "y": -1.3223055601119995,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Clientes enfrentando falhas de login após atualização",
+      "priority": 2
+    },
+    {
+      "id": "INC0052702",
+      "x": -5.702739715576172,
+      "y": 11.56344223022461,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Fila Kafka com mensagens não processadas",
+      "priority": 3
+    },
+    {
+      "id": "INC0052961",
+      "x": 20.463027954101562,
+      "y": -1.6344833374023438,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Câmera de segurança com falha na gravação",
+      "priority": 4
+    },
+    {
+      "id": "INC0052130",
+      "x": 15.76928424835205,
+      "y": 10.40323257446289,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Interrupções no acesso ao Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052881",
+      "x": 20.30763053894043,
+      "y": -2.351851224899292,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Ar-condicionado da sala de reuniões com vazamento",
+      "priority": 4
+    },
+    {
+      "id": "INC0052878",
+      "x": 20.114112854003906,
+      "y": -0.894559383392334,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Teclado com tecla B travada",
+      "priority": 4
+    },
+    {
+      "id": "INC0052403",
+      "x": 16.79839324951172,
+      "y": 17.598934173583984,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Bloqueio de compras pro antfiraude",
+      "priority": 2
+    },
+    {
+      "id": "INC0052348",
+      "x": 7.992477893829346,
+      "y": 1.2072334289550781,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto inválido sem código de barras",
+      "priority": 4
+    },
+    {
+      "id": "INC0052252",
+      "x": 0.7736170291900635,
+      "y": -1.5043379068374634,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de autenticação após nova versão do app mobile",
+      "priority": 1
+    },
+    {
+      "id": "INC0051959",
+      "x": -11.94676399230957,
+      "y": 0.26042798161506653,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Clientes sem comprovante após pagamento via Pix",
+      "priority": 1
+    },
+    {
+      "id": "INC0052582",
+      "x": 9.47042179107666,
+      "y": -7.063085079193115,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato confuso com valores inconsistentes",
+      "priority": 2
+    },
+    {
+      "id": "INC0052682",
+      "x": -5.0424699783325195,
+      "y": 11.320568084716797,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Notificações atrasadas por travament odo consumidor",
+      "priority": 4
+    },
+    {
+      "id": "INC0052591",
+      "x": 9.41753101348877,
+      "y": -7.310842990875244,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Inconsistências entre saldo e extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052024",
+      "x": -11.575743675231934,
+      "y": 0.5890591740608215,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Falhas recorrentes ao usar Pix causam confusão",
+      "priority": 2
+    },
+    {
+      "id": "INC0052785",
+      "x": 3.297133445739746,
+      "y": 12.214247703552246,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Problema ao consentir compartilhamento de dados",
+      "priority": 3
+    },
+    {
+      "id": "INC0052915",
+      "x": 9.91027545928955,
+      "y": -5.486418724060059,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Relatório de RH com erro",
+      "priority": 3
+    },
+    {
+      "id": "INC0052853",
+      "x": 20.37845230102539,
+      "y": -2.325914144515991,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Ar-condicionado da sala de reuniões A com mau funcionamento",
+      "priority": 4
+    },
+    {
+      "id": "INC0052944",
+      "x": 20.236928939819336,
+      "y": -2.6622507572174072,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Cafeteira com vazamento",
+      "priority": 4
+    },
+    {
+      "id": "INC0052102",
+      "x": 15.75908374786377,
+      "y": 10.63802719116211,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Desempenho insatisfatório no Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052075",
+      "x": 16.096660614013672,
+      "y": 11.169282913208008,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro 500 ao acessar saldo no Internet Banking",
+      "priority": 3
+    },
+    {
+      "id": "INC0051956",
+      "x": -11.160688400268555,
+      "y": 0.5210154056549072,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erro de timeout em transações Pix",
+      "priority": 1
+    },
+    {
+      "id": "INC0052482",
+      "x": 16.507848739624023,
+      "y": 17.687358856201172,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Cartões recusados durante compras legítimas",
+      "priority": 1
+    },
+    {
+      "id": "INC0052671",
+      "x": -5.6092143058776855,
+      "y": 11.380486488342285,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Acúmulo de mensagens no Kafka impactando serviços",
+      "priority": 4
+    },
+    {
+      "id": "INC0052160",
+      "x": 15.907413482666016,
+      "y": 10.920165061950684,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Problemas de acesso ao internet banking",
+      "priority": 3
+    },
+    {
+      "id": "INC0052804",
+      "x": 2.9726924896240234,
+      "y": 11.717964172363281,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Erro ao conectar com aplicações de Open Finance",
+      "priority": 3
+    },
+    {
+      "id": "INC0052153",
+      "x": 16.07480812072754,
+      "y": 10.350842475891113,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Conexões do banco de dados estão lentas",
+      "priority": 2
+    },
+    {
+      "id": "INC0052486",
+      "x": 16.43706703186035,
+      "y": 18.008407592773438,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Dificuldades em transações com cartão devido ao antifraude",
+      "priority": 2
+    },
+    {
+      "id": "INC0052196",
+      "x": 0.784020185470581,
+      "y": -1.7507543563842773,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Impossibilidade de login no app após novo deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0052064",
+      "x": 15.564031600952148,
+      "y": 10.600738525390625,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Indisponibilidade do Internet Banking para consulta de contas.",
+      "priority": 2
+    },
+    {
+      "id": "INC0052886",
+      "x": 21.542293548583984,
+      "y": -1.966605305671692,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Ramal telefônico específico fora de serviço",
+      "priority": 4
+    },
+    {
+      "id": "INC0051982",
+      "x": -11.222550392150879,
+      "y": 0.255538672208786,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Transações Pix com erro de tempo esgotado",
+      "priority": 2
+    },
+    {
+      "id": "INC0052048",
+      "x": 15.963154792785645,
+      "y": 10.483602523803711,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Incidentes de lentidão no acesso ao portal do Internet Banking.",
+      "priority": 2
+    },
+    {
+      "id": "INC0052644",
+      "x": -5.602458477020264,
+      "y": 11.48930835723877,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Fila do Kafka acumulando mensagens devido a travamento do consumidor",
+      "priority": 4
+    },
+    {
+      "id": "INC0052698",
+      "x": -5.387702941894531,
+      "y": 10.974266052246094,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Eventos de conta parados no Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052318",
+      "x": 7.81119966506958,
+      "y": 1.0214567184448242,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Cliente reclama de boleto sem linha digitável.",
+      "priority": 2
+    },
+    {
+      "id": "INC0052144",
+      "x": 16.020034790039062,
+      "y": 10.457279205322266,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Desepmenh olento no internet banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052866",
+      "x": 20.104005813598633,
+      "y": -0.696108877658844,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Mouse sem fio com falha na conexão",
+      "priority": 4
+    },
+    {
+      "id": "INC0052956",
+      "x": 20.079320907592773,
+      "y": -0.7160916924476624,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Mouse sem fio não funciona",
+      "priority": 4
+    },
+    {
+      "id": "INC0052913",
+      "x": 20.210304260253906,
+      "y": -2.6866230964660645,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Cafeteira sem funcionar",
+      "priority": 4
+    },
+    {
+      "id": "INC0051977",
+      "x": -11.366355895996094,
+      "y": 0.5659034848213196,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Timeout ao tentar confirmar Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052327",
+      "x": 7.7935895919799805,
+      "y": 1.0038094520568848,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto gerado sem linha digitável",
+      "priority": 3
+    },
+    {
+      "id": "INC0052248",
+      "x": 0.15888594090938568,
+      "y": -1.229013442993164,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Clientes não conseguem logar após atualização",
+      "priority": 1
+    },
+    {
+      "id": "INC0052088",
+      "x": 15.830769538879395,
+      "y": 10.431731224060059,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Dificuldades no acesso ao Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052016",
+      "x": -11.624956130981445,
+      "y": 0.4896775186061859,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Transações Pix pendentes com erro de timeout",
+      "priority": 2
+    },
+    {
+      "id": "INC0052299",
+      "x": 7.834672451019287,
+      "y": 1.0483369827270508,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "PDF do boleto sem linha digitável.",
+      "priority": 4
+    },
+    {
+      "id": "INC0052118",
+      "x": 16.32016372680664,
+      "y": 10.77234172821045,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Timeout de banco de dados no Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0051906",
+      "x": -11.273584365844727,
+      "y": 0.44568508863449097,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Falha no pagamento via Pix com erro de timeout",
+      "priority": 1
+    },
+    {
+      "id": "INC0052286",
+      "x": 1.006472110748291,
+      "y": -1.755151391029358,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de login temporário em usuários do app mobile",
+      "priority": 1
+    },
+    {
+      "id": "INC0052386",
+      "x": 8.021184921264648,
+      "y": 1.2406537532806396,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto sem informações essenciais",
+      "priority": 4
+    },
+    {
+      "id": "INC0052282",
+      "x": 0.6627978086471558,
+      "y": -1.7189217805862427,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Impossibilidade de login no app após nova versão",
+      "priority": 1
+    },
+    {
+      "id": "INC0052141",
+      "x": 15.80753231048584,
+      "y": 10.440308570861816,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Instabilidade no Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0051970",
+      "x": -11.442700386047363,
+      "y": -0.11811541765928268,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Picos de latência afetando pagamentos via Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052254",
+      "x": 0.1842491626739502,
+      "y": -1.4166008234024048,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Inacessibilidad edo app apsó atualização",
+      "priority": 1
+    },
+    {
+      "id": "INC0052475",
+      "x": 16.513553619384766,
+      "y": 17.920658111572266,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Problemas de autorização em cartões após atualização antifraude",
+      "priority": 3
+    },
+    {
+      "id": "INC0051973",
+      "x": -11.508769035339355,
+      "y": 0.648358166217804,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erro de timeout em transferências Pix",
+      "priority": 1
+    },
+    {
+      "id": "INC0052770",
+      "x": 3.47822642326355,
+      "y": 12.149812698364258,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Instabilidade no processo de consentimento",
+      "priority": 4
+    },
+    {
+      "id": "INC0052972",
+      "x": 20.71978759765625,
+      "y": -2.040677785873413,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Projetor com problemas de imagem",
+      "priority": 4
+    },
+    {
+      "id": "INC0052363",
+      "x": 9.011737823486328,
+      "y": 1.741660714149475,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Falha no registro de boletos",
+      "priority": 4
+    },
+    {
+      "id": "INC0052860",
+      "x": 21.527002334594727,
+      "y": -1.9805675745010376,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Ramal telefônico não está emitindo som",
+      "priority": 4
+    },
+    {
+      "id": "INC0052361",
+      "x": 9.331615447998047,
+      "y": 2.241363286972046,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro ao solicitar segunda via de boleto",
+      "priority": 4
+    },
+    {
+      "id": "INC0052030",
+      "x": -11.436354637145996,
+      "y": 0.6824889183044434,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Clientes enfrentam timeout em transações Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052228",
+      "x": 0.9737932682037354,
+      "y": -1.8615411520004272,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Clientes enfrentam erro de login após deploy no app",
+      "priority": 1
+    },
+    {
+      "id": "INC0052421",
+      "x": 16.768810272216797,
+      "y": 17.6314697265625,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Falsos positivos no sistema antifraude",
+      "priority": 1
+    },
+    {
+      "id": "INC0052729",
+      "x": 3.116124153137207,
+      "y": 11.910329818725586,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Dificuldades em acessar dados de instituições parceiras",
+      "priority": 3
+    },
+    {
+      "id": "INC0052456",
+      "x": 16.789567947387695,
+      "y": 17.485889434814453,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusa de pagamentos em diferentes experiências de compra",
+      "priority": 2
+    },
+    {
+      "id": "INC0052415",
+      "x": 16.39983558654785,
+      "y": 18.09950065612793,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Antifraude causando falhas na compra online",
+      "priority": 2
+    },
+    {
+      "id": "INC0052796",
+      "x": 3.125898838043213,
+      "y": 12.06201457977295,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Clientes não conseguem compartilhar dados com Open Finance",
+      "priority": 4
+    },
+    {
+      "id": "INC0052459",
+      "x": 16.37135887145996,
+      "y": 18.02133560180664,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Cartões recusados devido a mudanças no antifraude",
+      "priority": 2
+    },
+    {
+      "id": "INC0052831",
+      "x": 20.078012466430664,
+      "y": -0.6572278141975403,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Mouse sem fi onão se conecta",
+      "priority": 3
+    },
+    {
+      "id": "INC0052575",
+      "x": 9.316092491149902,
+      "y": -7.784356117248535,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Saldo do cliente incoerente com extrato recente",
+      "priority": 3
+    },
+    {
+      "id": "INC0052040",
+      "x": 15.553839683532715,
+      "y": 10.630414009094238,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Site do banco está fora do ar para operações de Internet Banking.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052603",
+      "x": 9.179167747497559,
+      "y": -7.304047584533691,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Lançamentos faltantes e saldo incorreto",
+      "priority": 2
+    },
+    {
+      "id": "INC0052027",
+      "x": -11.121464729309082,
+      "y": 0.21048231422901154,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erros de tempo esgotado ao confirmar pagamentos Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052136",
+      "x": 15.87175178527832,
+      "y": 10.837956428527832,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Problemas de acesso ao saldo e extrato",
+      "priority": 3
+    },
+    {
+      "id": "INC0052355",
+      "x": 8.92431926727295,
+      "y": 1.6819475889205933,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Insatisfação com boleto não gerado",
+      "priority": 3
+    },
+    {
+      "id": "INC0052633",
+      "x": -5.652807235717773,
+      "y": 11.600958824157715,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Fila Kafka repleta, consumo inativo.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052534",
+      "x": 9.208985328674316,
+      "y": -7.479403018951416,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Divergências no extrato dos clientes",
+      "priority": 3
+    },
+    {
+      "id": "INC0051991",
+      "x": -11.673925399780273,
+      "y": 0.48502883315086365,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erro frequente em transferências Pix",
+      "priority": 1
+    },
+    {
+      "id": "INC0052503",
+      "x": 16.61079978942871,
+      "y": 17.798654556274414,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Transações de cartão negadas por limite inexistente",
+      "priority": 2
+    },
+    {
+      "id": "INC0052114",
+      "x": 16.05998420715332,
+      "y": 11.294478416442871,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro 500 ao acessar extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052192",
+      "x": 0.24331916868686676,
+      "y": -1.308593511581421,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Clientes não conseguem fazer login após atualização do aplicativo",
+      "priority": 2
+    },
+    {
+      "id": "INC0051965",
+      "x": -11.191628456115723,
+      "y": 0.41353151202201843,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erro crônico na finalização de pagamentos Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052743",
+      "x": 3.3965015411376953,
+      "y": 12.104004859924316,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Problemas com a jornada de consentimento",
+      "priority": 2
+    },
+    {
+      "id": "INC0052522",
+      "x": 9.274142265319824,
+      "y": -7.6294403076171875,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Problema scom extrato e saldo do cliente",
+      "priority": 2
+    },
+    {
+      "id": "INC0052875",
+      "x": 20.91380500793457,
+      "y": -1.3598806858062744,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Licença de software de edição de imagens vencida",
+      "priority": 3
+    },
+    {
+      "id": "INC0052337",
+      "x": 9.006165504455566,
+      "y": 1.786636471748352,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro de registro ao emitir boletos",
+      "priority": 3
+    },
+    {
+      "id": "INC0052165",
+      "x": 0.9387169480323792,
+      "y": -1.7119951248168945,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro ao tentar logar após atualização do app",
+      "priority": 1
+    },
+    {
+      "id": "INC0052721",
+      "x": 3.2626473903656006,
+      "y": 12.299304962158203,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Experiência de consentimento interrompida por erro",
+      "priority": 2
+    },
+    {
+      "id": "INC0052434",
+      "x": 16.745569229125977,
+      "y": 17.554126739501953,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Erros no sistema de autorização de cartões",
+      "priority": 1
+    },
+    {
+      "id": "INC0052518",
+      "x": 9.113346099853516,
+      "y": -7.115596294403076,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Lançamentos duplicados no extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052419",
+      "x": 16.667198181152344,
+      "y": 17.437503814697266,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Cartão recusado ao tentar comprar online",
+      "priority": 2
+    },
+    {
+      "id": "INC0052454",
+      "x": 16.727991104125977,
+      "y": 17.918380737304688,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Problemas com autorização de cartões em transações legítimas",
+      "priority": 3
+    },
+    {
+      "id": "INC0052581",
+      "x": 9.297661781311035,
+      "y": -7.8145880699157715,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Erro em saldo após atualização do extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052545",
+      "x": 9.638465881347656,
+      "y": -7.247157573699951,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Movimentações não são refletidas no saldo",
+      "priority": 3
+    },
+    {
+      "id": "INC0052960",
+      "x": 20.901878356933594,
+      "y": -1.3740378618240356,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Licença de software específica vencida",
+      "priority": 4
+    },
+    {
+      "id": "INC0052500",
+      "x": 16.55662727355957,
+      "y": 17.98961067199707,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusas em transações de cartão devido a novo código antifraude",
+      "priority": 2
+    },
+    {
+      "id": "INC0052410",
+      "x": 16.431652069091797,
+      "y": 17.748220443725586,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Problemas com autorizações de cartão no e-commerce",
+      "priority": 2
+    },
+    {
+      "id": "INC0052598",
+      "x": 9.306633949279785,
+      "y": -7.702358245849609,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Problema com extrato e saldo do cliente",
+      "priority": 3
+    },
+    {
+      "id": "INC0052314",
+      "x": 7.975555419921875,
+      "y": 1.1887922286987305,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Geração de boletos falha e sem código de barras.",
+      "priority": 4
+    },
+    {
+      "id": "INC0052941",
+      "x": 20.142751693725586,
+      "y": -1.4062938690185547,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Catraca não reconhece crachá de acesso",
+      "priority": 4
+    },
+    {
+      "id": "INC0052167",
+      "x": 0.9613273739814758,
+      "y": -2.0334057807922363,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Usuários enfrentam problemas de login após deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0052497",
+      "x": 16.794286727905273,
+      "y": 17.903284072875977,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Autorizações negadas para compras legítimas",
+      "priority": 2
+    },
+    {
+      "id": "INC0052775",
+      "x": 3.0769548416137695,
+      "y": 11.889293670654297,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Erro ao tentar consentir dados via Open Finance",
+      "priority": 3
+    },
+    {
+      "id": "INC0052033",
+      "x": 16.148921966552734,
+      "y": 10.872583389282227,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "InternetB anking carregando lentamente e come rro de conexão.",
+      "priority": 1
+    },
+    {
+      "id": "INC0052846",
+      "x": 20.103309631347656,
+      "y": -0.8815842270851135,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Teclado com tecla 'Enter' travada",
+      "priority": 4
+    },
+    {
+      "id": "INC0052126",
+      "x": 15.922992706298828,
+      "y": 10.375237464904785,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Lentidão em operações bancárias",
+      "priority": 3
+    },
+    {
+      "id": "INC0052625",
+      "x": -5.323587894439697,
+      "y": 11.411958694458008,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Problemas com a fila Kafka.",
+      "priority": 4
+    },
+    {
+      "id": "INC0052095",
+      "x": 15.940099716186523,
+      "y": 10.429841995239258,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "lentidão no sistema do Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052825",
+      "x": 20.69862937927246,
+      "y": -2.067509889602661,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Projetor da sala de treinamento com imagem distorcida",
+      "priority": 4
+    },
+    {
+      "id": "INC0052037",
+      "x": 16.12433624267578,
+      "y": 11.231654167175293,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro 500 ao acessar extrato na plataforma de Internet Banking.",
+      "priority": 1
+    },
+    {
+      "id": "INC0052185",
+      "x": 0.9761653542518616,
+      "y": -2.062143087387085,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Problemas de autenticação no app após deploy",
+      "priority": 1
+    },
+    {
+      "id": "INC0052479",
+      "x": 16.688901901245117,
+      "y": 17.240324020385742,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusas injustificadas em compras de cartão",
+      "priority": 1
+    },
+    {
+      "id": "INC0052460",
+      "x": 16.4211368560791,
+      "y": 17.919706344604492,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Negativas em transações afetadas por regras de antifraude",
+      "priority": 1
+    },
+    {
+      "id": "INC0052045",
+      "x": 15.741739273071289,
+      "y": 10.604789733886719,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Desempenho do Internet Banking está abaixo do esperado.",
+      "priority": 2
+    },
+    {
+      "id": "INC0052307",
+      "x": 9.066570281982422,
+      "y": 2.1168782711029053,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Clientes sem conseguir gerar boletos.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052472",
+      "x": 16.380985260009766,
+      "y": 17.916057586669922,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Negativas em compras físicas e online com saldo positivo",
+      "priority": 2
+    },
+    {
+      "id": "INC0052527",
+      "x": 9.071019172668457,
+      "y": -7.235651969909668,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Erro no processamento de extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052577",
+      "x": 9.113892555236816,
+      "y": -7.107763767242432,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato com lançamentos repetidos e saldos errados",
+      "priority": 2
+    },
+    {
+      "id": "INC0052081",
+      "x": 15.50361442565918,
+      "y": 10.68505859375,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Internet Banking fora do ar",
+      "priority": 1
+    },
+    {
+      "id": "INC0052957",
+      "x": 20.078813552856445,
+      "y": -1.5828800201416016,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Problema na reserva de vaga de garagem",
+      "priority": 4
+    },
+    {
+      "id": "INC0051912",
+      "x": -11.185381889343262,
+      "y": 0.26183006167411804,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Timeout em pagamentos via Pix reportado por clientes",
+      "priority": 2
+    },
+    {
+      "id": "INC0052277",
+      "x": 0.8221127390861511,
+      "y": -1.848796010017395,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Clientes não conseguem acessar aplicativo após atualização",
+      "priority": 1
+    },
+    {
+      "id": "INC0052892",
+      "x": 20.152729034423828,
+      "y": -1.7049957513809204,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Elevador interditado por problema técnico",
+      "priority": 4
+    },
+    {
+      "id": "INC0052578",
+      "x": 9.428050994873047,
+      "y": -7.799670219421387,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Diferença no saldo exibido e no extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052594",
+      "x": 9.099042892456055,
+      "y": -7.084570407867432,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato com lançamentos conufsos",
+      "priority": 2
+    },
+    {
+      "id": "INC0052493",
+      "x": 16.3907470703125,
+      "y": 18.071409225463867,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Problemas em autorizaçõse com cartões após nvoa política",
+      "priority": 1
+    },
+    {
+      "id": "INC0052895",
+      "x": 20.284278869628906,
+      "y": -2.4918439388275146,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Falta de água na cozinha",
+      "priority": 4
+    },
+    {
+      "id": "INC0052524",
+      "x": 9.624165534973145,
+      "y": -7.407808780670166,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Saldo errado em relação ao extrato",
+      "priority": 3
+    },
+    {
+      "id": "INC0052801",
+      "x": 3.055736541748047,
+      "y": 11.78458309173584,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Atrasos na conexão com sistemas de Open Finance",
+      "priority": 2
+    },
+    {
+      "id": "INC0052332",
+      "x": 9.350727081298828,
+      "y": 2.13037109375,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Falha ao solicitar segunda via de boleto",
+      "priority": 3
+    },
+    {
+      "id": "INC0052867",
+      "x": 20.09310531616211,
+      "y": -1.5962331295013428,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Vaga de garagem indisponível",
+      "priority": 4
+    },
+    {
+      "id": "INC0052205",
+      "x": 0.47584763169288635,
+      "y": -1.2206315994262695,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de autenticação após atualização do app mobile",
+      "priority": 1
+    },
+    {
+      "id": "INC0052202",
+      "x": 0.3363298177719116,
+      "y": -1.4284436702728271,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Dificuldades de login relatadas após update do app",
+      "priority": 1
+    },
+    {
+      "id": "INC0052344",
+      "x": 8.846211433410645,
+      "y": 1.9119623899459839,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro ao gerar novos boletos",
+      "priority": 3
+    },
+    {
+      "id": "INC0052004",
+      "x": -11.461997032165527,
+      "y": 0.0031782204750925303,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Transações via Pix com lentidão severa",
+      "priority": 3
+    },
+    {
+      "id": "INC0052122",
+      "x": 15.838013648986816,
+      "y": 10.817794799804688,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Desempenho insatisfatório do Internet Banking",
+      "priority": 2
+    },
+    {
+      "id": "INC0052302",
+      "x": 8.898872375488281,
+      "y": 1.9197603464126587,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro na geração de boletos para os clientes.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052953",
+      "x": 9.898642539978027,
+      "y": -5.501853942871094,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Relatório de RH com coluna errada",
+      "priority": 3
+    },
+    {
+      "id": "INC0052060",
+      "x": 15.947306632995605,
+      "y": 10.989137649536133,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Internet Banking com desempenho instável e lentidão.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052539",
+      "x": 9.559042930603027,
+      "y": -7.480979919433594,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Saldo na conta diverge de extrato",
+      "priority": 1
+    },
+    {
+      "id": "INC0052826",
+      "x": 9.897002220153809,
+      "y": -5.502295970916748,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Relatório de RH com coluna de dados incorreta",
+      "priority": 3
+    },
+    {
+      "id": "INC0051961",
+      "x": -11.136363983154297,
+      "y": 0.20210576057434082,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Pagamentos via Pix apresentando erro de tempo esgotado",
+      "priority": 2
+    },
+    {
+      "id": "INC0052057",
+      "x": 16.20252799987793,
+      "y": 11.317570686340332,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Erro 500 recorrente em operações de Internet Banking.",
+      "priority": 1
+    },
+    {
+      "id": "INC0052533",
+      "x": 9.470430374145508,
+      "y": -7.366960525512695,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Clientes com saldo inconsistente",
+      "priority": 1
+    },
+    {
+      "id": "INC0052968",
+      "x": 21.53936004638672,
+      "y": -1.9704645872116089,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Ramal telefônico inativo",
+      "priority": 4
+    },
+    {
+      "id": "INC0052137",
+      "x": 16.011011123657227,
+      "y": 11.061012268066406,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Internet Banking com erro 500 frequente",
+      "priority": 3
+    },
+    {
+      "id": "INC0052373",
+      "x": 8.8848295211792,
+      "y": 1.897405982017517,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Indisponibilidade na geração de boletos",
+      "priority": 4
+    },
+    {
+      "id": "INC0052619",
+      "x": -5.226836681365967,
+      "y": 11.30964469909668,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Atraso na entrega de mensagens.",
+      "priority": 2
+    },
+    {
+      "id": "INC0052441",
+      "x": 16.635536193847656,
+      "y": 17.285594940185547,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusas em transações com cartão mesmo com saldo disponível",
+      "priority": 3
+    },
+    {
+      "id": "INC0052508",
+      "x": 16.729982376098633,
+      "y": 17.225629806518555,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Cleintee nfrenta repetidas recusas em pagamentos de cartão",
+      "priority": 3
+    },
+    {
+      "id": "INC0052773",
+      "x": 2.927295684814453,
+      "y": 11.674336433410645,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Atraso na experiência de Open Finance",
+      "priority": 3
+    },
+    {
+      "id": "INC0051942",
+      "x": -11.14352035522461,
+      "y": 0.20316343009471893,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Problemas na confirmação de pagamentos via Pix",
+      "priority": 1
+    },
+    {
+      "id": "INC0052241",
+      "x": 0.3309987187385559,
+      "y": -1.132910966873169,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de login após atualização do aplicativo móvel",
+      "priority": 1
+    },
+    {
+      "id": "INC0052295",
+      "x": 8.830700874328613,
+      "y": 1.848132848739624,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Cliente não consegue gerar novo boleto.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052964",
+      "x": 20.16009521484375,
+      "y": -1.3972231149673462,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Crachá de acessibilidade não funcionando",
+      "priority": 4
+    },
+    {
+      "id": "INC0051954",
+      "x": -11.387137413024902,
+      "y": 0.7212607264518738,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Problemas na confirmação de transaçõe sPix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052371",
+      "x": 8.885567665100098,
+      "y": 1.972827434539795,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro recorrente na geração de boletos",
+      "priority": 3
+    },
+    {
+      "id": "INC0052470",
+      "x": 16.65615463256836,
+      "y": 17.524934768676758,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Cartões sendo recusados em transações legítimas",
+      "priority": 2
+    },
+    {
+      "id": "INC0052695",
+      "x": -5.253749370574951,
+      "y": 11.775651931762695,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Lag crescente em tópico do Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052737",
+      "x": 3.2970242500305176,
+      "y": 12.32594108581543,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Erro ao consentir dados de outras instituições",
+      "priority": 2
+    },
+    {
+      "id": "INC0052289",
+      "x": 9.234136581420898,
+      "y": 2.207287549972534,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro ao gerar segunda via de boleto para cliente.",
+      "priority": 3
+    },
+    {
+      "id": "INC0052219",
+      "x": 0.842891275882721,
+      "y": -2.0198686122894287,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Usuários impossibilitados de acessar o app após atualização",
+      "priority": 1
+    },
+    {
+      "id": "INC0052468",
+      "x": 16.358797073364258,
+      "y": 18.086925506591797,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusas de cartão em compras online após mudança de regras",
+      "priority": 1
+    },
+    {
+      "id": "INC0052174",
+      "x": 0.5918846130371094,
+      "y": -1.2805485725402832,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Erro de autenticação no app após nova versão",
+      "priority": 1
+    },
+    {
+      "id": "INC0052366",
+      "x": 8.82316780090332,
+      "y": 1.8004943132400513,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto não pode ser gerado",
+      "priority": 2
+    },
+    {
+      "id": "INC0052669",
+      "x": -5.329506874084473,
+      "y": 10.968253135681152,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Erro no consumidor Kafka impede processamento de eventos",
+      "priority": 3
+    },
+    {
+      "id": "INC0052704",
+      "x": 3.135690212249756,
+      "y": 12.17483901977539,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Erro ao tentar compartilhar dados via Open Finance",
+      "priority": 2
+    },
+    {
+      "id": "INC0051915",
+      "x": -11.137419700622559,
+      "y": 0.33793002367019653,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erro de cofnirmação de apgamento via Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052397",
+      "x": 16.583786010742188,
+      "y": 17.16691017150879,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Recusas de cartão nas compras presenciais",
+      "priority": 2
+    },
+    {
+      "id": "INC0052494",
+      "x": 16.868234634399414,
+      "y": 17.669126510620117,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Dificuldade em realizar compras com cartões válidos",
+      "priority": 2
+    },
+    {
+      "id": "INC0052443",
+      "x": 16.554391860961914,
+      "y": 18.070327758789062,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Transações negadas com código de erro do antifraude",
+      "priority": 2
+    },
+    {
+      "id": "INC0052627",
+      "x": -5.395623683929443,
+      "y": 11.806514739990234,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Aumento contínuo no lag da fila Kafka.",
+      "priority": 4
+    },
+    {
+      "id": "INC0052543",
+      "x": 9.090263366699219,
+      "y": -7.075463771820068,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Extrato apresenta lançamentos duplicados",
+      "priority": 1
+    },
+    {
+      "id": "INC0052919",
+      "x": 20.7528018951416,
+      "y": -2.0507850646972656,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Projetor não projeta imagens",
+      "priority": 4
+    },
+    {
+      "id": "INC0052650",
+      "x": -5.108942985534668,
+      "y": 11.38003921508789,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Notificações atrasadas devido a bloqueio no Kafka",
+      "priority": 3
+    },
+    {
+      "id": "INC0052835",
+      "x": 20.078472137451172,
+      "y": -1.6383346319198608,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Vaga de garagem ocupada indevidamente",
+      "priority": 4
+    },
+    {
+      "id": "INC0052665",
+      "x": -5.706443786621094,
+      "y": 11.601801872253418,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Fila do Kafka parada por causa de mensagem travada",
+      "priority": 3
+    },
+    {
+      "id": "INC0052269",
+      "x": 0.23749737441539764,
+      "y": -1.2915786504745483,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Problemas de login após atualização do aplicativo",
+      "priority": 1
+    },
+    {
+      "id": "INC0052889",
+      "x": 9.896775245666504,
+      "y": -5.502960205078125,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Relatório de RH com coluna de salário incorreta",
+      "priority": 4
+    },
+    {
+      "id": "INC0052329",
+      "x": 7.940860271453857,
+      "y": 1.15632164478302,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Boleto sem código de barras",
+      "priority": 3
+    },
+    {
+      "id": "INC0052351",
+      "x": 9.034125328063965,
+      "y": 1.8018125295639038,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Erro na impressão de boleto",
+      "priority": 3
+    },
+    {
+      "id": "INC0052839",
+      "x": 20.23983383178711,
+      "y": -1.929551124572754,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Elevador está com barulho estranho",
+      "priority": 4
+    },
+    {
+      "id": "INC0052716",
+      "x": 2.7740626335144043,
+      "y": 11.859286308288574,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Inconsistência em chamadas API do Open Finance",
+      "priority": 2
+    },
+    {
+      "id": "INC0052437",
+      "x": 16.55545997619629,
+      "y": 17.562841415405273,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Problemas de aceitação de cartões nas compras",
+      "priority": 2
+    },
+    {
+      "id": "INC0052077",
+      "x": 16.262794494628906,
+      "y": 10.70726490020752,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Timeouts frequentes no Internet Banking",
+      "priority": 3
+    },
+    {
+      "id": "INC0052692",
+      "x": -5.068821430206299,
+      "y": 11.30846118927002,
+      "cluster_id": 7,
+      "cluster_label": "Atraso no processamento de mensagens",
+      "is_outlier": false,
+      "short_description": "Kafka com notificação de eventos atrasada",
+      "priority": 3
+    },
+    {
+      "id": "INC0052903",
+      "x": 20.0992374420166,
+      "y": -0.8861193060874939,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Teclado com tecla travada",
+      "priority": 4
+    },
+    {
+      "id": "INC0052245",
+      "x": 0.8927385210990906,
+      "y": -2.052999258041382,
+      "cluster_id": 5,
+      "cluster_label": "Problemas de login no app",
+      "is_outlier": false,
+      "short_description": "Problemas de login após atualização do app",
+      "priority": 2
+    },
+    {
+      "id": "INC0052480",
+      "x": 16.338172912597656,
+      "y": 17.85973358154297,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Negativas em compras com cartão de crédito",
+      "priority": 3
+    },
+    {
+      "id": "INC0052585",
+      "x": 9.193220138549805,
+      "y": -7.085217475891113,
+      "cluster_id": 2,
+      "cluster_label": "Divergência entre saldo e extrato",
+      "is_outlier": false,
+      "short_description": "Lançamentos que sumiram do extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0052806",
+      "x": 2.858696222305298,
+      "y": 11.679800033569336,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Desempenho abaixo do esperado em Open Finance",
+      "priority": 2
+    },
+    {
+      "id": "INC0052890",
+      "x": 20.091459274291992,
+      "y": -0.7115532159805298,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Mouse sem fio apresentando problema de conexão",
+      "priority": 4
+    },
+    {
+      "id": "INC0052015",
+      "x": -11.161905288696289,
+      "y": 0.20371514558792114,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Erros de tempo esgotado em pagamentos via Pix",
+      "priority": 2
+    },
+    {
+      "id": "INC0052465",
+      "x": 16.402374267578125,
+      "y": 17.44146156311035,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Transações negadas em compras com cartão de débito",
+      "priority": 3
+    },
+    {
+      "id": "INC0052464",
+      "x": 16.53820037841797,
+      "y": 17.730466842651367,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Incidentes de autorização de cartão de crédito",
+      "priority": 2
+    },
+    {
+      "id": "INC0053082",
+      "x": -12.036617279052734,
+      "y": 0.19061368703842163,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Pix confirmado para o cliente mas sem comprovante há 2h",
+      "priority": 2
+    },
+    {
+      "id": "INC0053083",
+      "x": 16.725502014160156,
+      "y": 17.12863540649414,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "App às vezes lento e recusa pagamento ao abrir extrato",
+      "priority": 2
+    },
+    {
+      "id": "INC0053084",
+      "x": 15.897672653198242,
+      "y": 10.499418258666992,
+      "cluster_id": 3,
+      "cluster_label": "Lentidão e erros no acesso",
+      "is_outlier": false,
+      "short_description": "Esqueci minha senha do internet banking",
+      "priority": 4
+    },
+    {
+      "id": "INC0052926",
+      "x": 20.06934928894043,
+      "y": -1.573246717453003,
+      "cluster_id": 0,
+      "cluster_label": "Acesso e dispositivos com falha",
+      "is_outlier": false,
+      "short_description": "Vaga de garagem não identificada",
+      "priority": 3
+    },
+    {
+      "id": "INC0051980",
+      "x": -11.576626777648926,
+      "y": 0.5360087752342224,
+      "cluster_id": 1,
+      "cluster_label": "Falhas de timeout em pagamentos",
+      "is_outlier": false,
+      "short_description": "Saturação do sistema ao processar Pix",
+      "priority": 3
+    },
+    {
+      "id": "INC0052452",
+      "x": 16.75440788269043,
+      "y": 17.54948616027832,
+      "cluster_id": 4,
+      "cluster_label": "Dificuldades em transações online",
+      "is_outlier": false,
+      "short_description": "Clientes enfrentam recusa de cartões durante compras",
+      "priority": 2
+    },
+    {
+      "id": "INC0052387",
+      "x": 9.324356079101562,
+      "y": 2.1360483169555664,
+      "cluster_id": 6,
+      "cluster_label": "Falha na geração de boletos",
+      "is_outlier": false,
+      "short_description": "Segunda via do boleto não disponível",
+      "priority": 4
+    },
+    {
+      "id": "INC0052761",
+      "x": 3.1958932876586914,
+      "y": 11.941113471984863,
+      "cluster_id": 8,
+      "cluster_label": "Dificuldades no compartilhamento de dados",
+      "is_outlier": false,
+      "short_description": "Interrupção no Open Finance durante o consentimento",
+      "priority": 4
+    }
+  ],
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "label": "Acesso e dispositivos com falha",
+      "size": 62
+    },
+    {
+      "cluster_id": 1,
+      "label": "Falhas de timeout em pagamentos",
+      "size": 53
+    },
+    {
+      "cluster_id": 2,
+      "label": "Divergência entre saldo e extrato",
+      "size": 50
+    },
+    {
+      "cluster_id": 3,
+      "label": "Lentidão e erros no acesso",
+      "size": 49
+    },
+    {
+      "cluster_id": 4,
+      "label": "Dificuldades em transações online",
+      "size": 47
+    },
+    {
+      "cluster_id": 5,
+      "label": "Problemas de login no app",
+      "size": 46
+    },
+    {
+      "cluster_id": 6,
+      "label": "Falha na geração de boletos",
+      "size": 44
+    },
+    {
+      "cluster_id": 7,
+      "label": "Atraso no processamento de mensagens",
+      "size": 40
+    },
+    {
+      "cluster_id": 8,
+      "label": "Dificuldades no compartilhamento de dados",
+      "size": 40
+    }
+  ],
+  "total": 431,
+  "outliers": 0
+}
