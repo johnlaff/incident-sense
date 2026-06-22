@@ -71,14 +71,34 @@ Badges/pills: background = the hue at ~0.96 L (tint), text = the hue near ~0.40 
 
 ## Layout
 
-App shell: **fixed left nav + top bar + content**. Content is a master–detail:
-incident **list** (dense table) on a route, incident **detail** on its own route
-(`/incidentes/[number]`) with the record + activity stream + AI copilot panel.
+Modeled on **ServiceNow's Agent / Service Operations Workspace** (verified
+against real screenshots): a neutral app frame with a list, a record, and a
+contextual AI panel.
 
-- Left nav: Incidentes · Recorrências · Como funciona.
-- Responsive is structural: nav collapses to icons < lg; table → stacked cards on
-  mobile; the detail's copilot panel docks below the record on narrow screens.
-- Semantic z-index scale: base → sticky header → dropdown → drawer → modal → toast.
+App shell: **fixed left nav + top bar + content**.
+
+- Left nav: Incidentes · Recorrências · Como funciona (icons + labels; collapses
+  to icons < lg).
+- **Incident list** (`/incidentes`): dense ServiceNow-style table under a
+  condition/filter bar (state segmented control · service · search); columns
+  Number · Short description · Service · State · Priority · Opened.
+- **Incident detail** (`/incidentes/[number]`): the Agent-Workspace three-zone
+  shape — a sectioned two-column **record form** (read-only) in the center with a
+  tabbed area (Detalhes · Atividade), and the **AI copilot docked on the right**
+  (the "Agent Assist" slot), collapsing below the record < lg.
+
+Responsive is structural (collapse nav, stack the copilot, table → cards on
+mobile), never fluid typography. Semantic z-index scale: base → sticky header →
+dropdown → drawer → modal → toast.
+
+### Fidelity to ServiceNow (and the brand)
+
+The **structure, interactions and density** are faithful to ServiceNow (list +
+record + contextual AI panel; sectioned two-column form; tabbed activity stream;
+colored status). The **chrome stays neutral** (white/gray) exactly like the real
+Workspace; the indigo brand accent is reserved for primary/selected/links/AI —
+realistic, since enterprises theme their ServiceNow accent. It reads as "Banco
+Meridiano's ServiceNow", not a generic SaaS dashboard.
 
 ## Components (each needs default/hover/focus/active/disabled/loading/error)
 

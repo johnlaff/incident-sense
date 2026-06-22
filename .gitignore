@@ -51,3 +51,6 @@ tmp/
 .playwright-mcp/
 /cluster-reveal*.png
 /rag-flight.png
+/snow-research*.jpeg
+/proto-*.jpeg
+/insp-*.jpeg

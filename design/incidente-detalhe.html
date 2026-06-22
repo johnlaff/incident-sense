@@ -1,0 +1,251 @@
+<!doctype html>
+<!-- @dsCard group="Telas" -->
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>incident-sense · INC0053084</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="prototype.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="mark">M</span>
+          Banco Meridiano <small>· incident-sense</small>
+        </div>
+        <div class="grow"></div>
+        <div class="field-search search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input class="input" placeholder="Buscar incidentes, serviços…" />
+        </div>
+        <div class="avatar">AO</div>
+      </header>
+
+      <nav class="sidenav">
+        <div class="nav-label">Operações</div>
+        <a class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M3 9h18M8 14h8M8 17h5" />
+          </svg>
+          Incidentes
+        </a>
+        <a class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m12 3 9 4.5-9 4.5-9-4.5L12 3Z" />
+            <path d="m3 12 9 4.5 9-4.5M3 16.5 12 21l9-4.5" />
+          </svg>
+          Recorrências
+        </a>
+        <a class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 16v-4M12 8h.01" />
+          </svg>
+          Como funciona
+        </a>
+        <div class="nav-spacer"></div>
+        <div class="nav-foot">Dados sintéticos · banco fictício. Demo do workshop.</div>
+      </nav>
+
+      <main class="main">
+        <div class="crumbs">
+          <a>Incidentes</a><span>/</span><span class="mono">INC0053084</span>
+        </div>
+
+        <div class="detail-grid">
+          <!-- Record -->
+          <div class="card">
+            <div class="record-head">
+              <div class="row">
+                <span class="num mono" style="font-size: 13px">INC0053084</span>
+                <span class="badge s-open"><span class="dot"></span>Aberto</span>
+                <span class="badge p2"><span class="dot"></span>Prioridade · Alta</span>
+              </div>
+              <h1>Pix confirmado para o cliente mas sem comprovante há 2h</h1>
+              <div class="meta">
+                PIX-Core · Service-Desk-N1 · aberto há 2 horas
+              </div>
+            </div>
+
+            <div class="tabs">
+              <div class="tab on">Detalhes</div>
+              <div class="tab">Atividade</div>
+            </div>
+
+            <div class="section">
+              <h3>Classificação</h3>
+              <div class="fields">
+                <div class="field">
+                  <label>Categoria</label><span class="val">Pagamentos</span>
+                </div>
+                <div class="field">
+                  <label>Subcategoria</label><span class="val">Pix</span>
+                </div>
+                <div class="field">
+                  <label>Serviço afetado (CI)</label>
+                  <span class="val mono" style="font-size: 13px">PIX-Core</span>
+                </div>
+                <div class="field">
+                  <label>Grupo de atendimento</label>
+                  <span class="val mono" style="font-size: 13px">Service-Desk-N1</span>
+                </div>
+                <div class="field"><label>Impacto</label><span class="val">Alto</span></div>
+                <div class="field"><label>Urgência</label><span class="val">Alta</span></div>
+              </div>
+            </div>
+
+            <div class="section" style="border-top: 1px solid var(--border)">
+              <h3>Descrição</h3>
+              <div class="field full">
+                <span class="val long">
+                  Cliente concluiu um Pix pelo app, o valor foi debitado, mas o
+                  comprovante não foi gerado e o status segue pendente há cerca de
+                  duas horas. Outros relatos parecidos chegando ao N1.
+                </span>
+              </div>
+              <div style="margin-top: 14px">
+                <span class="tag">demo</span><span class="tag">procedente</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Copilot -->
+          <aside class="copilot">
+            <div class="cop-head">
+              <span class="mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 3v3M5 8l2 2M19 8l-2 2" />
+                  <rect x="6" y="9" width="12" height="10" rx="3" />
+                  <path d="M10 14h4" />
+                </svg>
+              </span>
+              <div>
+                <div class="t">Copiloto de resolução</div>
+                <div class="s">RAG fundamentado · deepseek-v4</div>
+              </div>
+            </div>
+
+            <div class="cop-body">
+              <div class="bubble-user">Sugerir resolução para este incidente</div>
+
+              <div class="label-row">Pipeline</div>
+              <div class="trace">
+                <div class="step">
+                  <span class="ico done"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" /></svg
+                  ></span>
+                  <span class="lbl"
+                    ><b>Consulta resumida</b><br /><span class="q"
+                      >"Pix pendente, comprovante não gerado"</span
+                    ></span
+                  >
+                </div>
+                <div class="step">
+                  <span class="ico done"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" /></svg
+                  ></span>
+                  <span class="lbl"><b>Busca vetorial</b> · 5 vizinhos acima do limiar</span>
+                </div>
+                <div class="step">
+                  <span class="ico done"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" /></svg
+                  ></span>
+                  <span class="lbl"><b>Pós-filtro (LLM)</b> · 4 mantidos, 1 descartado</span>
+                </div>
+                <div class="step">
+                  <span class="ico run"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M12 3a9 9 0 1 0 9 9" /></svg
+                  ></span>
+                  <span class="lbl"><b>Classificação &amp; sugestão</b></span>
+                </div>
+              </div>
+
+              <div class="label-row">Incidentes consultados — clique para abrir e conferir</div>
+              <div class="cands">
+                <div class="cand">
+                  <span class="num">INC0051986</span>
+                  <span class="cdesc">Pix pendente sem comprovante gerado</span>
+                  <span class="sim">0.71</span>
+                  <span class="pill pill-keep">mantido</span>
+                  <span class="open"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                      <path d="M7 17 17 7M9 7h8v8" /></svg
+                  ></span>
+                </div>
+                <div class="cand">
+                  <span class="num">INC0051908</span>
+                  <span class="cdesc">Comprovante não gerado em transações Pix</span>
+                  <span class="sim">0.64</span>
+                  <span class="pill pill-keep">mantido</span>
+                  <span class="open"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                      <path d="M7 17 17 7M9 7h8v8" /></svg
+                  ></span>
+                </div>
+                <div class="cand">
+                  <span class="num">INC0051947</span>
+                  <span class="cdesc">Pagamentos Pix pendentes e sem comprovante</span>
+                  <span class="sim">0.62</span>
+                  <span class="pill pill-keep">mantido</span>
+                  <span class="open"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                      <path d="M7 17 17 7M9 7h8v8" /></svg
+                  ></span>
+                </div>
+                <div class="cand dropped">
+                  <span class="num">INC0052071</span>
+                  <span class="cdesc">Banco de dados do internet banking lento</span>
+                  <span class="sim">0.58</span>
+                  <span class="pill pill-drop">descartado</span>
+                  <span class="open"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                      <path d="M7 17 17 7M9 7h8v8" /></svg
+                  ></span>
+                </div>
+              </div>
+
+              <div class="verdict">
+                Classificação: <span class="b">PROCEDENTE</span>
+              </div>
+
+              <div class="suggestion">
+                <h4>Sugestão fundamentada</h4>
+                Há saturação intermitente no <b>PIX-Core</b> e lentidão nas chamadas
+                ao DICT. Recomendado: (1) aumentar temporariamente os workers do
+                PIX-Core <a class="cite">INC0051986</a>; (2) ajustar o timeout do
+                cliente HTTP para o DICT <a class="cite">INC0051908</a>; (3)
+                reprocessar as transações pendentes pela rotina de conciliação
+                <a class="cite">INC0051947</a> e reforçar a monitoração de latência.
+              </div>
+
+              <div class="cop-actions">
+                <button class="btn btn-primary btn-sm">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                  Inserir nas notas de resolução
+                </button>
+                <button class="btn btn-outline btn-sm">Copiar</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

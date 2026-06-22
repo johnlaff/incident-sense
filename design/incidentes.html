@@ -1,0 +1,246 @@
+<!doctype html>
+<!-- @dsCard group="Telas" -->
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>incident-sense · Incidentes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="prototype.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="brand">
+          <span class="mark">M</span>
+          Banco Meridiano <small>· incident-sense</small>
+        </div>
+        <div class="grow"></div>
+        <div class="field-search search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input class="input" placeholder="Buscar incidentes, serviços…" />
+        </div>
+        <div class="avatar">AO</div>
+      </header>
+
+      <!-- Side nav -->
+      <nav class="sidenav">
+        <div class="nav-label">Operações</div>
+        <a class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M3 9h18M8 14h8M8 17h5" />
+          </svg>
+          Incidentes
+        </a>
+        <a class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m12 3 9 4.5-9 4.5-9-4.5L12 3Z" />
+            <path d="m3 12 9 4.5 9-4.5M3 16.5 12 21l9-4.5" />
+          </svg>
+          Recorrências
+        </a>
+        <a class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 16v-4M12 8h.01" />
+          </svg>
+          Como funciona
+        </a>
+        <div class="nav-spacer"></div>
+        <div class="nav-foot">
+          Dados sintéticos · banco fictício. Demo do workshop.
+        </div>
+      </nav>
+
+      <!-- Main -->
+      <main class="main">
+        <div class="page-head">
+          <h1>Incidentes</h1>
+          <span class="count">431 chamados · 105 abertos</span>
+        </div>
+
+        <div class="toolbar">
+          <div class="segmented">
+            <button>Abertos</button>
+            <button>Resolvidos</button>
+            <button class="on">Todos</button>
+          </div>
+          <select class="select">
+            <option>Todos os serviços</option>
+            <option>PIX-Core</option>
+            <option>App-Mobile</option>
+          </select>
+          <div class="grow"></div>
+          <div class="field-search" style="width: 260px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input class="input" placeholder="Filtrar nesta lista…" />
+          </div>
+        </div>
+
+        <div class="card">
+          <table class="list">
+            <thead>
+              <tr>
+                <th style="width: 116px">Número</th>
+                <th>Descrição</th>
+                <th style="width: 150px">Serviço</th>
+                <th style="width: 132px">Estado</th>
+                <th style="width: 110px">Prioridade</th>
+                <th style="width: 92px">Aberto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="sel">
+                <td class="num">INC0053084</td>
+                <td class="desc">Pix sem comprovante há 2h</td>
+                <td class="svc">PIX-Core</td>
+                <td>
+                  <span class="badge s-open"><span class="dot"></span>Aberto</span>
+                </td>
+                <td><span class="badge p2"><span class="dot"></span>Alta</span></td>
+                <td class="when">há 2h</td>
+              </tr>
+              <tr>
+                <td class="num">INC0052761</td>
+                <td class="desc">App não loga após atualização</td>
+                <td class="svc">App-Mobile</td>
+                <td>
+                  <span class="badge s-progress"><span class="dot"></span>Em andamento</span>
+                </td>
+                <td><span class="badge p1"><span class="dot"></span>Crítica</span></td>
+                <td class="when">há 5h</td>
+              </tr>
+              <tr>
+                <td class="num">INC0051968</td>
+                <td class="desc">Latência em transferências Pix</td>
+                <td class="svc">PIX-Core</td>
+                <td>
+                  <span class="badge s-resolved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" />
+                    </svg>
+                    Resolvido
+                  </span>
+                </td>
+                <td><span class="badge p2"><span class="dot"></span>Alta</span></td>
+                <td class="when">2 dias</td>
+              </tr>
+              <tr>
+                <td class="num">INC0052390</td>
+                <td class="desc">Saldo diverge do extrato</td>
+                <td class="svc">Extrato-Service</td>
+                <td>
+                  <span class="badge s-progress"><span class="dot"></span>Em andamento</span>
+                </td>
+                <td><span class="badge p3"><span class="dot"></span>Moderada</span></td>
+                <td class="when">há 8h</td>
+              </tr>
+              <tr>
+                <td class="num">INC0044527</td>
+                <td class="desc">Boleto sem código de barras</td>
+                <td class="svc">Boleto-Service</td>
+                <td>
+                  <span class="badge s-resolved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" />
+                    </svg>
+                    Resolvido
+                  </span>
+                </td>
+                <td><span class="badge p3"><span class="dot"></span>Moderada</span></td>
+                <td class="when">3 dias</td>
+              </tr>
+              <tr>
+                <td class="num">INC0051120</td>
+                <td class="desc">Cartão recusado mesmo com saldo</td>
+                <td class="svc">Cartoes-Autorizador</td>
+                <td>
+                  <span class="badge s-resolved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" />
+                    </svg>
+                    Resolvido
+                  </span>
+                </td>
+                <td><span class="badge p2"><span class="dot"></span>Alta</span></td>
+                <td class="when">1 dia</td>
+              </tr>
+              <tr>
+                <td class="num">INC0049882</td>
+                <td class="desc">Open Finance fora do ar</td>
+                <td class="svc">OpenFinance-Gateway</td>
+                <td>
+                  <span class="badge s-hold"><span class="dot"></span>Em espera</span>
+                </td>
+                <td><span class="badge p3"><span class="dot"></span>Moderada</span></td>
+                <td class="when">1 dia</td>
+              </tr>
+              <tr>
+                <td class="num">INC0050431</td>
+                <td class="desc">Fila de mensageria travada (lag crescente)</td>
+                <td class="svc">Mensageria-Kafka</td>
+                <td>
+                  <span class="badge s-resolved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" />
+                    </svg>
+                    Resolvido
+                  </span>
+                </td>
+                <td><span class="badge p3"><span class="dot"></span>Moderada</span></td>
+                <td class="when">4 dias</td>
+              </tr>
+              <tr>
+                <td class="num">INC0048210</td>
+                <td class="desc">Internet banking lento ao abrir extrato</td>
+                <td class="svc">Internet-Banking-Web</td>
+                <td>
+                  <span class="badge s-resolved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" />
+                    </svg>
+                    Resolvido
+                  </span>
+                </td>
+                <td><span class="badge p2"><span class="dot"></span>Alta</span></td>
+                <td class="when">6 dias</td>
+              </tr>
+              <tr>
+                <td class="num">INC0047733</td>
+                <td class="desc">VPN não conecta no escritório</td>
+                <td class="svc">VPN-Acesso</td>
+                <td>
+                  <span class="badge s-resolved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="m5 12 5 5L20 7" />
+                    </svg>
+                    Resolvido
+                  </span>
+                </td>
+                <td><span class="badge p4"><span class="dot"></span>Baixa</span></td>
+                <td class="when">2 dias</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="table-foot">
+            <span>Mostrando 1–10 de 431</span>
+            <span>Página 1 de 44</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
