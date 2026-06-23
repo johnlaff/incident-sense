@@ -1,9 +1,8 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"ui-sans-serif, system-ui, sans-serif","fontSize":"15px","primaryColor":"#eef0fb","primaryBorderColor":"#7b6fe0","primaryTextColor":"#2a2740","lineColor":"#a79fda","secondaryColor":"#f4f5f9","tertiaryColor":"#ffffff"}}}%%
 flowchart LR
-  U["Analista"] --> W["Next.js 16<br/>Workspace ITSM"]
-  W -- "/api/incidents" --> API["FastAPI"]
-  W -- "/api/suggest" --> API
-  W -- "/api/clusters" --> API
-  API -- "busca vetorial" --> Q[("Qdrant<br/>vetores")]
-  API -- "recorrencias" --> P["clusters.json<br/>(pre-computado)"]
-  API -- "LLM" --> OR["OpenRouter"]
-  API -- "embeddings" --> OA["OpenAI"]
+  U(["Analista"]) --> W["Next.js 16<br/>Workspace ITSM"]
+  W -->|"HTTP · JSON"| API["FastAPI<br/>/api/incidents<br/>/api/suggest<br/>/api/clusters"]
+  API -->|"busca vetorial"| Q[("Qdrant")]
+  API -->|"recorrências"| P["clusters.json<br/>pré-computado"]
+  API -->|"LLM"| OR["OpenRouter"]
+  API -->|"embeddings"| OA["OpenAI"]

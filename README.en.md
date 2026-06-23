@@ -10,7 +10,7 @@
 
 `Python 3.12` · `FastAPI` · `LlamaIndex` · `Qdrant` · `BERTopic` &nbsp;|&nbsp; `Next.js 16` · `React 19` · `TypeScript` · `Tailwind v4`
 
-🇧🇷 [Versão em português](README.md)
+<sub>🌐 <a href="README.md">Português</a> · <b>English</b></sub>
 
 </div>
 
@@ -44,10 +44,13 @@ with a copilot that **shows its work** instead of asking for blind trust.
 
 ## 🎬 Demo
 
-| Recurrence detection (clustering) | Resolution suggestion (RAG) |
-| :---: | :---: |
-| ![Recurrence map](docs/assets/cluster-reveal.png) | ![Aurora suggestion with citations](docs/assets/rag-suggest.png) |
-| Incidents grouped by root cause, with AI-generated labels. | Aurora suggests a resolution and **cites** the incidents behind it — clickable to inspect. |
+**Recurrences** — incidents fly into their root-cause groups, with AI-generated labels:
+
+<div align="center"><img src="docs/assets/recurrences.gif" alt="Animated recurrence map: points group by root cause and a cluster is selected for inspection" width="900"></div>
+
+**Aurora copilot** — summarizes, retrieves, classifies and suggests a resolution, **citing** its sources (clickable):
+
+<div align="center"><img src="docs/assets/aurora.gif" alt="Aurora copilot producing a grounded suggestion with clickable [INC] citations and the list of sources it consulted" width="900"></div>
 
 ## 🚀 Get started in one command
 
@@ -77,12 +80,9 @@ it first **retrieves** similar real cases and only then **writes** the suggestio
 from them. Each new ticket goes through six steps, and the answer always carries
 its source:
 
-<div align="center">
-  <img src="docs/assets/rag-pipeline-en.svg" alt="Six-step RAG pipeline: summarize, vectorize, retrieve resolved neighbors, post-filter, classify and suggest with citations" />
-</div>
+The **How it works** screen animates this pipeline live — the incident's summary flows through the six steps:
 
-<!-- Diagram versioned in docs/diagrams/rag-en.mmd and rendered to SVG
-     (renders in any client: web, the GitHub app, npm, IDEs). -->
+<div align="center"><img src="docs/assets/howitworks-rag.gif" alt="RAG pipeline animation: the ticket flows through summarize, vectorize, retrieve resolved neighbors, post-filter, classify and suggest with citations" width="900"></div>
 
 Step **5** is what avoids noise: a request like _"I forgot my password"_ is
 classified as **improcedente** (self-service, not an incident) instead of being
@@ -93,8 +93,11 @@ forced a technical resolution. Details in [docs/rag-flow.md](docs/rag-flow.md).
 The same vectors that measure similarity also reveal **groups**. We reduce
 incidents to a 2D map (UMAP), cluster the nearby ones by root cause (HDBSCAN),
 and let an LLM **name** each group. The result is precomputed and versioned, so
-the map opens instantly and identically for everyone. Details in
-[docs/clustering-flow.md](docs/clustering-flow.md).
+the map opens instantly and identically for everyone.
+
+<div align="center"><img src="docs/assets/howitworks-clustering.gif" alt="Clustering animation: scattered points move closer by similarity and form root-cause groups, while isolated cases stay out" width="900"></div>
+
+Details in [docs/clustering-flow.md](docs/clustering-flow.md).
 
 ## 🏗️ Architecture
 
@@ -144,4 +147,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for all commands.
 
 ## 📄 License
 
-[MIT](LICENSE).
+Released under the [**MIT**](LICENSE) license — free to study, use and adapt. The
+data is **synthetic and fictional**: no real information is used or distributed.

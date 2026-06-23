@@ -10,7 +10,7 @@
 
 `Python 3.12` · `FastAPI` · `LlamaIndex` · `Qdrant` · `BERTopic` &nbsp;|&nbsp; `Next.js 16` · `React 19` · `TypeScript` · `Tailwind v4`
 
-🇺🇸 [English version](README.en.md)
+<sub>🌐 <b>Português</b> · <a href="README.en.md">English</a></sub>
 
 </div>
 
@@ -44,10 +44,13 @@ mas com um copiloto que **mostra o trabalho** em vez de pedir confiança cega.
 
 ## 🎬 Demo
 
-| Detecção de recorrência (clustering) | Sugestão de resolução (RAG) |
-| :---: | :---: |
-| ![Mapa de recorrência](docs/assets/cluster-reveal.png) | ![Sugestão da Aurora com citações](docs/assets/rag-suggest.png) |
-| Incidentes agrupados por causa raiz, com rótulos gerados por IA. | A Aurora sugere uma resolução e **cita** os incidentes que a embasam — clicáveis para inspeção. |
+**Recorrências** — os incidentes voam para seus grupos por causa raiz, com rótulos gerados pela IA:
+
+<div align="center"><img src="docs/assets/recurrences.gif" alt="Mapa de recorrências animado: os pontos se agrupam por causa raiz e um cluster é selecionado para inspeção" width="900"></div>
+
+**Copiloto Aurora** — resume, busca, classifica e sugere uma resolução, **citando** as fontes (clicáveis):
+
+<div align="center"><img src="docs/assets/aurora.gif" alt="Copiloto Aurora gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="900"></div>
 
 ## 🚀 Comece em um comando
 
@@ -77,12 +80,9 @@ significa que a IA **não inventa** a resposta: ela primeiro **busca** casos rea
 parecidos e só então **redige** a sugestão a partir deles. Cada chamado novo
 passa por seis etapas, e a resposta sempre carrega a fonte:
 
-<div align="center">
-  <img src="docs/assets/rag-pipeline-pt.svg" alt="Pipeline RAG em 6 etapas: resumir, vetorizar, buscar vizinhos resolvidos, pós-filtro, classificar e sugerir com citações" />
-</div>
+A própria tela **Como funciona** anima esse pipeline ao vivo — o resumo do incidente percorre as seis etapas:
 
-<!-- Diagrama versionado em docs/diagrams/rag-pt.mmd e renderizado para SVG
-     (renderiza em qualquer cliente: web, app do GitHub, npm, IDEs). -->
+<div align="center"><img src="docs/assets/howitworks-rag.gif" alt="Animação do pipeline RAG: o chamado flui por resumir, vetorizar, buscar vizinhos resolvidos, pós-filtro, classificar e sugerir com citações" width="900"></div>
 
 O passo **5** é o que evita ruído: um pedido como _"esqueci minha senha"_ é
 classificado como **improcedente** (autoatendimento, não um incidente), em vez de
@@ -94,8 +94,11 @@ receber uma resolução técnica forçada. Detalhes em
 Os mesmos vetores que medem semelhança também revelam **grupos**. Reduzimos os
 incidentes a um mapa 2D (UMAP), agrupamos os próximos por causa raiz (HDBSCAN) e
 deixamos um LLM **nomear** cada grupo. O resultado é pré-computado e versionado,
-então o mapa abre instantâneo e idêntico para todos. Detalhes em
-[docs/clustering-flow.md](docs/clustering-flow.md).
+então o mapa abre instantâneo e idêntico para todos.
+
+<div align="center"><img src="docs/assets/howitworks-clustering.gif" alt="Animação do clustering: pontos espalhados se aproximam por semelhança e formam grupos por causa raiz, enquanto os casos isolados ficam de fora" width="900"></div>
+
+Detalhes em [docs/clustering-flow.md](docs/clustering-flow.md).
 
 ## 🏗️ Arquitetura
 
@@ -145,4 +148,6 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md) para todos os comandos.
 
 ## 📄 Licença
 
-[MIT](LICENSE).
+Código sob a licença [**MIT**](LICENSE) — livre para estudar, usar e adaptar. Os
+dados são **sintéticos e fictícios**: nenhuma informação real é usada ou
+distribuída.

@@ -1,7 +1,0 @@
-flowchart LR
-  A["Incidente novo<br/>(linguagem natural)"] --> B["1 · Resumir<br/>a consulta"]
-  B --> C["2 · Vetorizar<br/>(embedding)"]
-  C --> D["3 · Buscar vizinhos<br/>resolvidos (Qdrant)"]
-  D --> E["4 · Pós-filtro<br/>(LLM relê e descarta)"]
-  E --> F["5 · Classificar<br/>PROCEDENTE / IMPROCEDENTE"]
-  F --> G["6 · Sugerir<br/>com citações [INC…]"]
