@@ -1,4 +1,31 @@
-import type { ClustersResponse, Health, SuggestRequest, SuggestResponse } from "./types";
+import type {
+  ClustersResponse,
+  Health,
+  IncidentDetail,
+  IncidentListResponse,
+  IncidentStateGroup,
+  SuggestRequest,
+  SuggestResponse,
+} from "./types";
+
+export interface IncidentQuery {
+  state?: IncidentStateGroup;
+  service?: string | null;
+  q?: string | null;
+  limit?: number;
+  offset?: number;
+}
+
+function buildQuery(params: IncidentQuery): string {
+  const search = new URLSearchParams();
+  if (params.state && params.state !== "all") search.set("state", params.state);
+  if (params.service) search.set("service", params.service);
+  if (params.q) search.set("q", params.q);
+  if (params.limit != null) search.set("limit", String(params.limit));
+  if (params.offset) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  return qs ? `?${qs}` : "";
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -41,4 +68,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  listIncidents: (params: IncidentQuery = {}) =>
+    request<IncidentListResponse>(`/api/incidents${buildQuery(params)}`),
+  getIncident: (number: string) =>
+    request<IncidentDetail>(`/api/incidents/${encodeURIComponent(number)}`),
 };
+
+export { buildQuery };
