@@ -107,4 +107,8 @@ export interface IncidentDetail {
   close_code: string | null;
   work_notes: string | null;
   tags: string[];
+  // Recurrence cluster, joined server-side from the clustering result (nullable).
+  cluster_id: number | null;
+  cluster_label: string | null;
+  is_outlier: boolean | null;
 }
