@@ -50,7 +50,7 @@ mas com um copiloto que **mostra o trabalho** em vez de pedir confiança cega.
 
 **Copiloto Aurora** — resume, busca, classifica e sugere uma resolução, **citando** as fontes (clicáveis):
 
-<div align="center"><img src="docs/assets/aurora.gif" alt="Copiloto Aurora gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="900"></div>
+<div align="center"><img src="docs/assets/aurora.gif" alt="Copiloto Aurora gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="680"></div>
 
 ## 🚀 Comece em um comando
 

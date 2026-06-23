@@ -50,7 +50,7 @@ with a copilot that **shows its work** instead of asking for blind trust.
 
 **Aurora copilot** — summarizes, retrieves, classifies and suggests a resolution, **citing** its sources (clickable):
 
-<div align="center"><img src="docs/assets/aurora.gif" alt="Aurora copilot producing a grounded suggestion with clickable [INC] citations and the list of sources it consulted" width="900"></div>
+<div align="center"><img src="docs/assets/aurora.gif" alt="Aurora copilot producing a grounded suggestion with clickable [INC] citations and the list of sources it consulted" width="680"></div>
 
 ## 🚀 Get started in one command
 
