@@ -16,11 +16,16 @@ rejecting logins, boletos failing to generate — operations asks two questions:
 
 **incident-sense** tackles both:
 
-- **Resolution suggestion (RAG):** for a new incident, retrieve similar past
-  **resolved** incidents and suggest a **grounded** resolution, showing which
-  tickets informed it and why.
+- **Resolution suggestion (RAG):** for a new incident, the **Aurora** copilot
+  retrieves similar past **resolved** incidents and suggests a **grounded**
+  resolution — every suggestion **cites** the tickets it relied on, and you can
+  **open each cited incident right there** to verify the grounding.
 - **Recurrence detection (clustering):** cluster recent incidents and surface
   recurring problems on an **animated map**, with AI-generated cluster names.
+
+All inside a **ServiceNow-faithful** workspace: browse every incident, filter,
+open a record, talk to Aurora, and watch the RAG and clustering pipelines step
+through — in light or dark theme, with ⌘K for everything.
 
 > Everything uses **synthetic** data for a **fictional** bank ("Banco
 > Meridiano"). No real data, no real company.
@@ -32,8 +37,9 @@ rejecting logins, boletos failing to generate — operations asks two questions:
 | ![Recurrence map](docs/assets/cluster-reveal.png) | ![RAG suggestion](docs/assets/rag-suggest.png) |
 
 On the left, recent incidents grouped on an animated map with AI-generated
-cluster names. On the right, a new incident "flies" to its closest neighbors
-while the panel streams each reasoning step.
+cluster names. On the right, the Aurora copilot suggests a grounded resolution
+and **cites** the incidents behind it — clickable to inspect, without leaving
+the screen.
 
 ## Quickstart (one command)
 

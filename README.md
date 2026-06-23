@@ -16,12 +16,17 @@ login, o boleto não saindo — duas perguntas surgem na operação:
 
 O **incident-sense** ataca as duas:
 
-- **Sugestão de resolução (RAG):** para um novo incidente, recupera incidentes
-  passados **resolvidos** semelhantes e sugere uma resolução **fundamentada**,
-  mostrando em quais chamados se baseou e por quê.
+- **Sugestão de resolução (RAG):** para um novo incidente, o copiloto **Aurora**
+  recupera incidentes passados **resolvidos** semelhantes e sugere uma resolução
+  **fundamentada** — cada sugestão cita os chamados em que se baseou, e você pode
+  **abrir cada incidente citado ali mesmo** para conferir o embasamento.
 - **Detecção de recorrência (clustering):** agrupa os incidentes recentes e
   revela os problemas recorrentes num **mapa animado**, com nomes de grupo
   gerados por IA.
+
+Tudo numa estação de trabalho **fiel ao ServiceNow**: navegue por todos os
+incidentes, filtre, abra um registro, fale com a Aurora e visualize o passo a
+passo do RAG e do clustering — em tema claro ou escuro, com ⌘K para tudo.
 
 > Tudo com dados **sintéticos** de um banco **fictício** ("Banco Meridiano").
 > Nenhum dado real, nenhuma empresa real.
@@ -33,8 +38,8 @@ O **incident-sense** ataca as duas:
 | ![Mapa de recorrência](docs/assets/cluster-reveal.png) | ![Sugestão RAG](docs/assets/rag-suggest.png) |
 
 À esquerda, os incidentes recentes agrupados num mapa animado com nomes de grupo
-gerados por IA. À direita, um novo incidente "voa" até seus vizinhos mais
-parecidos enquanto o painel mostra cada passo do raciocínio.
+gerados por IA. À direita, o copiloto Aurora sugere uma resolução fundamentada e
+**cita** os incidentes que a embasam — clicáveis para inspeção, sem sair da tela.
 
 ## Começar (um comando)
 
