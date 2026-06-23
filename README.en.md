@@ -77,15 +77,12 @@ it first **retrieves** similar real cases and only then **writes** the suggestio
 from them. Each new ticket goes through six steps, and the answer always carries
 its source:
 
-```mermaid
-flowchart LR
-  A["New incident<br/>(natural language)"] --> B["1 · Summarize<br/>the query"]
-  B --> C["2 · Vectorize<br/>(embedding)"]
-  C --> D["3 · Retrieve<br/>resolved neighbors (Qdrant)"]
-  D --> E["4 · Post-filter<br/>(LLM re-reads, drops noise)"]
-  E --> F["5 · Classify<br/>PROCEDENTE / IMPROCEDENTE"]
-  F --> G["6 · Suggest<br/>with [INC…] citations"]
-```
+<div align="center">
+  <img src="docs/assets/rag-pipeline-en.svg" alt="Six-step RAG pipeline: summarize, vectorize, retrieve resolved neighbors, post-filter, classify and suggest with citations" />
+</div>
+
+<!-- Diagram versioned in docs/diagrams/rag-en.mmd and rendered to SVG
+     (renders in any client: web, the GitHub app, npm, IDEs). -->
 
 Step **5** is what avoids noise: a request like _"I forgot my password"_ is
 classified as **improcedente** (self-service, not an incident) instead of being
@@ -101,17 +98,9 @@ the map opens instantly and identically for everyone. Details in
 
 ## 🏗️ Architecture
 
-```mermaid
-flowchart LR
-  U["👤 Analyst"] --> W["Next.js 16<br/>ITSM workspace"]
-  W -- "/api/incidents" --> API["FastAPI"]
-  W -- "/api/suggest" --> API
-  W -- "/api/clusters" --> API
-  API -- "vector search" --> Q[("Qdrant<br/>vectors")]
-  API -- "recurrences" --> P["clusters.json<br/>(precomputed)"]
-  API -- "LLM" --> OR["OpenRouter"]
-  API -- "embeddings" --> OA["OpenAI"]
-```
+<div align="center">
+  <img src="docs/assets/architecture-en.svg" alt="Architecture: the analyst uses the Next.js workspace, which calls the FastAPI backend; the API uses Qdrant for vector search, the precomputed clusters.json for recurrences, and OpenRouter/OpenAI for the LLM and embeddings" />
+</div>
 
 | Layer | Stack |
 | --- | --- |

@@ -1,0 +1,7 @@
+flowchart LR
+  A["New incident<br/>(natural language)"] --> B["1 · Summarize<br/>the query"]
+  B --> C["2 · Vectorize<br/>(embedding)"]
+  C --> D["3 · Retrieve resolved<br/>neighbors (Qdrant)"]
+  D --> E["4 · Post-filter<br/>(LLM re-reads, drops noise)"]
+  E --> F["5 · Classify<br/>PROCEDENTE / IMPROCEDENTE"]
+  F --> G["6 · Suggest<br/>with [INC…] citations"]

@@ -77,15 +77,12 @@ significa que a IA **não inventa** a resposta: ela primeiro **busca** casos rea
 parecidos e só então **redige** a sugestão a partir deles. Cada chamado novo
 passa por seis etapas, e a resposta sempre carrega a fonte:
 
-```mermaid
-flowchart LR
-  A["Incidente novo<br/>(linguagem natural)"] --> B["1 · Resumir<br/>a consulta"]
-  B --> C["2 · Vetorizar<br/>(embedding)"]
-  C --> D["3 · Buscar vizinhos<br/>resolvidos (Qdrant)"]
-  D --> E["4 · Pós-filtro<br/>(LLM relê e descarta)"]
-  E --> F["5 · Classificar<br/>PROCEDENTE / IMPROCEDENTE"]
-  F --> G["6 · Sugerir<br/>com citações [INC…]"]
-```
+<div align="center">
+  <img src="docs/assets/rag-pipeline-pt.svg" alt="Pipeline RAG em 6 etapas: resumir, vetorizar, buscar vizinhos resolvidos, pós-filtro, classificar e sugerir com citações" />
+</div>
+
+<!-- Diagrama versionado em docs/diagrams/rag-pt.mmd e renderizado para SVG
+     (renderiza em qualquer cliente: web, app do GitHub, npm, IDEs). -->
 
 O passo **5** é o que evita ruído: um pedido como _"esqueci minha senha"_ é
 classificado como **improcedente** (autoatendimento, não um incidente), em vez de
@@ -102,17 +99,9 @@ então o mapa abre instantâneo e idêntico para todos. Detalhes em
 
 ## 🏗️ Arquitetura
 
-```mermaid
-flowchart LR
-  U["👤 Analista"] --> W["Next.js 16<br/>Workspace ITSM"]
-  W -- "/api/incidents" --> API["FastAPI"]
-  W -- "/api/suggest" --> API
-  W -- "/api/clusters" --> API
-  API -- "busca vetorial" --> Q[("Qdrant<br/>vetores")]
-  API -- "recorrências" --> P["clusters.json<br/>(pré-computado)"]
-  API -- "LLM" --> OR["OpenRouter"]
-  API -- "embeddings" --> OA["OpenAI"]
-```
+<div align="center">
+  <img src="docs/assets/architecture-pt.svg" alt="Arquitetura: o analista usa o workspace Next.js, que chama a API FastAPI; a API usa Qdrant para busca vetorial, o clusters.json pré-computado para recorrências, e OpenRouter/OpenAI para LLM e embeddings" />
+</div>
 
 | Camada | Stack |
 | --- | --- |

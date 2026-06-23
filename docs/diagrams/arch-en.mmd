@@ -1,0 +1,9 @@
+flowchart LR
+  U["Analyst"] --> W["Next.js 16<br/>ITSM workspace"]
+  W -- "/api/incidents" --> API["FastAPI"]
+  W -- "/api/suggest" --> API
+  W -- "/api/clusters" --> API
+  API -- "vector search" --> Q[("Qdrant<br/>vectors")]
+  API -- "recurrences" --> P["clusters.json<br/>(precomputed)"]
+  API -- "LLM" --> OR["OpenRouter"]
+  API -- "embeddings" --> OA["OpenAI"]
