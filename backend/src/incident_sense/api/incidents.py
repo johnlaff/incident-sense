@@ -12,8 +12,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from incident_sense.data.repository import IncidentRepository, StateGroup, build_repository
-from incident_sense.models import Incident
-from incident_sense.models.incident_list import IncidentListResponse
+from incident_sense.models.incident_list import IncidentDetail, IncidentListResponse
 
 router = APIRouter(tags=["incidents"])
 
@@ -37,20 +36,20 @@ def list_incidents(
     state: StateGroup = "all",
     service: Annotated[str | None, Query(description="Filter by affected service.")] = None,
     q: Annotated[str | None, Query(description="Search number/description.")] = None,
-    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    limit: Annotated[int, Query(ge=1, le=500)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> IncidentListResponse:
     """List incidents, filtered by state group, service and a text query."""
     return repo.list(state_group=state, service=service, query=q, limit=limit, offset=offset)
 
 
-@router.get("/incidents/{number}", response_model=Incident)
-def get_incident(number: str, repo: RepoDep) -> Incident:
-    """Return a single incident's full record, or 404."""
+@router.get("/incidents/{number}", response_model=IncidentDetail)
+def get_incident(number: str, repo: RepoDep) -> IncidentDetail:
+    """Return a single incident's full record (with its cluster), or 404."""
     incident = repo.get(number)
     if incident is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Incidente {number} não encontrado.",
         )
-    return incident
+    return IncidentDetail.from_incident(incident, repo.get_cluster(number))

@@ -54,3 +54,38 @@ class IncidentListResponse(BaseModel):
     services: list[str] = Field(description="Distinct affected services (for filtering).")
     open_count: int
     resolved_count: int
+
+
+class IncidentDetail(Incident):
+    """A full incident record plus its recurrence-cluster assignment.
+
+    The cluster fields are joined from the committed clustering result so the
+    record view can tie an incident to its recurrence group (and surface peers).
+    They are ``null`` when no clustering result is available for the incident.
+    """
+
+    cluster_id: int | None = Field(default=None, description="Recurrence cluster id, or null.")
+    cluster_label: str | None = Field(
+        default=None, description="Human-readable cluster name, or null."
+    )
+    is_outlier: bool | None = Field(
+        default=None, description="True when the incident is clustering noise."
+    )
+
+    @classmethod
+    def from_incident(cls, incident: Incident, point: object | None = None) -> IncidentDetail:
+        """Build a detail record, joining a cluster point when present.
+
+        ``point`` is a :class:`~incident_sense.models.cluster.ClusterPoint` (kept
+        loosely typed here to avoid a circular import); only its cluster fields
+        are read.
+        """
+        cluster_id = getattr(point, "cluster_id", None)
+        cluster_label = getattr(point, "cluster_label", None)
+        is_outlier = getattr(point, "is_outlier", None)
+        return cls(
+            **incident.model_dump(),
+            cluster_id=cluster_id,
+            cluster_label=cluster_label,
+            is_outlier=is_outlier,
+        )

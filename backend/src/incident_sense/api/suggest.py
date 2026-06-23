@@ -12,11 +12,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from incident_sense.config import get_settings
+from incident_sense.logging import get_logger
 from incident_sense.models import SuggestRequest, SuggestResponse
 from incident_sense.rag.clients import RagDeps, build_deps
 from incident_sense.rag.pipeline import run_suggestion
 
 router = APIRouter(tags=["suggest"])
+log = get_logger(__name__)
 
 
 def get_rag_deps() -> RagDeps:
@@ -37,5 +39,23 @@ def get_rag_deps() -> RagDeps:
 def suggest(
     request: SuggestRequest, deps: Annotated[RagDeps, Depends(get_rag_deps)]
 ) -> SuggestResponse:
-    """Classify a new incident and, if PROCEDENTE, suggest a grounded resolution."""
-    return run_suggestion(request, deps, get_settings())
+    """Classify a new incident and, if PROCEDENTE, suggest a grounded resolution.
+
+    Infrastructure failures (vector store down, AI provider error) are turned
+    into a clean, localized 502 so the UI can show a useful message and offer a
+    retry. Deliberate ``HTTPException``s (e.g. the 503 from ``get_rag_deps``)
+    pass through untouched; the true exception type is preserved in the log.
+    """
+    try:
+        return run_suggestion(request, deps, get_settings())
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001 — surface a clean error to the client.
+        log.error("suggest_failed", error=str(exc), error_type=type(exc).__name__)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "Não foi possível gerar a sugestão agora. Verifique se o Qdrant e os "
+                "provedores de IA estão disponíveis e tente novamente."
+            ),
+        ) from exc
