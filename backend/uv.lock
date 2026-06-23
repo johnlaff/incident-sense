@@ -157,10 +157,11 @@ wheels = [
 
 [[package]]
 name = "bertopic"
-version = "0.17.1"
+version = "0.17.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "hdbscan" },
+    { name = "llvmlite" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "plotly" },
@@ -169,9 +170,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "umap-learn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/88/6b/302ba293780fada7644f42e2e92aca6843b1a41831f9df48ae157f4b3b91/bertopic-0.17.1.tar.gz", hash = "sha256:603f7a3f209f0958668eed81732c091d1d9731f7182fe20c080c37961600dbba", size = 119921, upload-time = "2025-07-08T08:57:20.077Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/ab/358923a516216964e150af7176dd3ea13737ddd25503517104f5562e301f/bertopic-0.17.4.tar.gz", hash = "sha256:f92aa560cdf2bcbf9e22c8ee83dd3bfb225b8dc29381dec7327cc0b21bd852ad", size = 121632, upload-time = "2025-12-03T14:19:34.402Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/fd/38388b7b332ad8885d59d4c75ba0fe2cdc6cdcdb64f321725ab697f1cc3f/bertopic-0.17.1-py3-none-any.whl", hash = "sha256:ea71084299dd8fd741183e3e846d927dab6a73ac84fa2f46bbdc0f71afca2c3b", size = 153009, upload-time = "2025-07-08T08:57:15.909Z" },
+    { url = "https://files.pythonhosted.org/packages/81/d2/2eb2fec18b3d2cf487d5d1d9b484c6483c7f0f1a3c6f64e2bb9cb7972a3f/bertopic-0.17.4-py3-none-any.whl", hash = "sha256:0dbe7ee22c18fb76efe7f4fbf3a14b51c1e67d9fccc569e3f81e75b8f32646d1", size = 154669, upload-time = "2025-12-03T14:19:32.884Z" },
 ]
 
 [[package]]
@@ -669,7 +670,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "bertopic", marker = "extra == 'clustering'", specifier = ">=0.17" },
+    { name = "bertopic", marker = "extra == 'clustering'", specifier = ">=0.17.4" },
     { name = "faker", marker = "extra == 'gen'", specifier = ">=25.0" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "hdbscan", marker = "extra == 'clustering'", specifier = ">=0.8.40" },

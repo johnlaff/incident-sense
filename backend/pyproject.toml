@@ -46,7 +46,7 @@ dependencies = [
 # Recurrence clustering pipeline. Only needed to *recompute* the committed
 # clustering result (scripts/precompute.py), never to serve it.
 clustering = [
-    "bertopic>=0.17",
+    "bertopic>=0.17.4",
     "umap-learn>=0.5.7",
     "hdbscan>=0.8.40",
     "scikit-learn>=1.5",
