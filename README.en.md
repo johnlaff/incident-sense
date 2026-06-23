@@ -46,11 +46,11 @@ with a copilot that **shows its work** instead of asking for blind trust.
 
 **Recurrences** — incidents fly into their root-cause groups, with AI-generated labels:
 
-<div align="center"><img src="docs/assets/recurrences.gif" alt="Animated recurrence map: points group by root cause and a cluster is selected for inspection" width="900"></div>
+<div align="center"><img src="docs/assets/recurrences.webp" alt="Animated recurrence map: points group by root cause and a cluster is selected for inspection" width="720"></div>
 
 **Aurora copilot** — summarizes, retrieves, classifies and suggests a resolution, **citing** its sources (clickable):
 
-<div align="center"><img src="docs/assets/aurora.gif" alt="Aurora copilot producing a grounded suggestion with clickable [INC] citations and the list of sources it consulted" width="680"></div>
+<div align="center"><img src="docs/assets/aurora.webp" alt="Aurora copilot producing a grounded suggestion with clickable [INC] citations and the list of sources it consulted" width="440"></div>
 
 ## 🚀 Get started in one command
 
@@ -82,7 +82,7 @@ its source:
 
 The **How it works** screen animates this pipeline live — the incident's summary flows through the six steps:
 
-<div align="center"><img src="docs/assets/howitworks-rag.gif" alt="RAG pipeline animation: the ticket flows through summarize, vectorize, retrieve resolved neighbors, post-filter, classify and suggest with citations" width="900"></div>
+<div align="center"><img src="docs/assets/howitworks-rag.webp" alt="RAG pipeline animation: the ticket flows through summarize, vectorize, retrieve resolved neighbors, post-filter, classify and suggest with citations" width="900"></div>
 
 Step **5** is what avoids noise: a request like _"I forgot my password"_ is
 classified as **improcedente** (self-service, not an incident) instead of being
@@ -95,7 +95,7 @@ incidents to a 2D map (UMAP), cluster the nearby ones by root cause (HDBSCAN),
 and let an LLM **name** each group. The result is precomputed and versioned, so
 the map opens instantly and identically for everyone.
 
-<div align="center"><img src="docs/assets/howitworks-clustering.gif" alt="Clustering animation: scattered points move closer by similarity and form root-cause groups, while isolated cases stay out" width="900"></div>
+<div align="center"><img src="docs/assets/howitworks-clustering.webp" alt="Clustering animation: scattered points move closer by similarity and form root-cause groups, while isolated cases stay out" width="900"></div>
 
 Details in [docs/clustering-flow.md](docs/clustering-flow.md).
 

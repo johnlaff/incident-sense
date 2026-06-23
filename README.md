@@ -46,11 +46,11 @@ mas com um copiloto que **mostra o trabalho** em vez de pedir confiança cega.
 
 **Recorrências** — os incidentes voam para seus grupos por causa raiz, com rótulos gerados pela IA:
 
-<div align="center"><img src="docs/assets/recurrences.gif" alt="Mapa de recorrências animado: os pontos se agrupam por causa raiz e um cluster é selecionado para inspeção" width="900"></div>
+<div align="center"><img src="docs/assets/recurrences.webp" alt="Mapa de recorrências animado: os pontos se agrupam por causa raiz e um cluster é selecionado para inspeção" width="720"></div>
 
 **Copiloto Aurora** — resume, busca, classifica e sugere uma resolução, **citando** as fontes (clicáveis):
 
-<div align="center"><img src="docs/assets/aurora.gif" alt="Copiloto Aurora gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="680"></div>
+<div align="center"><img src="docs/assets/aurora.webp" alt="Copiloto Aurora gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="440"></div>
 
 ## 🚀 Comece em um comando
 
@@ -82,7 +82,7 @@ passa por seis etapas, e a resposta sempre carrega a fonte:
 
 A própria tela **Como funciona** anima esse pipeline ao vivo — o resumo do incidente percorre as seis etapas:
 
-<div align="center"><img src="docs/assets/howitworks-rag.gif" alt="Animação do pipeline RAG: o chamado flui por resumir, vetorizar, buscar vizinhos resolvidos, pós-filtro, classificar e sugerir com citações" width="900"></div>
+<div align="center"><img src="docs/assets/howitworks-rag.webp" alt="Animação do pipeline RAG: o chamado flui por resumir, vetorizar, buscar vizinhos resolvidos, pós-filtro, classificar e sugerir com citações" width="900"></div>
 
 O passo **5** é o que evita ruído: um pedido como _"esqueci minha senha"_ é
 classificado como **improcedente** (autoatendimento, não um incidente), em vez de
@@ -96,7 +96,7 @@ incidentes a um mapa 2D (UMAP), agrupamos os próximos por causa raiz (HDBSCAN) 
 deixamos um LLM **nomear** cada grupo. O resultado é pré-computado e versionado,
 então o mapa abre instantâneo e idêntico para todos.
 
-<div align="center"><img src="docs/assets/howitworks-clustering.gif" alt="Animação do clustering: pontos espalhados se aproximam por semelhança e formam grupos por causa raiz, enquanto os casos isolados ficam de fora" width="900"></div>
+<div align="center"><img src="docs/assets/howitworks-clustering.webp" alt="Animação do clustering: pontos espalhados se aproximam por semelhança e formam grupos por causa raiz, enquanto os casos isolados ficam de fora" width="900"></div>
 
 Detalhes em [docs/clustering-flow.md](docs/clustering-flow.md).
 
