@@ -23,7 +23,7 @@ authors = [{ name = "John Laff" }]
 dependencies = [
     # Web API
     "fastapi>=0.115",
-    "uvicorn[standard]>=0.30",
+    "uvicorn[standard]>=0.49.0",
     # Configuration & validation
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
