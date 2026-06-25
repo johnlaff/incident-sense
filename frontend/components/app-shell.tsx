@@ -69,6 +69,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [modKey, setModKey] = useState("Ctrl");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  // Opening the bell marks notifications as read, so the badge clears for good
+  // (these demo notifications are static, so none arrive afterwards).
+  const [notifRead, setNotifRead] = useState(false);
   const [peekId, setPeekId] = useState<string | null>(null);
   const [flashCite, setFlashCite] = useState<string | null>(null);
   const [autoSuggestFor, setAutoSuggestFor] = useState<string | null>(null);
@@ -260,12 +263,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="notif-wrap">
               <button
                 className={`icon-btn${notifOpen ? " on" : ""}`}
-                onClick={() => setNotifOpen((o) => !o)}
+                onClick={() => {
+                  if (!notifOpen) setNotifRead(true);
+                  setNotifOpen((o) => !o);
+                }}
                 title="Notificações"
                 aria-label="Notificações"
               >
                 <Icons.bell />
-                {!notifOpen && items.length > 0 ? <span className="notif-dot" /> : null}
+                {!notifRead && items.length > 0 ? <span className="notif-dot" /> : null}
               </button>
               {notifOpen ? (
                 <NotificationsMenu
