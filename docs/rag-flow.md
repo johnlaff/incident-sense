@@ -15,7 +15,7 @@ flowchart TD
     C --> D[3. Pré-filtro por metadados]
     D --> E[4. Busca vetorial top-k]
     E --> F[5. Pós-filtro por LLM]
-    F --> G[6. Classificar PROCEDENTE/IMPROCEDENTE]
+    F --> G[6. Classificar: é um incidente?]
     G --> H[7. Gerar sugestão fundamentada]
     H --> R[8. Responder com tudo + scores]
 ```
@@ -29,13 +29,21 @@ flowchart TD
    `EXAMPLE_MIN_SIMILARITY`.
 5. **Pós-filtro por LLM** (um _node postprocessor_ do LlamaIndex): descarta os
    falsos positivos da busca.
-6. **Classificar** como `PROCEDENTE` (existe resolução conhecida aplicável) ou
-   `IMPROCEDENTE` (sem correspondência acionável), com saída estruturada.
-7. Se `PROCEDENTE`, **gerar a sugestão** fundamentada nas `resolution_notes` dos
-   candidatos sobreviventes, citando quais incidentes a embasaram.
+6. **Classificar** se o chamado é **um incidente de verdade** (`PROCEDENTE`) ou
+   **não é** (`IMPROCEDENTE` — autoatendimento, dúvida, redefinição de senha),
+   com saída estruturada. O critério é o próprio chamado e é **independente** de
+   haver casos parecidos.
+7. Se `PROCEDENTE` **e** houver candidatos sobreviventes, **gerar a sugestão**
+   fundamentada nas `resolution_notes` deles, citando quais incidentes a
+   embasaram. Um incidente real **sem** caso parecido volta sem sugestão
+   ("sem base ainda").
 8. **Responder** com a classificação, a sugestão (ou `null`) e **todos** os
    candidatos recuperados — com score de similaridade e se sobreviveram ao
    pós-filtro. Essa transparência é proposital (didática).
+
+> As três saídas que a UI distingue: **IMPROCEDENTE** (não é incidente),
+> **PROCEDENTE sem base** (incidente real, ainda sem caso parecido) e
+> **PROCEDENTE fundamentado** (incidente real com sugestão embasada).
 
 ## Por que essas escolhas
 
@@ -65,8 +73,22 @@ O dataset planta 3 incidentes para o demo ao vivo:
 - **PROCEDENTE** — casa fortemente com um arquétipo resolvido (ex.: timeout no
   Pix). Deve gerar uma sugestão fundamentada.
 - **Borderline** — ambíguo de propósito; mostra o pós-filtro trabalhando.
-- **IMPROCEDENTE** — sem correspondência operacional (ex.: "esqueci minha
-  senha"). Deve resultar em `IMPROCEDENTE`, sem sugestão.
+- **IMPROCEDENTE** — não é um incidente real: autoatendimento (ex.: "esqueci
+  minha senha"). Deve resultar em `IMPROCEDENTE`, sem sugestão.
+
+## Saída didática e modelos trocáveis
+
+A sugestão volta como **markdown simples** (uma frase de diagnóstico + lista
+numerada de ações), com tom **didático** e siglas explicadas na primeira menção
+(ex.: "DICT — Diretório de Identificadores de Contas Transacionais"). Isso é
+guiado por engenharia de contexto no prompt (um glossário do domínio). O
+frontend renderiza com `react-markdown` + `remark-gfm`, mantendo as citações
+`[INC…]` como **botões clicáveis** que abrem o incidente citado.
+
+O **modelo de IA é trocável por requisição**: o seletor da Aurora envia um id
+público que o backend mapeia para um modelo real da OpenRouter (`SELECTABLE_MODELS`
+em `config.py`); ids desconhecidos caem no modelo padrão. A forma de fundamentar
+a resposta (RAG com fontes) não muda — só o modelo que escreve.
 
 ## Testes
 

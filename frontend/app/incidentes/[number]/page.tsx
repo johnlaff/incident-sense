@@ -14,11 +14,12 @@ import { usePrefersReducedMotion } from "@/lib/motion";
 import {
   mapDetail,
   mapSuggest,
-  segmentsToPlain,
+  markdownToPlain,
   type CopilotResult,
   type DsState,
   type IncidentRecord,
 } from "@/lib/model";
+import { SuggestionMarkdown } from "@/components/markdown";
 
 type Tab = "detalhes" | "atividade" | "relacionados";
 
@@ -395,6 +396,8 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
 
 type StepStatus = "pending" | "run" | "done";
 
+// Each id maps, server-side, to a real OpenRouter model (see SELECTABLE_MODELS
+// in the backend). All were smoke-tested end to end before being exposed.
 const MODELS = [
   {
     id: "auto",
@@ -402,19 +405,24 @@ const MODELS = [
     desc: "A Aurora escolhe o melhor modelo para cada caso",
   },
   {
+    id: "gemini-flash",
+    name: "Gemini 2.5 Flash",
+    desc: "Rápido e didático, ótimo custo-benefício",
+  },
+  {
     id: "deepseek-v4",
-    name: "deepseek-v4",
+    name: "DeepSeek V4",
     desc: "Bom equilíbrio entre velocidade e qualidade",
   },
   {
-    id: "meridiano-local",
-    name: "Meridiano Local",
-    desc: "Roda nos servidores do banco. Os dados não saem.",
+    id: "qwen3-max",
+    name: "Qwen3 Max",
+    desc: "Raciocínio mais detalhado em vários idiomas",
   },
   {
-    id: "qwen3-max",
-    name: "Qwen3-Max",
-    desc: "Raciocínio mais detalhado, um pouco mais lento",
+    id: "claude-haiku",
+    name: "Claude Haiku 4.5",
+    desc: "Respostas rápidas e bem fundamentadas",
   },
 ];
 
@@ -551,6 +559,7 @@ function CopilotFab({
         category: record.category,
         cmdb_ci: record.service,
         priority: Number(record.priority.slice(1)),
+        model,
       });
       clearTimers();
       setStatus(steps.map((): StepStatus => "done"));
@@ -727,34 +736,21 @@ function CopilotFab({
                 : "Ainda sem um caso parecido"}
             </div>
             {result.verdict === "IMPROCEDENTE"
-              ? "A Aurora não encontrou base operacional para tratar isto como incidente. O caminho é orientar pelo fluxo de autoatendimento, sem abrir um incidente técnico."
-              : "Incidente válido, mas sem casos resolvidos parecidos para fundamentar uma sugestão automática. Trate manualmente e registre a resolução: ela passa a alimentar o copiloto para os próximos."}
+              ? "É um pedido de autoatendimento — por exemplo, redefinir a senha — e não a falha de um sistema. O melhor caminho é orientar o cliente pelo próprio autoatendimento, sem abrir um incidente técnico."
+              : "É um incidente de verdade, mas ainda não temos um caso parecido já resolvido para embasar uma sugestão automática. Resolva manualmente e registre a solução: ela passa a alimentar o copiloto nos próximos casos."}
           </div>
         ) : (
           <>
             {result.suggestion ? (
               <div className="suggestion cop-reveal" style={{ animationDelay: "140ms" }}>
                 <h4>Resolução sugerida</h4>
-                {result.suggestion.map((seg, i) =>
-                  "cite" in seg ? (
-                    <button
-                      key={i}
-                      type="button"
-                      className={`cite${flashCite === seg.cite ? " flash" : ""}`}
-                      onClick={() => peek(seg.cite)}
-                      aria-label={`Abrir incidente citado ${seg.cite}`}
-                    >
-                      {seg.cite}
-                    </button>
-                  ) : (
-                    <span key={i}>{seg.text}</span>
-                  ),
-                )}
+                <SuggestionMarkdown
+                  source={result.suggestion}
+                  onCite={peek}
+                  flashCite={flashCite}
+                />
                 <div className="sugg-foot">
                   Gerado por <b>{curModel.name}</b>. Fundamentado em casos resolvidos.
-                  {curModel.id === "meridiano-local"
-                    ? " Processado dentro do banco."
-                    : ""}
                 </div>
               </div>
             ) : null}
@@ -762,14 +758,14 @@ function CopilotFab({
               <div className="cop-actions">
                 <button
                   className="btn btn-primary btn-sm"
-                  onClick={() => onInsert(segmentsToPlain(result.suggestion ?? []))}
+                  onClick={() => onInsert(markdownToPlain(result.suggestion ?? ""))}
                 >
                   <Icons.insert />
                   Inserir nas notas
                 </button>
                 <button
                   className="btn btn-outline btn-sm"
-                  onClick={() => onCopy(segmentsToPlain(result.suggestion ?? []))}
+                  onClick={() => onCopy(markdownToPlain(result.suggestion ?? ""))}
                 >
                   <Icons.copy />
                   Copiar

@@ -84,9 +84,12 @@ The **How it works** screen animates this pipeline live — the incident's summa
 
 <div align="center"><img src="docs/assets/howitworks-rag.webp" alt="RAG pipeline animation: the ticket flows through summarize, vectorize, retrieve resolved neighbors, post-filter, classify and suggest with citations" width="900"></div>
 
-Step **5** is what avoids noise: a request like _"I forgot my password"_ is
-classified as **improcedente** (self-service, not an incident) instead of being
-forced a technical resolution. Details in [docs/rag-flow.md](docs/rag-flow.md).
+Step **6** is what avoids noise: the criterion is whether the ticket is **a real
+incident**. A request like _"I forgot my password"_ becomes **improcedente**
+(self-service, not a system failure) instead of being forced a technical
+resolution. The suggestion is written in **plain, didactic** language (acronyms
+spelled out) and the AI model is **switchable** in Aurora's picker. Details in
+[docs/rag-flow.md](docs/rag-flow.md).
 
 ### Recurrence detection — clustering
 
@@ -107,7 +110,7 @@ Details in [docs/clustering-flow.md](docs/clustering-flow.md).
 
 | Layer | Stack |
 | --- | --- |
-| **Frontend** | Next.js 16 (App Router) · React 19 · strict TypeScript · Tailwind v4 · Motion |
+| **Frontend** | Next.js 16 (App Router) · React 19 · strict TypeScript · Tailwind v4 · Motion · react-markdown |
 | **Backend** | Python 3.12 · FastAPI · LlamaIndex · Pydantic · structlog |
 | **AI** | OpenAI `text-embedding-3-large` (embeddings) · OpenRouter (LLM) |
 | **Data** | Qdrant (vector search) · BERTopic + UMAP + HDBSCAN (clustering) |

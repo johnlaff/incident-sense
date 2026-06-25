@@ -26,6 +26,7 @@ backend/
   data/                COMMITTED incidents.json + precomputed/ (embeddings, clusters)
   tests/               pytest (LLM/embeddings/Qdrant mocked)
 frontend/              Next.js (App Router) + TS + Tailwind + regl-scatterplot
+                       + react-markdown (Aurora's suggestion is rendered markdown)
 docs/                  PT-BR docs + decisions/ (ADRs)
 ```
 
@@ -58,3 +59,9 @@ Backend directly: `cd backend && uv run pytest|ruff check .|mypy src`.
   (`uv sync --all-extras`); the API runtime and tests don't need them.
 - The chat provider (OpenRouter default) may not support JSON mode; structured
   output is done via prompted JSON + pydantic validation.
+- Classification answers "is this a real incident?" (not "is there a base?"):
+  `IMPROCEDENTE` = self-service/non-incident; a real incident with no similar
+  case is `PROCEDENTE` with no suggestion. See `rag/pipeline.py:classify`.
+- The Aurora model picker is real: `POST /api/suggest` takes a `model` id mapped
+  to a real OpenRouter model via `SELECTABLE_MODELS` (`config.py`); unknown ids
+  fall back to the default.

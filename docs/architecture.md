@@ -58,9 +58,10 @@ flowchart TD
     C --> D[Pré-filtro por metadados]
     D --> E[Busca vetorial - Qdrant]
     E --> F[Pós-filtro por LLM]
-    F --> G{Classificar}
-    G -- PROCEDENTE --> H[Gerar sugestão fundamentada]
-    G -- IMPROCEDENTE --> I[Sem sugestão]
+    F --> G{É um incidente?}
+    G -- PROCEDENTE + base --> H[Gerar sugestão fundamentada]
+    G -- PROCEDENTE sem base --> J[Sem sugestão: tratar manualmente]
+    G -- IMPROCEDENTE --> I[Sem sugestão: autoatendimento]
 ```
 
 ### 2. Detecção de recorrência (clustering) — `GET /api/clusters`

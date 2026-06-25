@@ -11,6 +11,7 @@ it survived the post-filter — surfacing the reasoning is a goal of the project
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
@@ -35,14 +36,47 @@ _SUMMARIZE_SYSTEM = (
     "afetado). Responda somente com a consulta, em uma linha."
 )
 _CLASSIFY_SYSTEM = (
-    "Você decide se um novo incidente tem uma resolução conhecida aplicável, "
-    "com base em incidentes passados relevantes. Responda apenas com JSON."
+    "Você é um analista de operações de TI de um banco. Decida se um chamado é um "
+    "INCIDENTE de verdade — uma falha técnica em um sistema ou serviço que exige "
+    "tratativa de operações — ou se é IMPROCEDENTE: um pedido de autoatendimento, "
+    "dúvida, redefinição de senha, solicitação de acesso ou assunto administrativo "
+    "que não representa falha de sistema. Responda apenas com JSON."
 )
 _SUGGEST_SYSTEM = (
-    "Você é um analista sênior de operações de TI de um banco. Escreva uma "
-    "sugestão de resolução objetiva em português, fundamentada apenas nas "
-    "resoluções passadas fornecidas, citando entre colchetes os números dos "
-    "incidentes que a embasaram (ex.: [INC0012345])."
+    "Você é um analista sênior de operações de TI de um banco, escrevendo a "
+    "sugestão de resolução para um novo incidente, em português.\n\n"
+    "TOM: didático, claro e amigável — escreva de um jeito que qualquer pessoa "
+    "da operação entenda, sem jargão desnecessário. Ao usar uma sigla ou termo "
+    "técnico pouco comum, explique o significado na primeira vez, entre "
+    "parênteses.\n\n"
+    "GLOSSÁRIO (use estas explicações ao mencionar as siglas):\n"
+    "- DICT: Diretório de Identificadores de Contas Transacionais, o catálogo de "
+    "chaves Pix do Banco Central.\n"
+    "- JWT: JSON Web Token, o token que autentica o usuário.\n"
+    "- DLQ: Dead Letter Queue, a fila para onde vão as mensagens com erro.\n"
+    "- pool de conexões: conjunto reaproveitável de conexões com o banco de "
+    "dados.\n\n"
+    "REGRAS:\n"
+    "1. Fundamente-se SOMENTE nas resoluções passadas fornecidas no contexto; "
+    "não invente passos sem base nelas.\n"
+    "2. Cite, entre colchetes, o número do incidente que embasa cada ação (ex.: "
+    "[INC0012345]). Use apenas números presentes no contexto.\n"
+    "3. NÃO escreva título, cabeçalho nem preâmbulo (nada de 'Sugestão de "
+    "resolução:', 'Resposta:'); comece direto pela frase de diagnóstico.\n"
+    "4. Deixe UMA LINHA EM BRANCO entre o diagnóstico e a lista, e entre cada "
+    "item da lista (legibilidade).\n\n"
+    "FORMATO EXATO (markdown):\n"
+    "<uma frase curta de diagnóstico provável, em linguagem acessível>\n\n"
+    "1. **<ação>** — <detalhe objetivo e didático> [INC...]\n\n"
+    "2. **<ação>** — <detalhe objetivo e didático> [INC...]\n\n"
+    "EXEMPLO de uma resposta bem formatada:\n"
+    "O Internet Banking está lento porque o pool de conexões (conjunto de "
+    "conexões reutilizáveis com o banco de dados) se esgotou.\n\n"
+    "1. **Liberar as conexões presas** — aplicar uma correção que devolve a "
+    "conexão ao pool mesmo quando ocorre um erro e reiniciar as instâncias aos "
+    "poucos [INC0052110].\n\n"
+    "2. **Ampliar o pool temporariamente** — aumentar o número de conexões "
+    "disponíveis enquanto a causa raiz é corrigida [INC0052110]."
 )
 
 
@@ -134,35 +168,54 @@ class _ClassificationOut(BaseModel):
 def classify(
     deps: RagDeps, request: SuggestRequest, surviving: list[NodeWithScore]
 ) -> Classification:
-    """PROCEDENTE if a relevant known resolution survived; else IMPROCEDENTE.
+    """Decide whether the new ticket is a genuine incident or not.
 
-    With no surviving candidate there is nothing to ground a fix on, so we
-    short-circuit to IMPROCEDENTE without spending an LLM call.
+    The verdict is about the ticket itself: a real technical failure that needs
+    operations work (PROCEDENTE) versus a non-incident such as a password reset,
+    a how-to question or an access request (IMPROCEDENTE). It is deliberately
+    *independent of retrieval*: a real incident with no similar past case is
+    still PROCEDENTE (the caller then has no base to ground a suggestion on, and
+    the response carries an empty suggestion), and a non-incident is IMPROCEDENTE
+    even when vocabulary-similar cases happen to be retrieved.
     """
-    if not surviving:
-        return Classification.IMPROCEDENTE
-
-    listing = "\n".join(
-        f"- {node.node.metadata.get('number', '')}: "
-        f"{node.node.metadata.get('short_description', '')}"
-        for node in surviving
-    )
     user = (
-        f"NOVO incidente:\n{_incident_text(request)}\n\n"
-        f"Incidentes passados relevantes:\n{listing}\n\n"
+        f"CHAMADO\nTítulo: {request.short_description}\n"
+        f"Descrição: {request.description}\n\n"
         'Responda com JSON: {"classification": "PROCEDENTE" ou "IMPROCEDENTE", '
-        '"justification": "..."}. PROCEDENTE = existe resolução conhecida '
-        "aplicável; IMPROCEDENTE = não há correspondência acionável."
+        '"justification": "<frase curta>"}.\n'
+        "PROCEDENTE = é um incidente técnico real (serviço fora do ar, erro, "
+        "timeout, lentidão, falha de processamento, indisponibilidade).\n"
+        'IMPROCEDENTE = não é um incidente (ex.: "esqueci minha senha", '
+        '"como faço para...", pedido de acesso, dúvida, assunto administrativo).'
     )
     raw = deps.llm.complete(_CLASSIFY_SYSTEM, user, temperature=0.0, max_tokens=300)
     try:
         return _ClassificationOut.model_validate(extract_json(raw)).classification
     except (ValueError, ValidationError):
-        # Surviving candidates exist but parsing failed: prefer the useful path.
-        return Classification.PROCEDENTE
+        # On a parse failure, fall back to the retrieval signal: a real match
+        # suggests a real incident; otherwise stay conservative.
+        return Classification.PROCEDENTE if surviving else Classification.IMPROCEDENTE
 
 
 # --- Step 7: grounded suggestion ---------------------------------------------
+# A leading "**Sugestão de Resolução:**"-style heading the model sometimes adds
+# despite the prompt; the UI renders its own heading, so we drop this duplicate.
+# Only a *bold-only* first line that either mentions "sugestão" or ends with a
+# colon counts as a heading — so a genuine bolded diagnosis like
+# "**Falha no PIX-Core**" is preserved.
+_TITLE_LINE = re.compile(r"^\*\*\s*(?:sugest[^*]*|[^*]*:)\s*\*\*\s*$", re.IGNORECASE)
+
+
+def _strip_redundant_title(text: str) -> str:
+    """Drop a leading bold "Sugestão de Resolução:" heading if the model adds one."""
+    lines = text.lstrip().splitlines()
+    if lines and _TITLE_LINE.match(lines[0].strip()):
+        lines = lines[1:]
+        while lines and not lines[0].strip():
+            lines.pop(0)
+    return "\n".join(lines).strip()
+
+
 def generate_suggestion(
     deps: RagDeps, request: SuggestRequest, surviving: list[NodeWithScore]
 ) -> str:
@@ -174,11 +227,13 @@ def generate_suggestion(
         for node in surviving
     )
     user = (
-        f"NOVO incidente:\n{_incident_text(request)}\n\n"
-        f"Resoluções passadas para fundamentar:\n{grounding}\n\n"
-        "Escreva a sugestão de resolução:"
+        f"NOVO INCIDENTE\n{_incident_text(request)}\n\n"
+        "RESOLUÇÕES PASSADAS (contexto para fundamentar; cite estes números):\n"
+        f"{grounding}\n\n"
+        "Escreva a sugestão seguindo EXATAMENTE o formato e as regras."
     )
-    return deps.llm.complete(_SUGGEST_SYSTEM, user, temperature=0.3, max_tokens=700).strip()
+    raw = deps.llm.complete(_SUGGEST_SYSTEM, user, temperature=0.2, max_tokens=700)
+    return _strip_redundant_title(raw.strip())
 
 
 # --- Orchestrator ------------------------------------------------------------
@@ -212,6 +267,11 @@ def run_suggestion(request: SuggestRequest, deps: RagDeps, settings: Settings) -
     nodes = post_filter(deps, request, hits)
     surviving = [node for node in nodes if node.node.metadata.get("survived", True)]
 
+    # Three outcomes the UI distinguishes:
+    #   IMPROCEDENTE          -> not a real incident (no suggestion).
+    #   PROCEDENTE, no base   -> real incident, but nothing similar survived the
+    #                            post-filter, so there is no grounded suggestion.
+    #   PROCEDENTE, with base -> real incident grounded on past resolutions.
     classification = classify(deps, request, surviving)
     suggestion: str | None = None
     referenced: list[str] = []

@@ -29,7 +29,7 @@ const STEPS: { t: string; d: string; icon: IconComponent }[] = [
   },
   {
     t: "Classificar",
-    d: "Decide se há base: PROCEDENTE ou IMPROCEDENTE.",
+    d: "Decide se é um incidente de verdade: PROCEDENTE ou IMPROCEDENTE.",
     icon: Icons.classify,
   },
   { t: "Sugerir", d: "Redige a resolução citando as fontes.", icon: Icons.lightbulb },

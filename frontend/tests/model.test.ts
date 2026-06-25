@@ -2,19 +2,17 @@ import { describe, expect, it } from "vitest";
 
 import { buildQuery } from "@/lib/api";
 import {
+  buildSuggestionMarkdown,
   clusterColor,
   dsState,
+  enforceNumberedSteps,
   mapSuggest,
   mapSummary,
-  parseSuggestion,
+  markdownToPlain,
+  normalizeSuggestionSpacing,
   pCode,
-  segmentsToPlain,
-  type SuggestionSegment,
 } from "@/lib/model";
 import type { IncidentSummary, SuggestResponse } from "@/lib/types";
-
-const cites = (segs: SuggestionSegment[]) =>
-  segs.filter((s): s is { cite: string } => "cite" in s).map((s) => s.cite);
 
 describe("state + priority mapping", () => {
   it("maps backend states to the DS vocabulary", () => {
@@ -60,23 +58,77 @@ describe("mapSummary", () => {
   });
 });
 
-describe("parseSuggestion + segmentsToPlain", () => {
-  it("turns [INC…] tokens into citation segments", () => {
-    const segs = parseSuggestion(
-      "Escale [INC0051986] e ajuste o timeout INC0051908.",
-      [],
-    );
-    expect(cites(segs)).toEqual(["INC0051986", "INC0051908"]);
+describe("buildSuggestionMarkdown", () => {
+  it("keeps the markdown untouched when it already cites inline", () => {
+    const md = buildSuggestionMarkdown("Escale [INC0051986] e ajuste o timeout.", [
+      "INC0051986",
+    ]);
+    expect(md).toBe("Escale [INC0051986] e ajuste o timeout.");
   });
 
   it("appends referenced incidents as sources when none are inline", () => {
-    const segs = parseSuggestion("Reinicie o serviço.", ["INC0001234", "INC0005678"]);
-    expect(cites(segs)).toEqual(["INC0001234", "INC0005678"]);
+    const md = buildSuggestionMarkdown("Reinicie o serviço.", [
+      "INC0001234",
+      "INC0005678",
+    ]);
+    expect(md).toContain("Fundamentado em [INC0001234] e [INC0005678].");
   });
 
-  it("round-trips citations back to [INC…] plain text", () => {
-    expect(segmentsToPlain([{ text: "Veja " }, { cite: "INC0001" }, { text: "." }])).toBe(
-      "Veja [INC0001].",
+  it("leaves the body alone when there is nothing to reference", () => {
+    expect(buildSuggestionMarkdown("Reinicie o serviço.", [])).toBe("Reinicie o serviço.");
+  });
+});
+
+describe("normalizeSuggestionSpacing", () => {
+  it("puts a blank line before each step so the list breathes", () => {
+    const cramped = "Diagnóstico curto.\n1. **A** — x [INC0001].\n2. **B** — y [INC0002].";
+    expect(normalizeSuggestionSpacing(cramped)).toBe(
+      "Diagnóstico curto.\n\n1. **A** — x [INC0001].\n\n2. **B** — y [INC0002].",
+    );
+  });
+
+  it("separates bold-led action paragraphs the model glued together", () => {
+    const glued = "Diagnóstico.\n**Ação um** — detalhe.\n**Ação dois** — detalhe.";
+    expect(normalizeSuggestionSpacing(glued)).toBe(
+      "Diagnóstico.\n\n**Ação um** — detalhe.\n\n**Ação dois** — detalhe.",
+    );
+  });
+
+  it("collapses runs of blank lines and does not touch a single paragraph", () => {
+    expect(normalizeSuggestionSpacing("Apenas um parágrafo.")).toBe("Apenas um parágrafo.");
+  });
+});
+
+describe("enforceNumberedSteps", () => {
+  it("numbers bold-led action paragraphs the model left unnumbered", () => {
+    const md = "Diagnóstico.\n\n**Ação um** — x [INC0001].\n\n**Ação dois** — y [INC0002].";
+    expect(enforceNumberedSteps(md)).toBe(
+      "Diagnóstico.\n\n1. **Ação um** — x [INC0001].\n\n2. **Ação dois** — y [INC0002].",
+    );
+  });
+
+  it("leaves an already-numbered list untouched", () => {
+    const md = "Diagnóstico.\n\n1. **Ação um** — x.\n\n2. **Ação dois** — y.";
+    expect(enforceNumberedSteps(md)).toBe(md);
+  });
+
+  it("does not number a single action or plain prose", () => {
+    const md = "Diagnóstico.\n\n**Ação única** — x.";
+    expect(enforceNumberedSteps(md)).toBe(md);
+  });
+
+  it("never numbers the diagnosis even when the model bolds it", () => {
+    const md = "**Diagnóstico em negrito.**\n\n**Ação um** — x.\n\n**Ação dois** — y.";
+    expect(enforceNumberedSteps(md)).toBe(
+      "**Diagnóstico em negrito.**\n\n1. **Ação um** — x.\n\n2. **Ação dois** — y.",
+    );
+  });
+});
+
+describe("markdownToPlain", () => {
+  it("strips bold/code markers for the resolution notes", () => {
+    expect(markdownToPlain("1. **Ação** com `code` e [INC0001].")).toBe(
+      "1. Ação com code e [INC0001].",
     );
   });
 });
@@ -120,8 +172,8 @@ describe("mapSuggest", () => {
     expect(r.candidates[0].keep).toBe(true);
     expect(r.candidates[1].keep).toBe(false);
     expect(r.candidates[1].reason).toBe("Outro serviço e outra causa.");
-    expect(r.suggestion).not.toBeNull();
-    expect(cites(r.suggestion ?? [])).toEqual(["INC0051986", "INC0051908"]);
+    expect(r.suggestion).toContain("INC0051986");
+    expect(r.suggestion).toContain("INC0051908");
     expect(r.noBase).toBe(false);
   });
 

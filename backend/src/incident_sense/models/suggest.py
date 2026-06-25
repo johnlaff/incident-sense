@@ -16,10 +16,12 @@ from .incident import Priority
 
 
 class Classification(StrEnum):
-    """Verdict for a new incident.
+    """Verdict on whether a new ticket is a genuine incident.
 
-    * ``PROCEDENTE`` — a relevant known resolution exists; we can suggest a fix.
-    * ``IMPROCEDENTE`` — no actionable operational match (e.g. a password reset).
+    * ``PROCEDENTE`` — a real technical incident that needs operations work.
+      It may or may not have a grounded suggestion (see ``SuggestResponse``).
+    * ``IMPROCEDENTE`` — not an incident: a self-service request, a how-to
+      question or an access/password reset (e.g. "esqueci minha senha").
     """
 
     PROCEDENTE = "PROCEDENTE"
@@ -34,6 +36,11 @@ class SuggestRequest(BaseModel):
     category: str | None = Field(default=None, description="Optional pre-filter hint.")
     cmdb_ci: str | None = Field(default=None, description="Optional affected service.")
     priority: Priority | None = None
+    model: str | None = Field(
+        default=None,
+        description="Optional UI model id (see SELECTABLE_MODELS); unknown ids "
+        "fall back to the default model.",
+    )
 
 
 class RetrievedCandidate(BaseModel):
@@ -60,7 +67,11 @@ class SuggestResponse(BaseModel):
     summarized_query: str = Field(description="LLM-condensed retrieval query.")
     classification: Classification
     suggestion: str | None = Field(
-        default=None, description="Grounded resolution; null when IMPROCEDENTE."
+        default=None,
+        description=(
+            "Grounded resolution in simple markdown. Null when IMPROCEDENTE or "
+            "when PROCEDENTE has no similar past case to ground on."
+        ),
     )
     candidates: list[RetrievedCandidate] = Field(
         default_factory=list, description="Retrieved candidates, scored and filtered."

@@ -233,39 +233,83 @@ export function clusterColor(clusterId: number, isOutlier = false): string {
 
 // ----- Copilot result (maps SuggestResponse → Aurora's chat output) ----------
 
-export type SuggestionSegment = { text: string } | { cite: string };
+const INLINE_CITE = /\bINC\d{4,}\b/;
 
-/** Split a suggestion string into text + clickable [INC…] citation segments. */
-export function parseSuggestion(text: string, referenced: string[]): SuggestionSegment[] {
-  const segments: SuggestionSegment[] = [];
-  const re = /\[?(INC\d{4,})\]?/g;
-  let last = 0;
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(text)) !== null) {
-    if (match.index > last) segments.push({ text: text.slice(last, match.index) });
-    segments.push({ cite: match[1] });
-    last = match.index + match[0].length;
-  }
-  if (last < text.length) segments.push({ text: text.slice(last) });
+// A line that opens a new step: an ordered marker (1. / 1)), a bullet (- / *)
+// or a bold lead-in (**Ação**) the model uses for each action.
+const STEP_LINE = /^\s*(?:\d+[.)]\s|[-*]\s|\*\*)/;
 
-  // No inline citations but we have grounding incidents → append them as sources.
-  const hasCite = segments.some((s) => "cite" in s);
-  if (!hasCite && referenced.length > 0) {
-    segments.push({ text: " Fundamentado em " });
-    referenced.forEach((id, i) => {
-      segments.push({ cite: id });
-      if (i < referenced.length - 1) {
-        segments.push({ text: i === referenced.length - 2 ? " e " : ", " });
-      }
-    });
-    segments.push({ text: "." });
+/** Put a blank line before each step so markdown renders a legible, "loose"
+ * list instead of one cramped paragraph.
+ *
+ * Models sometimes separate the diagnosis and the action items with single
+ * newlines; CommonMark then collapses them into a single block. Promoting those
+ * boundaries to blank lines makes each step its own paragraph / list item —
+ * independent of how disciplined the model was about spacing.
+ */
+export function normalizeSuggestionSpacing(md: string): string {
+  const lines = md.replace(/\r\n/g, "\n").split("\n");
+  const out: string[] = [];
+  for (const line of lines) {
+    const prev = out[out.length - 1];
+    if (STEP_LINE.test(line) && prev !== undefined && prev.trim() !== "") {
+      out.push("");
+    }
+    out.push(line);
   }
-  return segments;
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-/** Flatten suggestion segments back to plain text (with [INC…]) for copy/insert. */
-export function segmentsToPlain(segments: SuggestionSegment[]): string {
-  return segments.map((s) => ("cite" in s ? `[${s.cite}]` : s.text)).join("");
+// A line whose content starts with a bold lead-in (**Ação** …) — how the model
+// writes an action when it forgets to number the list.
+const BOLD_LEAD = /^\*\*.+?\*\*/;
+
+/** Number the action steps when the model wrote them as bold paragraphs.
+ *
+ * The suggestion is far more readable as an ordered list, but the model is not
+ * perfectly consistent about emitting "1." / "2." markers. When it already did,
+ * we leave it alone; otherwise we promote each bold-led action line to a
+ * numbered item, giving the same clean, scannable layout every time.
+ */
+export function enforceNumberedSteps(md: string): string {
+  const lines = md.split("\n");
+  if (lines.some((l) => /^\s*\d+[.)]\s/.test(l))) return md; // already numbered
+  // The first non-empty line is the diagnosis sentence — never an action, even
+  // if the model bolded it. Only bold-led lines *after* it are numbered.
+  const firstContent = lines.findIndex((l) => l.trim() !== "");
+  const isAction = (l: string, i: number): boolean =>
+    i > firstContent && BOLD_LEAD.test(l.trim());
+  if (lines.filter(isAction).length < 2) return md; // not a multi-step list
+  let n = 0;
+  return lines.map((l, i) => (isAction(l, i) ? `${++n}. ${l.trim()}` : l)).join("\n");
+}
+
+/** Prepare the suggestion markdown for rendering.
+ *
+ * The backend already returns simple markdown with bracketed [INC…] citations.
+ * We normalize the spacing and numbering for legibility, and — when it grounded
+ * the answer but cited nothing inline — append the referenced incidents as a
+ * closing "Fundamentado em …" line so the sources stay visible and clickable.
+ */
+export function buildSuggestionMarkdown(text: string, referenced: string[]): string {
+  const body = enforceNumberedSteps(normalizeSuggestionSpacing(text.trim()));
+  if (INLINE_CITE.test(body) || referenced.length === 0) return body;
+  const cites = referenced.map((id) => `[${id}]`);
+  const joined =
+    cites.length === 1
+      ? cites[0]
+      : `${cites.slice(0, -1).join(", ")} e ${cites[cites.length - 1]}`;
+  return `${body}\n\nFundamentado em ${joined}.`;
+}
+
+/** Strip light markdown to plain text for the "insert / copy" resolution notes. */
+export function markdownToPlain(md: string): string {
+  return md
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 export interface CopilotCandidate {
@@ -282,7 +326,8 @@ export interface CopilotResult {
   summary: string;
   neighbors: number;
   candidates: CopilotCandidate[];
-  suggestion: SuggestionSegment[] | null;
+  /** Suggestion as simple markdown (bold, lists, [INC…] citations), or null. */
+  suggestion: string | null;
   referenced: string[];
   noBase: boolean;
 }
@@ -299,7 +344,7 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
   const procedente = res.classification === "PROCEDENTE";
   const suggestion =
     procedente && res.suggestion
-      ? parseSuggestion(res.suggestion, res.referenced_incidents)
+      ? buildSuggestionMarkdown(res.suggestion, res.referenced_incidents)
       : null;
   return {
     verdict: res.classification,

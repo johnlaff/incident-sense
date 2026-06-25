@@ -84,9 +84,11 @@ A própria tela **Como funciona** anima esse pipeline ao vivo — o resumo do in
 
 <div align="center"><img src="docs/assets/howitworks-rag.webp" alt="Animação do pipeline RAG: o chamado flui por resumir, vetorizar, buscar vizinhos resolvidos, pós-filtro, classificar e sugerir com citações" width="900"></div>
 
-O passo **5** é o que evita ruído: um pedido como _"esqueci minha senha"_ é
-classificado como **improcedente** (autoatendimento, não um incidente), em vez de
-receber uma resolução técnica forçada. Detalhes em
+O passo **6** é o que evita ruído: o critério é se o chamado é **um incidente de
+verdade**. Um pedido como _"esqueci minha senha"_ vira **improcedente**
+(autoatendimento, não uma falha de sistema), em vez de receber uma resolução
+técnica forçada. A sugestão sai em linguagem **didática** (siglas explicadas) e o
+modelo de IA é **trocável** no seletor da Aurora. Detalhes em
 [docs/rag-flow.md](docs/rag-flow.md).
 
 ### Detecção de recorrência — clustering
@@ -108,7 +110,7 @@ Detalhes em [docs/clustering-flow.md](docs/clustering-flow.md).
 
 | Camada | Stack |
 | --- | --- |
-| **Frontend** | Next.js 16 (App Router) · React 19 · TypeScript estrito · Tailwind v4 · Motion |
+| **Frontend** | Next.js 16 (App Router) · React 19 · TypeScript estrito · Tailwind v4 · Motion · react-markdown |
 | **Backend** | Python 3.12 · FastAPI · LlamaIndex · Pydantic · structlog |
 | **IA** | OpenAI `text-embedding-3-large` (embeddings) · OpenRouter (LLM) |
 | **Dados** | Qdrant (busca vetorial) · BERTopic + UMAP + HDBSCAN (clustering) |

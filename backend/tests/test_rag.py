@@ -36,7 +36,7 @@ class FakeLLM:
             return self.query
         if "REALMENTE relevantes" in system:
             return self.verdicts
-        if "resolução conhecida aplicável" in system:
+        if "INCIDENTE de verdade" in system:
             return f'{{"classification": "{self.classification}", "justification": "x"}}'
         if "sugestão de resolução" in system:
             return self.suggestion
@@ -115,9 +115,32 @@ def test_post_filter_annotates_survival_and_reason() -> None:
     assert nodes[0].node.metadata["number"] == "INC1"
 
 
-def test_classify_improcedente_without_survivors() -> None:
-    deps = _deps(FakeLLM(), [])
-    assert pipeline.classify(deps, _request(), []) is Classification.IMPROCEDENTE
+def test_classify_follows_llm_verdict_not_retrieval() -> None:
+    # The verdict is about the ticket itself, independent of retrieval: a real
+    # incident with no surviving candidate is still PROCEDENTE...
+    deps = _deps(FakeLLM(classification="PROCEDENTE"), [])
+    assert pipeline.classify(deps, _request(), []) is Classification.PROCEDENTE
+    # ...and a non-incident is IMPROCEDENTE even if candidates survived.
+    deps = _deps(FakeLLM(classification="IMPROCEDENTE"), [])
+    surviving = pipeline.post_filter(
+        _deps(FakeLLM(verdicts='[{"number": "INC1", "relevant": true, "reason": "x"}]'), []),
+        _request(),
+        [_hit("INC1", 0.9)],
+    )
+    assert pipeline.classify(deps, _request(), surviving) is Classification.IMPROCEDENTE
+
+
+def test_strip_redundant_title_drops_leading_heading() -> None:
+    raw = "**Sugestão de Resolução:**\n\nReinicie o serviço. [INC0000001]"
+    assert pipeline._strip_redundant_title(raw) == "Reinicie o serviço. [INC0000001]"
+    # Also a bold "Resolução:" label.
+    assert pipeline._strip_redundant_title("**Resolução:**\n\nfoo") == "foo"
+    # A normal first sentence is left untouched.
+    body = "Reinicie o serviço. [INC0000001]"
+    assert pipeline._strip_redundant_title(body) == body
+    # A genuine bolded diagnosis (no "sugest", no trailing colon) is preserved.
+    diag = "**Falha no PIX-Core**\n\nReinicie o serviço."
+    assert pipeline._strip_redundant_title(diag) == diag
 
 
 # --- end-to-end pipeline -----------------------------------------------------
@@ -143,12 +166,26 @@ def test_run_suggestion_procedente() -> None:
     assert by_number["INC2"].postfilter_reason == "irrelevante"
 
 
-def test_run_suggestion_improcedente_when_nothing_survives() -> None:
-    verdicts = '[{"number": "INC1", "relevant": false, "reason": "nada a ver"}]'
-    deps = _deps(FakeLLM(verdicts=verdicts), [_hit("INC1", 0.7)])
+def test_run_suggestion_improcedente_self_service() -> None:
+    # A non-incident (e.g. "esqueci minha senha") is IMPROCEDENTE even when a
+    # vocabulary-similar case is retrieved and survives the post-filter.
+    verdicts = '[{"number": "INC1", "relevant": true, "reason": "parecido"}]'
+    deps = _deps(FakeLLM(verdicts=verdicts, classification="IMPROCEDENTE"), [_hit("INC1", 0.7)])
     response = pipeline.run_suggestion(_request(), deps, Settings())
 
     assert response.classification is Classification.IMPROCEDENTE
+    assert response.suggestion is None
+    assert response.referenced_incidents == []
+
+
+def test_run_suggestion_procedente_without_base() -> None:
+    # A real incident whose candidates are all dropped by the post-filter stays
+    # PROCEDENTE but carries no grounded suggestion (the "sem base ainda" path).
+    verdicts = '[{"number": "INC1", "relevant": false, "reason": "nada a ver"}]'
+    deps = _deps(FakeLLM(verdicts=verdicts, classification="PROCEDENTE"), [_hit("INC1", 0.7)])
+    response = pipeline.run_suggestion(_request(), deps, Settings())
+
+    assert response.classification is Classification.PROCEDENTE
     assert response.suggestion is None
     assert response.referenced_incidents == []
     assert response.candidates[0].survived_postfilter is False

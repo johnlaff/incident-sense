@@ -829,6 +829,50 @@ table.list {
   letter-spacing: 0.04em;
   color: var(--primary-ink);
 }
+/* Markdown rendered by <SuggestionMarkdown> (react-markdown). */
+.suggestion .md > :first-child {
+  margin-top: 0;
+}
+.suggestion .md > :last-child {
+  margin-bottom: 0;
+}
+.suggestion .md p {
+  margin: 0 0 10px;
+}
+/* Tailwind's preflight resets lists to list-style:none — restore markers here. */
+.suggestion .md ol {
+  margin: 10px 0;
+  padding-left: 24px;
+  list-style: decimal outside;
+}
+.suggestion .md ul {
+  margin: 10px 0;
+  padding-left: 24px;
+  list-style: disc outside;
+}
+.suggestion .md li {
+  margin-bottom: 10px;
+  padding-left: 3px;
+}
+.suggestion .md li:last-child {
+  margin-bottom: 0;
+}
+/* In a loose list react-markdown wraps each item in <p>; don't double the gap. */
+.suggestion .md li > p {
+  margin: 0;
+}
+.suggestion .md li::marker {
+  color: var(--primary-ink);
+  font-weight: 700;
+}
+.suggestion .md strong {
+  font-weight: 700;
+  color: var(--primary-ink);
+}
+.suggestion .md a:not(.cite) {
+  color: var(--primary-ink);
+  text-decoration: underline;
+}
 .cite {
   font-family: var(--mono);
   font-size: 11.5px;

@@ -14,7 +14,7 @@
 
 [project]
 name = "incident-sense"
-version = "0.1.0"
+version = "1.0.0"
 description = "Resolution suggestion (RAG) and recurrence detection (clustering) for a fictional bank's IT incidents."
 requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }

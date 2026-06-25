@@ -111,7 +111,8 @@ Breadcrumb (Incidentes / INCxx. Centro: **registro**.
   (estilo Perplexity). Ações: **Inserir nas notas de resolução** (assist, não
   override), Copiar, "Por que essa sugestão?" (expande o raciocínio).
 - Caso IMPROCEDENTE (ex.: "esqueci minha senha"): sem sugestão, mensagem clara
-  de que não há resolução conhecida aplicável.
+  de que não é um incidente real (pedido de autoatendimento), com a orientação
+  de seguir pelo fluxo de autoatendimento.
 
 ### 4. Abrir incidente citado (a feature de confiança)
 Clicar numa citação/candidato abre o **registro completo do incidente citado**

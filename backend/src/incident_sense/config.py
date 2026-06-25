@@ -121,3 +121,25 @@ def get_settings() -> Settings:
     ``get_settings.cache_clear()`` when they need to override configuration.
     """
     return Settings()
+
+
+# --- Selectable chat models --------------------------------------------------
+# Public id (sent by the UI model picker) -> real OpenRouter model id. The API
+# only honors ids in this allow-list; anything else falls back to the default
+# (``llm_model``), which keeps cost and abuse bounded. Each entry was smoke-tested
+# end to end against the suggestion pipeline (PT-BR didactic output + JSON
+# classification) before being exposed.
+SELECTABLE_MODELS: dict[str, str] = {
+    "auto": "openrouter/auto",
+    "deepseek-v4": "deepseek/deepseek-v4-flash",
+    "qwen3-max": "qwen/qwen3-max",
+    "gemini-flash": "google/gemini-2.5-flash",
+    "claude-haiku": "anthropic/claude-haiku-4.5",
+}
+
+
+def resolve_chat_model(public_id: str | None, settings: Settings) -> str:
+    """Map a UI model id to a real OpenRouter model, or fall back to the default."""
+    if public_id and public_id in SELECTABLE_MODELS:
+        return SELECTABLE_MODELS[public_id]
+    return settings.llm_model

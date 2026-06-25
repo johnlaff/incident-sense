@@ -22,8 +22,9 @@ truncados (recupera os objetos completos).
 - Portável entre provedores (não depende de recursos específicos da API).
 - A validação pydantic dá a mesma garantia de esquema que o _structured output_
   nativo daria.
-- Em caso de falha de parsing, há _fallbacks_ seguros (ex.: sem candidatos
-  sobreviventes → `IMPROCEDENTE`).
+- Em caso de falha de parsing, há _fallbacks_ seguros (ex.: se o JSON da
+  classificação não validar, usa-se o sinal de recuperação como heurística —
+  com candidato sobrevivente trata como incidente real, senão `IMPROCEDENTE`).
 
 ## Alternativas consideradas
 

@@ -32,6 +32,8 @@ export interface SuggestRequest {
   category?: string | null;
   cmdb_ci?: string | null;
   priority?: number | null;
+  /** UI model id (see the model picker); the backend maps it to a real model. */
+  model?: string | null;
 }
 
 export interface RetrievedCandidate {

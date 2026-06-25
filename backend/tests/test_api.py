@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from incident_sense.api.clusters import get_clusters
 from incident_sense.api.suggest import get_rag_deps
-from incident_sense.config import get_settings
+from incident_sense.config import SELECTABLE_MODELS, get_settings, resolve_chat_model
 from incident_sense.main import create_app
 from incident_sense.models import ClusterPoint, ClustersResponse, ClusterSummary
 from incident_sense.rag.clients import RagDeps, RetrievedHit
@@ -96,6 +96,34 @@ def test_suggest_endpoint_contract_with_fake_deps(client: TestClient) -> None:
     assert body["classification"] == "IMPROCEDENTE"
     assert body["suggestion"] is None
     assert body["candidates"] == []
+
+
+def test_resolve_chat_model_uses_allowlist_else_default() -> None:
+    settings = get_settings()
+    # A known UI id maps to its real OpenRouter model...
+    assert resolve_chat_model("qwen3-max", settings) == SELECTABLE_MODELS["qwen3-max"]
+    assert resolve_chat_model("auto", settings) == "openrouter/auto"
+    # ...and None or an unknown id falls back to the configured default.
+    assert resolve_chat_model(None, settings) == settings.llm_model
+    assert resolve_chat_model("totally-unknown", settings) == settings.llm_model
+
+
+def test_suggest_accepts_model_field_with_fake_deps(client: TestClient) -> None:
+    # The optional model field is accepted; with the default model resolved (the
+    # fake LLM stays in place) the contract is unchanged.
+    client.app.dependency_overrides[get_rag_deps] = lambda: RagDeps(
+        llm=_FakeLLM(), embeddings=_FakeEmbeddings(), retriever=_FakeRetriever()
+    )
+    response = client.post(
+        "/api/suggest",
+        json={
+            "short_description": "Pix sem comprovante",
+            "description": "Detalhes.",
+            "model": "this-id-is-not-in-the-allowlist",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["classification"] == "IMPROCEDENTE"
 
 
 def test_suggest_missing_keys_returns_503(monkeypatch: pytest.MonkeyPatch) -> None:

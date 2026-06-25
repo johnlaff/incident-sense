@@ -10,4 +10,4 @@ Two capabilities for a fictional bank's IT operations:
 All data is synthetic and the bank ("Banco Meridiano") is fictional.
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
