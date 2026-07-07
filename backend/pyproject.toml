@@ -22,7 +22,7 @@ authors = [{ name = "John Laff" }]
 
 dependencies = [
     # Web API
-    "fastapi>=0.115",
+    "fastapi>=0.139.0",
     "uvicorn[standard]>=0.49.0",
     # Configuration & validation
     "pydantic>=2.7",
@@ -30,12 +30,12 @@ dependencies = [
     # Structured logging
     "structlog>=24.1",
     # LLM / embedding access (OpenAI + OpenAI-compatible OpenRouter)
-    "openai>=1.40",
+    "openai>=2.44.0",
     # RAG orchestration
-    "llama-index-core>=0.11",
+    "llama-index-core>=0.14.23",
     "llama-index-llms-openai-like>=0.2",
     "llama-index-embeddings-openai>=0.2",
-    "llama-index-vector-stores-qdrant>=0.3",
+    "llama-index-vector-stores-qdrant>=0.10.2",
     # Vector database client
     "qdrant-client>=1.10",
     # Numerics (embeddings, similarity, precomputed arrays)
@@ -53,22 +53,22 @@ clustering = [
     # Pin the numba/llvmlite/pynndescent chain to modern versions. Without these
     # floors the resolver backtracks to an ancient numba that drags in an
     # llvmlite which refuses to build on Python 3.12.
-    "numba>=0.61",
+    "numba>=0.66.0",
     "pynndescent>=0.6",
 ]
 # Synthetic dataset generation (scripts/generate_dataset.py).
 gen = [
-    "faker>=25.0",
+    "faker>=40.28.1",
 ]
 
 [dependency-groups]
 dev = [
-    "ruff>=0.6",
+    "ruff>=0.15.20",
     "mypy>=1.11",
     "pytest>=8.2",
     "pytest-asyncio>=0.23",
     "httpx>=0.27",
-    "httpx2>=2.4.0",
+    "httpx2>=2.5.0",
 ]
 
 [build-system]
