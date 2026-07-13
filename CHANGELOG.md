@@ -5,6 +5,14 @@ Todas as mudanças notáveis deste projeto são documentadas aqui.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o
 projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [Unreleased]
+
+### Adicionado
+
+- Mapeia os modelos candidatos do OpenRouter para o copiloto contextual, com
+  evidências bilíngues, custo, latência e elegibilidade de segurança que orientam
+  a seleção controlada sem antecipar o vencedor.
+
 ## [1.0.0] - 2026-06-25
 
 ### Adicionado
@@ -44,5 +52,6 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - CI (backend e frontend), release por tag para o GHCR e Dependabot.
 - Documentação em PT-BR e ADRs.
 
+[Unreleased]: https://github.com/johnlaff/incident-sense/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/johnlaff/incident-sense/releases/tag/v1.0.0
 [0.1.0]: https://github.com/johnlaff/incident-sense/releases/tag/v0.1.0
