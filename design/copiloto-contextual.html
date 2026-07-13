@@ -1,0 +1,1390 @@
+<!doctype html>
+<!-- @dsCard group="Telas" -->
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>incident-sense · Copiloto contextual</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="prototype.css" />
+    <style>
+      /* Aurora conversational copilot — prototype-only styles.
+         Namespace .cx- for anything not already in prototype.css. */
+
+      /* Keep record content clear of the fixed prototype bar. */
+      .main {
+        padding-bottom: 92px;
+      }
+
+      /* ---------- Panel shell (shared by both topologies) ---------- */
+      .cx-panel {
+        display: flex;
+        flex-direction: column;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+      }
+      /* A · anchored column beside the record */
+      body.topo-a .cx-panel {
+        position: sticky;
+        top: 0;
+        height: calc(100vh - 188px);
+      }
+      body.topo-a .detail-grid {
+        grid-template-columns: 1fr 400px;
+      }
+      /* B · floating overlay panel, opened over the record */
+      body.topo-b .detail-grid {
+        grid-template-columns: 1fr;
+      }
+      body.topo-b .cx-panel {
+        position: fixed;
+        right: 24px;
+        bottom: 152px;
+        width: 420px;
+        height: min(640px, calc(100vh - 236px));
+        z-index: 55;
+        /* shadow-md carries the elevation; no 1px border alongside it */
+        border: 0;
+        box-shadow: var(--shadow-md);
+      }
+      body.topo-a .cx-close,
+      body.topo-a .cx-fab {
+        display: none;
+      }
+      body.topo-b.cx-closed .cx-fab {
+        display: inline-grid;
+      }
+      body.topo-b.cx-closed .cx-panel {
+        display: none;
+      }
+
+      /* ---------- Panel header ---------- */
+      .cx-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(var(--primary-tint), var(--surface));
+        flex-shrink: 0;
+      }
+      .cx-head .cx-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--primary-tint);
+        color: var(--primary-ink);
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .cx-head .cx-mark svg {
+        width: 18px;
+        height: 18px;
+      }
+      .cx-id {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.25;
+      }
+      .cx-id .t {
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .cx-id .s {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .cx-head .grow {
+        flex: 1;
+      }
+      .cx-model {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 28px;
+        padding: 0 8px 0 10px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 550;
+        color: var(--ink-body);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+      }
+      .cx-model svg {
+        width: 14px;
+        height: 14px;
+        color: var(--muted);
+      }
+      .cx-close {
+        width: 30px;
+        height: 30px;
+        border-radius: var(--radius-sm);
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+      .cx-close:hover {
+        background: var(--surface-2);
+      }
+      .cx-close svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* ---------- Conversation body ---------- */
+      .cx-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .cx-state {
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .cx-state.on {
+        display: flex;
+      }
+
+      /* Assistant plain prose (explanation blocks have no chrome) */
+      .cx-prose {
+        font-size: 13px;
+        color: var(--ink-body);
+        line-height: 1.6;
+      }
+      .cx-prose + .cx-prose {
+        margin-top: -4px;
+      }
+
+      /* ---------- Notices (didactic banners) ---------- */
+      .cx-notice {
+        display: flex;
+        gap: 10px;
+        padding: 12px 13px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .cx-notice .cx-ni {
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .cx-notice .cx-ni svg {
+        width: 18px;
+        height: 18px;
+      }
+      .cx-notice h4 {
+        margin: 0 0 4px;
+        font-size: 13px;
+        color: var(--ink);
+      }
+      .cx-notice.key {
+        background: var(--st-open-tint);
+      }
+      .cx-notice.key .cx-ni {
+        color: var(--st-open);
+      }
+      .cx-notice ol {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .cx-notice code {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        background: oklch(1 0 0 / 0.6);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0 4px;
+      }
+
+      /* ---------- Intro (first contact) ---------- */
+      .cx-intro {
+        font-size: 13px;
+        color: var(--ink-body);
+        line-height: 1.6;
+      }
+      .cx-intro b {
+        color: var(--ink);
+      }
+      .cx-scope {
+        margin: 8px 0 0;
+        padding-left: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .cx-scope li {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+      .cx-scope li svg {
+        width: 15px;
+        height: 15px;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+      .cx-scope li.yes svg {
+        color: var(--st-resolved);
+      }
+      .cx-scope li.no svg {
+        color: var(--muted);
+      }
+      .cx-quick {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        justify-content: flex-start;
+        height: 42px;
+        padding: 0 14px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--primary);
+        background: var(--primary-tint);
+        color: var(--primary-ink);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .cx-quick svg {
+        width: 18px;
+        height: 18px;
+      }
+      .cx-quick .kbd {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--primary-ink);
+        border: 1px solid var(--primary);
+        border-radius: 4px;
+        padding: 0 5px;
+        opacity: 0.85;
+      }
+
+      /* ---------- Pipeline trace (typed steps) ---------- */
+      .trace .ico.pending {
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        color: var(--muted);
+      }
+      .trace .ico.pending svg {
+        width: 8px;
+        height: 8px;
+        opacity: 0.5;
+      }
+      .trace .step.is-pending .lbl b {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .cx-spin {
+        animation: cx-spin 0.9s linear infinite;
+      }
+      @keyframes cx-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .trace .ico.run {
+        position: relative;
+      }
+      .trace .ico.run::after {
+        content: "";
+        position: absolute;
+        inset: -3px;
+        border-radius: 50%;
+        animation: cx-pulse 1.2s ease-out infinite;
+      }
+      @keyframes cx-pulse {
+        0% {
+          box-shadow: 0 0 0 0 var(--primary-tint);
+        }
+        70%,
+        100% {
+          box-shadow: 0 0 0 6px transparent;
+        }
+      }
+
+      /* Collapsed trace (hero) */
+      .cx-trace-min {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px 11px;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        font-family: inherit;
+      }
+      .cx-trace-min svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+      .cx-trace-min .go {
+        margin-left: auto;
+        color: var(--primary-ink);
+        font-weight: 600;
+      }
+
+      .cx-stop {
+        align-self: flex-start;
+      }
+      .cx-cancelled {
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 2px 0;
+      }
+      .cx-cancelled svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ---------- Answer classification metadata ---------- */
+      .cx-verdict {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      /* ---------- Typed answer blocks ---------- */
+      .cx-block {
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        padding: 11px 12px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--ink-body);
+      }
+      .cx-block .cx-bl {
+        display: flex;
+        width: fit-content;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        margin-bottom: 7px;
+      }
+      .cx-block .cx-bl svg {
+        width: 15px;
+        height: 15px;
+      }
+      .cx-block.diagnosis {
+        background: var(--surface-2);
+      }
+      .cx-block.diagnosis .cx-bl {
+        color: var(--ink);
+      }
+      .cx-block.action {
+        background: var(--primary-tint);
+      }
+      .cx-block.action .cx-bl {
+        color: var(--primary-ink);
+      }
+      .cx-block.caveat {
+        background: var(--p3-tint);
+      }
+      .cx-block.caveat .cx-bl {
+        color: var(--p3);
+      }
+      .cx-block.question {
+        background: var(--st-open-tint);
+      }
+      .cx-block.question .cx-bl {
+        color: var(--st-open);
+      }
+      .cx-block.refuse {
+        background: var(--surface-2);
+      }
+      .cx-block.refuse .cx-bl {
+        color: var(--ink);
+      }
+      .cx-block.fail {
+        background: var(--p1-tint);
+      }
+      .cx-block.fail .cx-bl {
+        color: var(--danger);
+      }
+      .cx-steps {
+        margin: 0;
+        padding-left: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .cx-steps li {
+        padding-left: 2px;
+      }
+
+      /* Inline citation chip */
+      .cx-cite {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary-ink);
+        background: var(--primary-tint);
+        border-radius: 999px;
+        padding: 1px 7px;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .cx-cite:hover {
+        text-decoration: underline;
+      }
+
+      /* Quick-reply chips (clarification) */
+      .cx-replies {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+      }
+      .cx-reply {
+        font: inherit;
+        font-size: 12.5px;
+        font-weight: 550;
+        color: var(--primary-ink);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+      .cx-reply:hover {
+        background: var(--primary-tint);
+        border-color: var(--primary);
+      }
+
+      /* ---------- Answer footer ---------- */
+      .cx-ans-foot {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-top: 2px;
+      }
+      .cx-grounding {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .cx-grounding svg {
+        width: 14px;
+        height: 14px;
+      }
+      .cx-ans-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* Sources */
+      .cx-src-head {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .cx-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+      .cx-srcfoot {
+        font-size: 11.5px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .cx-srcfoot svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      /* ---------- Composer / input ---------- */
+      .cx-foot {
+        flex-shrink: 0;
+        border-top: 1px solid var(--border);
+        padding: 10px 12px;
+        background: var(--surface);
+      }
+      .cx-textwrap {
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        padding: 8px 10px;
+      }
+      .cx-textwrap.disabled {
+        background: var(--surface-2);
+      }
+      .cx-textwrap.limit {
+        border-color: var(--danger);
+      }
+      .cx-input {
+        width: 100%;
+        border: 0;
+        resize: none;
+        font: inherit;
+        font-size: 13px;
+        color: var(--ink-body);
+        background: transparent;
+        outline: none;
+        max-height: 90px;
+      }
+      .cx-input::placeholder {
+        color: var(--muted);
+      }
+      .cx-input:disabled {
+        color: var(--muted);
+      }
+      .cx-foot-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+        min-height: 20px;
+      }
+      .cx-hint {
+        font-size: 11.5px;
+        color: var(--muted);
+        flex: 1;
+        line-height: 1.4;
+      }
+      .cx-counter {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .cx-counter.danger {
+        color: var(--danger);
+      }
+      .cx-send {
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius-sm);
+        border: 0;
+        background: var(--primary);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .cx-send:hover {
+        background: var(--primary-hover);
+      }
+      .cx-send:disabled {
+        background: var(--border-strong);
+        color: var(--surface);
+        cursor: not-allowed;
+      }
+      .cx-send svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      /* ---------- Floating action button (topology B) ---------- */
+      .cx-fab {
+        display: none;
+        position: fixed;
+        right: 24px;
+        bottom: 84px;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--primary);
+        color: #fff;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: var(--shadow-md);
+        z-index: 60;
+      }
+      .cx-fab svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* ---------- Prototype evaluation bar (dev-tool, not product) ---------- */
+      .cx-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 80;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        padding: 9px 16px;
+        background: var(--ink);
+        color: oklch(0.97 0.003 285);
+        border-top: 1px solid oklch(0.4 0.02 285);
+      }
+      .cx-bar .cx-bar-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: oklch(0.72 0.02 285);
+        white-space: nowrap;
+      }
+      .cx-topo {
+        display: inline-flex;
+        padding: 3px;
+        background: oklch(0.32 0.015 285);
+        border-radius: var(--radius-sm);
+        gap: 2px;
+        flex-shrink: 0;
+      }
+      .cx-topo button {
+        font: inherit;
+        font-size: 12px;
+        font-weight: 550;
+        border: 0;
+        background: transparent;
+        color: oklch(0.78 0.02 285);
+        padding: 5px 11px;
+        border-radius: 5px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .cx-topo button.on {
+        background: var(--primary);
+        color: #fff;
+      }
+      .cx-states {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .cx-sbtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 550;
+        border: 1px solid oklch(0.4 0.02 285);
+        background: oklch(0.3 0.015 285);
+        color: oklch(0.85 0.02 285);
+        padding: 5px 9px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .cx-sbtn:hover {
+        border-color: var(--primary);
+      }
+      .cx-sbtn .n {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: oklch(0.65 0.02 285);
+      }
+      .cx-sbtn.on {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+      }
+      .cx-sbtn.on .n {
+        color: oklch(0.85 0.1 285);
+      }
+
+      /* ---------- Reduced motion ---------- */
+      @media (prefers-reduced-motion: reduce) {
+        .cx-spin,
+        .trace .ico.run::after {
+          animation: none;
+        }
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="topo-a">
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="mark">M</span>
+          Banco Meridiano <small>· incident-sense</small>
+        </div>
+        <div class="grow"></div>
+        <div class="field-search search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input class="input" placeholder="Buscar incidentes, serviços…" />
+        </div>
+        <div class="avatar">AO</div>
+      </header>
+
+      <nav class="sidenav">
+        <div class="nav-label">Operações</div>
+        <a class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M3 9h18M8 14h8M8 17h5" />
+          </svg>
+          Incidentes
+        </a>
+        <a class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m12 3 9 4.5-9 4.5-9-4.5L12 3Z" />
+            <path d="m3 12 9 4.5 9-4.5M3 16.5 12 21l9-4.5" />
+          </svg>
+          Recorrências
+        </a>
+        <a class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 16v-4M12 8h.01" />
+          </svg>
+          Como funciona
+        </a>
+        <div class="nav-spacer"></div>
+        <div class="nav-foot">Dados sintéticos · banco fictício. Demo do workshop.</div>
+      </nav>
+
+      <main class="main">
+        <div class="crumbs">
+          <a>Incidentes</a><span>/</span><span class="mono">INC0052667</span>
+        </div>
+
+        <div class="detail-grid">
+          <!-- Record — identical across topologies -->
+          <div class="card">
+            <div class="record-head">
+              <div class="row">
+                <span class="num mono" style="font-size: 13px">INC0052667</span>
+                <span class="badge s-hold"><span class="dot"></span>Em espera</span>
+                <span class="badge p3"><span class="dot"></span>Prioridade · Moderada</span>
+              </div>
+              <h1>Lag em crescimento no Kafka devido a bloqueio do consumidor</h1>
+              <div class="meta">Mensageria-Kafka · Infra-Mensageria · em espera</div>
+            </div>
+
+            <div class="tabs">
+              <div class="tab on">Detalhes</div>
+              <div class="tab">Atividade</div>
+            </div>
+
+            <div class="section">
+              <h3>Classificação</h3>
+              <div class="fields">
+                <div class="field">
+                  <label>Categoria</label><span class="val">Infraestrutura</span>
+                </div>
+                <div class="field">
+                  <label>Subcategoria</label><span class="val">Mensageria</span>
+                </div>
+                <div class="field">
+                  <label>Serviço afetado (CI)</label>
+                  <span class="val mono" style="font-size: 13px">Mensageria-Kafka</span>
+                </div>
+                <div class="field">
+                  <label>Grupo de atendimento</label>
+                  <span class="val mono" style="font-size: 13px">Infra-Mensageria</span>
+                </div>
+                <div class="field"><label>Impacto</label><span class="val">Médio</span></div>
+                <div class="field"><label>Urgência</label><span class="val">Média</span></div>
+              </div>
+            </div>
+
+            <div class="section" style="border-top: 1px solid var(--border)">
+              <h3>Descrição</h3>
+              <div class="field full">
+                <span class="val long">
+                  O monitoramento do sistema indicou um crescimento no lag no Kafka,
+                  com o consumidor não processando mensagens. Isso provocou atrasos
+                  significativos nas notificações.
+                </span>
+              </div>
+              <div style="margin-top: 14px">
+                <span class="tag">demo</span><span class="tag">mensageria</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aurora panel — repositioned per topology, same content -->
+          <aside class="cx-panel" aria-label="Copiloto Aurora">
+            <div class="cx-head">
+              <span class="cx-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                  <path d="M12 3l1.7 5.1 5.1 1.7-5.1 1.7L12 16.6l-1.7-5.1L5.2 9.8l5.1-1.7z" />
+                  <path d="M18.5 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" />
+                </svg>
+              </span>
+              <div class="cx-id">
+                <span class="t">Aurora</span>
+                <span class="s">Copiloto de incidentes · somente leitura</span>
+              </div>
+              <div class="grow"></div>
+              <button class="cx-model" type="button">
+                Modelo de referência
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+              <button class="cx-close" type="button" aria-label="Fechar copiloto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="cx-body">
+              <!-- ============ 1 · Sem credenciais ============ -->
+              <div class="cx-state" data-state="1">
+                <div class="cx-notice key">
+                  <span class="cx-ni">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="8" cy="15" r="4" />
+                      <path d="m10.8 12.2 8-8M17 5l2 2M15 7l1.5 1.5" />
+                    </svg>
+                  </span>
+                  <div>
+                    <h4>A Aurora ainda não está configurada</h4>
+                    Faltam as chaves de acesso ao modelo no <code>.env</code> do servidor.
+                    Sem elas a Aurora não conversa, mas a leitura do incidente segue normal.
+                    <ol>
+                      <li>Copie <code>.env.example</code> para <code>.env</code>.</li>
+                      <li>Preencha <code>OPENROUTER_API_KEY</code>.</li>
+                      <li>Reinicie o serviço com <code>docker compose up</code>.</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ============ 2 · Primeiro contato (vazio) ============ -->
+              <div class="cx-state" data-state="2">
+                <div class="cx-intro">
+                  <p style="margin: 0 0 8px">
+                    Sou a <b>Aurora</b>, copiloto de incidentes do Banco Meridiano.
+                    Trabalho <b>somente leitura</b>: analiso este incidente e cito
+                    incidentes históricos como evidência.
+                  </p>
+                  <ul class="cx-scope">
+                    <li class="yes">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7" /></svg>
+                      Explico o incidente e sugiro caminhos fundamentados no histórico.
+                    </li>
+                    <li class="no">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                      Não altero o incidente nem executo ações — só leitura.
+                    </li>
+                  </ul>
+                </div>
+                <button class="cx-quick" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                    <path d="M12 3l1.7 5.1 5.1 1.7-5.1 1.7L12 16.6l-1.7-5.1L5.2 9.8l5.1-1.7z" />
+                  </svg>
+                  Analisar este incidente
+                  <span class="kbd">↵</span>
+                </button>
+              </div>
+
+              <!-- ============ 3 · Turno em andamento (streaming) ============ -->
+              <div class="cx-state" data-state="3">
+                <div class="bubble-user">Analisar este incidente</div>
+
+                <div class="trace">
+                  <div class="step">
+                    <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                    <span class="lbl"><b>Verificar política</b></span>
+                  </div>
+                  <div class="step">
+                    <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                    <span class="lbl"><b>Classificar a pergunta</b></span>
+                  </div>
+                  <div class="step">
+                    <span class="ico run"><svg class="cx-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3a9 9 0 1 0 9 9" /></svg></span>
+                    <span class="lbl"><b>Buscar incidentes semelhantes</b></span>
+                  </div>
+                  <div class="step is-pending">
+                    <span class="ico pending"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="12" /></svg></span>
+                    <span class="lbl"><b>Responder</b></span>
+                  </div>
+                  <div class="step is-pending">
+                    <span class="ico pending"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="12" /></svg></span>
+                    <span class="lbl"><b>Validar citações</b></span>
+                  </div>
+                </div>
+
+                <div class="cx-src-head">Fontes encontradas</div>
+                <div class="cx-chips">
+                  <a class="cx-cite">INC0052670</a>
+                  <a class="cx-cite">INC0052622</a>
+                </div>
+
+                <button class="btn btn-ghost btn-sm cx-stop" type="button">
+                  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="7" y="7" width="10" height="10" rx="2" /></svg>
+                  Parar
+                </button>
+              </div>
+
+              <!-- ============ 4 · Resposta fundamentada (herói) ============ -->
+              <div class="cx-state" data-state="4">
+                <div class="bubble-user">Analisar este incidente</div>
+
+                <button class="cx-trace-min" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7" /></svg>
+                  Analisei 4 incidentes semelhantes
+                  <span class="go">ver etapas</span>
+                </button>
+
+                <div class="cx-verdict">
+                  <span class="badge s-resolved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7" /></svg>
+                    Procedente · é um incidente
+                  </span>
+                </div>
+
+                <!-- explanation: no chrome -->
+                <div class="cx-prose">
+                  O lag do Kafka cresce porque o consumidor parou de avançar: ele
+                  travou em uma mensagem e não confirma novos offsets, então a fila
+                  de notificações se acumula atrás do ponto de bloqueio.
+                </div>
+
+                <!-- diagnosis -->
+                <div class="cx-block diagnosis">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3M11 8v6M8 11h6" /></svg>
+                    Diagnóstico
+                  </span>
+                  Provável mensagem malformada no tópico bloqueando o consumidor, que
+                  reprocessa o mesmo offset em laço. Casos com o mesmo padrão
+                  <a class="cx-cite">INC0052670</a> <a class="cx-cite">INC0052622</a>
+                  terminaram com o consumidor preso na primeira mensagem inválida.
+                </div>
+
+                <!-- action -->
+                <div class="cx-block action">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
+                    Ação sugerida
+                  </span>
+                  <ol class="cx-steps">
+                    <li>Mover a mensagem malformada para a DLQ <a class="cx-cite">INC0052670</a>.</li>
+                    <li>Reiniciar o consumidor para retomar a partir do próximo offset <a class="cx-cite">INC0052656</a>.</li>
+                    <li>Monitorar o lag até normalizar e confirmar o consumo <a class="cx-cite">INC0052670</a>.</li>
+                  </ol>
+                </div>
+
+                <!-- caveat -->
+                <div class="cx-block caveat">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 20h20L12 3Z" /><path d="M12 10v4M12 17h.01" /></svg>
+                    Atenção
+                  </span>
+                  Confirme o offset exato antes de mover a mensagem. Os incidentes
+                  citados tratam do mesmo serviço, mas a causa raiz pode diferir.
+                </div>
+
+                <div class="cx-ans-foot">
+                  <div class="cx-grounding">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5v14a2 2 0 0 0 2 2h14V7a2 2 0 0 0-2-2H6a2 2 0 0 1-2-2z" /><path d="M8 9h8M8 13h6" /></svg>
+                    Fundamentada em 4 incidentes históricos · Modelo de referência
+                  </div>
+                  <div class="cx-ans-actions">
+                    <button class="btn btn-primary btn-sm" type="button">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" /></svg>
+                      Inserir nas notas
+                    </button>
+                    <button class="btn btn-outline btn-sm" type="button">Copiar</button>
+                  </div>
+
+                  <div class="cx-src-head">Fontes</div>
+                  <div class="cands">
+                    <div class="cand">
+                      <span class="num">INC0052670</span>
+                      <span class="cdesc">Consumidor Kafka travado em mensagem inválida</span>
+                      <span class="sim">0.87</span>
+                      <span class="pill pill-keep">usado</span>
+                      <span class="open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M7 17 17 7M9 7h8v8" /></svg></span>
+                    </div>
+                    <div class="cand">
+                      <span class="num">INC0052622</span>
+                      <span class="cdesc">Lag crescente no Kafka de notificações</span>
+                      <span class="sim">0.84</span>
+                      <span class="pill pill-keep">usado</span>
+                      <span class="open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M7 17 17 7M9 7h8v8" /></svg></span>
+                    </div>
+                    <div class="cand">
+                      <span class="num">INC0052656</span>
+                      <span class="cdesc">Reinício do consumidor após bloqueio de partição</span>
+                      <span class="sim">0.81</span>
+                      <span class="pill pill-keep">usado</span>
+                      <span class="open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M7 17 17 7M9 7h8v8" /></svg></span>
+                    </div>
+                    <div class="cand dropped">
+                      <span class="num">INC0052685</span>
+                      <span class="cdesc">Latência no broker Kafka durante rebalance</span>
+                      <span class="sim">0.78</span>
+                      <span class="pill pill-drop">descartado</span>
+                      <span class="open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M7 17 17 7M9 7h8v8" /></svg></span>
+                    </div>
+                  </div>
+                  <div class="cx-srcfoot">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                    Abra um caso para conferir a evidência.
+                  </div>
+                </div>
+              </div>
+
+              <!-- ============ 5 · Explicação geral (conhecimento do modelo) ============ -->
+              <div class="cx-state" data-state="5">
+                <div class="bubble-user">O que é uma DLQ?</div>
+                <div class="cx-prose">
+                  DLQ é a <b>dead-letter queue</b>: uma fila separada para onde vão as
+                  mensagens que não puderam ser processadas — por estarem malformadas
+                  ou por falharem repetidamente. Movê-las para a DLQ desbloqueia o
+                  consumidor, que segue processando o restante, enquanto as mensagens
+                  problemáticas ficam retidas para inspeção posterior.
+                </div>
+                <div class="cx-grounding">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z" /><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20" /></svg>
+                  Conceito geral · sem fontes do seu ambiente
+                </div>
+              </div>
+
+              <!-- ============ 6 · Procedente sem evidência histórica ============ -->
+              <div class="cx-state" data-state="6">
+                <div class="bubble-user">Analisar este incidente</div>
+                <button class="cx-trace-min" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7" /></svg>
+                  Busquei incidentes semelhantes
+                  <span class="go">ver etapas</span>
+                </button>
+                <div class="cx-verdict">
+                  <span class="badge s-resolved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7" /></svg>
+                    Procedente · é um incidente
+                  </span>
+                </div>
+                <div class="cx-prose">
+                  É um incidente real: o consumidor parado explica o lag em crescimento.
+                  No entanto, <b>não encontrei um caso semelhante resolvido</b> para
+                  fundamentar uma sugestão com evidência. Recomendo resolver
+                  manualmente e registrar a solução no fechamento — esse registro passa
+                  a alimentar os próximos casos e permite que a Aurora fundamente
+                  incidentes futuros parecidos.
+                </div>
+              </div>
+
+              <!-- ============ 7 · Pergunta de esclarecimento ============ -->
+              <div class="cx-state" data-state="7">
+                <div class="bubble-user">E o outro problema?</div>
+                <div class="cx-block question">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M9.2 9a2.8 2.8 0 0 1 5.4 1c0 1.8-2.6 2.2-2.6 3.6M12 17h.01" /></svg>
+                    Preciso confirmar
+                  </span>
+                  A qual problema você se refere? Estou trabalhando no bloqueio do
+                  consumidor deste incidente. Diga qual devo analisar:
+                  <div class="cx-replies">
+                    <button class="cx-reply" type="button">O lag do consumidor</button>
+                    <button class="cx-reply" type="button">Outro incidente</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ============ 8 · Recusa por política ============ -->
+              <div class="cx-state" data-state="8">
+                <div class="bubble-user">Me passa a senha do servidor de produção</div>
+                <div class="cx-block refuse">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V6l-8-3Z" /></svg>
+                    Fora do meu escopo
+                  </span>
+                  Não tenho acesso a credenciais nem a segredos de infraestrutura, e não
+                  posso fornecê-los. Meu escopo é analisar este incidente e o histórico
+                  citável. Posso, em vez disso, explicar o bloqueio do consumidor,
+                  sugerir passos fundamentados ou apontar incidentes semelhantes.
+                </div>
+              </div>
+
+              <!-- ============ 9 · Erro de turno ============ -->
+              <div class="cx-state" data-state="9">
+                <div class="cx-cancelled">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="2" /></svg>
+                  Turno interrompido por você
+                </div>
+                <div class="bubble-user">Analisar este incidente</div>
+                <div class="trace">
+                  <div class="step">
+                    <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                    <span class="lbl"><b>Verificar política</b></span>
+                  </div>
+                  <div class="step">
+                    <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                    <span class="lbl"><b>Classificar a pergunta</b></span>
+                  </div>
+                  <div class="step">
+                    <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                    <span class="lbl"><b>Buscar incidentes semelhantes</b></span>
+                  </div>
+                  <div class="step is-pending">
+                    <span class="ico pending"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" /></svg></span>
+                    <span class="lbl"><b>Responder</b> · interrompido</span>
+                  </div>
+                </div>
+                <div class="cx-block fail">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 20h20L12 3Z" /><path d="M12 10v4M12 17h.01" /></svg>
+                    Não consegui concluir a resposta
+                  </span>
+                  O provedor do modelo não respondeu a tempo.
+                  <div style="margin-top: 10px">
+                    <button class="btn btn-outline btn-sm" type="button">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4" /></svg>
+                      Tentar de novo
+                    </button>
+                  </div>
+                </div>
+                <div class="cx-srcfoot">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" /></svg>
+                  Nenhuma resposta parcial é mostrada — a Aurora só entrega respostas validadas.
+                </div>
+              </div>
+
+              <!-- ============ 10 · Limite de entrada ============ -->
+              <div class="cx-state" data-state="10">
+                <div class="cx-intro">
+                  <p style="margin: 0">
+                    Digite a sua pergunta abaixo. O limite de entrada por mensagem é de
+                    4.000 caracteres — o campo já está no limite.
+                  </p>
+                </div>
+              </div>
+
+              <!-- ============ 11 · Turno em inglês ============ -->
+              <div class="cx-state" data-state="11">
+                <div class="bubble-user">Why is the consumer stuck?</div>
+                <button class="cx-trace-min" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7" /></svg>
+                  Analyzed 4 similar incidents
+                  <span class="go">view steps</span>
+                </button>
+                <div class="cx-prose">
+                  The consumer stopped committing offsets: it is stuck on a single
+                  message and keeps reprocessing the same offset, so the notification
+                  backlog piles up behind that point.
+                </div>
+                <div class="cx-block diagnosis">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3M11 8v6M8 11h6" /></svg>
+                    Diagnosis
+                  </span>
+                  A malformed message is most likely blocking the consumer, which loops
+                  on the first invalid offset <a class="cx-cite">INC0052670</a>.
+                </div>
+                <div class="cx-block caveat">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 20h20L12 3Z" /><path d="M12 10v4M12 17h.01" /></svg>
+                    Caution
+                  </span>
+                  Confirm the exact offset before moving the message to the DLQ.
+                </div>
+                <div class="cx-grounding">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14M5 12h14M5 16h9" /></svg>
+                  Answered in English · matches your message language
+                </div>
+              </div>
+            </div>
+
+            <!-- Composer — state is driven by JS -->
+            <div class="cx-foot">
+              <div class="cx-textwrap">
+                <textarea class="cx-input" rows="1" placeholder="Pergunte sobre este incidente…"></textarea>
+              </div>
+              <div class="cx-foot-row">
+                <span class="cx-hint"></span>
+                <span class="cx-counter"></span>
+                <button class="cx-send" type="button" aria-label="Enviar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 12 20 4l-6 16-3-7-7-1Z" /></svg>
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+
+    <!-- Floating action button (topology B only) -->
+    <button class="cx-fab" type="button" aria-label="Abrir Aurora">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+        <path d="M12 3l1.7 5.1 5.1 1.7-5.1 1.7L12 16.6l-1.7-5.1L5.2 9.8l5.1-1.7z" />
+        <path d="M18.5 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" />
+      </svg>
+    </button>
+
+    <!-- Prototype evaluation bar — dev tool, deliberately outside the product visual language -->
+    <div class="cx-bar">
+      <span class="cx-bar-label">Topologia</span>
+      <div class="cx-topo">
+        <button type="button" data-topo="a" class="on">A · Painel ancorado</button>
+        <button type="button" data-topo="b">B · Painel flutuante (FAB)</button>
+      </div>
+      <span class="cx-bar-label">Estado</span>
+      <div class="cx-states">
+        <button class="cx-sbtn" data-goto="1" type="button"><span class="n">1</span>Sem credenciais</button>
+        <button class="cx-sbtn" data-goto="2" type="button"><span class="n">2</span>Vazio</button>
+        <button class="cx-sbtn" data-goto="3" type="button"><span class="n">3</span>Streaming</button>
+        <button class="cx-sbtn on" data-goto="4" type="button"><span class="n">4</span>Resposta</button>
+        <button class="cx-sbtn" data-goto="5" type="button"><span class="n">5</span>Conceito</button>
+        <button class="cx-sbtn" data-goto="6" type="button"><span class="n">6</span>Sem evidência</button>
+        <button class="cx-sbtn" data-goto="7" type="button"><span class="n">7</span>Esclarecer</button>
+        <button class="cx-sbtn" data-goto="8" type="button"><span class="n">8</span>Recusa</button>
+        <button class="cx-sbtn" data-goto="9" type="button"><span class="n">9</span>Erro</button>
+        <button class="cx-sbtn" data-goto="10" type="button"><span class="n">10</span>Limite</button>
+        <button class="cx-sbtn" data-goto="11" type="button"><span class="n">11</span>Inglês</button>
+      </div>
+    </div>
+
+    <script>
+      // Prototype driver: topology toggle + 11-state switcher + composer state.
+      // Selection lives in plain variables (no localStorage, per brief).
+      (function () {
+        const body = document.body;
+        const bodyClassTopo = { a: "topo-a", b: "topo-b" };
+        const states = document.querySelectorAll(".cx-state");
+        const textwrap = document.querySelector(".cx-textwrap");
+        const input = document.querySelector(".cx-input");
+        const hint = document.querySelector(".cx-hint");
+        const counter = document.querySelector(".cx-counter");
+        const send = document.querySelector(".cx-send");
+
+        const DEFAULT_PLACEHOLDER = "Pergunte sobre este incidente…";
+        const LIMIT_TEXT =
+          "O monitoramento apontou o lag do Kafka crescendo de forma contínua ao longo " +
+          "da última hora, com o consumidor do grupo de notificações sem avançar os " +
+          "offsets. As mensagens de confirmação de Pix, alertas de fraude e avisos de " +
+          "vencimento estão todas represadas atrás do ponto de bloqueio, e o time de " +
+          "operações começou a receber reclamações de clientes que não recebem as " +
+          "notificações esperadas. Preciso entender se a causa é uma mensagem " +
+          "malformada travando o consumidor ou um problema mais amplo no broker, e " +
+          "quais incidentes anteriores trataram exatamente desse mesmo padrão de " +
+          "bloqueio para que eu possa comparar as resoluções aplicadas e decidir com " +
+          "segurança o próximo passo sem arriscar perder mensagens da fila.";
+
+        // Per-state composer configuration.
+        const composer = {
+          1: { disabled: true, placeholder: "Configure as credenciais para conversar" },
+          2: { disabled: false, placeholder: DEFAULT_PLACEHOLDER },
+          3: { disabled: true, hint: "Um turno por vez neste incidente" },
+          4: { disabled: false, placeholder: DEFAULT_PLACEHOLDER },
+          5: { disabled: false, placeholder: DEFAULT_PLACEHOLDER },
+          6: { disabled: false, placeholder: DEFAULT_PLACEHOLDER },
+          7: { disabled: false, placeholder: DEFAULT_PLACEHOLDER },
+          8: { disabled: false, placeholder: DEFAULT_PLACEHOLDER },
+          9: { disabled: false, placeholder: DEFAULT_PLACEHOLDER },
+          10: {
+            disabled: false,
+            value: LIMIT_TEXT,
+            counter: "4.000/4.000",
+            counterDanger: true,
+            sendDisabled: true,
+            limit: true,
+            hint: "Mensagem no limite. Resuma para enviar — nada foi enviado ao modelo.",
+          },
+          11: { disabled: false, placeholder: "Ask about this incident…" },
+        };
+
+        function setTopology(topo) {
+          body.classList.remove(bodyClassTopo.a, bodyClassTopo.b, "cx-closed");
+          body.classList.add(bodyClassTopo[topo]);
+          document.querySelectorAll(".cx-topo button").forEach((b) => {
+            b.classList.toggle("on", b.dataset.topo === topo);
+          });
+        }
+
+        function applyComposer(cfg) {
+          input.disabled = !!cfg.disabled;
+          input.value = cfg.value || "";
+          input.placeholder = cfg.disabled && !cfg.placeholder ? "" : cfg.placeholder || "";
+          textwrap.classList.toggle("disabled", !!cfg.disabled);
+          textwrap.classList.toggle("limit", !!cfg.limit);
+
+          hint.textContent = cfg.hint || "";
+          if (cfg.counter) {
+            counter.textContent = cfg.counter;
+            counter.classList.toggle("danger", !!cfg.counterDanger);
+            counter.style.display = "";
+          } else {
+            counter.textContent = "";
+            counter.style.display = "none";
+          }
+          send.disabled = !!cfg.disabled || !!cfg.sendDisabled;
+        }
+
+        function goTo(n) {
+          states.forEach((s) => s.classList.toggle("on", s.dataset.state === String(n)));
+          document.querySelectorAll(".cx-sbtn").forEach((b) => {
+            b.classList.toggle("on", b.dataset.goto === String(n));
+          });
+          applyComposer(composer[n] || composer[4]);
+          document.querySelector(".cx-body").scrollTop = 0;
+        }
+
+        document.querySelectorAll(".cx-topo button").forEach((b) => {
+          b.addEventListener("click", () => setTopology(b.dataset.topo));
+        });
+        document.querySelectorAll(".cx-sbtn").forEach((b) => {
+          b.addEventListener("click", () => goTo(Number(b.dataset.goto)));
+        });
+        // In topology B the close button collapses the panel to the FAB and
+        // the FAB reopens it — mirroring the real open/close affordance.
+        document.querySelector(".cx-close").addEventListener("click", () => {
+          document.body.classList.add("cx-closed");
+        });
+        document.querySelector(".cx-fab").addEventListener("click", () => {
+          document.body.classList.remove("cx-closed");
+        });
+
+        // Initial render: anchored topology, hero state.
+        setTopology("a");
+        goTo(4);
+      })();
+    </script>
+  </body>
+</html>
