@@ -126,6 +126,13 @@ admissão de orçamento (`compare.py`, cap US$ 1,50). Evidência sanitizada em
 [`docs/evals/selecao-modelos-openrouter/`](../../../docs/evals/selecao-modelos-openrouter/README.md);
 bundles completos e transcripts ficam locais em `_artifacts/selection/`.
 
+Para graduar **um** candidato a alternativa suportada (regra de #17/#24) sem
+re-rodar o portfólio, `selection/sentinel.py` roda o mesmo probe sobre um único
+modelo pinado, reusando preflight, runner e writers e computando o gate de
+invariantes duras (nível 1 da cascata de #24) como veredito pass/fail. Cap = o da
+suíte (US$ 0,50); reserva pelo preço da rota pinada. Evidência sanitizada por
+candidato em `docs/evals/sentinela-<modelo>/`.
+
 ## O que permanece aberto (produção, não protótipo)
 
 - Corpus real (~120 conversas) com revisão humana, gold graduado e calibração dos

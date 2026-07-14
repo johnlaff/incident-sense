@@ -1,0 +1,168 @@
+{
+  "schema_version": "selection-projection/v1",
+  "collected": "2026-07-14T11:40:12.204186+00:00",
+  "sources": {
+    "models": "https://openrouter.ai/api/v1/models",
+    "zdr": "https://openrouter.ai/api/v1/endpoints/zdr"
+  },
+  "eligibility_rule": "zdr AND structured_outputs AND status >= 0",
+  "models": {
+    "deepseek/deepseek-v4-pro": {
+      "canonical_slug": "deepseek/deepseek-v4-pro-20260423",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.000000435",
+        "completion": "0.00000087",
+        "internal_reasoning": null,
+        "input_cache_read": "0.000000003625",
+        "input_cache_write": null
+      },
+      "expiration_date": null
+    }
+  },
+  "zdr_endpoints": [
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "BaseTen",
+      "tag": "baseten/fp4",
+      "quantization": "fp4",
+      "context_length": 262144,
+      "pricing": {
+        "prompt": "0.00000174",
+        "completion": "0.00000348"
+      },
+      "status": 0,
+      "eligible": false
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "SiliconFlow",
+      "tag": "siliconflow/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000150162",
+        "completion": "0.000003135"
+      },
+      "status": 0,
+      "eligible": false
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "Parasail",
+      "tag": "parasail/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000174",
+        "completion": "0.00000348"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "DeepInfra",
+      "tag": "deepinfra/fp4",
+      "quantization": "fp4",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.0000013",
+        "completion": "0.0000026"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "Venice",
+      "tag": "venice",
+      "quantization": "unknown",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.00000165",
+        "completion": "0.000003301"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "Novita",
+      "tag": "novita/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.000001168",
+        "completion": "0.000002336"
+      },
+      "status": 0,
+      "eligible": false
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "DigitalOcean",
+      "tag": "digitalocean",
+      "quantization": "unknown",
+      "context_length": 262144,
+      "pricing": {
+        "prompt": "0.000001392",
+        "completion": "0.000002784"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "WandB",
+      "tag": "wandb/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000174",
+        "completion": "0.00000348"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "Together",
+      "tag": "together",
+      "quantization": "unknown",
+      "context_length": 512000,
+      "pricing": {
+        "prompt": "0.00000174",
+        "completion": "0.00000348"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "AtlasCloud",
+      "tag": "atlas-cloud/fp4",
+      "quantization": "fp4",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000168",
+        "completion": "0.00000338"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-pro",
+      "provider_name": "Fireworks",
+      "tag": "fireworks",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000174",
+        "completion": "0.00000348"
+      },
+      "status": -2,
+      "eligible": false
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": "selection-sentinel/v1",
+  "probe_version": "openrouter-copilot-probe/v1",
+  "started": "2026-07-14T11:40:12.204186+00:00",
+  "git_sha": "f873677",
+  "dataset_version": "selection-bilingual/v1",
+  "dataset_sha256": "59ef6410a8ab231cbcfe61eb6f881bf56bff7cb62062fb51dbfb5993b5c28527",
+  "candidate": "deepseek/deepseek-v4-pro",
+  "reference_eligible": false,
+  "budget": {
+    "cap_usd": 0.5,
+    "plan_worst_case_usd": 0.16138,
+    "spent_reported_usd": 0.029215
+  },
+  "conditions": {
+    "pinned_route": {
+      "endpoint_tag": "parasail/fp8",
+      "provider": "Parasail",
+      "quantization": "fp8",
+      "route_price_per_m": {
+        "prompt": 1.74,
+        "completion": 3.48
+      },
+      "temperature_sent": true,
+      "reasoning": {
+        "effort": "none"
+      },
+      "max_output_tokens": 2000
+    },
+    "provider_prefs": {
+      "allow_fallbacks": false,
+      "require_parameters": true,
+      "zdr": true,
+      "data_collection": "deny"
+    },
+    "timeouts_s": {
+      "connect": 10,
+      "read": 60
+    },
+    "transport_reruns_max": 2,
+    "retrieval": "held constant per case (same approved evidence)",
+    "baseline_run": "docs/evals/selecao-modelos-openrouter (#23), deepseek-v4-flash @ parasail/fp8"
+  },
+  "hard_invariants": {
+    "schema_invalid": 0,
+    "request_rejected": 0,
+    "transport": 0,
+    "contract_violations": 1,
+    "forged_citations": 0,
+    "isolation_failures": 0,
+    "incomplete_cases": 0
+  },
+  "graduation": {
+    "rule": "graduate iff every hard invariant is zero (cascade level 1, #24)",
+    "verdict": "exclude"
+  },
+  "summary": {
+    "cases": 18,
+    "completed": 18,
+    "failures": {
+      "schema_invalid": [],
+      "request_rejected": [],
+      "transport": [],
+      "retried_attempts": 0
+    },
+    "route_match": {
+      "overall": 0.8889,
+      "pt-BR": 0.9,
+      "en": 0.875,
+      "pt_en_delta": 0.025
+    },
+    "refusals": {
+      "false": 2,
+      "missed": 0
+    },
+    "citations": {
+      "forged_total": 0,
+      "isolation_failures": 0
+    },
+    "contract_violations": {
+      "locale-mismatch": 1
+    },
+    "groundedness_heuristic_mean": 0.0705,
+    "latency_ms": {
+      "p50": 11251.0,
+      "p95": 19151.4,
+      "max": 21634.8
+    },
+    "tokens": {
+      "input": 11576,
+      "output": 5382,
+      "reasoning": 0,
+      "cached": 5888
+    },
+    "cost_reported_usd": 0.029215,
+    "providers_observed": [
+      "Parasail:deepseek/deepseek-v4-pro-20260423"
+    ],
+    "verdict": "fail"
+  }
+}
