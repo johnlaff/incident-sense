@@ -99,6 +99,8 @@ ignore = [
 # Tests and scripts do not need full docstring coverage.
 "tests/*" = ["D"]
 "scripts/*" = ["D"]
+# Throwaway prototype test files (prototypes/): same relaxation as tests/.
+"prototypes/**/test_*.py" = ["D"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
