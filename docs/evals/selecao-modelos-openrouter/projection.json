@@ -1,0 +1,436 @@
+{
+  "schema_version": "selection-projection/v1",
+  "collected": "2026-07-14T01:13:49.382524+00:00",
+  "sources": {
+    "models": "https://openrouter.ai/api/v1/models",
+    "zdr": "https://openrouter.ai/api/v1/endpoints/zdr"
+  },
+  "eligibility_rule": "zdr AND structured_outputs AND status >= 0",
+  "models": {
+    "openai/gpt-5.6-luna": {
+      "canonical_slug": "openai/gpt-5.6-luna-20260709",
+      "context_length": 1050000,
+      "pricing": {
+        "prompt": "0.000001",
+        "completion": "0.000006",
+        "internal_reasoning": null,
+        "input_cache_read": "0.0000001",
+        "input_cache_write": "0.00000125"
+      },
+      "expiration_date": null
+    },
+    "anthropic/claude-sonnet-5": {
+      "canonical_slug": "anthropic/claude-sonnet-5-20260630",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "internal_reasoning": null,
+        "input_cache_read": "0.0000002",
+        "input_cache_write": "0.0000025"
+      },
+      "expiration_date": null
+    },
+    "google/gemini-3.5-flash": {
+      "canonical_slug": "google/gemini-3.5-flash-20260519",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.0000015",
+        "completion": "0.000009",
+        "internal_reasoning": "0.000009",
+        "input_cache_read": "0.00000015",
+        "input_cache_write": "0.00000008333333333333334"
+      },
+      "expiration_date": null
+    },
+    "google/gemini-3.1-flash-lite": {
+      "canonical_slug": "google/gemini-3.1-flash-lite-20260507",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000025",
+        "completion": "0.0000015",
+        "internal_reasoning": "0.0000015",
+        "input_cache_read": "0.000000025",
+        "input_cache_write": "0.00000008333333333333334"
+      },
+      "expiration_date": null
+    },
+    "deepseek/deepseek-v4-flash": {
+      "canonical_slug": "deepseek/deepseek-v4-flash-20260423",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000009",
+        "completion": "0.00000018",
+        "internal_reasoning": null,
+        "input_cache_read": "0.000000018",
+        "input_cache_write": null
+      },
+      "expiration_date": null
+    },
+    "mistralai/mistral-small-2603": {
+      "canonical_slug": "mistralai/mistral-small-2603",
+      "context_length": 262144,
+      "pricing": {
+        "prompt": "0.00000015",
+        "completion": "0.0000006",
+        "internal_reasoning": null,
+        "input_cache_read": "0.000000015",
+        "input_cache_write": null
+      },
+      "expiration_date": null
+    }
+  },
+  "zdr_endpoints": [
+    {
+      "model_id": "mistralai/mistral-small-2603",
+      "provider_name": "Venice",
+      "tag": "venice/fp8",
+      "quantization": "fp8",
+      "context_length": 256000,
+      "pricing": {
+        "prompt": "0.0000001875",
+        "completion": "0.00000075"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "Morph",
+      "tag": "morph",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.000000139",
+        "completion": "0.000000278"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "SiliconFlow",
+      "tag": "siliconflow/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000013",
+        "completion": "0.00000028"
+      },
+      "status": -2,
+      "eligible": false
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "Parasail",
+      "tag": "parasail/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000015",
+        "completion": "0.00000028"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "Venice",
+      "tag": "venice",
+      "quantization": "unknown",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.000000138",
+        "completion": "0.000000275"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "NextBit",
+      "tag": "nextbit/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000014",
+        "completion": "0.00000028"
+      },
+      "status": -2,
+      "eligible": false
+    },
+    {
+      "model_id": "google/gemini-3.1-flash-lite",
+      "provider_name": "Google",
+      "tag": "google-vertex/global",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000025",
+        "completion": "0.0000015"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "google/gemini-3.1-flash-lite",
+      "provider_name": "Google",
+      "tag": "google-vertex/global/flex",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.000000125",
+        "completion": "0.00000075"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "google/gemini-3.1-flash-lite",
+      "provider_name": "Google",
+      "tag": "google-vertex/global/priority",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000045",
+        "completion": "0.0000027"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "google/gemini-3.5-flash",
+      "provider_name": "Google",
+      "tag": "google-vertex/global",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.0000015",
+        "completion": "0.000009"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "google/gemini-3.5-flash",
+      "provider_name": "Google",
+      "tag": "google-vertex/global/flex",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000075",
+        "completion": "0.0000045"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "google/gemini-3.5-flash",
+      "provider_name": "Google",
+      "tag": "google-vertex/global/priority",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.0000027",
+        "completion": "0.0000162"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "Fireworks",
+      "tag": "fireworks",
+      "quantization": "unknown",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000014",
+        "completion": "0.00000028"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "Novita",
+      "tag": "novita/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000014",
+        "completion": "0.00000028"
+      },
+      "status": 0,
+      "eligible": false
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "WandB",
+      "tag": "wandb/fp8",
+      "quantization": "fp8",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000014",
+        "completion": "0.00000028"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "DeepInfra",
+      "tag": "deepinfra/fp4",
+      "quantization": "fp4",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000009",
+        "completion": "0.00000018"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "DigitalOcean",
+      "tag": "digitalocean",
+      "quantization": "unknown",
+      "context_length": 65536,
+      "pricing": {
+        "prompt": "0.000000112",
+        "completion": "0.000000224"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "AkashML",
+      "tag": "akashml/fp8",
+      "quantization": "fp8",
+      "context_length": 131072,
+      "pricing": {
+        "prompt": "0.00000014",
+        "completion": "0.00000028"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "anthropic/claude-sonnet-5",
+      "provider_name": "Azure",
+      "tag": "azure/us-east-2",
+      "quantization": "unknown",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "anthropic/claude-sonnet-5",
+      "provider_name": "Amazon Bedrock",
+      "tag": "amazon-bedrock/global",
+      "quantization": "unknown",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "anthropic/claude-sonnet-5",
+      "provider_name": "Google",
+      "tag": "google-vertex/global",
+      "quantization": "unknown",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001"
+      },
+      "status": 0,
+      "eligible": false
+    },
+    {
+      "model_id": "anthropic/claude-sonnet-5",
+      "provider_name": "Amazon Bedrock",
+      "tag": "amazon-bedrock/claude-on-aws",
+      "quantization": "unknown",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "anthropic/claude-sonnet-5",
+      "provider_name": "Google",
+      "tag": "google-vertex/europe",
+      "quantization": "unknown",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.0000022",
+        "completion": "0.000011"
+      },
+      "status": 0,
+      "eligible": false
+    },
+    {
+      "model_id": "anthropic/claude-sonnet-5",
+      "provider_name": "Amazon Bedrock",
+      "tag": "amazon-bedrock/us-east-1",
+      "quantization": "unknown",
+      "context_length": 1000000,
+      "pricing": {
+        "prompt": "0.0000022",
+        "completion": "0.000011"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "provider_name": "AtlasCloud",
+      "tag": "atlas-cloud/fp4",
+      "quantization": "fp4",
+      "context_length": 1048576,
+      "pricing": {
+        "prompt": "0.00000014",
+        "completion": "0.00000028"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "openai/gpt-5.6-luna",
+      "provider_name": "Azure",
+      "tag": "azure",
+      "quantization": "unknown",
+      "context_length": 1050000,
+      "pricing": {
+        "prompt": "0.000001",
+        "completion": "0.000006"
+      },
+      "status": 0,
+      "eligible": true
+    },
+    {
+      "model_id": "openai/gpt-5.6-luna",
+      "provider_name": "Azure",
+      "tag": "azure/eu",
+      "quantization": "unknown",
+      "context_length": 1050000,
+      "pricing": {
+        "prompt": "0.0000011",
+        "completion": "0.0000066"
+      },
+      "status": 0,
+      "eligible": true
+    }
+  ]
+}

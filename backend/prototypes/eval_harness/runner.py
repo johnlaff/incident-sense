@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+from collections.abc import Callable
 from pathlib import Path
 
 from .adapters import InProcessRagTarget, TargetAdapter
@@ -264,6 +265,7 @@ async def run_suite(
     budget_cap_usd: float = 0.50,
     model: str = "deepseek/deepseek-v4-flash",
     checkpoint_path: Path | None = None,
+    reserve_for_case: Callable[[EvalCase], float] | None = None,
 ) -> EvalRun:
     """Run every case under a concurrency limit and a hard budget cap."""
     ledger = BudgetLedger(budget_cap_usd)
@@ -285,10 +287,13 @@ async def run_suite(
     lock = asyncio.Lock()  # serialize the shared ledger + checkpoint writes
 
     async def _one(case: EvalCase) -> CaseResult | None:
+        # Callers with live route prices reserve a per-case envelope (estimated
+        # prompt + max output/reasoning); the fixed 16k/2k envelope is the default.
+        reserve = reserve_for_case(case) if reserve_for_case else per_turn_reserve
         async with semaphore:
             async with lock:
                 try:
-                    ledger.reserve(per_turn_reserve)
+                    ledger.reserve(reserve)
                 except BudgetExceededError:
                     run.aborted_on_budget = True
                     return None
@@ -298,7 +303,7 @@ async def run_suite(
                 actual = execution.total_cost_usd() + sum(
                     j.cost_usd or 0.0 for j in result.judge_results
                 )
-                ledger.settle(per_turn_reserve, actual)
+                ledger.settle(reserve, actual)
                 if checkpoint is not None:
                     checkpoint.write(result.model_dump_json() + "\n")
                     checkpoint.flush()

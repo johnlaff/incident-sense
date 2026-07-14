@@ -174,6 +174,10 @@ class AnswerObservation(BaseModel):
     refused: bool = False
     citations: list[ObservedCitation] = Field(default_factory=list)
     text_present: bool = False  # atomic answer: text only on a valid terminal
+    # Deterministic contract checks the server would enforce (#18 invariants):
+    # uncited operational block, citation outside the turn's context, declared
+    # locale mismatch. Empty means no violation observed.
+    contract_violations: list[str] = Field(default_factory=list)
     # Full answer text — DIAGNOSTIC ONLY. Judges read it in memory; the public
     # artifact writer redacts it (research §artifacts: full content off by default).
     answer_text: str | None = None
@@ -186,11 +190,19 @@ class CallTelemetry(BaseModel):
     model_requested: str | None = None
     model_effective: str | None = None
     provider: str | None = None
+    # Exact routed endpoint (provider tag) and generation id, when the gateway
+    # reports them — required evidence for reproducible model selection.
+    endpoint_tag: str | None = None
+    generation_id: str | None = None
+    attempts: int | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
+    reasoning_tokens: int | None = None
+    cached_tokens: int | None = None
     # OpenRouter usage accounting takes precedence; None (not zero) when unknown.
     cost_usd: float | None = None
     cost_source: Literal["reported", "estimated", "unknown"] = "unknown"
+    error: str | None = None
 
 
 class EvalExecution(BaseModel):
