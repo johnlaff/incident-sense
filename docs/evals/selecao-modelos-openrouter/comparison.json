@@ -1,0 +1,351 @@
+{
+  "schema_version": "selection-comparison/v1",
+  "probe_version": "openrouter-copilot-probe/v1",
+  "started": "2026-07-14T01:13:49.382524+00:00",
+  "git_sha": "bff52e8",
+  "dataset_version": "selection-bilingual/v1",
+  "dataset_sha256": "59ef6410a8ab231cbcfe61eb6f881bf56bff7cb62062fb51dbfb5993b5c28527",
+  "budget": {
+    "cap_usd": 1.5,
+    "plan_worst_case_usd": 1.240985,
+    "spent_reported_usd": 0.368443
+  },
+  "conditions": {
+    "pinned_routes": {
+      "openai/gpt-5.6-luna": {
+        "endpoint_tag": "azure",
+        "provider": "Azure",
+        "quantization": "unknown",
+        "temperature_sent": false,
+        "reasoning": {
+          "effort": "minimal"
+        },
+        "max_output_tokens": 2000
+      },
+      "anthropic/claude-sonnet-5": {
+        "endpoint_tag": "azure/us-east-2",
+        "provider": "Azure",
+        "quantization": "unknown",
+        "temperature_sent": false,
+        "reasoning": null,
+        "max_output_tokens": 1200
+      },
+      "google/gemini-3.5-flash": {
+        "endpoint_tag": "google-vertex/global",
+        "provider": "Google",
+        "quantization": "unknown",
+        "temperature_sent": false,
+        "reasoning": {
+          "effort": "low"
+        },
+        "max_output_tokens": 3000
+      },
+      "google/gemini-3.1-flash-lite": {
+        "endpoint_tag": "google-vertex/global",
+        "provider": "Google",
+        "quantization": "unknown",
+        "temperature_sent": false,
+        "reasoning": {
+          "effort": "minimal"
+        },
+        "max_output_tokens": 1200
+      },
+      "deepseek/deepseek-v4-flash": {
+        "endpoint_tag": "parasail/fp8",
+        "provider": "Parasail",
+        "quantization": "fp8",
+        "temperature_sent": true,
+        "reasoning": {
+          "effort": "none"
+        },
+        "max_output_tokens": 1200
+      },
+      "mistralai/mistral-small-2603": {
+        "endpoint_tag": "venice/fp8",
+        "provider": "Venice",
+        "quantization": "fp8",
+        "temperature_sent": true,
+        "reasoning": null,
+        "max_output_tokens": 1200
+      }
+    },
+    "provider_prefs": {
+      "allow_fallbacks": false,
+      "require_parameters": true,
+      "zdr": true,
+      "data_collection": "deny"
+    },
+    "timeouts_s": {
+      "connect": 10,
+      "read": 60
+    },
+    "transport_reruns_max": 2,
+    "retrieval": "held constant per case (same approved evidence for all models)"
+  },
+  "models": {
+    "openai/gpt-5.6-luna": {
+      "cases": 18,
+      "completed": 18,
+      "failures": {
+        "schema_invalid": [],
+        "request_rejected": [],
+        "transport": [],
+        "retried_attempts": 0
+      },
+      "route_match": {
+        "overall": 0.8889,
+        "pt-BR": 0.9,
+        "en": 0.875,
+        "pt_en_delta": 0.025
+      },
+      "refusals": {
+        "false": 0,
+        "missed": 1
+      },
+      "citations": {
+        "forged_total": 0,
+        "isolation_failures": 0
+      },
+      "contract_violations": {},
+      "groundedness_heuristic_mean": 0.0748,
+      "latency_ms": {
+        "p50": 2497.8,
+        "p95": 5680.2,
+        "max": 63459.8
+      },
+      "tokens": {
+        "input": 14065,
+        "output": 4311,
+        "reasoning": 489,
+        "cached": 0
+      },
+      "cost_reported_usd": 0.039931,
+      "providers_observed": [
+        "Azure:openai/gpt-5.6-luna-20260709"
+      ],
+      "verdict": "fail"
+    },
+    "anthropic/claude-sonnet-5": {
+      "cases": 18,
+      "completed": 15,
+      "failures": {
+        "schema_invalid": [
+          "no-base.novel-outage.pt-BR.001",
+          "forged.sentinel-bait.pt-BR.001",
+          "forged.sentinel-bait.en.001"
+        ],
+        "request_rejected": [],
+        "transport": [],
+        "retried_attempts": 0
+      },
+      "route_match": {
+        "overall": 0.9333,
+        "pt-BR": 0.875,
+        "en": 1.0,
+        "pt_en_delta": 0.125
+      },
+      "refusals": {
+        "false": 0,
+        "missed": 1
+      },
+      "citations": {
+        "forged_total": 0,
+        "isolation_failures": 0
+      },
+      "contract_violations": {},
+      "groundedness_heuristic_mean": 0.0661,
+      "latency_ms": {
+        "p50": 10327.3,
+        "p95": 13683.5,
+        "max": 15710.1
+      },
+      "tokens": {
+        "input": 28744,
+        "output": 14424,
+        "reasoning": 0,
+        "cached": 0
+      },
+      "cost_reported_usd": 0.201728,
+      "providers_observed": [
+        "Azure:anthropic/claude-sonnet-5-20260630"
+      ],
+      "verdict": "fail"
+    },
+    "google/gemini-3.5-flash": {
+      "cases": 18,
+      "completed": 18,
+      "failures": {
+        "schema_invalid": [],
+        "request_rejected": [],
+        "transport": [],
+        "retried_attempts": 0
+      },
+      "route_match": {
+        "overall": 0.8333,
+        "pt-BR": 0.8,
+        "en": 0.875,
+        "pt_en_delta": 0.075
+      },
+      "refusals": {
+        "false": 0,
+        "missed": 0
+      },
+      "citations": {
+        "forged_total": 0,
+        "isolation_failures": 0
+      },
+      "contract_violations": {},
+      "groundedness_heuristic_mean": 0.1096,
+      "latency_ms": {
+        "p50": 3818.1,
+        "p95": 7048.3,
+        "max": 10034.2
+      },
+      "tokens": {
+        "input": 18279,
+        "output": 8824,
+        "reasoning": 5080,
+        "cached": 0
+      },
+      "cost_reported_usd": 0.106834,
+      "providers_observed": [
+        "Google:google/gemini-3.5-flash-20260519"
+      ],
+      "verdict": "fail"
+    },
+    "google/gemini-3.1-flash-lite": {
+      "cases": 18,
+      "completed": 18,
+      "failures": {
+        "schema_invalid": [],
+        "request_rejected": [],
+        "transport": [],
+        "retried_attempts": 0
+      },
+      "route_match": {
+        "overall": 0.7222,
+        "pt-BR": 0.7,
+        "en": 0.75,
+        "pt_en_delta": 0.05
+      },
+      "refusals": {
+        "false": 2,
+        "missed": 1
+      },
+      "citations": {
+        "forged_total": 0,
+        "isolation_failures": 0
+      },
+      "contract_violations": {
+        "operational-blocks-in-general-explanation": 2,
+        "locale-mismatch": 1
+      },
+      "groundedness_heuristic_mean": 0.1109,
+      "latency_ms": {
+        "p50": 2191.3,
+        "p95": 2741.3,
+        "max": 2793.2
+      },
+      "tokens": {
+        "input": 18279,
+        "output": 4344,
+        "reasoning": 0,
+        "cached": 0
+      },
+      "cost_reported_usd": 0.011086,
+      "providers_observed": [
+        "Google:google/gemini-3.1-flash-lite-20260507"
+      ],
+      "verdict": "fail"
+    },
+    "deepseek/deepseek-v4-flash": {
+      "cases": 18,
+      "completed": 18,
+      "failures": {
+        "schema_invalid": [],
+        "request_rejected": [],
+        "transport": [],
+        "retried_attempts": 0
+      },
+      "route_match": {
+        "overall": 0.8333,
+        "pt-BR": 0.8,
+        "en": 0.875,
+        "pt_en_delta": 0.075
+      },
+      "refusals": {
+        "false": 2,
+        "missed": 1
+      },
+      "citations": {
+        "forged_total": 0,
+        "isolation_failures": 0
+      },
+      "contract_violations": {
+        "locale-mismatch": 3
+      },
+      "groundedness_heuristic_mean": 0.0993,
+      "latency_ms": {
+        "p50": 4877.8,
+        "p95": 7024.0,
+        "max": 12002.4
+      },
+      "tokens": {
+        "input": 11576,
+        "output": 3981,
+        "reasoning": 0,
+        "cached": 4352
+      },
+      "cost_reported_usd": 0.002451,
+      "providers_observed": [
+        "Parasail:deepseek/deepseek-v4-flash-20260423"
+      ],
+      "verdict": "fail"
+    },
+    "mistralai/mistral-small-2603": {
+      "cases": 18,
+      "completed": 18,
+      "failures": {
+        "schema_invalid": [],
+        "request_rejected": [],
+        "transport": [],
+        "retried_attempts": 0
+      },
+      "route_match": {
+        "overall": 0.7778,
+        "pt-BR": 0.7,
+        "en": 0.875,
+        "pt_en_delta": 0.175
+      },
+      "refusals": {
+        "false": 2,
+        "missed": 1
+      },
+      "citations": {
+        "forged_total": 4,
+        "isolation_failures": 0
+      },
+      "contract_violations": {
+        "citation-outside-context": 4,
+        "locale-mismatch": 3
+      },
+      "groundedness_heuristic_mean": 0.0886,
+      "latency_ms": {
+        "p50": 2274.3,
+        "p95": 3939.4,
+        "max": 5330.3
+      },
+      "tokens": {
+        "input": 12233,
+        "output": 5492,
+        "reasoning": 0,
+        "cached": 12080
+      },
+      "cost_reported_usd": 0.006413,
+      "providers_observed": [
+        "Venice:mistralai/mistral-small-2603"
+      ],
+      "verdict": "fail"
+    }
+  }
+}

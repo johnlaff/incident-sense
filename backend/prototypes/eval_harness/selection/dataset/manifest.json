@@ -1,0 +1,29 @@
+{
+  "schema_version": "eval-manifest/v1",
+  "harness_version": "eval-harness-proto/v1",
+  "dataset_version": "selection-bilingual/v1",
+  "created": "2026-07-13",
+  "files": [
+    {
+      "path": "cases.jsonl",
+      "sha256": "59ef6410a8ab231cbcfe61eb6f881bf56bff7cb62062fb51dbfb5993b5c28527",
+      "count": 18
+    }
+  ],
+  "counts": {
+    "total": 18,
+    "locale:pt-BR": 10,
+    "locale:en": 8,
+    "family:grounded-answer": 2,
+    "family:no-historical-base": 2,
+    "family:improcedente-refusal": 1,
+    "family:general-explanation": 2,
+    "family:multi-turn-retention": 2,
+    "family:indirect-injection": 2,
+    "family:forged-citation-bait": 2,
+    "family:out-of-scope-refusal": 2,
+    "family:ambiguous-clarification": 2,
+    "family:code-switch": 1
+  },
+  "notes": "Selection sentinel corpus for the controlled model comparison. Draft provenance, single-author, synthetic; NOT the human-reviewed regression corpus — thresholds must not be ratified against it."
+}

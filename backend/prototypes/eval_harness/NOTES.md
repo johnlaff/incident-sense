@@ -115,6 +115,17 @@ Adotar exatamente esta forma como contrato do harness de produção:
   	cd backend && uv run python -m incident_sense.evals.run --mode smoke
   ```
 
+## Extensão: comparação controlada de modelos (`selection/`)
+
+O subpacote `selection/` executa a comparação real da shortlist do OpenRouter
+sobre este mesmo núcleo (runner, métricas, writers): dataset sentinela bilíngue
+próprio (`selection/dataset/`), contextos de sonda fixados por caso
+(`contexts.py`), target OpenRouter capability-aware com rota ZDR pinada
+(`probe.py`), preflight de elegibilidade (`preflight.py`) e entrypoint pago com
+admissão de orçamento (`compare.py`, cap US$ 1,50). Evidência sanitizada em
+[`docs/evals/selecao-modelos-openrouter/`](../../../docs/evals/selecao-modelos-openrouter/README.md);
+bundles completos e transcripts ficam locais em `_artifacts/selection/`.
+
 ## O que permanece aberto (produção, não protótipo)
 
 - Corpus real (~120 conversas) com revisão humana, gold graduado e calibração dos
