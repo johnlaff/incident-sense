@@ -1,0 +1,23 @@
+{
+  "schema_version": "eval-manifest/v1",
+  "harness_version": "eval-harness-proto/v1",
+  "dataset_version": "proto-bilingual/v1",
+  "created": "2026-07-13",
+  "files": [
+    {
+      "path": "cases.jsonl",
+      "sha256": "8b8b59c6dd17347050a57a9bc9ccbcb4fb39d6b5d6311416f31a0cdb9e1045e5",
+      "count": 6
+    }
+  ],
+  "counts": {
+    "total": 6,
+    "locale:pt-BR": 3,
+    "locale:en": 3,
+    "family:grounded-answer": 2,
+    "family:no-historical-base": 2,
+    "family:improcedente-refusal": 1,
+    "family:general-explanation": 1
+  },
+  "notes": "Prototype bilingual corpus. Single-annotator, synthetic; not a secret holdout."
+}
