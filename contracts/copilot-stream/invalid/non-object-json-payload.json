@@ -1,0 +1,15 @@
+{
+  "description": "Linha data com JSON válido porém não-objeto (lista): invalid_event.",
+  "chunks": [
+    "event: turn.accepted\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:1\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 1, \"type\": \"turn.accepted\", \"incident_number\": \"INC-0007\", \"locale\": \"pt-BR\", \"model_requested\": \"openai/gpt-5.6-luna\"}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:2\ndata: [1, 2, 3]\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:3\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 3, \"type\": \"phase.changed\", \"phase\": \"policy\", \"status\": \"completed\", \"duration_ms\": 120}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:4\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 4, \"type\": \"phase.changed\", \"phase\": \"classify\", \"status\": \"started\", \"duration_ms\": null}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:5\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 5, \"type\": \"phase.changed\", \"phase\": \"classify\", \"status\": \"completed\", \"duration_ms\": 120}\n\n",
+    "event: turn.failed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:6\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 6, \"type\": \"turn.failed\", \"code\": \"provider_unavailable\", \"message\": \"O provedor do modelo está indisponível no momento.\", \"retryable\": true, \"retry_after_ms\": 2000}\n\n"
+  ],
+  "expect": {
+    "outcome": "error",
+    "error_code": "invalid_event"
+  }
+}

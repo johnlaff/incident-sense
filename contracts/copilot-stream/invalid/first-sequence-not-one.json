@@ -1,0 +1,15 @@
+{
+  "description": "Primeiro evento com sequence 2: a sequência deve começar em 1.",
+  "chunks": [
+    "event: turn.accepted\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:2\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 2, \"type\": \"turn.accepted\", \"incident_number\": \"INC-0007\", \"locale\": \"pt-BR\", \"model_requested\": \"openai/gpt-5.6-luna\"}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:3\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 3, \"type\": \"phase.changed\", \"phase\": \"policy\", \"status\": \"started\", \"duration_ms\": null}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:4\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 4, \"type\": \"phase.changed\", \"phase\": \"policy\", \"status\": \"completed\", \"duration_ms\": 120}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:5\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 5, \"type\": \"phase.changed\", \"phase\": \"classify\", \"status\": \"started\", \"duration_ms\": null}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:6\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 6, \"type\": \"phase.changed\", \"phase\": \"classify\", \"status\": \"completed\", \"duration_ms\": 120}\n\n",
+    "event: turn.failed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:7\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 7, \"type\": \"turn.failed\", \"code\": \"provider_unavailable\", \"message\": \"O provedor do modelo está indisponível no momento.\", \"retryable\": true, \"retry_after_ms\": 2000}\n\n"
+  ],
+  "expect": {
+    "outcome": "error",
+    "error_code": "out_of_order_sequence"
+  }
+}
