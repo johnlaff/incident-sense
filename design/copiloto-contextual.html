@@ -369,6 +369,19 @@
         height: 14px;
       }
 
+      /* State 9: cancelamento e timeout são desfechos alternados, nunca simultâneos */
+      .cx-sub9 {
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .cx-sub9.on {
+        display: flex;
+      }
+      .cx-sub9-toggle {
+        margin-bottom: 4px;
+      }
+
       /* ---------- Answer classification metadata ---------- */
       .cx-verdict {
         display: flex;
@@ -486,6 +499,11 @@
       .cx-reply:hover {
         background: var(--primary-tint);
         border-color: var(--primary);
+      }
+      .cx-sub9-toggle .cx-reply.on {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
       }
 
       /* ---------- Answer footer ---------- */
@@ -690,6 +708,14 @@
         background: var(--primary);
         color: #fff;
       }
+      .cx-topo button .chosen {
+        margin-left: 5px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
       .cx-states {
         display: flex;
         gap: 6px;
@@ -739,7 +765,7 @@
       }
     </style>
   </head>
-  <body class="topo-a">
+  <body class="topo-b">
     <div class="app">
       <header class="topbar">
         <div class="brand">
@@ -992,7 +1018,7 @@
                     Diagnóstico
                   </span>
                   Provável mensagem malformada no tópico bloqueando o consumidor, que
-                  reprocessa o mesmo offset em laço. Casos com o mesmo padrão
+                  reprocessa o mesmo offset em laço. Incidentes com o mesmo padrão
                   <a class="cx-cite">INC0052670</a> <a class="cx-cite">INC0052622</a>
                   terminaram com o consumidor preso na primeira mensagem inválida.
                 </div>
@@ -1023,7 +1049,7 @@
                 <div class="cx-ans-foot">
                   <div class="cx-grounding">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5v14a2 2 0 0 0 2 2h14V7a2 2 0 0 0-2-2H6a2 2 0 0 1-2-2z" /><path d="M8 9h8M8 13h6" /></svg>
-                    Fundamentada em 4 incidentes históricos · Modelo de referência
+                    Fundamentada em 3 incidentes históricos · Modelo de referência
                   </div>
                   <div class="cx-ans-actions">
                     <button class="btn btn-primary btn-sm" type="button">
@@ -1066,7 +1092,7 @@
                   </div>
                   <div class="cx-srcfoot">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8" /></svg>
-                    Abra um caso para conferir a evidência.
+                    Abra o incidente para conferir a evidência.
                   </div>
                 </div>
               </div>
@@ -1103,10 +1129,10 @@
                 </div>
                 <div class="cx-prose">
                   É um incidente real: o consumidor parado explica o lag em crescimento.
-                  No entanto, <b>não encontrei um caso semelhante resolvido</b> para
+                  No entanto, <b>não encontrei um incidente semelhante resolvido</b> para
                   fundamentar uma sugestão com evidência. Recomendo resolver
                   manualmente e registrar a solução no fechamento — esse registro passa
-                  a alimentar os próximos casos e permite que a Aurora fundamente
+                  a alimentar os próximos incidentes e permite que a Aurora fundamente
                   incidentes futuros parecidos.
                 </div>
               </div>
@@ -1143,47 +1169,72 @@
                 </div>
               </div>
 
-              <!-- ============ 9 · Erro de turno ============ -->
+              <!-- ============ 9 · Turno sem resposta (dois desfechos, mutuamente excludentes) ============ -->
               <div class="cx-state" data-state="9">
-                <div class="cx-cancelled">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="2" /></svg>
-                  Turno interrompido por você
+                <div class="cx-replies cx-sub9-toggle">
+                  <button class="cx-reply on" data-sub9="cancel" type="button">Cancelado por você</button>
+                  <button class="cx-reply" data-sub9="timeout" type="button">Timeout do provedor</button>
                 </div>
-                <div class="bubble-user">Analisar este incidente</div>
-                <div class="trace">
-                  <div class="step">
-                    <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
-                    <span class="lbl"><b>Verificar política</b></span>
+
+                <div class="cx-sub9 on" data-sub9-panel="cancel">
+                  <div class="bubble-user">Analisar este incidente</div>
+                  <div class="trace">
+                    <div class="step">
+                      <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                      <span class="lbl"><b>Verificar política</b></span>
+                    </div>
+                    <div class="step">
+                      <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                      <span class="lbl"><b>Classificar a pergunta</b></span>
+                    </div>
+                    <div class="step is-pending">
+                      <span class="ico pending"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" /></svg></span>
+                      <span class="lbl"><b>Buscar incidentes semelhantes</b> · interrompido</span>
+                    </div>
                   </div>
-                  <div class="step">
-                    <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
-                    <span class="lbl"><b>Classificar a pergunta</b></span>
-                  </div>
-                  <div class="step">
-                    <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
-                    <span class="lbl"><b>Buscar incidentes semelhantes</b></span>
-                  </div>
-                  <div class="step is-pending">
-                    <span class="ico pending"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" /></svg></span>
-                    <span class="lbl"><b>Responder</b> · interrompido</span>
-                  </div>
-                </div>
-                <div class="cx-block fail">
-                  <span class="cx-bl">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 20h20L12 3Z" /><path d="M12 10v4M12 17h.01" /></svg>
-                    Não consegui concluir a resposta
-                  </span>
-                  O provedor do modelo não respondeu a tempo.
-                  <div style="margin-top: 10px">
-                    <button class="btn btn-outline btn-sm" type="button">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4" /></svg>
-                      Tentar de novo
-                    </button>
+                  <div class="cx-cancelled">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="2" /></svg>
+                    Turno interrompido por você
                   </div>
                 </div>
-                <div class="cx-srcfoot">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" /></svg>
-                  Nenhuma resposta parcial é mostrada — a Aurora só entrega respostas validadas.
+
+                <div class="cx-sub9" data-sub9-panel="timeout">
+                  <div class="bubble-user">Analisar este incidente</div>
+                  <div class="trace">
+                    <div class="step">
+                      <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                      <span class="lbl"><b>Verificar política</b></span>
+                    </div>
+                    <div class="step">
+                      <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                      <span class="lbl"><b>Classificar a pergunta</b></span>
+                    </div>
+                    <div class="step">
+                      <span class="ico done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg></span>
+                      <span class="lbl"><b>Buscar incidentes semelhantes</b></span>
+                    </div>
+                    <div class="step is-pending">
+                      <span class="ico pending"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" /></svg></span>
+                      <span class="lbl"><b>Responder</b> · sem resposta</span>
+                    </div>
+                  </div>
+                  <div class="cx-block fail">
+                    <span class="cx-bl">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 20h20L12 3Z" /><path d="M12 10v4M12 17h.01" /></svg>
+                      Não consegui concluir a resposta
+                    </span>
+                    O provedor do modelo não respondeu a tempo.
+                    <div style="margin-top: 10px">
+                      <button class="btn btn-outline btn-sm" type="button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4" /></svg>
+                        Tentar de novo
+                      </button>
+                    </div>
+                  </div>
+                  <div class="cx-srcfoot">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" /></svg>
+                    Nenhuma resposta parcial é mostrada — a Aurora só entrega respostas validadas.
+                  </div>
                 </div>
               </div>
 
@@ -1262,8 +1313,8 @@
     <div class="cx-bar">
       <span class="cx-bar-label">Topologia</span>
       <div class="cx-topo">
-        <button type="button" data-topo="a" class="on">A · Painel ancorado</button>
-        <button type="button" data-topo="b">B · Painel flutuante (FAB)</button>
+        <button type="button" data-topo="a">A · Painel ancorado</button>
+        <button type="button" data-topo="b" class="on">B · Painel flutuante (FAB)<span class="chosen">· escolhida</span></button>
       </div>
       <span class="cx-bar-label">Estado</span>
       <div class="cx-states">
@@ -1381,8 +1432,21 @@
           document.body.classList.remove("cx-closed");
         });
 
-        // Initial render: anchored topology, hero state.
-        setTopology("a");
+        // State 9: toggle between the cancelled-turn and timeout-with-retry outcomes.
+        document.querySelectorAll(".cx-sub9-toggle .cx-reply").forEach((b) => {
+          b.addEventListener("click", () => {
+            const sub = b.dataset.sub9;
+            document.querySelectorAll(".cx-sub9-toggle .cx-reply").forEach((btn) => {
+              btn.classList.toggle("on", btn.dataset.sub9 === sub);
+            });
+            document.querySelectorAll(".cx-sub9").forEach((panel) => {
+              panel.classList.toggle("on", panel.dataset.sub9Panel === sub);
+            });
+          });
+        });
+
+        // Initial render: floating topology (decision #21), hero state.
+        setTopology("b");
         goTo(4);
       })();
     </script>
