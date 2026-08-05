@@ -48,8 +48,18 @@
   --radius-sm: 6px;
   --shadow-sm: 0 1px 2px oklch(0.255 0.03 285 / 0.06);
   --shadow-md: 0 6px 20px oklch(0.255 0.05 285 / 0.1);
-  --font: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Type scale — 4 steps at ≥1.25 ratio (micro → base → lg → xl) carry the
+     title/body/micro hierarchy; --fs-sm is a dense-UI allowance that sits
+     close to --fs-micro on purpose (tables, badges, secondary metadata). */
+  --fs-2xs: 10.5px;
+  --fs-micro: 11px;
+  --fs-sm: 13px;
+  --fs-base: 14px;
+  --fs-lg: 18px;
+  --fs-xl: 23px;
 }
 
 * {
@@ -62,7 +72,7 @@ body {
 }
 body {
   font-family: var(--font);
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.5;
   color: var(--ink-body);
   background: var(--bg);
@@ -117,7 +127,7 @@ h3 {
   display: grid;
   place-items: center;
   color: #fff;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   box-shadow: var(--shadow-sm);
 }
 .brand small {
@@ -139,7 +149,7 @@ h3 {
   display: grid;
   place-items: center;
   font-weight: 600;
-  font-size: 12px;
+  font-size: var(--fs-micro);
 }
 
 .sidenav {
@@ -151,7 +161,7 @@ h3 {
   gap: 4px;
 }
 .nav-label {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -191,7 +201,7 @@ h3 {
   border-radius: var(--radius-sm);
   background: var(--surface-2);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-micro);
 }
 
 .main {
@@ -244,7 +254,7 @@ h3 {
 .btn-sm {
   height: 30px;
   padding: 0 11px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 
 /* ----- Inputs / filters ----- */
@@ -314,7 +324,7 @@ h3 {
   height: 22px;
   padding: 0 9px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: var(--fs-micro);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -369,7 +379,7 @@ h3 {
   margin-bottom: 18px;
 }
 .page-head h1 {
-  font-size: 22px;
+  font-size: var(--fs-xl);
 }
 .page-head .count {
   color: var(--muted);
@@ -396,7 +406,7 @@ h3 {
 table.list {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: var(--fs-sm);
 }
 .list thead th {
   position: sticky;
@@ -404,7 +414,7 @@ table.list {
   text-align: left;
   font-weight: 600;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-micro);
   letter-spacing: 0.01em;
   padding: 10px 14px;
   background: var(--surface-2);
@@ -427,7 +437,7 @@ table.list {
 }
 .list .num {
   font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   color: var(--primary-ink);
   font-weight: 600;
 }
@@ -437,7 +447,7 @@ table.list {
 }
 .list .svc {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-micro);
   color: var(--muted);
 }
 .list .when {
@@ -451,7 +461,7 @@ table.list {
   justify-content: space-between;
   padding: 10px 14px;
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   border-top: 1px solid var(--border);
 }
 
@@ -461,7 +471,7 @@ table.list {
   align-items: center;
   gap: 7px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   margin-bottom: 12px;
 }
 .crumbs a {
@@ -488,11 +498,11 @@ table.list {
   flex-wrap: wrap;
 }
 .record-head h1 {
-  font-size: 19px;
+  font-size: var(--fs-lg);
 }
 .record-head .meta {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 .tabs {
   display: flex;
@@ -516,7 +526,7 @@ table.list {
   padding: 18px 20px;
 }
 .section h3 {
-  font-size: 12px;
+  font-size: var(--fs-micro);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
@@ -536,7 +546,7 @@ table.list {
   grid-column: 1 / -1;
 }
 .field label {
-  font-size: 12px;
+  font-size: var(--fs-micro);
   color: var(--muted);
   font-weight: 500;
 }
@@ -556,7 +566,7 @@ table.list {
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-micro);
   margin-right: 6px;
 }
 
@@ -592,7 +602,7 @@ table.list {
   color: var(--ink);
 }
 .cop-head .s {
-  font-size: 12px;
+  font-size: var(--fs-micro);
   color: var(--muted);
 }
 .cop-body {
@@ -607,7 +617,7 @@ table.list {
   color: #fff;
   padding: 8px 12px;
   border-radius: 12px 12px 3px 12px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   max-width: 85%;
 }
@@ -651,7 +661,7 @@ table.list {
   height: 12px;
 }
 .trace .lbl {
-  font-size: 12px;
+  font-size: var(--fs-micro);
 }
 .trace .lbl b {
   color: var(--ink);
@@ -683,13 +693,13 @@ table.list {
 }
 .cand .num {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-micro);
   font-weight: 600;
   color: var(--primary-ink);
 }
 .cand .cdesc {
   flex: 1;
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   color: var(--ink-body);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -697,7 +707,7 @@ table.list {
 }
 .cand .sim {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-micro);
   color: var(--muted);
 }
 .cand .open {
@@ -707,7 +717,7 @@ table.list {
   opacity: 0.6;
 }
 .cand .pill {
-  font-size: 10.5px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 999px;
@@ -725,7 +735,7 @@ table.list {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 .verdict .b {
   font-weight: 700;
@@ -741,20 +751,20 @@ table.list {
   background: var(--primary-tint);
   border-radius: var(--radius-sm);
   padding: 12px 13px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--ink-body);
   line-height: 1.6;
 }
 .suggestion h4 {
   margin: 0 0 6px;
-  font-size: 12px;
+  font-size: var(--fs-micro);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--primary-ink);
 }
 .cite {
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--fs-micro);
   font-weight: 600;
   color: var(--primary-ink);
   background: oklch(1 0 0 / 0.7);
@@ -770,7 +780,7 @@ table.list {
   padding-top: 2px;
 }
 .label-row {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;

@@ -114,6 +114,25 @@ Breadcrumb (Incidentes / INCxx. Centro: **registro**.
   de que não é um incidente real (pedido de autoatendimento), com a orientação
   de seguir pelo fluxo de autoatendimento.
 
+### 3.1 Padrão consolidado do copiloto contextual (`cx-`)
+
+O protótipo `copiloto-contextual.html` fixou a implementação da tela 3 acima.
+Dois pontos são permanentes e devem se repetir em qualquer tela nova que
+reutilize o copiloto:
+
+- **Namespace `cx-`**: todo elemento específico do copiloto (painel, cabeçalho,
+  blocos de resposta tipados, composer, citações, chips de resposta rápida)
+  usa a classe raiz `cx-*`, isolada do restante do design system
+  (`prototype.css`). Isso evita colisão com padrões genéricos (ex.: um botão de
+  navegação do protótipo nunca herda o visual de um chip de conversa —
+  cada família de controle tem sua própria classe).
+- **Topologia: painel flutuante via FAB.** O copiloto abre como um painel
+  sobreposto ao registro (`position: fixed`, canto inferior direito), acionado
+  por um botão de ação flutuante (FAB) e fechável sem sair da tela do
+  incidente. Não é uma coluna fixa ancorada ao layout. Essa topologia venceu a
+  alternativa de coluna ancorada (registrada na decisão da issue #21) por
+  preservar a largura total do registro quando o copiloto está fechado.
+
 ### 4. Abrir incidente citado (a feature de confiança)
 Clicar numa citação/candidato abre o **registro completo do incidente citado**
 (drawer "peek" sobre a tela, ou navegação) para o usuário **conferir** se é de

@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="prototype.css" />
@@ -100,7 +100,7 @@
         color: var(--ink);
       }
       .cx-id .s {
-        font-size: 11.5px;
+        font-size: var(--fs-micro);
         color: var(--muted);
       }
       .cx-head .grow {
@@ -113,7 +113,7 @@
         height: 28px;
         padding: 0 8px 0 10px;
         font: inherit;
-        font-size: 12px;
+        font-size: var(--fs-micro);
         font-weight: 550;
         color: var(--ink-body);
         background: var(--surface);
@@ -165,7 +165,7 @@
 
       /* Assistant plain prose (explanation blocks have no chrome) */
       .cx-prose {
-        font-size: 13px;
+        font-size: var(--fs-sm);
         color: var(--ink-body);
         line-height: 1.6;
       }
@@ -180,7 +180,7 @@
         padding: 12px 13px;
         border-radius: var(--radius-sm);
         border: 1px solid var(--border);
-        font-size: 13px;
+        font-size: var(--fs-sm);
         line-height: 1.55;
       }
       .cx-notice .cx-ni {
@@ -193,7 +193,7 @@
       }
       .cx-notice h4 {
         margin: 0 0 4px;
-        font-size: 13px;
+        font-size: var(--fs-sm);
         color: var(--ink);
       }
       .cx-notice.key {
@@ -211,7 +211,7 @@
       }
       .cx-notice code {
         font-family: var(--mono);
-        font-size: 11.5px;
+        font-size: var(--fs-micro);
         background: oklch(1 0 0 / 0.6);
         border: 1px solid var(--border);
         border-radius: 4px;
@@ -220,7 +220,7 @@
 
       /* ---------- Intro (first contact) ---------- */
       .cx-intro {
-        font-size: 13px;
+        font-size: var(--fs-sm);
         color: var(--ink-body);
         line-height: 1.6;
       }
@@ -275,7 +275,7 @@
       .cx-quick .kbd {
         margin-left: auto;
         font-family: var(--mono);
-        font-size: 11px;
+        font-size: var(--fs-micro);
         color: var(--primary-ink);
         border: 1px solid var(--primary);
         border-radius: 4px;
@@ -331,7 +331,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 12px;
+        font-size: var(--fs-micro);
         color: var(--muted);
         background: var(--surface-2);
         border: 1px solid var(--border);
@@ -357,7 +357,7 @@
         align-self: flex-start;
       }
       .cx-cancelled {
-        font-size: 12px;
+        font-size: var(--fs-micro);
         color: var(--muted);
         display: flex;
         align-items: center;
@@ -379,7 +379,33 @@
         display: flex;
       }
       .cx-sub9-toggle {
+        display: inline-flex;
+        padding: 3px;
+        gap: 2px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
         margin-bottom: 4px;
+        align-self: flex-start;
+      }
+      .cx-sub9-toggle .cx-scenario {
+        font: inherit;
+        font-size: var(--fs-micro);
+        font-weight: 550;
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+      .cx-sub9-toggle .cx-scenario:hover {
+        color: var(--ink-body);
+      }
+      .cx-sub9-toggle .cx-scenario.on {
+        background: var(--surface);
+        color: var(--ink);
+        box-shadow: var(--shadow-sm);
       }
 
       /* ---------- Answer classification metadata ---------- */
@@ -395,22 +421,23 @@
         border-radius: var(--radius-sm);
         border: 1px solid var(--border);
         padding: 11px 12px;
-        font-size: 13px;
+        font-size: var(--fs-sm);
         line-height: 1.6;
         color: var(--ink-body);
       }
-      .cx-block .cx-bl {
+      .cx-bl {
         display: flex;
         width: fit-content;
         align-items: center;
         gap: 6px;
-        font-size: 11px;
+        font-size: var(--fs-micro);
         font-weight: 600;
         letter-spacing: 0.03em;
         text-transform: uppercase;
         margin-bottom: 7px;
+        color: var(--muted);
       }
-      .cx-block .cx-bl svg {
+      .cx-bl svg {
         width: 15px;
         height: 15px;
       }
@@ -464,7 +491,7 @@
       /* Inline citation chip */
       .cx-cite {
         font-family: var(--mono);
-        font-size: 11px;
+        font-size: var(--fs-micro);
         font-weight: 600;
         color: var(--primary-ink);
         background: var(--primary-tint);
@@ -487,7 +514,7 @@
       }
       .cx-reply {
         font: inherit;
-        font-size: 12.5px;
+        font-size: var(--fs-sm);
         font-weight: 550;
         color: var(--primary-ink);
         background: var(--surface);
@@ -499,11 +526,6 @@
       .cx-reply:hover {
         background: var(--primary-tint);
         border-color: var(--primary);
-      }
-      .cx-sub9-toggle .cx-reply.on {
-        background: var(--primary);
-        border-color: var(--primary);
-        color: #fff;
       }
 
       /* ---------- Answer footer ---------- */
@@ -517,7 +539,7 @@
         display: flex;
         align-items: center;
         gap: 7px;
-        font-size: 12px;
+        font-size: var(--fs-micro);
         color: var(--muted);
       }
       .cx-grounding svg {
@@ -531,7 +553,7 @@
 
       /* Sources */
       .cx-src-head {
-        font-size: 11px;
+        font-size: var(--fs-micro);
         font-weight: 600;
         letter-spacing: 0.04em;
         text-transform: uppercase;
@@ -544,7 +566,7 @@
         gap: 7px;
       }
       .cx-srcfoot {
-        font-size: 11.5px;
+        font-size: var(--fs-micro);
         color: var(--muted);
         display: flex;
         align-items: center;
@@ -579,7 +601,7 @@
         border: 0;
         resize: none;
         font: inherit;
-        font-size: 13px;
+        font-size: var(--fs-sm);
         color: var(--ink-body);
         background: transparent;
         outline: none;
@@ -599,14 +621,14 @@
         min-height: 20px;
       }
       .cx-hint {
-        font-size: 11.5px;
+        font-size: var(--fs-micro);
         color: var(--muted);
         flex: 1;
         line-height: 1.4;
       }
       .cx-counter {
         font-family: var(--mono);
-        font-size: 11.5px;
+        font-size: var(--fs-micro);
         color: var(--muted);
         font-variant-numeric: tabular-nums;
       }
@@ -677,7 +699,7 @@
         border-top: 1px solid oklch(0.4 0.02 285);
       }
       .cx-bar .cx-bar-label {
-        font-size: 11px;
+        font-size: var(--fs-micro);
         font-weight: 600;
         letter-spacing: 0.04em;
         text-transform: uppercase;
@@ -694,7 +716,7 @@
       }
       .cx-topo button {
         font: inherit;
-        font-size: 12px;
+        font-size: var(--fs-micro);
         font-weight: 550;
         border: 0;
         background: transparent;
@@ -710,7 +732,7 @@
       }
       .cx-topo button .chosen {
         margin-left: 5px;
-        font-size: 10px;
+        font-size: var(--fs-2xs);
         font-weight: 700;
         letter-spacing: 0.02em;
         text-transform: uppercase;
@@ -726,7 +748,7 @@
         align-items: center;
         gap: 6px;
         font: inherit;
-        font-size: 12px;
+        font-size: var(--fs-micro);
         font-weight: 550;
         border: 1px solid oklch(0.4 0.02 285);
         background: oklch(0.3 0.015 285);
@@ -741,7 +763,7 @@
       }
       .cx-sbtn .n {
         font-family: var(--mono);
-        font-size: 11px;
+        font-size: var(--fs-micro);
         color: oklch(0.65 0.02 285);
       }
       .cx-sbtn.on {
@@ -820,7 +842,7 @@
           <div class="card">
             <div class="record-head">
               <div class="row">
-                <span class="num mono" style="font-size: 13px">INC0052667</span>
+                <span class="num mono" style="font-size: var(--fs-sm)">INC0052667</span>
                 <span class="badge s-hold"><span class="dot"></span>Em espera</span>
                 <span class="badge p3"><span class="dot"></span>Prioridade · Moderada</span>
               </div>
@@ -844,11 +866,11 @@
                 </div>
                 <div class="field">
                   <label>Serviço afetado (CI)</label>
-                  <span class="val mono" style="font-size: 13px">Mensageria-Kafka</span>
+                  <span class="val mono" style="font-size: var(--fs-sm)">Mensageria-Kafka</span>
                 </div>
                 <div class="field">
                   <label>Grupo de atendimento</label>
-                  <span class="val mono" style="font-size: 13px">Infra-Mensageria</span>
+                  <span class="val mono" style="font-size: var(--fs-sm)">Infra-Mensageria</span>
                 </div>
                 <div class="field"><label>Impacto</label><span class="val">Médio</span></div>
                 <div class="field"><label>Urgência</label><span class="val">Média</span></div>
@@ -977,8 +999,8 @@
 
                 <div class="cx-src-head">Fontes encontradas</div>
                 <div class="cx-chips">
-                  <a class="cx-cite">INC0052670</a>
-                  <a class="cx-cite">INC0052622</a>
+                  <a class="cx-cite" href="incidente-detalhe.html">INC0052670</a>
+                  <a class="cx-cite" href="incidente-detalhe.html">INC0052622</a>
                 </div>
 
                 <button class="btn btn-ghost btn-sm cx-stop" type="button">
@@ -998,14 +1020,22 @@
                 </button>
 
                 <div class="cx-verdict">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                    Classificação
+                  </span>
                   <span class="badge s-resolved">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7" /></svg>
                     Procedente · é um incidente
                   </span>
                 </div>
 
-                <!-- explanation: no chrome -->
+                <!-- summary: typed like the other blocks, kept without chrome -->
                 <div class="cx-prose">
+                  <span class="cx-bl">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
+                    Resumo
+                  </span>
                   O lag do Kafka cresce porque o consumidor parou de avançar: ele
                   travou em uma mensagem e não confirma novos offsets, então a fila
                   de notificações se acumula atrás do ponto de bloqueio.
@@ -1019,7 +1049,7 @@
                   </span>
                   Provável mensagem malformada no tópico bloqueando o consumidor, que
                   reprocessa o mesmo offset em laço. Incidentes com o mesmo padrão
-                  <a class="cx-cite">INC0052670</a> <a class="cx-cite">INC0052622</a>
+                  <a class="cx-cite" href="incidente-detalhe.html">INC0052670</a> <a class="cx-cite" href="incidente-detalhe.html">INC0052622</a>
                   terminaram com o consumidor preso na primeira mensagem inválida.
                 </div>
 
@@ -1030,9 +1060,9 @@
                     Ação sugerida
                   </span>
                   <ol class="cx-steps">
-                    <li>Mover a mensagem malformada para a DLQ <a class="cx-cite">INC0052670</a>.</li>
-                    <li>Reiniciar o consumidor para retomar a partir do próximo offset <a class="cx-cite">INC0052656</a>.</li>
-                    <li>Monitorar o lag até normalizar e confirmar o consumo <a class="cx-cite">INC0052670</a>.</li>
+                    <li>Mover a mensagem malformada para a DLQ <a class="cx-cite" href="incidente-detalhe.html">INC0052670</a>.</li>
+                    <li>Reiniciar o consumidor para retomar a partir do próximo offset <a class="cx-cite" href="incidente-detalhe.html">INC0052656</a>.</li>
+                    <li>Monitorar o lag até normalizar e confirmar o consumo <a class="cx-cite" href="incidente-detalhe.html">INC0052670</a>.</li>
                   </ol>
                 </div>
 
@@ -1171,9 +1201,9 @@
 
               <!-- ============ 9 · Turno sem resposta (dois desfechos, mutuamente excludentes) ============ -->
               <div class="cx-state" data-state="9">
-                <div class="cx-replies cx-sub9-toggle">
-                  <button class="cx-reply on" data-sub9="cancel" type="button">Cancelado por você</button>
-                  <button class="cx-reply" data-sub9="timeout" type="button">Timeout do provedor</button>
+                <div class="cx-sub9-toggle">
+                  <button class="cx-scenario on" data-sub9="cancel" type="button">Cancelado por você</button>
+                  <button class="cx-scenario" data-sub9="timeout" type="button">Timeout do provedor</button>
                 </div>
 
                 <div class="cx-sub9 on" data-sub9-panel="cancel">
@@ -1241,10 +1271,21 @@
               <!-- ============ 10 · Limite de entrada ============ -->
               <div class="cx-state" data-state="10">
                 <div class="cx-intro">
-                  <p style="margin: 0">
-                    Digite a sua pergunta abaixo. O limite de entrada por mensagem é de
-                    4.000 caracteres — o campo já está no limite.
+                  <p style="margin: 0 0 8px">
+                    Sou a <b>Aurora</b>, copiloto de incidentes do Banco Meridiano.
+                    Trabalho <b>somente leitura</b>: analiso este incidente e cito
+                    incidentes históricos como evidência.
                   </p>
+                  <ul class="cx-scope">
+                    <li class="yes">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7" /></svg>
+                      Explico o incidente e sugiro caminhos fundamentados no histórico.
+                    </li>
+                    <li class="no">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                      Não altero o incidente nem executo ações — só leitura.
+                    </li>
+                  </ul>
                 </div>
               </div>
 
@@ -1267,7 +1308,7 @@
                     Diagnosis
                   </span>
                   A malformed message is most likely blocking the consumer, which loops
-                  on the first invalid offset <a class="cx-cite">INC0052670</a>.
+                  on the first invalid offset <a class="cx-cite" href="incidente-detalhe.html">INC0052670</a>.
                 </div>
                 <div class="cx-block caveat">
                   <span class="cx-bl">
@@ -1378,7 +1419,8 @@
             limit: true,
             hint: "Mensagem no limite. Resuma para enviar — nada foi enviado ao modelo.",
           },
-          11: { disabled: false, placeholder: "Ask about this incident…" },
+          // Answers follow the message's language, but the chrome stays pt-BR.
+          11: { disabled: false, placeholder: DEFAULT_PLACEHOLDER },
         };
 
         function setTopology(topo) {
@@ -1415,6 +1457,8 @@
           });
           applyComposer(composer[n] || composer[4]);
           document.querySelector(".cx-body").scrollTop = 0;
+          // Re-entering state 9 always starts from the default sub-case (cancel).
+          if (n === 9) setSub9("cancel");
         }
 
         document.querySelectorAll(".cx-topo button").forEach((b) => {
@@ -1432,17 +1476,21 @@
           document.body.classList.remove("cx-closed");
         });
 
+        // The quick-action starts the turn — same destination as pressing Enter.
+        const quick = document.querySelector(".cx-quick");
+        if (quick) quick.addEventListener("click", () => goTo(3));
+
         // State 9: toggle between the cancelled-turn and timeout-with-retry outcomes.
-        document.querySelectorAll(".cx-sub9-toggle .cx-reply").forEach((b) => {
-          b.addEventListener("click", () => {
-            const sub = b.dataset.sub9;
-            document.querySelectorAll(".cx-sub9-toggle .cx-reply").forEach((btn) => {
-              btn.classList.toggle("on", btn.dataset.sub9 === sub);
-            });
-            document.querySelectorAll(".cx-sub9").forEach((panel) => {
-              panel.classList.toggle("on", panel.dataset.sub9Panel === sub);
-            });
+        function setSub9(sub) {
+          document.querySelectorAll(".cx-sub9-toggle .cx-scenario").forEach((btn) => {
+            btn.classList.toggle("on", btn.dataset.sub9 === sub);
           });
+          document.querySelectorAll(".cx-sub9").forEach((panel) => {
+            panel.classList.toggle("on", panel.dataset.sub9Panel === sub);
+          });
+        }
+        document.querySelectorAll(".cx-sub9-toggle .cx-scenario").forEach((b) => {
+          b.addEventListener("click", () => setSub9(b.dataset.sub9));
         });
 
         // Initial render: floating topology (decision #21), hero state.
