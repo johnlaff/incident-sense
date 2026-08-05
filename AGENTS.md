@@ -25,6 +25,7 @@ backend/
   scripts/             generate_dataset.py, precompute.py, ingest.py
   data/                COMMITTED incidents.json + precomputed/ (embeddings, clusters)
   tests/               pytest (LLM/embeddings/Qdrant mocked)
+contracts/             Shared SSE protocol fixtures read by both pytest and Vitest
 frontend/              Next.js (App Router) + TS + Tailwind + regl-scatterplot
                        + react-markdown (Aurora's suggestion is rendered markdown)
 docs/                  PT-BR docs + decisions/ (ADRs)
