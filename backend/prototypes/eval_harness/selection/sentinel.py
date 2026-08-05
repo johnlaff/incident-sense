@@ -233,7 +233,7 @@ async def _run(*, smoke: bool) -> None:
         "hard_invariants": gate,
         "graduation": {
             "rule": "graduate iff every hard invariant is zero (cascade level 1, #24)",
-            "verdict": "graduate" if graduates else "exclude",
+            "verdict": "smoke" if smoke else ("graduate" if graduates else "exclude"),
         },
         "summary": summary,
     }
@@ -249,7 +249,7 @@ async def _run(*, smoke: bool) -> None:
     )
     print(f"gasto reportado US$ {run.budget_spent_usd:.4f}")
     if smoke:
-        # A single case não decide graduação; o gate exige o corpus completo.
+        # A single case does not decide graduation; the gate requires the full corpus.
         print(">>> SMOKE — sem veredito de graduação (só valida a fiação)")
     else:
         verdict = "GRADUA" if graduates else "EXCLUI"
