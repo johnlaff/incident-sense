@@ -1,0 +1,15 @@
+{
+  "description": "turn_id fora do formato UUID.",
+  "chunks": [
+    "event: turn.accepted\nid: not-a-uuid:1\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"not-a-uuid\", \"sequence\": 1, \"type\": \"turn.accepted\", \"incident_number\": \"INC-0007\", \"locale\": \"pt-BR\", \"model_requested\": \"openai/gpt-5.6-luna\"}\n\n",
+    "event: phase.changed\nid: not-a-uuid:2\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"not-a-uuid\", \"sequence\": 2, \"type\": \"phase.changed\", \"phase\": \"policy\", \"status\": \"started\", \"duration_ms\": null}\n\n",
+    "event: phase.changed\nid: not-a-uuid:3\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"not-a-uuid\", \"sequence\": 3, \"type\": \"phase.changed\", \"phase\": \"policy\", \"status\": \"completed\", \"duration_ms\": 120}\n\n",
+    "event: phase.changed\nid: not-a-uuid:4\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"not-a-uuid\", \"sequence\": 4, \"type\": \"phase.changed\", \"phase\": \"classify\", \"status\": \"started\", \"duration_ms\": null}\n\n",
+    "event: phase.changed\nid: not-a-uuid:5\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"not-a-uuid\", \"sequence\": 5, \"type\": \"phase.changed\", \"phase\": \"classify\", \"status\": \"completed\", \"duration_ms\": 120}\n\n",
+    "event: turn.failed\nid: not-a-uuid:6\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"not-a-uuid\", \"sequence\": 6, \"type\": \"turn.failed\", \"code\": \"provider_unavailable\", \"message\": \"O provedor do modelo está indisponível no momento.\", \"retryable\": true, \"retry_after_ms\": 2000}\n\n"
+  ],
+  "expect": {
+    "outcome": "error",
+    "error_code": "invalid_event"
+  }
+}

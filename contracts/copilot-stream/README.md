@@ -13,7 +13,7 @@ Todo evento viaja num envelope discriminado:
 | Campo | Tipo | Regra |
 |---|---|---|
 | `protocol_version` | `"1"` | Versão desconhecida rejeita o stream inteiro. |
-| `turn_id` | UUID | Constante dentro do stream. |
+| `turn_id` | UUID | Constante dentro do stream; formato inválido ou troca no meio → `invalid_event`. |
 | `sequence` | inteiro ≥ 1 | Estritamente monotônica, começa em 1. |
 | `type` | discriminador | Um dos seis tipos abaixo. |
 
@@ -64,10 +64,13 @@ Cada arquivo JSON descreve um stream como chegaria no fio:
 | `unknown_protocol_version` | `protocol_version` fora do contrato |
 | `unknown_event_type` | `type` fora dos seis tipos |
 | `invalid_event` | payload que viola o schema ou uma invariante estrutural |
-| `out_of_order_sequence` | `sequence` menor que a anterior |
+| `out_of_order_sequence` | `sequence` menor que a anterior, ou primeira `sequence` ≠ 1 |
 | `duplicate_sequence` | `sequence` igual à anterior |
 | `missing_terminal` | EOF sem evento terminal |
 | `event_after_terminal` | qualquer evento depois do terminal |
+
+Campos opcionais podem vir ausentes do fio: o leitor trata ausência como nulo
+(`citations` ausente vira lista vazia) — nunca rejeita nem infere valor.
 
 Os dois leitores devem aceitar todos os casos de `valid/` e rejeitar cada caso
 de `invalid/` com o `error_code` esperado.

@@ -1,0 +1,17 @@
+{
+  "description": "Campos opcionais ausentes (duration_ms em started, citations, postfilter_reason, telemetria): leitor trata ausência como nulo/lista vazia.",
+  "chunks": [
+    "event: turn.accepted\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:1\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 1, \"type\": \"turn.accepted\", \"incident_number\": \"INC-0007\", \"locale\": \"en\", \"model_requested\": \"openai/gpt-5.6-luna\"}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:2\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 2, \"type\": \"phase.changed\", \"phase\": \"policy\", \"status\": \"started\"}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:3\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 3, \"type\": \"phase.changed\", \"phase\": \"policy\", \"status\": \"completed\", \"duration_ms\": 80}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:4\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 4, \"type\": \"phase.changed\", \"phase\": \"retrieve\", \"status\": \"started\"}\n\n",
+    "event: retrieval.completed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:5\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 5, \"type\": \"retrieval.completed\", \"query\": \"checkout timeout\", \"candidates\": [{\"number\": \"INC-0042\", \"short_description\": \"Timeout at checkout\", \"similarity\": 0.8, \"survived_postfilter\": true}]}\n\n",
+    "event: phase.changed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:6\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 6, \"type\": \"phase.changed\", \"phase\": \"retrieve\", \"status\": \"completed\", \"duration_ms\": 200}\n\n",
+    "event: answer.completed\nid: 7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37:7\ndata: {\"protocol_version\": \"1\", \"turn_id\": \"7f9c2f5e-8d3a-4b1c-9e6f-2a4d8c0b1e37\", \"sequence\": 7, \"type\": \"answer.completed\", \"answer\": {\"kind\": \"grounded_answer\", \"locale\": \"en\", \"incident_classification\": {\"verdict\": \"PROCEDENTE\", \"justification\": \"Real degradation.\"}, \"grounding\": \"cited\", \"blocks\": [{\"type\": \"explanation\", \"text\": \"Matches a prior incident.\"}, {\"type\": \"diagnosis\", \"text\": \"Connection pool exhaustion.\", \"citations\": [\"INC-0042\"]}]}, \"sources\": [\"INC-0042\"], \"telemetry\": [{\"call\": \"answer\"}]}\n\n"
+  ],
+  "expect": {
+    "outcome": "ok",
+    "event_count": 7,
+    "terminal_type": "answer.completed"
+  }
+}

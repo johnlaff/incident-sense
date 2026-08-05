@@ -16,11 +16,13 @@ import pytest
 
 from incident_sense.models.copilot_stream import (
     ActionBlock,
+    AnswerKind,
     CopilotAnswer,
     DiagnosisBlock,
     ExplanationBlock,
     Grounding,
     IncidentClassification,
+    Locale,
     QuestionBlock,
     StreamContractError,
     parse_sse_stream,
@@ -63,8 +65,8 @@ def test_invalid_stream_is_rejected(name: str, fixture: dict[str, Any]) -> None:
 def test_diagnosis_block_without_citation_is_rejected() -> None:
     with pytest.raises(ValueError, match="citation"):
         CopilotAnswer(
-            kind="grounded_answer",
-            locale="pt-BR",
+            kind=AnswerKind.GROUNDED_ANSWER,
+            locale=Locale.PT_BR,
             incident_classification=IncidentClassification(
                 verdict=Classification.PROCEDENTE, justification="Sintoma real e recorrente."
             ),
@@ -75,8 +77,8 @@ def test_diagnosis_block_without_citation_is_rejected() -> None:
 
 def test_question_block_without_citation_is_accepted() -> None:
     answer = CopilotAnswer(
-        kind="general_explanation",
-        locale="pt-BR",
+        kind=AnswerKind.GENERAL_EXPLANATION,
+        locale=Locale.PT_BR,
         incident_classification=IncidentClassification(
             verdict=Classification.PROCEDENTE, justification="Escopo ambíguo."
         ),
@@ -90,8 +92,8 @@ def test_question_block_without_citation_is_accepted() -> None:
 def test_action_block_without_citation_is_rejected() -> None:
     with pytest.raises(ValueError, match="citation"):
         CopilotAnswer(
-            kind="grounded_answer",
-            locale="pt-BR",
+            kind=AnswerKind.GROUNDED_ANSWER,
+            locale=Locale.PT_BR,
             incident_classification=IncidentClassification(
                 verdict=Classification.PROCEDENTE, justification="Sintoma real e recorrente."
             ),

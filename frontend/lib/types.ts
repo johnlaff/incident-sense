@@ -1,4 +1,6 @@
 // Types mirroring the backend API responses (keep in sync with the pydantic models).
+// The copilot SSE wire types live in `copilot-stream.ts`, driven by the shared
+// contract in contracts/copilot-stream/.
 
 export type Classification = "PROCEDENTE" | "IMPROCEDENTE";
 

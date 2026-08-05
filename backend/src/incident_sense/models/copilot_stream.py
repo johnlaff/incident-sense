@@ -308,6 +308,7 @@ def parse_sse_stream(chunks: Iterable[str]) -> list[StreamEvent]:
     raw_events = [block for block in full_text.split("\n\n") if block.strip()]
 
     events: list[StreamEvent] = []
+    stream_turn_id: UUID | None = None
     previous_sequence: int | None = None
     terminal_seen = False
 
@@ -349,6 +350,14 @@ def parse_sse_stream(chunks: Iterable[str]) -> list[StreamEvent]:
             raise StreamContractError(
                 StreamErrorCode.INVALID_EVENT, f"event failed schema validation: {exc}"
             ) from exc
+
+        if stream_turn_id is None:
+            stream_turn_id = event.turn_id
+        elif event.turn_id != stream_turn_id:
+            raise StreamContractError(
+                StreamErrorCode.INVALID_EVENT,
+                f"turn_id changed mid-stream: {event.turn_id} != {stream_turn_id}",
+            )
 
         if previous_sequence is None:
             if event.sequence != 1:

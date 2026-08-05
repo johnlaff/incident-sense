@@ -177,6 +177,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// The contract says absent optional fields read as null ("campos ausentes
+// ficam nulos") — normalize before validating so both readers agree.
+function absentToNull(value: Record<string, unknown>, keys: string[]): void {
+  for (const key of keys) {
+    if (value[key] === undefined) value[key] = null;
+  }
+}
+
 function isString(value: unknown): value is string {
   return typeof value === "string";
 }
@@ -228,6 +238,7 @@ function isCopilotAnswerBlock(value: unknown): value is CopilotAnswerBlock {
   if (!isString(value.type) || !BLOCK_TYPES.includes(value.type as CopilotAnswerBlock["type"])) {
     return false;
   }
+  if (value.citations === undefined) value.citations = [];
   if (!isString(value.text) || !isStringArray(value.citations)) return false;
   if (
     BLOCK_TYPES_REQUIRING_CITATION.has(value.type as CopilotAnswerBlock["type"]) &&
@@ -260,6 +271,14 @@ function isCopilotAnswer(value: unknown): value is CopilotAnswer {
 
 function isCopilotTelemetryEntry(value: unknown): value is CopilotTelemetryEntry {
   if (!isRecord(value)) return false;
+  absentToNull(value, [
+    "model",
+    "provider",
+    "generation_id",
+    "input_tokens",
+    "output_tokens",
+    "cost_usd",
+  ]);
   return (
     isString(value.call) &&
     isNullableString(value.model) &&
@@ -273,6 +292,7 @@ function isCopilotTelemetryEntry(value: unknown): value is CopilotTelemetryEntry
 
 function isCopilotRetrievalCandidate(value: unknown): value is CopilotRetrievalCandidate {
   if (!isRecord(value)) return false;
+  absentToNull(value, ["postfilter_reason"]);
   return (
     isString(value.number) &&
     isString(value.short_description) &&
@@ -289,8 +309,10 @@ function hasValidEnvelope(
   return (
     value.protocol_version === "1" &&
     isString(value.turn_id) &&
+    UUID_PATTERN.test(value.turn_id) &&
     typeof value.sequence === "number" &&
-    Number.isInteger(value.sequence)
+    Number.isInteger(value.sequence) &&
+    value.sequence >= 1
   );
 }
 
@@ -309,12 +331,15 @@ function toCopilotStreamEvent(value: Record<string, unknown> & CopilotEnvelope):
       return null;
     }
     case "phase.changed": {
+      absentToNull(value, ["duration_ms"]);
       if (
         isString(value.phase) &&
         PHASES.includes(value.phase as CopilotPhase) &&
         isString(value.status) &&
         PHASE_STATUSES.includes(value.status as CopilotPhaseStatus) &&
-        isNullableNumber(value.duration_ms)
+        isNullableNumber(value.duration_ms) &&
+        // duration_ms is reported exactly when the phase has completed.
+        (value.status === "completed" ? value.duration_ms !== null : value.duration_ms === null)
       ) {
         return value as unknown as PhaseChangedEvent;
       }
@@ -342,6 +367,7 @@ function toCopilotStreamEvent(value: Record<string, unknown> & CopilotEnvelope):
       return null;
     }
     case "turn.failed": {
+      absentToNull(value, ["retry_after_ms"]);
       if (
         isString(value.code) &&
         isString(value.message) &&
@@ -381,6 +407,7 @@ export function parseCopilotStream(chunks: string[]): CopilotStreamEvent[] {
   const rawPayloads = decodeSseStream(chunks);
   const events: CopilotStreamEvent[] = [];
 
+  let streamTurnId: string | null = null;
   let previousSequence: number | null = null;
   let terminalSeen = false;
 
@@ -421,6 +448,12 @@ export function parseCopilotStream(chunks: string[]): CopilotStreamEvent[] {
     const event = toCopilotStreamEvent(parsed);
     if (event === null) {
       throw new StreamContractError("invalid_event", `Payload for ${parsed.type} violates the schema.`);
+    }
+
+    if (streamTurnId === null) {
+      streamTurnId = event.turn_id;
+    } else if (event.turn_id !== streamTurnId) {
+      throw new StreamContractError("invalid_event", "turn_id changed mid-stream.");
     }
 
     if (previousSequence === null) {
