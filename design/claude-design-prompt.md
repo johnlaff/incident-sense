@@ -51,10 +51,11 @@ tematizada com a marca do banco e elevada ao acabamento dos melhores produtos.
   - Estado: Aberto `oklch(0.5 0.13 240)`, Em andamento `oklch(0.5 0.12 55)`,
     Em espera `oklch(0.5 0.02 285)`, Resolvido `oklch(0.5 0.12 150)`.
   - Status **sempre** como ícone + cor + rótulo (acessível a daltônicos).
-- **Tipografia:** uma família sans precisa e levemente distintiva (**Geist** ou
-  Inter) para tudo; **mono** (Geist Mono / JetBrains Mono) para números de
-  incidente, IDs e scores. Escala rem **fixa** (12/13/14/16/18/20/24/30), base
-  14px (ferramenta densa). Títulos peso 600, tracking −0.01em.
+- **Tipografia:** **Hanken Grotesk** (variável, 400–700) para tudo; **mono**
+  (JetBrains Mono) para números de incidente, IDs e scores. Escala em tokens
+  `--fs-*` (10.5/11/13/14/18/23, base 14px): a cadeia de hierarquia
+  micro→base→lg→xl mantém contraste ≥1.25 entre degraus; 13 e 10.5 são degraus
+  finos só para densidade (tabelas, badges). Títulos peso 600, tracking −0.01em.
 - **Forma:** raio 8px em cards/inputs (nunca 24px+), pills para badges/tags.
   Bordas hairline 1px. Sombras sutis e definidas (não "ghost card").
 - **Grid 4px.** Densidade alta, ritmo de espaçamento variado (não tudo igual).
