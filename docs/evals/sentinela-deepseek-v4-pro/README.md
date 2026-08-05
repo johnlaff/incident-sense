@@ -101,7 +101,10 @@ inalterados; nenhuma mudança de allowlist é aberta.
   falha por margem estreita, não por incapacidade grosseira.
 - **A `locale-mismatch` é determinística.** Reproduziu idêntica em três execuções
   independentes a `temperature = 0`, sempre no mesmo caso — é comportamento
-  sistemático do modelo naquela recusa, não ruído amostral de rodada única.
+  sistemático do modelo naquela recusa, não ruído amostral de rodada única. Só a
+  execução canônica tem artefato neste diretório; as execuções de confirmação
+  ficam em `_artifacts/sentinel/` (local, retenção de 30 dias) e não entram no
+  bundle sanitizado.
 - **As duas recusas falsas são na isca de citação forjada.** O Pro recusou-se a
   citar o id inexistente (`INC-SENTINELA-999`) — comportamento defensável que o
   gold estrito marca como divergência; a comparação controlada observou o mesmo

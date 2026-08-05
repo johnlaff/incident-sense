@@ -39,7 +39,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-import subprocess
 from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
@@ -52,7 +51,7 @@ from ..judges import HeuristicGroundednessJudge
 from ..runner import load_cases, load_manifest, run_suite
 from ..writers import write_bundle
 from . import preflight
-from .compare import summarize_model
+from .compare import _git_sha, _slug, summarize_model
 from .contexts import evidence_corpus
 from .probe import PROBE_VERSION, ModelSpec, OpenRouterProbeTarget, worst_case_call_usd
 
@@ -88,27 +87,15 @@ CANDIDATE = ModelSpec(
 )
 
 
-def _git_sha() -> str:
-    try:
-        out = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, check=True
-        )
-        return out.stdout.strip() or "unknown"
-    except (subprocess.SubprocessError, OSError):
-        return "unknown"
-
-
-def _slug(model_id: str) -> str:
-    return model_id.replace("/", "__")
-
-
 def hard_invariants(summary: dict[str, object], *, total_cases: int) -> dict[str, int]:
     """The level-1 gate of the lexicographic cascade (#24), as integer counts.
 
     Every count must be zero to graduate: schema/protocol/structural-citation
     validity per case, forged citations, isolation and full completion. Request
     rejections and transport failures are folded in — a case that did not return
-    a validated answer is not a clean case.
+    a validated answer is not a clean case. The counts are not a partition:
+    ``request_rejected`` and ``transport`` cases are also counted inside
+    ``incomplete_cases``; the overlap is intentional for a binary gate.
     """
     failures = summary["failures"]  # type: ignore[index]
     citations = summary["citations"]  # type: ignore[index]
@@ -254,7 +241,6 @@ async def _run(*, smoke: bool) -> None:
         json.dumps(sentinel, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
 
-    verdict = "GRADUA" if graduates else "EXCLUI"
     print(f"\ninvariantes duras: {json.dumps(gate, ensure_ascii=False)}")
     print(
         f"recusas falsas/perdidas: {summary['refusals']} · "  # type: ignore[index]
@@ -262,7 +248,13 @@ async def _run(*, smoke: bool) -> None:
         f"latência p50/p95: {summary['latency_ms']['p50']}/{summary['latency_ms']['p95']} ms"  # type: ignore[index]
     )
     print(f"gasto reportado US$ {run.budget_spent_usd:.4f}")
-    print(f">>> VEREDITO: {verdict} (invariantes duras {'zeradas' if graduates else 'furadas'})")
+    if smoke:
+        # A single case não decide graduação; o gate exige o corpus completo.
+        print(">>> SMOKE — sem veredito de graduação (só valida a fiação)")
+    else:
+        verdict = "GRADUA" if graduates else "EXCLUI"
+        zeradas = "zeradas" if graduates else "furadas"
+        print(f">>> VEREDITO: {verdict} (invariantes duras {zeradas})")
     print(f"artefatos em {_ARTIFACTS}/")
 
 
