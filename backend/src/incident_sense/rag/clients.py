@@ -174,8 +174,10 @@ def build_deps(settings: Settings) -> RagDeps:
     from incident_sense.api.incidents import get_incident_repository
 
     client = make_qdrant_client(settings)
+    # Reasoning off: the budget of each step (classify, summary, post-filter,
+    # suggestion) is for the visible answer, not hidden reasoning tokens.
     return RagDeps(
-        llm=OpenAILLMClient(make_chat_client(settings), settings.llm_model),
+        llm=OpenAILLMClient(make_chat_client(settings), settings.llm_model, reasoning=False),
         embeddings=OpenAIEmbeddingClient(make_embedding_client(settings), settings.embedding_model),
         retriever=QdrantRetriever(client, settings.qdrant_collection),
         problem_retriever=QdrantRetriever(client, settings.qdrant_problems_collection),
