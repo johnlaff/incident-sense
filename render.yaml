@@ -21,6 +21,6 @@ services:
       - key: QDRANT_URL
         value: ":memory:"
       - key: FRONTEND_ORIGIN
-        value: https://incident-sense.johnlaff.workers.dev,http://localhost:3000
+        value: https://incident-sense.joaoaraxaiba.workers.dev,http://localhost:3000
       - key: LOG_JSON
         value: "true"
