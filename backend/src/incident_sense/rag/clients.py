@@ -64,9 +64,10 @@ class VectorRetriever(Protocol):
 class OpenAILLMClient:
     """LLMClient backed by an OpenAI-compatible chat endpoint (OpenRouter)."""
 
-    def __init__(self, client: OpenAI, model: str) -> None:
+    def __init__(self, client: OpenAI, model: str, *, reasoning: bool | None = None) -> None:
         self._client = client
         self._model = model
+        self._reasoning = reasoning
 
     def complete(
         self, system: str, user: str, *, temperature: float = 0.2, max_tokens: int = 800
@@ -78,6 +79,7 @@ class OpenAILLMClient:
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
             temperature=temperature,
             max_tokens=max_tokens,
+            reasoning=self._reasoning,
         )
 
 

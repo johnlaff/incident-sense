@@ -77,6 +77,7 @@ def chat_text(
     *,
     temperature: float = 0.7,
     max_tokens: int = 1024,
+    reasoning: bool | None = None,
 ) -> str:
     """Run a chat completion and return the assistant text.
 
@@ -85,7 +86,12 @@ def chat_text(
     (some silently return empty content). For structured output we instead
     instruct JSON in the prompt and parse it with :func:`extract_json`, which is
     portable across providers.
+
+    ``reasoning=False`` asks OpenRouter to skip hidden reasoning. Reasoning
+    models spend ``max_tokens`` on it first, and a long prompt can use the whole
+    budget and return empty content. ``None`` leaves the provider default.
     """
+    extra_body = None if reasoning is None else {"reasoning": {"enabled": reasoning}}
     # The SDK ships precise TypedDicts for messages; our plain dicts are
     # wire-compatible, so we cast to Any rather than re-typing them.
     completion = client.chat.completions.create(
@@ -93,6 +99,7 @@ def chat_text(
         messages=cast(Any, messages),
         temperature=temperature,
         max_tokens=max_tokens,
+        extra_body=extra_body,
     )
     return completion.choices[0].message.content or ""
 
