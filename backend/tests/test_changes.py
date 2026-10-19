@@ -184,3 +184,30 @@ def test_evaluate_without_key_returns_503(
     )
     response = client.post("/api/changes/CHG1/evaluate", json={})
     assert response.status_code == 503
+
+
+def test_truncated_semantic_reply_is_retried_once(client: TestClient) -> None:
+    class _Truncating(_Judge):
+        def __init__(self) -> None:
+            super().__init__(field_score=9.0)
+            self.semantic_calls = 0
+
+        def complete(self, system: str, user: str, **kw: object) -> str:
+            if "TAREFAS CADASTRADAS" in user:
+                self.semantic_calls += 1
+                if self.semantic_calls == 1:
+                    return '{"consistency_score": 6, "problems": ["O retorno não desf'
+            return super().complete(system, user, **kw)
+
+    judge = _Truncating()
+    client.app.dependency_overrides[get_change_repository] = lambda: ChangeRepository(
+        [_change("CHG1")]
+    )
+    client.app.dependency_overrides[get_evaluation_cache] = EvaluationCache
+    client.app.dependency_overrides[get_judge_factory] = lambda: lambda _model: judge
+
+    response = client.post("/api/changes/CHG1/evaluate", json={})
+
+    assert response.status_code == 200
+    assert response.json()["semantic"]["backout_adherence"] == "PARCIAL"
+    assert judge.semantic_calls == 2

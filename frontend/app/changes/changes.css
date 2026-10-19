@@ -568,9 +568,9 @@ a.chg-row:focus-visible {
   display: grid;
   gap: 8px;
   padding: 10px 12px;
-  border-left: 3px solid var(--border-strong);
+  border: 1px solid var(--border);
   background: var(--surface-2);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: var(--radius-sm);
 }
 .chg-verdict p {
   margin: 0;
