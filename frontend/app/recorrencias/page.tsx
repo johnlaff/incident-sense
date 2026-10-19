@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
-import { Meridian, StateBlock } from "@/components/ui";
+import { LoadError, Meridian, WakeNotice } from "@/components/ui";
 import { activate } from "@/lib/a11y";
 import { useClusters } from "@/lib/incidents";
 import { usePrefersReducedMotion } from "@/lib/motion";
@@ -28,7 +28,6 @@ interface MapPoint {
 interface MapCluster {
   id: number;
   label: string;
-  short: string;
   size: number;
   color: string;
   cx: number;
@@ -44,10 +43,6 @@ interface MapView {
 function grand(seed: number): number {
   const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
   return x - Math.floor(x);
-}
-
-function shortLabel(label: string): string {
-  return label.length > 22 ? `${label.slice(0, 21)}…` : label;
 }
 
 function buildView(data: ClustersResponse): MapView {
@@ -86,7 +81,6 @@ function buildView(data: ClustersResponse): MapView {
     .map(({ c, own }) => ({
       id: c.cluster_id,
       label: c.label,
-      short: shortLabel(c.label),
       size: c.size,
       color: clusterColor(c.cluster_id, false),
       cx: own.reduce((s, p) => s + p.tx, 0) / own.length,
@@ -99,7 +93,7 @@ function buildView(data: ClustersResponse): MapView {
 
 export default function RecurrencesPage() {
   const { openIncident } = useShell();
-  const { data, loading, error } = useClusters();
+  const { data, loading, error, slow, retry } = useClusters();
   const reduced = usePrefersReducedMotion();
 
   const view = useMemo(() => (data ? buildView(data) : null), [data]);
@@ -242,14 +236,13 @@ export default function RecurrencesPage() {
 
   if (error) {
     return (
-      <StateBlock
-        icon={Icons.alert}
-        variant="error"
-        title="Não foi possível carregar as recorrências"
-      >
-        {error} Verifique se a API está rodando em{" "}
-        <span className="mono">localhost:8000</span>.
-      </StateBlock>
+      <div className="card">
+        <LoadError
+          title="Não foi possível carregar as recorrências"
+          error={error}
+          onRetry={retry}
+        />
+      </div>
     );
   }
 
@@ -259,55 +252,36 @@ export default function RecurrencesPage() {
         <h1>Recorrências</h1>
         <span className="count">
           {view
-            ? `${view.clusters.length} agrupamentos · ${view.points.length} incidentes`
-            : "carregando…"}
+            ? `${view.clusters.length} grupos · ${view.points.length} incidentes`
+            : "Carregando…"}
         </span>
       </div>
-      <p
-        style={{
-          color: "var(--muted)",
-          fontSize: 13.5,
-          maxWidth: 640,
-          marginTop: -8,
-          marginBottom: 18,
-          lineHeight: 1.6,
-        }}
-      >
-        Cada ponto é um incidente, posicionado por similaridade e agrupado por causa raiz.
-        Os rótulos de cada grupo são gerados pela IA. Selecione um grupo para inspecionar
-        seus incidentes e promovê-lo a <b>problema</b>.
+      <p className="page-lede">
+        Cada ponto é um incidente. Os parecidos ficam perto uns dos outros e formam
+        grupos: cada grupo é uma recorrência, um padrão que vale investigar. A IA deu nome
+        aos grupos. Escolha um para ver os incidentes e abrir um <b>problema</b>.
       </p>
+      <WakeNotice show={slow} />
 
       <div className="rec-layout">
         <div className="card rmap-card">
           <div className="rmap-toolbar">
             <span className="rt-title">Mapa de incidentes</span>
-            <span className="rt-sub">Agrupado por causa raiz</span>
+            <span className="rt-sub">Agrupados por semelhança</span>
             <div className="rt-grow" />
             {sel != null ? (
               <button className="btn btn-ghost btn-sm" onClick={() => setSel(null)}>
-                Ver todos
+                Mostrar todos
               </button>
             ) : null}
             <button className="btn btn-outline btn-sm" onClick={regroup}>
               <Icons.replay />
-              Reagrupar
+              Repetir animação
             </button>
           </div>
           <div className="rmap" ref={mapRef}>
             {loading || !view ? (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "grid",
-                  placeItems: "center",
-                  color: "var(--muted)",
-                  fontSize: 13,
-                }}
-              >
-                Carregando o mapa…
-              </div>
+              <div className="rmap-loading">Carregando o mapa…</div>
             ) : (
               <>
                 {view.points.map((p, idx) => {
@@ -318,6 +292,7 @@ export default function RecurrencesPage() {
                   return (
                     <span
                       key={p.id}
+                      aria-hidden="true"
                       className={`rmap-point incident${dim ? " dim" : ""}`}
                       style={{
                         left: `${(grouped ? p.tx : p.sx) * 100}%`,
@@ -345,11 +320,15 @@ export default function RecurrencesPage() {
                           className={`rmap-label${dim ? " dim" : ""}`}
                           style={{ left: `${c.cx * 100}%`, top: `${c.cy * 100 - 10}%` }}
                           title={c.label}
+                          aria-pressed={sel === c.id}
                           onMouseEnter={() => setHover(c.id)}
                           onMouseLeave={() => setHover((h) => (h === c.id ? null : h))}
-                          onClick={() => setSel(sel === c.id ? null : c.id)}
+                          {...activate(
+                            () => setSel(sel === c.id ? null : c.id),
+                            `${c.label}, ${c.size} incidentes`,
+                          )}
                         >
-                          {c.short}
+                          <span className="rl-t">{c.label}</span>
                           <span className="rl-n">{c.size}</span>
                         </div>
                       );
@@ -360,10 +339,11 @@ export default function RecurrencesPage() {
           </div>
         </div>
 
-        <div className="card" style={{ padding: 0 }}>
-          <div style={{ padding: "12px 12px 6px" }}>
-            <div className="label-row" style={{ padding: "2px 6px 8px" }}>
-              Grupos · tamanho
+        <div className="card rec-side">
+          <div className="rec-side-list">
+            <div className="rec-side-head">
+              <h2>Grupos</h2>
+              <span>incidentes</span>
             </div>
             <div className="legend">
               {(view?.clusters ?? []).map((c) => (
@@ -389,7 +369,7 @@ export default function RecurrencesPage() {
                   onMouseLeave={() => setHover((h) => (h === "outlier" ? null : h))}
                 >
                   <span className="sw" style={{ background: OUTLIER_GREY }} />
-                  <span className="lg-label">Outliers</span>
+                  <span className="lg-label">Casos isolados</span>
                   <span className="lg-n">{view.outliers}</span>
                 </div>
               ) : null}
@@ -401,31 +381,23 @@ export default function RecurrencesPage() {
               {(() => {
                 const cluster =
                   sel === "outlier" ? null : view.clusters.find((c) => c.id === sel);
-                const label = sel === "outlier" ? "Outliers" : (cluster?.label ?? "");
+                const label =
+                  sel === "outlier" ? "Casos isolados" : (cluster?.label ?? "");
                 const color =
                   sel === "outlier" ? OUTLIER_GREY : (cluster?.color ?? OUTLIER_GREY);
                 const prb = promoted[String(sel)];
                 return (
                   <>
                     <h3>
-                      <span
-                        className="sw"
-                        style={{
-                          width: 11,
-                          height: 11,
-                          borderRadius: "50%",
-                          background: color,
-                          display: "inline-block",
-                        }}
-                      />
+                      <span className="sw" style={{ background: color }} />
                       {label}
                     </h3>
                     <div className="cd-sub">
                       {sel === "outlier"
-                        ? `${selIncidents.length} casos isolados · sem causa raiz comum`
-                        : `${selIncidents.length} incidentes neste agrupamento`}
+                        ? `${selIncidents.length} incidentes sem padrão em comum`
+                        : `${selIncidents.length} incidentes neste grupo`}
                     </div>
-                    <div className="cd-list" style={{ maxHeight: 256, overflow: "auto" }}>
+                    <div className="cd-list">
                       {selIncidents.map((x) => (
                         <div
                           className="cd-inc"
@@ -438,36 +410,19 @@ export default function RecurrencesPage() {
                       ))}
                     </div>
                     {sel === "outlier" ? (
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "var(--muted)",
-                          lineHeight: 1.55,
-                          padding: 2,
-                        }}
-                      >
-                        Outliers não viram problema. São casos isolados ou dúvidas de
-                        atendimento, que ficam fora dos agrupamentos.
-                      </div>
+                      <p className="cd-note">
+                        Casos isolados não viram problema: não se repetem o bastante para
+                        indicar um padrão.
+                      </p>
                     ) : prb ? (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          fontSize: 12.5,
-                          color: "var(--st-resolved)",
-                          fontWeight: 600,
-                          padding: "4px 2px",
-                        }}
-                      >
+                      <p className="cd-done" role="status">
                         <Icons.checkCircle size={16} />
-                        Problema <span className="mono">{prb}</span> criado
-                      </div>
+                        Problema <span className="mono">{prb}</span> aberto para este
+                        grupo
+                      </p>
                     ) : (
                       <button
-                        className="btn btn-primary btn-sm"
-                        style={{ width: "100%", justifyContent: "center" }}
+                        className="btn btn-primary btn-sm cd-promote"
                         onClick={() =>
                           setPromoted((m) => ({
                             ...m,
@@ -477,7 +432,7 @@ export default function RecurrencesPage() {
                         }
                       >
                         <Icons.promote />
-                        Promover a problema
+                        Abrir problema
                       </button>
                     )}
                   </>
@@ -487,10 +442,10 @@ export default function RecurrencesPage() {
           ) : (
             <div className="cluster-detail">
               <Meridian ticks={14} style={{ marginBottom: 12 }} />
-              <div style={{ color: "var(--muted)", fontSize: 12.5, lineHeight: 1.6 }}>
-                Selecione um grupo no mapa ou na legenda para listar seus incidentes e
-                promovê-lo a um registro de problema (Problem Management).
-              </div>
+              <p className="cd-note">
+                Escolha um grupo no mapa ou nesta lista para ver os incidentes e abrir um
+                problema: o registro que investiga a causa de incidentes repetidos.
+              </p>
             </div>
           )}
         </div>

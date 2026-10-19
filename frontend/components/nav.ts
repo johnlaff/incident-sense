@@ -26,7 +26,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Icons.incidents,
     label: "Incidentes",
     short: "Incidentes",
-    sub: "Lista de chamados",
+    sub: "Todos os incidentes do banco",
     match: ["/incidentes"],
   },
   {
@@ -35,16 +35,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Icons.recurrences,
     label: "Recorrências",
     short: "Recorrências",
-    sub: "Mapa de agrupamentos",
+    sub: "Mapa de padrões que se repetem",
     match: ["/recorrencias"],
   },
   {
     key: "changes",
     href: "/changes",
     icon: Icons.changes,
-    label: "Changes",
-    short: "Changes",
-    sub: "Avaliação de mudanças",
+    label: "Mudanças",
+    short: "Mudanças",
+    sub: "Nota de preenchimento das mudanças",
     match: ["/changes"],
   },
   {
@@ -53,7 +53,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Icons.how,
     label: "Como funciona",
     short: "Como funciona",
-    sub: "Fluxo RAG e clustering",
+    sub: "Como a IA sugere e agrupa",
     match: ["/como-funciona"],
   },
 ];

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Icons } from "@/components/icons";
-import { StateBlock } from "@/components/ui";
+import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
 import { STATE_LABEL, TYPE_LABEL, useChanges, type ChangeSummary } from "@/lib/changes";
 import { absDate } from "@/lib/model";
 
@@ -13,7 +13,7 @@ import "./changes.css";
 type Tab = "scope" | "all";
 
 export default function ChangesPage() {
-  const { data, loading, error } = useChanges();
+  const { data, loading, error, slow, retry } = useChanges();
   const [tab, setTab] = useState<Tab>("scope");
 
   const rows = useMemo<ChangeSummary[]>(
@@ -24,32 +24,32 @@ export default function ChangesPage() {
 
   return (
     <div className="chg-page">
-      <div className="page-head chg-head">
-        <h1>Changes</h1>
+      <div className="page-head">
+        <h1>Mudanças</h1>
         {data && (
           <span className="count">
             {data.length} mudanças · {inScope} para avaliar
           </span>
         )}
       </div>
-      <p className="chg-lede">
-        Toda subida em produção vira uma Change. Abra uma e peça a avaliação: o modelo dá
-        nota de 0 a 10 a cada campo, contra uma grade versionada, e só confere a coerência
-        entre os campos quando o preenchimento chega a 8,0.
+      <p className="page-lede">
+        Toda alteração em produção é registrada como uma mudança (a Change do ServiceNow).
+        Abra uma e peça a avaliação: a IA dá nota de 0 a 10 a cada campo, seguindo
+        critérios fixos, e só confere se os campos contam a mesma história quando a média
+        chega a 8,0.
       </p>
+      <WakeNotice show={slow} />
 
-      <div className="segmented chg-seg" role="tablist" aria-label="Filtrar Changes">
+      <div className="segmented chg-seg" role="group" aria-label="Filtrar mudanças">
         <button
-          role="tab"
-          aria-selected={tab === "scope"}
+          aria-pressed={tab === "scope"}
           className={tab === "scope" ? "on" : ""}
           onClick={() => setTab("scope")}
         >
           Para avaliar
         </button>
         <button
-          role="tab"
-          aria-selected={tab === "all"}
+          aria-pressed={tab === "all"}
           className={tab === "all" ? "on" : ""}
           onClick={() => setTab("all")}
         >
@@ -66,18 +66,18 @@ export default function ChangesPage() {
       )}
 
       {error && (
-        <StateBlock
-          variant="error"
-          icon={Icons.alert}
-          title="Não foi possível carregar as Changes"
-        >
-          {error}
-        </StateBlock>
+        <div className="card">
+          <LoadError
+            title="Não foi possível carregar as mudanças"
+            error={error}
+            onRetry={retry}
+          />
+        </div>
       )}
 
       {data && rows.length === 0 && (
-        <StateBlock title="Nenhuma Change neste filtro">
-          Troque para Todas para ver também as que ficam fora da avaliação.
+        <StateBlock title="Nenhuma mudança neste filtro">
+          Escolha <b>Todas</b> para ver também as que ficam fora da avaliação.
         </StateBlock>
       )}
 
