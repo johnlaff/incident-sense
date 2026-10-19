@@ -1,0 +1,570 @@
+/* ===================================================================== *
+ *  Incident pipeline: the seven steps, the procedência gate and the three
+ *  retrieval layers. Mobile first; rows open into one line at 768px.
+ * ===================================================================== */
+
+.pipe-section {
+  min-width: 0;
+}
+.pipe-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.pipe-head h2 {
+  margin-bottom: 6px;
+}
+.pipe-lede {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--ink-body);
+  line-height: 1.55;
+}
+.pipe-head .btn {
+  align-self: flex-start;
+}
+
+/* ----- Step list: a numbered spine ----- */
+.pipe {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.pipe-step {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  position: relative;
+  padding-bottom: 20px;
+}
+.pipe-step:last-child {
+  padding-bottom: 0;
+}
+/* the spine between markers */
+.pipe-step::before {
+  content: "";
+  position: absolute;
+  left: 13.5px;
+  top: 30px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--border-strong);
+}
+.pipe-step:last-child::before {
+  display: none;
+}
+.pipe-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--primary-ink);
+  background: var(--primary-tint);
+  border: 1px solid oklch(from var(--primary) l c h / 0.35);
+  z-index: 1;
+}
+.pipe-marker svg {
+  width: 14px;
+  height: 14px;
+}
+.pipe-step.is-gate .pipe-marker {
+  border-radius: 7px;
+  transform: rotate(45deg) scale(0.86);
+}
+/* keep the marker upright inside the rotated diamond */
+.pipe-step.is-gate .pipe-marker > span {
+  display: grid;
+  place-items: center;
+  transform: rotate(-45deg) scale(1.16);
+}
+.pipe-step.st-pulada .pipe-marker {
+  color: var(--muted);
+  background: var(--surface);
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+.pipe-step.st-degradada .pipe-marker {
+  color: var(--p2);
+  background: var(--p2-tint);
+  border-color: oklch(from var(--p2) l c h / 0.4);
+}
+.pipe-outline .pipe-marker {
+  color: var(--muted);
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+.pipe-outline.is-running .pipe-marker {
+  color: var(--primary-ink);
+}
+
+.pipe-body {
+  min-width: 0;
+  padding-top: 3px;
+}
+.pipe-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+.pipe-section .pipe-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--ink);
+}
+.pipe-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 1px 8px 1px 6px;
+  border-radius: 999px;
+  color: var(--st-resolved);
+  background: var(--st-resolved-tint);
+}
+.pipe-status.st-pulada {
+  color: var(--muted);
+  background: var(--surface-2);
+}
+.pipe-status.st-degradada {
+  color: var(--p2);
+  background: var(--p2-tint);
+}
+.pipe-decision {
+  margin: 4px 0 0;
+  color: var(--ink-body);
+  line-height: 1.55;
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+}
+.pipe-decision.is-hint {
+  color: var(--muted);
+}
+
+.pipe-block {
+  margin-top: 10px;
+}
+.pipe-label,
+.rows-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.pipe-query {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.pipe-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.pipe-chips .tag {
+  margin-right: 0;
+}
+.cite-prb {
+  cursor: default;
+  border-style: dashed;
+}
+
+/* ----- Gate verdict ----- */
+.pipe-verdict {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 5px 12px 5px 9px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.pipe-verdict svg {
+  width: 16px;
+  height: 16px;
+}
+.pipe-verdict.ok {
+  color: var(--st-resolved);
+  background: var(--st-resolved-tint);
+}
+.pipe-verdict.bad {
+  color: var(--p1);
+  background: var(--p1-tint);
+}
+.pipe-verdict-sub {
+  font-weight: 500;
+}
+
+/* ----- Suggestion + citation check ----- */
+.pipe-suggestion {
+  margin-top: 10px;
+  font-size: 14px;
+}
+.pipe-cites {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--st-resolved-tint);
+  color: var(--st-resolved);
+  font-size: 13px;
+}
+.pipe-cites.has-flags {
+  background: var(--p2-tint);
+  color: var(--p2);
+}
+.pipe-cites-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.pipe-cites-head svg {
+  flex: none;
+  margin-top: 2px;
+}
+.pipe-flags {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pipe-flags li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  color: var(--ink-body);
+}
+.pipe-flag-id {
+  font-weight: 600;
+  color: var(--p2);
+}
+.pipe-flag-id.struck {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+.pipe-notes-btn {
+  margin-top: 10px;
+}
+
+/* ----- Alerts ----- */
+.pipe-alert {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--p1-tint);
+  color: var(--p1);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.pipe-alert svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+.pipe-alert div {
+  color: var(--ink-body);
+}
+.pipe-alert.is-warn {
+  margin: 10px 0 0;
+  background: var(--p2-tint);
+  color: var(--p2);
+}
+
+/* ----- Step 4: the three layers ----- */
+.layers {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.layer {
+  padding: 12px;
+  min-width: 0;
+}
+.layer + .layer {
+  border-top: 1px solid var(--border);
+}
+.layer-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  color: var(--primary-ink);
+}
+.layer-name {
+  font-weight: 700;
+  color: var(--ink);
+}
+.layer-what {
+  color: var(--muted);
+  font-size: 13px;
+}
+.layer-decision {
+  margin: 4px 0 0;
+  color: var(--ink-body);
+  font-size: 13.5px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.layer-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.layer-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.layer-params b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.layer-empty {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.rows {
+  margin-top: 12px;
+}
+.rows-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "num sim"
+    "desc desc"
+    "pill pill";
+  gap: 4px 10px;
+  padding: 9px 11px;
+  font-size: 13px;
+  background: var(--surface);
+}
+.row + .row {
+  border-top: 1px solid var(--border);
+}
+.row.is-openable {
+  cursor: pointer;
+}
+.row.is-openable:hover {
+  background: var(--surface-2);
+}
+.row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+.row-num {
+  grid-area: num;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary-ink);
+}
+.row:not(.is-openable) .row-num {
+  color: var(--ink);
+}
+.row-desc {
+  grid-area: desc;
+  color: var(--ink-body);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.row-sim {
+  grid-area: sim;
+  font-size: 12.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  justify-self: end;
+}
+.row-pill {
+  grid-area: pill;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 1px 8px 1px 6px;
+  border-radius: 999px;
+}
+.row-pill.keep {
+  color: var(--st-resolved);
+  background: var(--st-resolved-tint);
+}
+.row-pill.drop {
+  color: var(--p1);
+  background: var(--p1-tint);
+}
+.row.is-dropped .row-desc,
+.row.is-dropped .row-num {
+  color: var(--muted);
+}
+.row-reason {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ----- Work notes on the record (step 7 lands here) ----- */
+.worknotes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.worknote {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 12px 13px;
+  scroll-margin-top: 80px;
+}
+.worknote-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.worknote-head b {
+  color: var(--primary-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.worknote .md {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-body);
+}
+.worknote .md p {
+  margin: 0 0 8px;
+}
+.worknote .md ol {
+  margin: 8px 0;
+  padding-left: 22px;
+  list-style: decimal outside;
+}
+.worknote .md li {
+  margin-bottom: 6px;
+}
+.worknote .md li > p {
+  margin: 0;
+}
+.worknote-src {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.worknote.is-fresh {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-tint);
+}
+.worknotes-empty {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Copilot: jump to the full analysis */
+.cop-full {
+  margin-top: 10px;
+}
+
+@media (min-width: 560px) {
+  .pipe-head {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .pipe-head .btn {
+    flex: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .layer {
+    padding: 14px 16px;
+  }
+  .row {
+    grid-template-columns: 104px minmax(0, 1fr) 46px auto;
+    grid-template-areas: "num desc sim pill";
+    align-items: center;
+  }
+  .row-pill {
+    justify-self: end;
+  }
+  .row-reason {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pipe:not(.pipe-outline) .pipe-step {
+    animation: pipe-in 320ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 45ms);
+  }
+  .pipe-outline.is-running .pipe-step {
+    animation: pipe-pulse 1.4s var(--ease) infinite;
+  }
+}
+@keyframes pipe-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes pipe-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}

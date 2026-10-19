@@ -14,6 +14,8 @@ import {
 } from "@/lib/model";
 import type { IncidentSummary, SuggestResponse } from "@/lib/types";
 
+import { suggestFixture } from "./suggest-fixture";
+
 describe("state + priority mapping", () => {
   it("maps backend states to the DS vocabulary", () => {
     expect(dsState("New")).toBe("open");
@@ -140,7 +142,7 @@ describe("markdownToPlain", () => {
 });
 
 describe("mapSuggest", () => {
-  const base: SuggestResponse = {
+  const base: SuggestResponse = suggestFixture({
     summarized_query: "Pix sem comprovante",
     classification: "PROCEDENTE",
     suggestion: "Aumentar workers [INC0051986] e ajustar timeout [INC0051908].",
@@ -169,7 +171,7 @@ describe("mapSuggest", () => {
       },
     ],
     referenced_incidents: ["INC0051986", "INC0051908"],
-  };
+  });
 
   it("maps a PROCEDENTE result with grounded citations", () => {
     const r = mapSuggest(base);

@@ -9,6 +9,7 @@ import type {
   IncidentDetail,
   IncidentSummary,
   SuggestResponse,
+  WorkNote,
 } from "./types";
 
 // ----- State -----------------------------------------------------------------
@@ -144,6 +145,17 @@ export interface ActivityItem {
 
 const OBSERVER: Actor = { name: "Monitoração", initials: "OBS" };
 const ANALYST: Actor = { name: "Analista", initials: "AN" };
+export const AURORA: Actor = { name: "Aurora", initials: "AU", ai: true };
+
+/** A work note the platform published (the AI suggestion), as an activity item. */
+export function noteActivity(note: WorkNote): ActivityItem {
+  return {
+    kind: "note",
+    who: AURORA,
+    when: relTime(note.created_at),
+    text: `Sugestão publicada nas notas de trabalho. ${markdownToPlain(note.text)}`,
+  };
+}
 
 function synthActivity(d: IncidentDetail): ActivityItem[] {
   const items: ActivityItem[] = [
@@ -162,6 +174,7 @@ function synthActivity(d: IncidentDetail): ActivityItem[] {
       text: d.work_notes,
     });
   }
+  (d.published_notes ?? []).forEach((note) => items.push(noteActivity(note)));
   if (d.resolved_at && d.resolution_notes) {
     items.push({
       kind: "resolve",
@@ -179,6 +192,7 @@ export interface IncidentRecord extends IncidentRow {
   title: string;
   description: string;
   subcategory: string;
+  empresa: string;
   impact: string;
   urgency: string;
   resolutionNotes: string | null;
@@ -188,6 +202,7 @@ export interface IncidentRecord extends IncidentRow {
   clusterId: number | null;
   clusterLabel: string | null;
   isOutlier: boolean | null;
+  publishedNotes: WorkNote[];
   activity: ActivityItem[];
 }
 
@@ -208,6 +223,7 @@ export function mapDetail(d: IncidentDetail): IncidentRecord {
     title: d.short_description,
     description: d.description,
     subcategory: d.subcategory,
+    empresa: d.empresa ?? "Banco Meridiano",
     impact: impactLabel(d.impact),
     urgency: urgencyLabel(d.urgency),
     resolutionNotes: d.resolution_notes,
@@ -217,6 +233,7 @@ export function mapDetail(d: IncidentDetail): IncidentRecord {
     clusterId: d.cluster_id,
     clusterLabel: d.cluster_label,
     isOutlier: d.is_outlier,
+    publishedNotes: d.published_notes ?? [],
     activity: synthActivity(d),
   };
 }
@@ -233,7 +250,7 @@ export function clusterColor(clusterId: number, isOutlier = false): string {
 
 // ----- Copilot result (maps SuggestResponse → Aurora's chat output) ----------
 
-const INLINE_CITE = /\bINC\d{4,}\b/;
+const INLINE_CITE = /\b(?:INC|PRB)\d{4,}\b/;
 
 // A line that opens a new step: an ordered marker (1. / 1)), a bullet (- / *)
 // or a bold lead-in (**Ação**) the model uses for each action.
@@ -347,7 +364,10 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
   const procedente = res.classification === "PROCEDENTE";
   const suggestion =
     procedente && res.suggestion
-      ? buildSuggestionMarkdown(res.suggestion, res.referenced_incidents)
+      ? buildSuggestionMarkdown(res.suggestion, [
+          ...res.referenced_incidents,
+          ...(res.referenced_problems ?? []),
+        ])
       : null;
   return {
     verdict: res.classification,

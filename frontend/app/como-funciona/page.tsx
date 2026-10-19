@@ -8,31 +8,40 @@ import { usePrefersReducedMotion } from "@/lib/motion";
 
 const STEPS: { t: string; d: string; icon: IconComponent }[] = [
   {
-    t: "Resumir consulta",
-    d: "Reduz o chamado a um resumo curto e neutro.",
+    t: "Carregar",
+    d: "Lê o incidente com categoria, subcategoria, empresa e tags.",
+    icon: Icons.inbox,
+  },
+  {
+    t: "Resumir",
+    d: "A IA resume o chamado; o resumo, não o texto cru, vira a consulta.",
     icon: Icons.summarize,
   },
   {
     t: "Vetorizar",
-    d: "Converte o resumo num vetor que captura o significado.",
+    d: "Resumo, categoria, subcategoria e empresa viram um vetor.",
     icon: Icons.embed,
   },
   {
-    t: "Buscar vizinhos",
-    d: "Recupera incidentes resolvidos de vetor próximo.",
-    icon: Icons.vectorSearch,
-  },
-  {
-    t: "Pós-filtro",
-    d: "Um LLM relê e descarta o que não casa de fato.",
+    t: "Recuperar",
+    d: "Tags decidem onde procurar, o vetor (cosseno 0,8) mede o que parece e um LLM filtra o que serve.",
     icon: Icons.funnel,
   },
   {
-    t: "Classificar",
-    d: "Decide se é um incidente de verdade: PROCEDENTE ou IMPROCEDENTE.",
+    t: "Contexto e procedência",
+    d: "Os casos que sobraram viram contexto. Improcedente não recebe sugestão.",
     icon: Icons.classify,
   },
-  { t: "Sugerir", d: "Redige a resolução citando as fontes.", icon: Icons.lightbulb },
+  {
+    t: "Sugerir",
+    d: "Redige a resolução citando as fontes; citação fora do contexto é removida.",
+    icon: Icons.lightbulb,
+  },
+  {
+    t: "Publicar",
+    d: "A sugestão volta para as notas de trabalho do incidente.",
+    icon: Icons.insert,
+  },
 ];
 const N = STEPS.length;
 const INSET = 100 / (2 * N);
@@ -91,7 +100,7 @@ function Rag() {
           <h2>Como o copiloto sugere uma resolução</h2>
           <div className="hs-sub">
             É um pipeline de RAG (Geração Aumentada por Recuperação). Cada chamado novo
-            passa por seis etapas, e a resposta sempre sai de casos reais que já foram
+            passa por sete etapas, e a resposta sempre sai de casos reais que já foram
             resolvidos.
           </div>
         </div>
@@ -295,7 +304,7 @@ function Clustering() {
           <h2>Como agrupamos as recorrências</h2>
           <div className="hs-sub">
             Os mesmos números que medem semelhança também revelam grupos. Veja, passo a
-            passo, como chamados parecidos se juntam numa causa raiz — e como os casos
+            passo, como chamados parecidos se juntam numa causa raiz, e como os casos
             isolados ficam de fora.
           </div>
         </div>

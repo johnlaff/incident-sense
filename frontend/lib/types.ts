@@ -29,9 +29,13 @@ export interface ClustersResponse {
 }
 
 export interface SuggestRequest {
+  /** Incident in the base: step 1 loads it and step 7 publishes on it. */
+  number?: string | null;
   short_description: string;
   description: string;
   category?: string | null;
+  subcategory?: string | null;
+  empresa?: string | null;
   cmdb_ci?: string | null;
   priority?: number | null;
   /** UI model id (see the model picker); the backend maps it to a real model. */
@@ -50,12 +54,136 @@ export interface RetrievedCandidate {
   postfilter_reason?: string | null;
 }
 
+export interface RetrievedProblem {
+  number: string;
+  short_description: string;
+  root_cause: string;
+  workaround: string;
+  permanent_fix: string;
+  linked_incidents: number;
+  similarity: number;
+  survived_postfilter: boolean;
+  postfilter_reason?: string | null;
+}
+
+export type StepId =
+  | "carregar"
+  | "resumir"
+  | "embedding"
+  | "recuperar"
+  | "contexto"
+  | "decidir"
+  | "sugerir"
+  | "publicar";
+
+export type StepStatus = "concluida" | "pulada" | "degradada";
+
+export interface PipelineStep {
+  id: StepId;
+  order: number;
+  title: string;
+  status: StepStatus;
+  decision: string;
+  gate: boolean;
+}
+
+export type RecordKind = "incidente" | "problema";
+
+export interface TagLayer {
+  tags: string[];
+  source: "incidente" | "ia" | "catalogo" | "nenhuma";
+  filter_applied: boolean;
+  decision: string;
+}
+
+export interface VectorHit {
+  number: string;
+  kind: RecordKind;
+  short_description: string;
+  similarity: number;
+  passed: boolean;
+}
+
+export interface VectorLayer {
+  min_similarity: number;
+  incident_top_k: number;
+  problem_top_k: number;
+  incidents: VectorHit[];
+  problems: VectorHit[];
+  decision: string;
+}
+
+export interface PostFilterVerdict {
+  number: string;
+  kind: RecordKind;
+  kept: boolean;
+  reason: string;
+}
+
+export interface PostFilterLayer {
+  status: "ok" | "fallback" | "sem_candidatos";
+  verdicts: PostFilterVerdict[];
+  fallback_reason?: string | null;
+  decision: string;
+}
+
+export interface RetrievalTrace {
+  tags: TagLayer;
+  vector: VectorLayer;
+  postfilter: PostFilterLayer;
+}
+
+export interface ProcedenciaDecision {
+  classification: Classification;
+  justification: string;
+  generates_suggestion: boolean;
+  decision: string;
+}
+
+export interface CitationFlag {
+  id: string;
+  action: "removida" | "sinalizada";
+}
+
+export interface CitationCheck {
+  cited: string[];
+  flagged: CitationFlag[];
+}
+
+/** A note the platform published on an incident's work notes (step 7). */
+export interface WorkNote {
+  id: string;
+  incident_number: string;
+  author: string;
+  text: string;
+  sources: string[];
+  model: string | null;
+  created_at: string;
+}
+
+export interface Publication {
+  published: boolean;
+  incident_number?: string | null;
+  note?: WorkNote | null;
+  decision: string;
+}
+
 export interface SuggestResponse {
+  incident_number?: string | null;
   summarized_query: string;
+  query_text: string;
   classification: Classification;
   suggestion: string | null;
   candidates: RetrievedCandidate[];
   referenced_incidents: string[];
+  problems: RetrievedProblem[];
+  referenced_problems: string[];
+  context_ids: string[];
+  steps: PipelineStep[];
+  retrieval: RetrievalTrace;
+  decision: ProcedenciaDecision;
+  citations: CitationCheck;
+  publication: Publication;
 }
 
 export interface Health {
@@ -100,6 +228,7 @@ export interface IncidentDetail {
   subcategory: string;
   cmdb_ci: string;
   assignment_group: string;
+  empresa: string;
   priority: number;
   impact: number;
   urgency: number;
@@ -115,4 +244,6 @@ export interface IncidentDetail {
   cluster_id: number | null;
   cluster_label: string | null;
   is_outlier: boolean | null;
+  /** Work notes the platform published (the AI suggestion, step 7). */
+  published_notes: WorkNote[];
 }
