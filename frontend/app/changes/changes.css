@@ -4,20 +4,10 @@
  * ===================================================================== */
 
 .chg-page {
-  max-width: 1180px;
-  margin: 0 auto;
+  min-width: 0;
 }
 
 /* ----- List ----- */
-.chg-head {
-  margin-bottom: 6px;
-}
-.chg-lede {
-  color: var(--ink-body);
-  max-width: 64ch;
-  margin: 0 0 16px;
-  line-height: 1.55;
-}
 .chg-seg {
   display: flex;
   margin-bottom: 14px;
@@ -212,13 +202,21 @@ a.chg-row:focus-visible {
     font-size: 24px;
   }
   .chg-grid {
-    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-columns: minmax(0, 1fr) 380px;
     gap: 20px;
     align-items: start;
   }
   .chg-aside {
     grid-column: 2;
     grid-row: 1;
+    /* The score panel stays in view while the fields scroll; when it is
+       taller than the window it scrolls on its own. */
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 56px - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
   }
   .chg-fields {
     grid-column: 1;
@@ -459,6 +457,7 @@ a.chg-row:focus-visible {
 .chg-problems {
   margin: 0;
   padding-left: 18px;
+  list-style: disc outside;
   display: grid;
   gap: 6px;
   color: var(--ink-body);
@@ -498,7 +497,7 @@ a.chg-row:focus-visible {
 }
 .chg-weight {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 12.5px;
 }
 .chg-score {
   flex: none;
@@ -533,8 +532,10 @@ a.chg-row:focus-visible {
 }
 .chg-text {
   margin: 0;
+  max-width: 64ch;
   color: var(--ink-body);
-  line-height: 1.55;
+  font-size: 15px;
+  line-height: 1.6;
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
@@ -574,6 +575,7 @@ a.chg-row:focus-visible {
 }
 .chg-verdict p {
   margin: 0;
+  max-width: 64ch;
   color: var(--ink-body);
   line-height: 1.5;
   font-size: 13.5px;

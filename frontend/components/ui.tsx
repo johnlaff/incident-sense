@@ -1,5 +1,5 @@
 // Shared UI atoms (badges, meridian motif, avatar, empty/error block).
-// Presentational only — safe as Server Components.
+// Presentational only, safe as Server Components.
 import type { ReactNode } from "react";
 
 import { Icons, type IconComponent } from "./icons";
@@ -86,5 +86,53 @@ export function StateBlock({
       {action ?? null}
       <Meridian ticks={16} style={{ marginTop: 6 }} />
     </div>
+  );
+}
+
+/**
+ * Shown while a request is still pending after a few seconds. The public demo's
+ * API sleeps when idle, so the first visitor of a talk waits up to a minute;
+ * saying so (and that the screen fills itself in) beats a silent skeleton.
+ */
+export function WakeNotice({ show }: { show: boolean }) {
+  return (
+    <div className="wake-slot" role="status" aria-live="polite">
+      {show ? (
+        <div className="wake-notice">
+          <Icons.loader className="spin" />
+          <p>
+            <b>Ligando o servidor da demonstração.</b> Na primeira visita isso leva até um
+            minuto. A tela se completa sozinha.
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Error block with a retry that re-runs the request instead of reloading. */
+export function LoadError({
+  title,
+  error,
+  onRetry,
+}: {
+  title: string;
+  error: string;
+  onRetry: () => void;
+}) {
+  return (
+    <StateBlock
+      icon={Icons.alert}
+      variant="error"
+      title={title}
+      action={
+        <button className="btn btn-outline btn-sm" onClick={onRetry}>
+          <Icons.replay />
+          Tentar de novo
+        </button>
+      }
+    >
+      {error}
+    </StateBlock>
   );
 }

@@ -36,10 +36,11 @@ identity — nothing decorative.
 --primary-hover:  oklch(0.420 0.160 285);
 --primary-tint:   oklch(0.960 0.020 285);  /* selected row, AI surfaces */
 --primary-ink:    oklch(0.400 0.150 285);  /* brand text on white/tint */
+--on-primary:     oklch(1.000 0.000 0);    /* text on primary/status fills; dark theme uses a deep ink */
 
 /* Status — encoded with icon + label too, never color alone */
 --p1: oklch(0.545 0.205 27);   /* critical  */
---p2: oklch(0.620 0.170 45);   /* high      */
+--p2: oklch(0.520 0.150 48);   /* high (darkened for 4.5:1 badge text) */
 --p3: oklch(0.680 0.135 75);   /* moderate  */
 --p4: oklch(0.560 0.020 285);  /* low/slate */
 
@@ -90,6 +91,16 @@ App shell: **fixed left nav + top bar + content**.
 Responsive is structural (collapse nav, stack the copilot, table → cards on
 mobile), never fluid typography. Semantic z-index scale: base → sticky header →
 dropdown → drawer → modal → toast.
+
+Layout: every screen sits in one centred container, `--page-max: 1360px`, inside
+the scrolling main area; prose (ledes, AI text) stays at 62 to 64ch inside it.
+Breakpoints: bottom tab bar below 768, icon rail 768 to 920, labelled rail from
+921, side-by-side panels from 1101. The incident table hides the service column
+between 768 and 1099 and shows it under the title instead.
+
+Surfaces are flat: no decorative gradients, glows or side-stripe borders. Brand
+mark and FAB use solid primary. Small labels use sentence case at 12px or more;
+no uppercase micro-labels as eyebrows. Copy is PT-BR, plain language, no em dashes.
 
 ### Fidelity to ServiceNow (and the brand)
 

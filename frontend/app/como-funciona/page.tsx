@@ -14,32 +14,32 @@ const STEPS: { t: string; d: string; icon: IconComponent }[] = [
   },
   {
     t: "Resumir",
-    d: "A IA resume o chamado; o resumo, não o texto cru, vira a consulta.",
+    d: "A IA resume o incidente; a busca usa o resumo, não o texto original.",
     icon: Icons.summarize,
   },
   {
-    t: "Vetorizar",
-    d: "Resumo, categoria, subcategoria e empresa viram um vetor.",
+    t: "Transformar em números",
+    d: "Resumo, categoria, subcategoria e empresa viram um vetor: números que representam o sentido.",
     icon: Icons.embed,
   },
   {
-    t: "Recuperar",
-    d: "Tags decidem onde procurar, o vetor (cosseno 0,8) mede o que parece e um LLM filtra o que serve.",
+    t: "Buscar e conferir",
+    d: "As tags dizem onde procurar, o vetor acha os parecidos e a IA descarta os que só parecem iguais.",
     icon: Icons.funnel,
   },
   {
-    t: "Contexto e procedência",
-    d: "Os casos que sobraram viram contexto. Improcedente não recebe sugestão.",
+    t: "Classificar",
+    d: "Os casos aprovados viram contexto. Dúvida ou pedido (improcedente) não recebe sugestão.",
     icon: Icons.classify,
   },
   {
     t: "Sugerir",
-    d: "Redige a resolução citando as fontes; citação fora do contexto é removida.",
+    d: "Escreve a resolução citando as fontes; citação que não veio da busca é removida.",
     icon: Icons.lightbulb,
   },
   {
     t: "Publicar",
-    d: "A sugestão volta para as notas de trabalho do incidente.",
+    d: "A sugestão entra nas notas de trabalho do incidente.",
     icon: Icons.insert,
   },
 ];
@@ -97,12 +97,12 @@ function Rag() {
     <div className="howto-section">
       <div className="howto-head">
         <div>
-          <h2>Como o copiloto sugere uma resolução</h2>
-          <div className="hs-sub">
-            É um pipeline de RAG (Geração Aumentada por Recuperação). Cada chamado novo
-            passa por sete etapas, e a resposta sempre sai de casos reais que já foram
-            resolvidos.
-          </div>
+          <h2>Como a Aurora sugere uma resolução</h2>
+          <p className="hs-sub">
+            A técnica se chama RAG, geração aumentada por recuperação: em vez de responder
+            de memória, a IA primeiro busca casos reais já resolvidos e escreve a partir
+            deles. São sete etapas.
+          </p>
         </div>
         <button className="btn btn-outline btn-sm howto-replay" onClick={play}>
           <Icons.replay />
@@ -142,12 +142,13 @@ function Rag() {
       </div>
       <div className="rag-io">
         <div className="rag-io-card">
-          <span className="rag-io-k">Entra</span>o chamado em linguagem natural
+          <span className="rag-io-k">Entrada</span>O incidente, descrito em linguagem
+          natural.
         </div>
         <Icons.arrowRight className="rag-io-arrow" />
         <div className="rag-io-card out">
-          <span className="rag-io-k">Sai</span>uma sugestão com citações{" "}
-          <span className="mono">[INC…]</span> rastreáveis
+          <span className="rag-io-k">Saída</span>Uma sugestão com citações{" "}
+          <span className="mono">[INC…]</span> que você pode abrir e conferir.
         </div>
       </div>
     </div>
@@ -157,22 +158,22 @@ function Rag() {
 const CSTEPS: { t: string; d: string; icon: IconComponent }[] = [
   {
     t: "Cada incidente vira um ponto",
-    d: "Pegamos o resumo de cada chamado e o transformamos num ponto. Tudo começa espalhado.",
+    d: "O resumo de cada incidente vira um ponto no mapa. No começo, tudo está espalhado.",
     icon: Icons.dot,
   },
   {
     t: "Medimos a semelhança",
-    d: "A IA compara os pontos. Quanto mais parecido o problema, mais perto um do outro eles ficam.",
+    d: "Quanto mais parecidos dois incidentes, mais perto um do outro eles ficam.",
     icon: Icons.vectorSearch,
   },
   {
     t: "Agrupamos os mais próximos",
-    d: "Nuvens de pontos próximos viram um grupo. Cada grupo é uma causa raiz que se repete.",
+    d: "Nuvens de pontos próximos viram um grupo. Cada grupo é uma recorrência: um padrão que se repete.",
     icon: Icons.recurrences,
   },
   {
     t: "Separamos os casos isolados",
-    d: "Pontos sem vizinhos suficientes ficam de fora, em cinza. São casos únicos, não uma recorrência.",
+    d: "Pontos sem vizinhos suficientes ficam de fora, em cinza. São casos únicos, não um padrão.",
     icon: Icons.funnel,
   },
 ];
@@ -290,23 +291,23 @@ function Clustering() {
     step < 0
       ? ""
       : step === 0
-        ? "Cada chamado é um ponto"
+        ? "Cada incidente é um ponto"
         : step === 1
           ? "Comparando a semelhança…"
           : step === 2
             ? "Formando os grupos…"
-            : "3 grupos encontrados · 4 casos isolados";
+            : "3 grupos e 4 casos isolados";
 
   return (
     <div className="howto-section">
       <div className="howto-head">
         <div>
-          <h2>Como agrupamos as recorrências</h2>
-          <div className="hs-sub">
+          <h2>Como encontramos as recorrências</h2>
+          <p className="hs-sub">
             Os mesmos números que medem semelhança também revelam grupos. Veja, passo a
-            passo, como chamados parecidos se juntam numa causa raiz, e como os casos
-            isolados ficam de fora.
-          </div>
+            passo, como incidentes parecidos se juntam num padrão e como os casos isolados
+            ficam de fora.
+          </p>
         </div>
         <button className="btn btn-outline btn-sm howto-replay" onClick={play}>
           <Icons.replay />
@@ -375,7 +376,7 @@ function Clustering() {
       <div className="cluster-legend">
         <span className="cl-it">
           <span className="cl-sw" style={{ background: "oklch(0.6 0.13 285)" }} />
-          Cada cor é um grupo (uma causa raiz)
+          Cada cor é um grupo (uma recorrência)
         </span>
         <span className="cl-it">
           <span className="cl-sw" style={{ background: "oklch(0.6 0.012 285)" }} />
@@ -391,20 +392,21 @@ export default function HowItWorksPage() {
     <div className="howto">
       <div className="page-head">
         <h1>Como funciona</h1>
-        <span className="count">RAG fundamentado + clustering</span>
       </div>
-      <p className="howto-lead" style={{ marginTop: -8 }}>
-        O Incident Sense busca incidentes parecidos que já foram resolvidos, descarta o
-        que não encaixa e então escreve uma sugestão. Ela vem sempre com a fonte citada,
+      <p className="page-lede howto-lead">
+        O Incident Sense procura incidentes parecidos que já foram resolvidos, descarta os
+        que não se encaixam e só então escreve uma sugestão. Toda sugestão cita as fontes,
         para você conferir.
       </p>
       <Rag />
       <Clustering />
-      <Meridian ticks={28} style={{ marginTop: 32, maxWidth: 360 }} />
-      <p style={{ color: "var(--muted)", fontSize: 12.5, marginTop: 10 }}>
-        Banco Meridiano, dados sintéticos. O copiloto ajuda e mostra as fontes; a decisão
-        e a responsabilidade continuam com a pessoa analista.
-      </p>
+      <footer className="howto-foot">
+        <Meridian ticks={28} />
+        <p>
+          O Banco Meridiano é fictício e os dados são sintéticos. A IA sugere e mostra as
+          fontes; quem decide e responde pela resolução é a pessoa analista.
+        </p>
+      </footer>
     </div>
   );
 }

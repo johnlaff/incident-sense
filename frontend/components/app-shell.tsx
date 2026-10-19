@@ -1,7 +1,7 @@
 "use client";
 
-// App shell: topbar, sidenav (desktop) or bottom tab bar (phone), theme toggle, ⌘K command palette, notifications,
-// and the global "peek" drawer that opens any cited incident so a suggestion's
+// App shell: topbar, sidenav (desktop) or bottom tab bar (phone), theme toggle,
+// ⌘K command palette, notifications, and the global "peek" drawer that opens any cited incident so a suggestion's
 // grounding can be verified without leaving the page. Wraps every route.
 
 import Link from "next/link";
@@ -235,7 +235,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Icons.search />
             <input
               className="input"
-              placeholder="Buscar incidentes, serviços…"
+              placeholder="Buscar incidentes"
               readOnly
               style={{ cursor: "pointer" }}
               tabIndex={-1}
@@ -254,8 +254,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <button
               className="icon-btn"
               onClick={toggleTheme}
-              title={theme === "dark" ? "Tema claro" : "Tema escuro"}
-              aria-label="Alternar tema"
+              title={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
+              aria-label={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
             >
               {theme === "dark" ? <Icons.sun /> : <Icons.moon />}
             </button>
@@ -305,7 +305,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
           <div className="nav-spacer" />
           <div className="nav-foot">
-            Dados sintéticos · banco fictício. Demo do workshop.
+            Banco fictício e dados sintéticos, criados para a demonstração.
           </div>
         </nav>
 
@@ -404,7 +404,7 @@ function NotificationsMenu({
     {
       icon: Icons.aiSpark,
       kind: "ai",
-      title: "A Aurora fundamentou uma resolução para revisão",
+      title: "A Aurora preparou uma sugestão para você revisar",
       time: "há 3 h",
     },
   ];
@@ -440,7 +440,7 @@ function NotificationsMenu({
           </button>
         ))}
         <div className="nm-foot">
-          Notificações sintéticas, para a demonstração do workshop.
+          Notificações de exemplo, criadas para a demonstração.
         </div>
       </div>
     </>
@@ -508,7 +508,7 @@ function CommandPalette({
         group: "Ações",
         icon: Icons.sparkle,
         title: "Sugerir resolução",
-        sub: "Aciona o copiloto (Aurora)",
+        sub: "Abre a Aurora no incidente",
         hint: "↵",
         run: onSuggest,
       },
@@ -517,7 +517,7 @@ function CommandPalette({
         group: "Ações",
         icon: theme === "dark" ? Icons.sun : Icons.moon,
         title: theme === "dark" ? "Tema claro" : "Tema escuro",
-        sub: "Alternar aparência",
+        sub: "Trocar a aparência",
         run: onToggleTheme,
       },
       ...NAV_ITEMS.map((n): PaletteAction => ({
@@ -610,9 +610,13 @@ function CommandPalette({
             ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar incidentes, pular telas, ações…"
+            placeholder="Buscar incidentes, telas e ações"
+            aria-label="Buscar incidentes, telas e ações"
           />
-          <span className="kbd">Esc</span>
+          <button className="pal-close" onClick={onClose} aria-label="Fechar a busca">
+            <span className="kbd">Esc</span>
+            <span className="pal-close-t">Fechar</span>
+          </button>
         </div>
         <div className="pal-results">
           {results.length === 0 ? (
@@ -707,13 +711,8 @@ function PeekDrawer({
         ref={trapRef}
       >
         <div className="drawer-head">
-          <span className="peek-label">Citado</span>
-          <span
-            className="mono"
-            style={{ fontSize: 13, fontWeight: 600, color: "var(--primary-ink)" }}
-          >
-            {number}
-          </span>
+          <span className="peek-label">Fonte citada</span>
+          <span className="mono peek-num">{number}</span>
           <button className="drawer-back" onClick={onClose}>
             <Icons.arrowLeft />
             Voltar<span className="drawer-back-long"> ao incidente</span>
@@ -721,24 +720,16 @@ function PeekDrawer({
         </div>
         <div className="drawer-body">
           {loading ? <p className="muted">Carregando…</p> : null}
-          {error ? <p style={{ color: "var(--danger)" }}>{error}</p> : null}
+          {error ? <p className="peek-error">{error}</p> : null}
           {inc ? (
             <>
-              <div
-                className="row"
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
+              <div className="peek-badges">
                 <StateBadge state={inc.state} />
                 <PriorityBadge priority={inc.priority} withWord />
               </div>
-              <h2>{inc.title}</h2>
-              <div style={{ color: "var(--muted)", fontSize: 13, marginTop: -6 }}>
-                {`${inc.service} · ${inc.group} · ${inc.rel}`}
+              <div className="peek-title">
+                <h2>{inc.title}</h2>
+                <p>{`${inc.service} · ${inc.group} · ${inc.rel}`}</p>
               </div>
 
               {inc.resolutionNotes ? (
@@ -748,57 +739,25 @@ function PeekDrawer({
                     Notas de resolução
                   </div>
                   <div className="pr-body">{inc.resolutionNotes}</div>
-                  {inc.closeCode ? (
-                    <div
-                      style={{
-                        marginTop: 8,
-                        fontSize: 12,
-                        color: "var(--st-resolved)",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {inc.closeCode}
-                    </div>
-                  ) : null}
+                  {inc.closeCode ? <div className="pr-code">{inc.closeCode}</div> : null}
                 </div>
               ) : (
-                <div
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    padding: "12px 13px",
-                    background: "var(--surface-2)",
-                    fontSize: 13.5,
-                    color: "var(--ink-body)",
-                    lineHeight: 1.6,
-                  }}
-                >
-                  <div style={{ fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
-                    Ainda sem resolução
-                  </div>
-                  {inc.description}
+                <div className="peek-pending">
+                  <b>Ainda sem resolução</b>
+                  Este incidente segue aberto, então não serve de fonte.
                 </div>
               )}
 
-              <div className="label-row" style={{ marginTop: 4 }}>
-                Registro
-              </div>
-              <p
-                style={{
-                  margin: 0,
-                  color: "var(--ink-body)",
-                  fontSize: 13.5,
-                  lineHeight: 1.65,
-                }}
-              >
-                {inc.description}
-              </p>
+              <section className="peek-desc">
+                <h3>Descrição</h3>
+                <p>{inc.description}</p>
+              </section>
               <div className="peek-meta-grid">
                 {(
                   [
                     ["Categoria", inc.category],
                     ["Subcategoria", inc.subcategory],
-                    ["Serviço (CI)", inc.service],
+                    ["Serviço afetado", inc.service],
                     ["Grupo", inc.group],
                     ["Impacto", inc.impact],
                     ["Urgência", inc.urgency],
@@ -821,7 +780,7 @@ function PeekDrawer({
                   }}
                 >
                   <Icons.external />
-                  Abrir como incidente
+                  Abrir incidente completo
                 </button>
                 <button className="btn btn-ghost btn-sm" onClick={onClose}>
                   Voltar

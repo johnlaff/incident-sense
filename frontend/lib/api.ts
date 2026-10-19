@@ -76,7 +76,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new ApiError(
       0,
-      "Não foi possível conectar à API. Se a demo estava parada, ela leva cerca de um minuto para acordar. Tente de novo em instantes.",
+      "Não conseguimos falar com o servidor. Confira a conexão e tente de novo.",
     );
   }
   if (!response.ok) {
@@ -84,7 +84,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       .json()
       .then((body: { detail?: string }) => body.detail)
       .catch(() => undefined);
-    throw new ApiError(response.status, detail ?? `Erro ${response.status}`);
+    throw new ApiError(
+      response.status,
+      detail ?? `O servidor respondeu com erro ${response.status}.`,
+    );
   }
   return response.json() as Promise<T>;
 }
