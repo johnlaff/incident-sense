@@ -1,0 +1,26 @@
+# Render Blueprint: the public demo API on the free plan.
+#
+# One click from the README ("Deploy to Render") creates this service; the only
+# value to type is OPENROUTER_API_KEY. Qdrant runs in-process (":memory:"),
+# seeded from the committed vectors on every boot, so there is no database to
+# host. Free instances sleep after 15 minutes idle and wake in about a minute:
+# open the site a few minutes before a live demo.
+services:
+  - type: web
+    name: incident-sense-api
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        value: ":memory:"
+      - key: FRONTEND_ORIGIN
+        value: https://incident-sense.netlify.app,http://localhost:3000
+      - key: LOG_JSON
+        value: "true"

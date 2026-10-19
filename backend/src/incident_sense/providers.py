@@ -1,11 +1,12 @@
 """Low-level access to the LLM and embedding providers.
 
-Two OpenAI-compatible clients:
+Two OpenAI-compatible clients, both defaulting to OpenRouter with one key:
 
-* **Embeddings** always go to OpenAI (``text-embedding-3-large``).
-* **Chat/reasoning** goes to an OpenAI-compatible endpoint that defaults to
-  OpenRouter. Because both speak the same wire protocol, the same ``OpenAI``
-  client class drives both — only the ``base_url`` and key differ.
+* **Embeddings** use ``openai/text-embedding-3-large`` (3072 dimensions).
+* **Chat/reasoning** uses the configured chat model.
+
+Because both speak the same wire protocol, the same ``OpenAI`` client class
+drives both; only the ``base_url`` may differ.
 
 These are thin functions so scripts (dataset generation, precompute) and the
 RAG pipeline share one code path. The RAG layer wraps them behind protocols for
@@ -31,13 +32,17 @@ _OPENROUTER_HEADERS = {
 
 
 def make_embedding_client(settings: Settings) -> OpenAI:
-    """OpenAI client for embeddings (default base_url is OpenAI's)."""
-    if not settings.openai_api_key:
+    """OpenAI-compatible client for embeddings (defaults to OpenRouter)."""
+    if not settings.openrouter_api_key:
         raise RuntimeError(
-            "OPENAI_API_KEY is not set. Embeddings require an OpenAI key; "
+            "OPENROUTER_API_KEY is not set. Embeddings require it; "
             "copy .env.example to .env and fill it in."
         )
-    return OpenAI(api_key=settings.openai_api_key)
+    return OpenAI(
+        api_key=settings.openrouter_api_key,
+        base_url=settings.embedding_base_url,
+        default_headers=_OPENROUTER_HEADERS,
+    )
 
 
 def make_chat_client(settings: Settings) -> OpenAI:

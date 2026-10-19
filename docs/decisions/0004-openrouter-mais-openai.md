@@ -1,6 +1,6 @@
 # ADR 0004 — Divisão OpenRouter (chat) + OpenAI (embeddings)
 
-- Status: Aceito
+- Status: Substituído pelo [ADR 0015](0015-uma-chave-e-demo-publica-gratuita.md)
 - Data: 2026-06-22
 
 ## Contexto

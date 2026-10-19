@@ -20,8 +20,7 @@ flowchart LR
     UI -- "GET /api/clusters" --> API
     UI -- "POST /api/suggest" --> API
     API -- "busca vetorial" --> Q
-    API -- "embeddings" --> OpenAI[(OpenAI)]
-    API -- "chat / rótulos" --> OpenRouter[(OpenRouter)]
+    API -- "embeddings, chat e rótulos" --> OpenRouter[(OpenRouter)]
 ```
 
 - **Frontend** (`frontend/`): Next.js (App Router) + TypeScript + Tailwind +
@@ -35,7 +34,7 @@ flowchart LR
 | Camada      | Tecnologia                                                        |
 | ----------- | ----------------------------------------------------------------- |
 | API         | Python 3.12, FastAPI, pydantic-settings, structlog                |
-| RAG         | LlamaIndex, OpenAI embeddings (`text-embedding-3-large`, 3072d)   |
+| RAG         | LlamaIndex, `openai/text-embedding-3-large` via OpenRouter (3072d) |
 | Chat/LLM    | OpenRouter (compatível com OpenAI), modelo configurável           |
 | Vetorial    | Qdrant (cosseno, 3072d)                                           |
 | Clustering  | BERTopic (UMAP cosseno 2D + HDBSCAN + rótulos por LLM)            |
@@ -54,7 +53,7 @@ fundamentada. Detalhes em [rag-flow.md](rag-flow.md).
 ```mermaid
 flowchart TD
     A[Novo incidente] --> B[Resumir consulta - LLM]
-    B --> C[Embed - OpenAI]
+    B --> C[Embed - OpenRouter]
     C --> D[Pré-filtro por metadados]
     D --> E[Busca vetorial - Qdrant]
     E --> F[Pós-filtro por LLM]

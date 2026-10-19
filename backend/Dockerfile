@@ -39,10 +39,11 @@ USER appuser
 
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --retries=10 --start-period=20s \
-    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+    CMD ["python", "-c", "import os, urllib.request; urllib.request.urlopen(f\"http://localhost:{os.environ.get('PORT', '8000')}/api/health\")"]
 
 LABEL org.opencontainers.image.source="https://github.com/johnlaff/incident-sense" \
       org.opencontainers.image.description="incident-sense API (RAG suggestion + recurrence clustering)" \
       org.opencontainers.image.licenses="MIT"
 
-CMD ["uvicorn", "incident_sense.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Hosts such as Render inject PORT; locally and in Compose it stays 8000.
+CMD ["sh", "-c", "exec uvicorn incident_sense.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]

@@ -12,6 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from incident_sense.config import get_settings
+from incident_sense.guard import UsageGuard, get_usage_guard
 from incident_sense.main import create_app
 
 
@@ -25,6 +26,9 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
     # Settings are cached process-wide; clear so each test sees current env.
     get_settings.cache_clear()
     app = create_app()
+    # A fresh usage guard per test, so quotas never leak between tests.
+    guard = UsageGuard()
+    app.dependency_overrides[get_usage_guard] = lambda: guard
     with TestClient(app) as test_client:
         yield test_client
     get_settings.cache_clear()

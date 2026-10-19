@@ -13,6 +13,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from incident_sense.config import get_settings, resolve_chat_model
+from incident_sense.guard import ai_quota
 from incident_sense.logging import get_logger
 from incident_sense.models import SuggestRequest, SuggestResponse
 from incident_sense.providers import make_chat_client
@@ -26,18 +27,18 @@ log = get_logger(__name__)
 def get_rag_deps() -> RagDeps:
     """Build the RAG dependencies, or fail clearly if keys are missing."""
     settings = get_settings()
-    if not (settings.has_llm and settings.has_openai):
+    if not settings.has_llm:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=(
-                "API keys are not configured. Set OPENAI_API_KEY and "
-                "OPENROUTER_API_KEY in your .env to use the live suggestion."
+                "API key is not configured. Set OPENROUTER_API_KEY in your .env "
+                "to use the live suggestion."
             ),
         )
     return build_deps(settings)
 
 
-@router.post("/suggest", response_model=SuggestResponse)
+@router.post("/suggest", response_model=SuggestResponse, dependencies=[Depends(ai_quota)])
 def suggest(
     request: SuggestRequest, deps: Annotated[RagDeps, Depends(get_rag_deps)]
 ) -> SuggestResponse:

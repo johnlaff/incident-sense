@@ -59,7 +59,7 @@ mas com um copiloto que **mostra o trabalho** em vez de pedir confiança cega.
 ```bash
 git clone https://github.com/johnlaff/incident-sense.git
 cd incident-sense
-cp .env.example .env      # adicione suas chaves (OpenAI + OpenRouter)
+cp .env.example .env      # adicione sua chave da OpenRouter
 docker compose up         # abra http://localhost:3000
 ```
 
@@ -70,6 +70,25 @@ chamadas de IA ao vivo (custo de centavos).
 > [!TIP]
 > Sem as chaves no `.env`, o mapa de clusters e toda a navegação funcionam
 > normalmente; o copiloto apenas mostra uma mensagem amigável pedindo as chaves.
+
+## 🌐 Publique de graça
+
+A demo pública roda em dois serviços gratuitos: a API no **Render** e o site no
+**Netlify**. Uma única chave da OpenRouter cobre chat e embeddings, e o Qdrant
+roda em memória dentro da API, semeado com os vetores commitados.
+
+1. **API:** [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/johnlaff/incident-sense)
+   cria o serviço a partir do [`render.yaml`](render.yaml). O único campo a
+   preencher é `OPENROUTER_API_KEY`.
+2. **Site:** importe o repositório no Netlify (o [`netlify.toml`](netlify.toml)
+   já aponta para `frontend/`) e defina `NEXT_PUBLIC_API_URL` com a URL da API.
+3. Ajuste `FRONTEND_ORIGIN` no Render para a URL do site.
+
+As rotas que chamam modelos têm limite por pessoa, por rede e um teto diário
+(`AI_MAX_PER_CLIENT`, `AI_MAX_PER_IP`, `AI_MAX_PER_DAY`), para que uma plateia
+inteira use a demo sem custo descontrolado. No plano gratuito a API dorme depois
+de 15 minutos parada e leva cerca de um minuto para acordar: abra o site alguns
+minutos antes de apresentar.
 
 ## 🧠 Como funciona
 
@@ -112,9 +131,9 @@ Detalhes em [docs/clustering-flow.md](docs/clustering-flow.md).
 | --- | --- |
 | **Frontend** | Next.js 16 (App Router) · React 19 · TypeScript estrito · Tailwind v4 · Motion · react-markdown |
 | **Backend** | Python 3.12 · FastAPI · LlamaIndex · Pydantic · structlog |
-| **IA** | OpenAI `text-embedding-3-large` (embeddings) · OpenRouter (LLM) |
+| **IA** | OpenRouter: `openai/text-embedding-3-large` (embeddings) e Claude Haiku 5.5, GPT-6 Luna, Gemini 3.8 Flash, DeepSeek V4.1 Flash e Qwen 3.7 Flash (chat) |
 | **Dados** | Qdrant (busca vetorial) · BERTopic + UMAP + HDBSCAN (clustering) |
-| **Infra** | Docker Compose · GitHub Actions (CI) · imagens multi-stage não-root |
+| **Infra** | Docker Compose · Render + Netlify (demo pública gratuita) · GitHub Actions (CI) · imagens multi-stage não-root |
 
 ## 📁 Estrutura
 

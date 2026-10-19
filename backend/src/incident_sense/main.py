@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         version=__version__,
         qdrant_url=settings.qdrant_url,
         llm_configured=settings.has_llm,
-        embeddings_configured=settings.has_openai,
+        embeddings_configured=settings.has_llm,
     )
     if settings.auto_seed:
         # Seed Qdrant from the committed embeddings (no API calls). Imported
@@ -66,7 +66,7 @@ def create_app() -> FastAPI:
     # The browser frontend is served from a different origin; allow just that one.
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.frontend_origin],
+        allow_origins=settings.frontend_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

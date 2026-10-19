@@ -41,19 +41,22 @@ class Settings(BaseSettings):
     )
 
     # --- LLM / embedding providers -------------------------------------------
-    # Embeddings run on OpenAI. Chat/reasoning runs on an OpenAI-compatible
-    # endpoint that defaults to OpenRouter (configurable, so the same code can
-    # point at OpenAI or any compatible gateway).
-    openai_api_key: str = Field(default="", description="OpenAI key, used for embeddings.")
-    openrouter_api_key: str = Field(default="", description="Key for the chat/reasoning LLM.")
-    llm_model: str = "deepseek/deepseek-v4-flash"
+    # Chat and embeddings both go through one OpenAI-compatible gateway that
+    # defaults to OpenRouter, so a single key runs the whole demo. OpenRouter
+    # serves OpenAI's text-embedding-3-large, the model the committed vectors
+    # were built with.
+    openrouter_api_key: str = Field(default="", description="Key for chat and embeddings.")
+    llm_model: str = "anthropic/claude-haiku-5.5"
     llm_base_url: str = "https://openrouter.ai/api/v1"
-    embedding_model: str = "text-embedding-3-large"
+    embedding_model: str = "openai/text-embedding-3-large"
+    embedding_base_url: str = "https://openrouter.ai/api/v1"
     # text-embedding-3-large emits 3072-dim vectors; the Qdrant collection is
     # sized to match. Changing the model means re-sizing the collection.
     embedding_dim: int = 3072
 
     # --- Vector database ------------------------------------------------------
+    # ":memory:" runs Qdrant in-process (qdrant-client local mode), seeded from
+    # the committed vectors on startup: no vector server to host or pay for.
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "incidents_resolved"
     # On startup, seed Qdrant from the committed embeddings if the collection is
@@ -69,7 +72,18 @@ class Settings(BaseSettings):
     example_min_similarity: float = 0.4
 
     # --- Web / CORS -----------------------------------------------------------
+    # Comma-separated list, so the local and the published site can share one API.
     frontend_origin: str = "http://localhost:3000"
+
+    # --- Public demo guard-rails ---------------------------------------------
+    # The published demo is open to a live audience, so every route that calls
+    # a model is metered before any provider call. A whole room often shares
+    # one NAT IP, so the per-client budget (browser-generated id) is the tight
+    # one and the per-IP budget only stops a single abusive host.
+    ai_window_seconds: int = 600
+    ai_max_per_client: int = 20
+    ai_max_per_ip: int = 300
+    ai_max_per_day: int = 3000
 
     # --- Logging --------------------------------------------------------------
     log_level: str = "INFO"
@@ -103,14 +117,14 @@ class Settings(BaseSettings):
         return self.precomputed_dir / "clusters.json"
 
     @property
-    def has_openai(self) -> bool:
-        """Whether an OpenAI key is configured (needed for live embedding)."""
-        return bool(self.openai_api_key)
+    def has_llm(self) -> bool:
+        """Whether the gateway key is configured (needed for every live AI call)."""
+        return bool(self.openrouter_api_key)
 
     @property
-    def has_llm(self) -> bool:
-        """Whether a chat-LLM key is configured (needed for the live RAG path)."""
-        return bool(self.openrouter_api_key)
+    def frontend_origins(self) -> list[str]:
+        """The CORS allow-list parsed from ``frontend_origin``."""
+        return [o.strip() for o in self.frontend_origin.split(",") if o.strip()]
 
 
 @lru_cache
@@ -126,15 +140,14 @@ def get_settings() -> Settings:
 # --- Selectable chat models --------------------------------------------------
 # Public id (sent by the UI model picker) -> real OpenRouter model id. The API
 # only honors ids in this allow-list; anything else falls back to the default
-# (``llm_model``), which keeps cost and abuse bounded. Each entry was smoke-tested
-# end to end against the suggestion pipeline (PT-BR didactic output + JSON
-# classification) before being exposed.
+# (``llm_model``), which keeps cost and abuse bounded. All entries are small,
+# fast models checked against OpenRouter's public model list on 2026-10-19.
 SELECTABLE_MODELS: dict[str, str] = {
-    "auto": "openrouter/auto",
-    "deepseek-v4": "deepseek/deepseek-v4-flash",
-    "qwen3-max": "qwen/qwen3-max",
-    "gemini-flash": "google/gemini-2.5-flash",
-    "claude-haiku": "anthropic/claude-haiku-4.5",
+    "claude-haiku": "anthropic/claude-haiku-5.5",
+    "gpt-luna": "openai/gpt-6-luna",
+    "gemini-flash": "google/gemini-3.8-flash",
+    "deepseek-flash": "deepseek/deepseek-v4.1-flash",
+    "qwen-flash": "qwen/qwen3.7-flash",
 }
 
 

@@ -22,7 +22,7 @@ flowchart TD
 
 1. **Resumir** o incidente em uma consulta curta de busca (LLM). Tira ruído e
    deixa os termos técnicos essenciais.
-2. **Embed** da consulta com a OpenAI (`text-embedding-3-large`).
+2. **Embed** da consulta com `openai/text-embedding-3-large`, servido pela OpenRouter.
 3. **Pré-filtro** opcional por metadados no Qdrant (categoria/serviço), para
    estreitar candidatos quando há dicas. Sem dicas, a busca fica ampla.
 4. **Busca vetorial** retornando os `EXAMPLE_TOP_K` mais próximos acima de

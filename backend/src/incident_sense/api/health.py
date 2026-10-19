@@ -33,5 +33,5 @@ def health() -> HealthResponse:
         status="ok",
         version=__version__,
         llm_configured=settings.has_llm,
-        embeddings_configured=settings.has_openai,
+        embeddings_configured=settings.has_llm,
     )

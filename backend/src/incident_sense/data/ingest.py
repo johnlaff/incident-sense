@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import time
 import uuid
+from functools import lru_cache
 from typing import Any
 
 from qdrant_client import QdrantClient
@@ -40,9 +41,26 @@ def point_id(number: str) -> str:
     return str(uuid.uuid5(_ID_NAMESPACE, number))
 
 
+IN_MEMORY = ":memory:"
+
+
+@lru_cache(maxsize=4)
+def _client_for(url: str) -> QdrantClient:
+    # One client per URL for the whole process. For a server this just reuses
+    # the connection pool; for ":memory:" it is essential, because each local
+    # client owns its own private store and a fresh one would be empty.
+    if url == IN_MEMORY:
+        return QdrantClient(location=IN_MEMORY)
+    return QdrantClient(url=url)
+
+
 def make_qdrant_client(settings: Settings) -> QdrantClient:
-    """Create a Qdrant client from settings."""
-    return QdrantClient(url=settings.qdrant_url)
+    """Return the process-wide Qdrant client for ``settings.qdrant_url``.
+
+    ``QDRANT_URL=:memory:`` selects qdrant-client's in-process local mode, so the
+    published demo needs no vector server.
+    """
+    return _client_for(settings.qdrant_url)
 
 
 def _payload(incident: Incident) -> dict[str, Any]:

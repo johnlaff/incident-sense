@@ -1,0 +1,11 @@
+# Netlify: the public demo frontend (Next.js, built from ./frontend).
+# NEXT_PUBLIC_API_URL points the browser at the API published on Render; it is
+# set in the Netlify project settings so a fork can point at its own API.
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"

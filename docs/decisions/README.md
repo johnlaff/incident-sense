@@ -13,3 +13,4 @@ consequências. São propositalmente curtos.
 - [0008 — Saída estruturada via JSON no prompt + pydantic](0008-saida-estruturada.md)
 - [0009 — Dependências de clustering como extra opcional](0009-deps-clustering-opcionais.md)
 - [0010 — Dataset sintético: arquétipos + ruído + plantados](0010-dataset-sintetico.md)
+- [0015 — Uma chave OpenRouter e demo pública gratuita](0015-uma-chave-e-demo-publica-gratuita.md)

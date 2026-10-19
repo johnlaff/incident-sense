@@ -101,8 +101,8 @@ def test_suggest_endpoint_contract_with_fake_deps(client: TestClient) -> None:
 def test_resolve_chat_model_uses_allowlist_else_default() -> None:
     settings = get_settings()
     # A known UI id maps to its real OpenRouter model...
-    assert resolve_chat_model("qwen3-max", settings) == SELECTABLE_MODELS["qwen3-max"]
-    assert resolve_chat_model("auto", settings) == "openrouter/auto"
+    assert resolve_chat_model("claude-haiku", settings) == "anthropic/claude-haiku-5.5"
+    assert resolve_chat_model("gpt-luna", settings) == SELECTABLE_MODELS["gpt-luna"]
     # ...and None or an unknown id falls back to the configured default.
     assert resolve_chat_model(None, settings) == settings.llm_model
     assert resolve_chat_model("totally-unknown", settings) == settings.llm_model
@@ -128,7 +128,6 @@ def test_suggest_accepts_model_field_with_fake_deps(client: TestClient) -> None:
 
 def test_suggest_missing_keys_returns_503(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("AUTO_SEED", "false")
-    monkeypatch.setenv("OPENAI_API_KEY", "")
     monkeypatch.setenv("OPENROUTER_API_KEY", "")
     get_settings.cache_clear()
     app = create_app()
@@ -141,3 +140,27 @@ def test_suggest_missing_keys_returns_503(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert response.status_code == 503
     assert "key" in response.json()["detail"].lower()
+
+
+def test_suggest_over_quota_returns_429_without_calling_the_model(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("AI_MAX_PER_CLIENT", "1")
+    get_settings.cache_clear()
+    calls: list[str] = []
+
+    class _CountingLLM(_FakeLLM):
+        def complete(self, system: str, user: str, **_: object) -> str:
+            calls.append(system)
+            return super().complete(system, user)
+
+    client.app.dependency_overrides[get_rag_deps] = lambda: RagDeps(
+        llm=_CountingLLM(), embeddings=_FakeEmbeddings(), retriever=_FakeRetriever()
+    )
+    body = {"short_description": "Pix fora", "description": "Erro 500."}
+    headers = {"X-Client-Id": "plateia-1"}
+    assert client.post("/api/suggest", json=body, headers=headers).status_code == 200
+    made = len(calls)
+    refused = client.post("/api/suggest", json=body, headers=headers)
+    assert refused.status_code == 429
+    assert len(calls) == made
