@@ -169,14 +169,39 @@ def _semantic_prompt(change: Change, values: dict[str, str], backout: str) -> st
     )
 
 
+# Output budgets leave room for Portuguese prose inside the JSON: a budget that
+# only fits the happy path truncates the object mid-string on wordier models.
+_FIELD_MAX_TOKENS = 1000
+_SEMANTIC_MAX_TOKENS = 2000
+
+
 def _judge_field(llm: JudgeLLM, prompt: str) -> _FieldOut:
-    raw = llm.complete(_FIELD_SYSTEM, prompt, temperature=0.0, max_tokens=300)
+    raw = llm.complete(_FIELD_SYSTEM, prompt, temperature=0.0, max_tokens=_FIELD_MAX_TOKENS)
     try:
         return _FieldOut.model_validate(extract_json(raw))
     except (ValueError, ValidationError):
         # One structural repair attempt, then an explicit "could not judge".
-        raw = llm.complete(_FIELD_SYSTEM, prompt + "\n\nResponda SOMENTE o JSON.", max_tokens=300)
+        raw = llm.complete(
+            _FIELD_SYSTEM,
+            prompt + "\n\nResponda SOMENTE o JSON.",
+            temperature=0.0,
+            max_tokens=_FIELD_MAX_TOKENS,
+        )
         return _FieldOut.model_validate(extract_json(raw))
+
+
+def _judge_semantic(llm: JudgeLLM, prompt: str) -> _SemanticOut:
+    raw = llm.complete(_SEMANTIC_SYSTEM, prompt, temperature=0.0, max_tokens=_SEMANTIC_MAX_TOKENS)
+    try:
+        return _SemanticOut.model_validate(extract_json(raw))
+    except (ValueError, ValidationError):
+        raw = llm.complete(
+            _SEMANTIC_SYSTEM,
+            prompt + "\n\nResponda SOMENTE o JSON, com textos curtos.",
+            temperature=0.0,
+            max_tokens=_SEMANTIC_MAX_TOKENS,
+        )
+        return _SemanticOut.model_validate(extract_json(raw))
 
 
 class ChangeEvaluator:
@@ -295,8 +320,7 @@ class ChangeEvaluator:
         if cached is None:
             self._count()
             prompt = _semantic_prompt(change, values, backout)
-            raw = self._llm.complete(_SEMANTIC_SYSTEM, prompt, temperature=0.0, max_tokens=700)
-            verdict = _SemanticOut.model_validate(extract_json(raw))
+            verdict = _judge_semantic(self._llm, prompt)
             self._cache.put_semantic(key, verdict)
         else:
             verdict = cached
