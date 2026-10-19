@@ -52,8 +52,87 @@
 
   --radius: 8px;
   --radius-sm: 6px;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* ----- Motion tokens (motion/direcao.md, 4.1) -----
+     Durations by consequence, curves by meaning. Use as
+     `calc(var(--dur-explain) * var(--motion-scale))` for teaching visuals. */
+  /* tempo */
+  --dur-press: 100ms; /* toque, pressão, hover */
+  --dur-state: 200ms; /* abas, toggles, troca de badge, segmentado */
+  --dur-move: 320ms; /* gaveta, painel, rota, mudança de layout */
+  --dur-explain: 560ms; /* visualização que ensina: régua, barra, portão */
+  --dur-count: 600ms; /* contador de número (teto) */
+  --exit-factor: 0.66; /* saída = 2/3 da entrada */
+  --stagger: 40ms; /* listas, teto de 8 itens */
+  --stagger-explain: 90ms; /* candidatos e segmentos, teto de 10 */
+  --motion-scale: 1; /* modo aula: 1.6 */
+
+  /* curvas */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* chegadas e opacidade */
+  --ease-in-out: cubic-bezier(
+    0.65,
+    0,
+    0.35,
+    1
+  ); /* entre duas posições na tela (trilho) */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* só saídas curtas */
+  /* mola calma: M3 Standard, amortecimento 0,9, sem ultrapassar o alvo */
+  --spring-calm: linear(
+    0,
+    0.025,
+    0.087,
+    0.171,
+    0.264,
+    0.358,
+    0.45,
+    0.535,
+    0.612,
+    0.68,
+    0.739,
+    0.79,
+    0.833,
+    0.868,
+    0.897,
+    0.921,
+    0.94,
+    0.955,
+    0.967,
+    0.976,
+    0.984,
+    0.989,
+    0.993,
+    0.996,
+    1
+  );
+  /* pouso: M3 Expressive spatial default, amortecimento 0,8, passa 1,5% e volta */
+  --spring-land: linear(
+    0,
+    0.047,
+    0.155,
+    0.291,
+    0.432,
+    0.563,
+    0.677,
+    0.771,
+    0.846,
+    0.903,
+    0.945,
+    0.974,
+    0.994,
+    1.005,
+    1.012,
+    1.015,
+    1.015,
+    1.014,
+    1.012,
+    1.01,
+    1.008,
+    1.006,
+    1.004,
+    1.003,
+    1
+  );
+  /* Legacy alias kept so older rules (and changes.css) resolve to the token. */
+  --ease: var(--ease-out);
   --shadow-sm: 0 1px 2px oklch(0.255 0.03 285 / 0.06);
   --shadow-md: 0 6px 20px oklch(0.255 0.05 285 / 0.1);
   --font: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -72,6 +151,21 @@
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
+}
+
+/* Modo aula: teaching visuals run slower (touch feedback stays fast). */
+:root[data-aula] {
+  --motion-scale: 1.6;
+}
+/* Reduced motion keeps the lesson: shorter moves, no counting, no cascades. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-move: 160ms;
+    --dur-explain: 160ms;
+    --dur-count: 0ms;
+    --stagger: 0ms;
+    --stagger-explain: 0ms;
+  }
 }
 
 * {
