@@ -23,7 +23,7 @@ backend/
     clustering/        (clustering output is served from committed JSON)
     data/              archetypes, loader, ingest, precomputed (de)serialization
   scripts/             generate_dataset.py, precompute.py, ingest.py
-  data/                COMMITTED incidents.json + precomputed/ (embeddings, clusters)
+  data/                COMMITTED incidents.json, problems.json + precomputed/
   tests/               pytest (LLM/embeddings/Qdrant mocked)
 contracts/             Shared SSE protocol fixtures read by both pytest and Vitest
 frontend/              Next.js (App Router) + TS + Tailwind + regl-scatterplot
@@ -60,9 +60,17 @@ Backend directly: `cd backend && uv run pytest|ruff check .|mypy src`.
   (`uv sync --all-extras`); the API runtime and tests don't need them.
 - The chat provider (OpenRouter default) may not support JSON mode; structured
   output is done via prompted JSON + pydantic validation.
+- The suggestion flow follows the seven steps of João's article (load, AI
+  summary, embedding of summary + categoria/subcategoria/empresa, three-layer
+  retrieval, context, procedência gate, suggestion with validated sources,
+  publication as a work note). See `docs/rag-flow.md` and ADR 0016.
 - Classification answers "is this a real incident?" (not "is there a base?"):
   `IMPROCEDENTE` = self-service/non-incident; a real incident with no similar
-  case is `PROCEDENTE` with no suggestion. See `rag/pipeline.py:classify`.
+  case is `PROCEDENTE` with no suggestion. See `rag/pipeline.py:classify_with_reason`.
+- Retrieval floor/top-K are settings (`RETRIEVAL_MIN_SIMILARITY` 0.8,
+  `INCIDENT_TOP_K` 5, `PROBLEM_TOP_K` 10). Problems (`data/problems.json`) live
+  in their own Qdrant collection; without `problem_embeddings.npz` each one sits
+  at the mean vector of its linked incidents.
 - The Aurora model picker is real: `POST /api/suggest` takes a `model` id mapped
   to a real OpenRouter model via `SELECTABLE_MODELS` (`config.py`); unknown ids
   fall back to the default.

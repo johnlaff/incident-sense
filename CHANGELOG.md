@@ -9,6 +9,13 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ### Adicionado
 
+- Pipeline de incidentes nas sete etapas do artigo do João: carregar, resumo por
+  IA, embedding do resumo com categoria, subcategoria e empresa, recuperação em
+  três camadas (tags semânticas, vetor com cosseno mínimo 0,8 e top-K 5/10,
+  pós-filtro por LLM com volta à lista original), contexto, decisão de
+  procedência, sugestão com citações validadas e publicação nas notas de
+  trabalho. Base sintética de problemas (`problems.json`) e aba "Análise da IA"
+  no detalhe do incidente mostrando cada etapa.
 - Mapeia os modelos candidatos do OpenRouter para o copiloto contextual, com
   evidências bilíngues, custo, latência e elegibilidade de segurança que orientam
   a seleção controlada sem antecipar o vencedor.
