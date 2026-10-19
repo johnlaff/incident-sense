@@ -11,7 +11,13 @@ def test_in_memory_qdrant_is_seeded_once_and_searchable() -> None:
     # The same process-wide client sees the seeded points (no second ingest).
     assert ensure_seeded(settings, retries=1, delay=0) == seeded
 
-    ids, vectors = load_embeddings(settings.embeddings_path)
+    # Query with the vectors the collection was seeded from (summary-based when present).
+    source = (
+        settings.summary_embeddings_path
+        if settings.summary_embeddings_path.exists()
+        else settings.embeddings_path
+    )
+    ids, vectors = load_embeddings(source)
     retriever = QdrantRetriever(make_qdrant_client(settings), settings.qdrant_collection)
     hits = retriever.search(vectors[0].tolist(), top_k=3)
     assert len(hits) == 3
