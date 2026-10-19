@@ -3,14 +3,12 @@
 // two in sync (the pytest suite reads the same fixtures on the backend side).
 
 export type CopilotLocale = "pt-BR" | "en";
-export type CopilotPhase = "policy" | "classify" | "rewrite" | "retrieve" | "answer" | "validate";
+export type CopilotPhase =
+  "policy" | "classify" | "rewrite" | "retrieve" | "answer" | "validate";
 export type CopilotPhaseStatus = "started" | "completed";
 export type CopilotVerdict = "PROCEDENTE" | "IMPROCEDENTE";
 export type CopilotAnswerKind =
-  | "general_explanation"
-  | "grounded_answer"
-  | "no_evidence"
-  | "refusal";
+  "general_explanation" | "grounded_answer" | "no_evidence" | "refusal";
 export type CopilotGrounding = "cited" | "no_historical_evidence" | "not_required";
 
 export interface CopilotRetrievalCandidate {
@@ -220,7 +218,11 @@ const ANSWER_KINDS: readonly CopilotAnswerKind[] = [
   "no_evidence",
   "refusal",
 ];
-const GROUNDINGS: readonly CopilotGrounding[] = ["cited", "no_historical_evidence", "not_required"];
+const GROUNDINGS: readonly CopilotGrounding[] = [
+  "cited",
+  "no_historical_evidence",
+  "not_required",
+];
 const BLOCK_TYPES: readonly CopilotAnswerBlock["type"][] = [
   "explanation",
   "diagnosis",
@@ -235,7 +237,10 @@ const BLOCK_TYPES_REQUIRING_CITATION: ReadonlySet<CopilotAnswerBlock["type"]> = 
 
 function isCopilotAnswerBlock(value: unknown): value is CopilotAnswerBlock {
   if (!isRecord(value)) return false;
-  if (!isString(value.type) || !BLOCK_TYPES.includes(value.type as CopilotAnswerBlock["type"])) {
+  if (
+    !isString(value.type) ||
+    !BLOCK_TYPES.includes(value.type as CopilotAnswerBlock["type"])
+  ) {
     return false;
   }
   if (value.citations === undefined) value.citations = [];
@@ -251,8 +256,10 @@ function isCopilotAnswerBlock(value: unknown): value is CopilotAnswerBlock {
 
 function isCopilotAnswer(value: unknown): value is CopilotAnswer {
   if (!isRecord(value)) return false;
-  if (!isString(value.kind) || !ANSWER_KINDS.includes(value.kind as CopilotAnswerKind)) return false;
-  if (!isString(value.locale) || !LOCALES.includes(value.locale as CopilotLocale)) return false;
+  if (!isString(value.kind) || !ANSWER_KINDS.includes(value.kind as CopilotAnswerKind))
+    return false;
+  if (!isString(value.locale) || !LOCALES.includes(value.locale as CopilotLocale))
+    return false;
   if (!isRecord(value.incident_classification)) return false;
   const classification = value.incident_classification;
   if (
@@ -262,10 +269,14 @@ function isCopilotAnswer(value: unknown): value is CopilotAnswer {
   ) {
     return false;
   }
-  if (!isString(value.grounding) || !GROUNDINGS.includes(value.grounding as CopilotGrounding)) {
+  if (
+    !isString(value.grounding) ||
+    !GROUNDINGS.includes(value.grounding as CopilotGrounding)
+  ) {
     return false;
   }
-  if (!Array.isArray(value.blocks) || !value.blocks.every(isCopilotAnswerBlock)) return false;
+  if (!Array.isArray(value.blocks) || !value.blocks.every(isCopilotAnswerBlock))
+    return false;
   return true;
 }
 
@@ -317,7 +328,9 @@ function hasValidEnvelope(
 }
 
 /** Builds a fully-typed event from a payload whose shape has already been checked, per `type`. */
-function toCopilotStreamEvent(value: Record<string, unknown> & CopilotEnvelope): CopilotStreamEvent | null {
+function toCopilotStreamEvent(
+  value: Record<string, unknown> & CopilotEnvelope,
+): CopilotStreamEvent | null {
   switch (value.type) {
     case "turn.accepted": {
       if (
@@ -339,7 +352,9 @@ function toCopilotStreamEvent(value: Record<string, unknown> & CopilotEnvelope):
         PHASE_STATUSES.includes(value.status as CopilotPhaseStatus) &&
         isNullableNumber(value.duration_ms) &&
         // duration_ms is reported exactly when the phase has completed.
-        (value.status === "completed" ? value.duration_ms !== null : value.duration_ms === null)
+        (value.status === "completed"
+          ? value.duration_ms !== null
+          : value.duration_ms === null)
       ) {
         return value as unknown as PhaseChangedEvent;
       }
@@ -413,7 +428,10 @@ export function parseCopilotStream(chunks: string[]): CopilotStreamEvent[] {
 
   for (const rawPayload of rawPayloads) {
     if (terminalSeen) {
-      throw new StreamContractError("event_after_terminal", "Event received after the terminal event.");
+      throw new StreamContractError(
+        "event_after_terminal",
+        "Event received after the terminal event.",
+      );
     }
 
     let parsed: unknown;
@@ -424,7 +442,10 @@ export function parseCopilotStream(chunks: string[]): CopilotStreamEvent[] {
     }
 
     if (!isRecord(parsed)) {
-      throw new StreamContractError("invalid_event", "Event payload must be a JSON object.");
+      throw new StreamContractError(
+        "invalid_event",
+        "Event payload must be a JSON object.",
+      );
     }
 
     if (parsed.protocol_version !== "1") {
@@ -447,7 +468,10 @@ export function parseCopilotStream(chunks: string[]): CopilotStreamEvent[] {
 
     const event = toCopilotStreamEvent(parsed);
     if (event === null) {
-      throw new StreamContractError("invalid_event", `Payload for ${parsed.type} violates the schema.`);
+      throw new StreamContractError(
+        "invalid_event",
+        `Payload for ${parsed.type} violates the schema.`,
+      );
     }
 
     if (streamTurnId === null) {
@@ -458,11 +482,17 @@ export function parseCopilotStream(chunks: string[]): CopilotStreamEvent[] {
 
     if (previousSequence === null) {
       if (event.sequence !== 1) {
-        throw new StreamContractError("out_of_order_sequence", "First event sequence must be 1.");
+        throw new StreamContractError(
+          "out_of_order_sequence",
+          "First event sequence must be 1.",
+        );
       }
     } else {
       if (event.sequence === previousSequence) {
-        throw new StreamContractError("duplicate_sequence", `Duplicate sequence: ${event.sequence}.`);
+        throw new StreamContractError(
+          "duplicate_sequence",
+          `Duplicate sequence: ${event.sequence}.`,
+        );
       }
       if (event.sequence < previousSequence) {
         throw new StreamContractError(
@@ -481,7 +511,10 @@ export function parseCopilotStream(chunks: string[]): CopilotStreamEvent[] {
   }
 
   if (!terminalSeen) {
-    throw new StreamContractError("missing_terminal", "Stream ended without a terminal event.");
+    throw new StreamContractError(
+      "missing_terminal",
+      "Stream ended without a terminal event.",
+    );
   }
 
   return events;

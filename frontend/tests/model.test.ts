@@ -75,13 +75,16 @@ describe("buildSuggestionMarkdown", () => {
   });
 
   it("leaves the body alone when there is nothing to reference", () => {
-    expect(buildSuggestionMarkdown("Reinicie o serviço.", [])).toBe("Reinicie o serviço.");
+    expect(buildSuggestionMarkdown("Reinicie o serviço.", [])).toBe(
+      "Reinicie o serviço.",
+    );
   });
 });
 
 describe("normalizeSuggestionSpacing", () => {
   it("puts a blank line before each step so the list breathes", () => {
-    const cramped = "Diagnóstico curto.\n1. **A** — x [INC0001].\n2. **B** — y [INC0002].";
+    const cramped =
+      "Diagnóstico curto.\n1. **A** — x [INC0001].\n2. **B** — y [INC0002].";
     expect(normalizeSuggestionSpacing(cramped)).toBe(
       "Diagnóstico curto.\n\n1. **A** — x [INC0001].\n\n2. **B** — y [INC0002].",
     );
@@ -95,13 +98,16 @@ describe("normalizeSuggestionSpacing", () => {
   });
 
   it("collapses runs of blank lines and does not touch a single paragraph", () => {
-    expect(normalizeSuggestionSpacing("Apenas um parágrafo.")).toBe("Apenas um parágrafo.");
+    expect(normalizeSuggestionSpacing("Apenas um parágrafo.")).toBe(
+      "Apenas um parágrafo.",
+    );
   });
 });
 
 describe("enforceNumberedSteps", () => {
   it("numbers bold-led action paragraphs the model left unnumbered", () => {
-    const md = "Diagnóstico.\n\n**Ação um** — x [INC0001].\n\n**Ação dois** — y [INC0002].";
+    const md =
+      "Diagnóstico.\n\n**Ação um** — x [INC0001].\n\n**Ação dois** — y [INC0002].";
     expect(enforceNumberedSteps(md)).toBe(
       "Diagnóstico.\n\n1. **Ação um** — x [INC0001].\n\n2. **Ação dois** — y [INC0002].",
     );

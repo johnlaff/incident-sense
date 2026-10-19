@@ -19,7 +19,9 @@ interface Fixture {
     | { outcome: "error"; error_code: StreamErrorCode };
 }
 
-function loadFixtures(subdir: "valid" | "invalid"): Array<{ name: string; fixture: Fixture }> {
+function loadFixtures(
+  subdir: "valid" | "invalid",
+): Array<{ name: string; fixture: Fixture }> {
   const dir = path.join(fixturesDir, subdir);
   return readdirSync(dir)
     .filter((name) => name.endsWith(".json"))
@@ -42,7 +44,9 @@ describe("parseCopilotStream — valid fixtures", () => {
   });
 
   it("narrows the diagnosis block of full-turn-grounded.json to non-empty citations", () => {
-    const { fixture } = loadFixtures("valid").find((f) => f.name === "full-turn-grounded.json")!;
+    const { fixture } = loadFixtures("valid").find(
+      (f) => f.name === "full-turn-grounded.json",
+    )!;
     const events = parseCopilotStream(fixture.chunks);
     const terminal = events[events.length - 1];
 
