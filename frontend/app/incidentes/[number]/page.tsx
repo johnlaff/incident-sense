@@ -4,24 +4,87 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Icons, type IconComponent } from "@/components/icons";
+import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
+import { PipelineTrace, type RunPhase } from "@/components/pipeline-trace";
 import { Avatar, PriorityBadge, StateBadge, StateBlock } from "@/components/ui";
 import { activate, useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { api, ApiError } from "@/lib/api";
 import { useAllIncidents, useClusters, useIncident } from "@/lib/incidents";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import {
+  absDate,
+  buildSuggestionMarkdown,
   mapDetail,
   mapSuggest,
   markdownToPlain,
-  type CopilotResult,
+  noteActivity,
+  relTime,
   type DsState,
   type IncidentRecord,
 } from "@/lib/model";
+import { DEFAULT_MODEL, MODELS, modelName, modelNameFromRoute } from "@/lib/models";
+import { STEP_OUTLINE, mergeNotes } from "@/lib/pipeline";
+import type { SuggestResponse, WorkNote } from "@/lib/types";
 import { SuggestionMarkdown } from "@/components/markdown";
 
-type Tab = "detalhes" | "atividade" | "relacionados";
+import "./pipeline.css";
+
+type Tab = "detalhes" | "analise" | "atividade" | "relacionados";
+
+/** The live pipeline run for one incident, shared by the Aurora panel and the
+ * "Análise da IA" tab so both show the same result. */
+export interface SuggestionRun {
+  phase: RunPhase;
+  response: SuggestResponse | null;
+  error: string | null;
+  model: string;
+  setModel: (id: string) => void;
+  run: () => Promise<void>;
+}
+
+function useSuggestion(record: IncidentRecord): SuggestionRun {
+  const [phase, setPhase] = useState<RunPhase>("idle");
+  const [response, setResponse] = useState<SuggestResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [model, setModel] = useState(DEFAULT_MODEL);
+  const busy = useRef(false);
+
+  async function run() {
+    if (busy.current) return;
+    busy.current = true;
+    setPhase("running");
+    setError(null);
+    try {
+      const res = await api.suggest({
+        number: record.number,
+        short_description: record.short,
+        description: record.description,
+        category: record.category,
+        subcategory: record.subcategory,
+        empresa: record.empresa,
+        cmdb_ci: record.service,
+        priority: Number(record.priority.slice(1)),
+        model,
+      });
+      setResponse(res);
+      setPhase("done");
+    } catch (e) {
+      setError(
+        e instanceof ApiError
+          ? e.status === 503
+            ? "A IA não está configurada (falta a chave no .env do servidor)."
+            : e.detail
+          : "Não foi possível falar com a Aurora agora.",
+      );
+      setPhase("error");
+    } finally {
+      busy.current = false;
+    }
+  }
+
+  return { phase, response, error, model, setModel, run };
+}
 
 interface RelatedRow {
   number: string;
@@ -87,7 +150,76 @@ export default function DetailPage() {
   return <Detail key={record.number} record={record} peek={shell.peek} />;
 }
 
+function WorkNotes({
+  notes,
+  fresh,
+  onCite,
+}: {
+  notes: WorkNote[];
+  fresh: string | null;
+  onCite: (n: string) => void;
+}) {
+  const { flashCite } = useShell();
+  if (!notes.length) {
+    return (
+      <p className="worknotes-empty">
+        Nenhuma nota publicada ainda. Quando a análise da IA gera uma sugestão, ela é
+        publicada aqui, com as fontes.
+      </p>
+    );
+  }
+  return (
+    <div className="worknotes">
+      {notes.map((note) => (
+        <article
+          key={note.id}
+          id={`note-${note.id}`}
+          className={`worknote${note.id === fresh ? " is-fresh" : ""}`}
+        >
+          <div className="worknote-head">
+            <b>
+              <Icons.aiSpark size={13} />
+              {note.author}
+            </b>
+            <span title={absDate(note.created_at)}>
+              publicou {relTime(note.created_at)}
+            </span>
+            {note.model ? <span>· {modelNameFromRoute(note.model)}</span> : null}
+          </div>
+          <SuggestionMarkdown
+            source={buildSuggestionMarkdown(note.text, note.sources)}
+            onCite={onCite}
+            flashCite={flashCite}
+          />
+          {note.sources.length ? (
+            <div className="worknote-src">
+              Fontes:
+              {note.sources.map((id) =>
+                id.startsWith("INC") ? (
+                  <button
+                    type="button"
+                    className="cite"
+                    key={id}
+                    onClick={() => onCite(id)}
+                  >
+                    {id}
+                  </button>
+                ) : (
+                  <span className="cite cite-prb" key={id} title={`Problema ${id}`}>
+                    {id}
+                  </span>
+                ),
+              )}
+            </div>
+          ) : null}
+        </article>
+      ))}
+    </div>
+  );
+}
+
 function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) => void }) {
+  const { flashCite } = useShell();
   const [tab, setTab] = useState<Tab>("detalhes");
   const [inserted, setInserted] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -104,6 +236,31 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     () => () => void (toastTimer.current && clearTimeout(toastTimer.current)),
     [],
   );
+
+  const suggest = useSuggestion(record);
+  const [freshNote, setFreshNote] = useState<string | null>(null);
+  const notes = useMemo(
+    () => mergeNotes(record.publishedNotes, suggest.response?.publication.note),
+    [record.publishedNotes, suggest.response],
+  );
+  const activity = useMemo(() => {
+    const loaded = new Set(record.publishedNotes.map((n) => n.id));
+    return [
+      ...record.activity,
+      ...notes.filter((n) => !loaded.has(n.id)).map(noteActivity),
+    ];
+  }, [record.activity, record.publishedNotes, notes]);
+
+  function showNotes() {
+    const latest = notes[notes.length - 1];
+    setTab("detalhes");
+    setFreshNote(latest?.id ?? null);
+    requestAnimationFrame(() =>
+      document
+        .getElementById(latest ? `note-${latest.id}` : "worknotes")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+  }
 
   const { data: all } = useAllIncidents();
   const { data: clustersData } = useClusters();
@@ -159,6 +316,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
   const fields: [string, string, boolean?][] = [
     ["Categoria", record.category],
     ["Subcategoria", record.subcategory],
+    ["Empresa", record.empresa],
     ["Serviço afetado (CI)", record.service, true],
     ["Grupo de atendimento", record.group, true],
     ["Impacto", record.impact],
@@ -217,12 +375,23 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
             Detalhes
           </button>
           <button
+            className={`tab${tab === "analise" ? " on" : ""}`}
+            role="tab"
+            aria-selected={tab === "analise"}
+            onClick={() => setTab("analise")}
+          >
+            Análise da IA
+            {suggest.response ? (
+              <span className="tab-n">{suggest.response.steps.length}</span>
+            ) : null}
+          </button>
+          <button
             className={`tab${tab === "atividade" ? " on" : ""}`}
             role="tab"
             aria-selected={tab === "atividade"}
             onClick={() => setTab("atividade")}
           >
-            Atividade<span className="tab-n">{record.activity.length}</span>
+            Atividade<span className="tab-n">{activity.length}</span>
           </button>
           <button
             className={`tab${tab === "relacionados" ? " on" : ""}`}
@@ -319,18 +488,38 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                         </span>
                       ))
                     ) : (
-                      <span className="muted">—</span>
+                      <span className="muted">Sem tags</span>
                     )}
                   </div>
                 </div>
               </div>
             </div>
+
+            <div
+              className="section"
+              id="worknotes"
+              style={{ borderTop: "1px solid var(--border)" }}
+            >
+              <h2>Notas de trabalho</h2>
+              <WorkNotes notes={notes} fresh={freshNote} onCite={peek} />
+            </div>
           </>
+        ) : tab === "analise" ? (
+          <PipelineTrace
+            phase={suggest.phase}
+            result={suggest.response}
+            error={suggest.error}
+            modelName={modelName(suggest.model)}
+            onRun={() => void suggest.run()}
+            onCite={peek}
+            flashCite={flashCite}
+            onShowNotes={showNotes}
+          />
         ) : tab === "atividade" ? (
           <div className="section">
             <h2>Linha do tempo</h2>
             <div className="activity">
-              {record.activity.map((a, i) => (
+              {activity.map((a, i) => (
                 <div className="act" key={i}>
                   <Avatar who={a.who} cls={`kind-${a.kind}`} />
                   <div className="act-body">
@@ -376,7 +565,13 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
         )}
       </div>
 
-      <CopilotFab record={record} onInsert={doInsert} onCopy={doCopy} />
+      <CopilotFab
+        record={record}
+        suggest={suggest}
+        onInsert={doInsert}
+        onCopy={doCopy}
+        onOpenAnalysis={() => setTab("analise")}
+      />
 
       {toast ? (
         <div className="toast">
@@ -394,57 +589,34 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
 
 type StepStatus = "pending" | "run" | "done";
 
-// Each id maps, server-side, to a real OpenRouter model (see SELECTABLE_MODELS
-// in the backend). All were smoke-tested end to end before being exposed.
-const MODELS = [
-  {
-    id: "auto",
-    name: "Automático",
-    desc: "A Aurora escolhe o melhor modelo para cada caso",
-  },
-  {
-    id: "gemini-flash",
-    name: "Gemini 2.5 Flash",
-    desc: "Rápido e didático, ótimo custo-benefício",
-  },
-  {
-    id: "deepseek-v4",
-    name: "DeepSeek V4",
-    desc: "Bom equilíbrio entre velocidade e qualidade",
-  },
-  {
-    id: "qwen3-max",
-    name: "Qwen3 Max",
-    desc: "Raciocínio mais detalhado em vários idiomas",
-  },
-  {
-    id: "claude-haiku",
-    name: "Claude Haiku 4.5",
-    desc: "Respostas rápidas e bem fundamentadas",
-  },
-];
-
 function CopilotFab({
   record,
+  suggest,
   onInsert,
   onCopy,
+  onOpenAnalysis,
 }: {
   record: IncidentRecord;
+  suggest: SuggestionRun;
   onInsert: (text: string) => void;
   onCopy: (text: string) => void;
+  onOpenAnalysis: () => void;
 }) {
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();
   const reduced = usePrefersReducedMotion();
 
   const [open, setOpen] = useState(false);
-  const [phase, setPhase] = useState<"idle" | "running" | "done" | "error">("idle");
+  const phase = suggest.phase;
   const [status, setStatus] = useState<StepStatus[]>(() =>
-    Array<StepStatus>(5).fill("pending"),
+    Array<StepStatus>(STEP_OUTLINE.length).fill("pending"),
   );
-  const [result, setResult] = useState<CopilotResult | null>(null);
-  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const result = useMemo(
+    () => (suggest.response ? mapSuggest(suggest.response) : null),
+    [suggest.response],
+  );
+  const errMsg = suggest.error;
   const [why, setWhy] = useState(false);
-  const [model, setModel] = useState("auto");
+  const model = suggest.model;
   const [modelOpen, setModelOpen] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
   const [srcOpen, setSrcOpen] = useState(false);
@@ -462,50 +634,18 @@ function CopilotFab({
     timers.current = [];
   };
 
-  const kept = result ? result.candidates.filter((c) => c.keep).length : 0;
-  const dropped = result ? result.candidates.length - kept : 0;
+  // The seven steps plus the gate, with what each decided once the run is back.
+  const decisions = new Map(suggest.response?.steps.map((st) => [st.id, st.decision]));
+  const steps = STEP_OUTLINE.map((o) => ({
+    title: o.gate ? o.title : `${o.order}. ${o.title}`,
+    detail: decisions.get(o.id) ?? null,
+  }));
 
-  const steps: { title: string; icon: IconComponent; detail: React.ReactNode }[] = [
-    {
-      title: "Resumir consulta",
-      icon: Icons.summarize,
-      detail: result ? <span className="q">{result.summary}</span> : null,
-    },
-    {
-      title: "Buscar vizinhos",
-      icon: Icons.vectorSearch,
-      detail: result
-        ? `${result.neighbors} ${result.neighbors === 1 ? "vizinho recuperado" : "vizinhos recuperados"}`
-        : null,
-    },
-    {
-      title: "Pós-filtro (LLM)",
-      icon: Icons.funnel,
-      detail: result
-        ? `${kept} mantidos, ${dropped} descartado${dropped === 1 ? "" : "s"}`
-        : null,
-    },
-    {
-      title: "Classificar",
-      icon: Icons.classify,
-      detail: result
-        ? result.verdict === "PROCEDENTE"
-          ? "é um incidente de verdade"
-          : "não é um incidente"
-        : null,
-    },
-    {
-      title: "Sugerir",
-      icon: Icons.lightbulb,
-      detail: result
-        ? result.verdict === "IMPROCEDENTE"
-          ? "não se aplica"
-          : result.noBase
-            ? "sem caso parecido ainda"
-            : "resolução fundamentada em casos reais"
-        : null,
-    },
-  ];
+  // A run started from the "Análise da IA" tab never animated here: show it done.
+  const shown: StepStatus[] =
+    phase === "running"
+      ? status
+      : steps.map((): StepStatus => (phase === "done" ? "done" : "pending"));
 
   useEffect(() => () => clearTimers(), []);
 
@@ -537,45 +677,21 @@ function CopilotFab({
         st[i + 1] = "run";
         setStatus([...st]);
         i++;
-        timers.current.push(setTimeout(tick, 480));
+        timers.current.push(setTimeout(tick, 420));
       }
     };
-    timers.current.push(setTimeout(tick, 520));
+    timers.current.push(setTimeout(tick, 480));
   }
 
   async function run() {
     if (phase === "running") return;
-    setPhase("running");
-    setResult(null);
-    setErrMsg(null);
     setWhy(false);
     setShowSteps(false);
     setSrcOpen(false);
     animate();
-    try {
-      const res = await api.suggest({
-        short_description: record.short,
-        description: record.description,
-        category: record.category,
-        cmdb_ci: record.service,
-        priority: Number(record.priority.slice(1)),
-        model,
-      });
-      clearTimers();
-      setStatus(steps.map((): StepStatus => "done"));
-      setResult(mapSuggest(res));
-      setPhase("done");
-    } catch (e) {
-      clearTimers();
-      setErrMsg(
-        e instanceof ApiError
-          ? e.status === 503
-            ? "A IA não está configurada (faltam as chaves no .env do servidor)."
-            : e.detail
-          : "Não foi possível falar com a Aurora agora.",
-      );
-      setPhase("error");
-    }
+    await suggest.run();
+    clearTimers();
+    setStatus(steps.map((): StepStatus => "done"));
   }
 
   // Send a written message: echo it as the user's bubble, then run the grounded
@@ -613,13 +729,13 @@ function CopilotFab({
   const stepsList = (
     <div className="trace">
       {steps.map((s, i) => (
-        <div key={i} className={`step${status[i] !== "pending" ? " appear" : ""}`}>
+        <div key={i} className={`step${shown[i] !== "pending" ? " appear" : ""}`}>
           <span
-            className={`ico ${status[i] === "done" ? "done" : status[i] === "run" ? "run" : "pending"}`}
+            className={`ico ${shown[i] === "done" ? "done" : shown[i] === "run" ? "run" : "pending"}`}
           >
-            {status[i] === "done" ? (
+            {shown[i] === "done" ? (
               <Icons.check sw={3} />
-            ) : status[i] === "run" ? (
+            ) : shown[i] === "run" ? (
               <Icons.loader sw={2.4} />
             ) : (
               <span className="dot-sm" />
@@ -627,7 +743,7 @@ function CopilotFab({
           </span>
           <span className="lbl">
             <b>{s.title}</b>
-            {status[i] !== "pending" && s.detail ? <> · {s.detail}</> : null}
+            {shown[i] !== "pending" && s.detail ? <> · {s.detail}</> : null}
           </span>
         </div>
       ))}
@@ -736,7 +852,7 @@ function CopilotFab({
                 : "Ainda sem um caso parecido"}
             </div>
             {result.verdict === "IMPROCEDENTE"
-              ? "É um pedido de autoatendimento — por exemplo, redefinir a senha — e não a falha de um sistema. O melhor caminho é orientar o cliente pelo próprio autoatendimento, sem abrir um incidente técnico."
+              ? "É um pedido de autoatendimento (por exemplo, redefinir a senha), e não a falha de um sistema. O melhor caminho é orientar o cliente pelo próprio autoatendimento, sem abrir um incidente técnico."
               : "É um incidente de verdade, mas ainda não temos um caso parecido já resolvido para embasar uma sugestão automática. Resolva manualmente e registre a solução: ela passa a alimentar o copiloto nos próximos casos."}
           </div>
         ) : (
@@ -791,6 +907,16 @@ function CopilotFab({
             {sourcesBlock}
           </>
         )}
+        <button
+          className="btn btn-outline btn-sm cop-full"
+          onClick={() => {
+            setOpen(false);
+            onOpenAnalysis();
+          }}
+        >
+          <Icons.list />
+          Ver as sete etapas no incidente
+        </button>
       </>
     ) : phase === "error" ? (
       <div className="improcedente cop-reveal">
@@ -859,7 +985,7 @@ function CopilotFab({
                     key={m.id}
                     className={`mm-item${m.id === model ? " sel" : ""}`}
                     onClick={() => {
-                      setModel(m.id);
+                      suggest.setModel(m.id);
                       setModelOpen(false);
                     }}
                   >

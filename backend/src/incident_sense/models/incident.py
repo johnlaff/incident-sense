@@ -63,6 +63,10 @@ class Incident(BaseModel):
     subcategory: str = Field(description="Finer category, e.g. 'Pix'.")
     cmdb_ci: str = Field(description="Affected configuration item / service.")
     assignment_group: str = Field(description="Team the ticket is routed to.")
+    empresa: str = Field(
+        default="Banco Meridiano",
+        description="Group company that owns the ticket (fictional, synthetic data).",
+    )
 
     priority: Priority
     impact: Impact

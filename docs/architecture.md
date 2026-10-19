@@ -52,16 +52,18 @@ fundamentada. Detalhes em [rag-flow.md](rag-flow.md).
 
 ```mermaid
 flowchart TD
-    A[Novo incidente] --> B[Resumir consulta - LLM]
-    B --> C[Embed - OpenRouter]
-    C --> D[Pré-filtro por metadados]
-    D --> E[Busca vetorial - Qdrant]
-    E --> F[Pós-filtro por LLM]
-    F --> G{É um incidente?}
-    G -- PROCEDENTE + base --> H[Gerar sugestão fundamentada]
-    G -- PROCEDENTE sem base --> J[Sem sugestão: tratar manualmente]
+    A[1. Carregar o incidente] --> B[2. Resumo por IA]
+    B --> C[3. Embedding: resumo + categoria, subcategoria, empresa]
+    C --> D[4. Tags semânticas, vetor 0,8 top-K 5/10, pós-filtro LLM]
+    D --> E[5. Contexto: incidentes + problemas]
+    E --> G{Procedente?}
+    G -- PROCEDENTE + contexto --> H[6. Sugestão com fontes validadas]
+    H --> P[7. Publicação nas notas de trabalho]
+    G -- PROCEDENTE sem contexto --> J[Sem sugestão: tratar manualmente]
     G -- IMPROCEDENTE --> I[Sem sugestão: autoatendimento]
 ```
+
+Incidentes resolvidos e problemas ficam em coleções separadas do Qdrant.
 
 ### 2. Detecção de recorrência (clustering) — `GET /api/clusters`
 

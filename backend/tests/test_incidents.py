@@ -106,3 +106,23 @@ def test_detail_joins_cluster_when_present() -> None:
     assert detail.cluster_id == 3
     assert detail.cluster_label == "Timeout no Pix"
     assert detail.is_outlier is False
+
+
+def test_detail_includes_work_notes_published_by_the_platform(client: TestClient) -> None:
+    from incident_sense.api.incidents import get_work_notes
+    from incident_sense.data.work_notes import WorkNotesStore
+
+    repo = IncidentRepository(
+        [_incident("INC1", state=IncidentState.NEW, cmdb_ci="PIX-Core", short="Pix lento")]
+    )
+    store = WorkNotesStore()
+    store.publish("INC1", "Ajuste o timeout [INC0000001].", sources=["INC0000001"])
+    client.app.dependency_overrides[get_incident_repository] = lambda: repo
+    client.app.dependency_overrides[get_work_notes] = lambda: store
+
+    body = client.get("/api/incidents/INC1").json()
+    assert body["empresa"] == "Banco Meridiano"
+    (note,) = body["published_notes"]
+    assert note["author"] == "Aurora"
+    assert note["text"] == "Ajuste o timeout [INC0000001]."
+    assert note["sources"] == ["INC0000001"]

@@ -11,6 +11,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from .incident import Incident
+from .work_note import WorkNote
 
 
 class IncidentSummary(BaseModel):
@@ -70,6 +71,10 @@ class IncidentDetail(Incident):
     )
     is_outlier: bool | None = Field(
         default=None, description="True when the incident is clustering noise."
+    )
+    published_notes: list[WorkNote] = Field(
+        default_factory=list,
+        description="Work notes the platform published (the AI suggestion, step 7).",
     )
 
     @classmethod

@@ -5,12 +5,14 @@
 // feature: the [INC…] citations stay first-class, clickable buttons that peek the
 // cited incident. A tiny remark plugin rewrites bare/bracketed INC numbers into
 // internal "#INC…" links, which the `a` renderer turns into citation buttons.
+// Problem ids ([PRB…]) become citation chips too; they are listed in the
+// pipeline view, so they are labelled rather than opened in the peek drawer.
 
 import type { Root, RootContent } from "mdast";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-const CITE_TOKEN = /\[?(INC\d{4,})\]?/g;
+const CITE_TOKEN = /\[?((?:INC|PRB)\d{4,})\]?/g;
 
 /** Split a text value into text + citation-link mdast nodes. */
 function splitCitations(value: string): RootContent[] {
@@ -61,6 +63,14 @@ export function SuggestionMarkdown({
 }) {
   const components: Components = {
     a({ href, children }) {
+      const problem = /^#(PRB\d{4,})$/.exec(href ?? "");
+      if (problem) {
+        return (
+          <span className="cite cite-prb" title={`Problema ${problem[1]}`}>
+            {problem[1]}
+          </span>
+        );
+      }
       const cite = /^#(INC\d{4,})$/.exec(href ?? "");
       if (cite) {
         const n = cite[1];

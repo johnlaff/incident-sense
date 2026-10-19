@@ -24,6 +24,14 @@ _Evitar_: Chatbot, assistente genérico, agente autônomo
 Orientação operacional cujas afirmações sobre diagnóstico e resolução são rastreáveis ao incidente em análise ou a incidentes históricos citados.
 _Evitar_: Resposta da IA, solução automática
 
+**Problema**:
+Registro da causa raiz por trás de um grupo de incidentes, com contorno e solução definitiva; também serve de evidência para a sugestão.
+_Evitar_: Cluster, recorrência confirmada
+
+**Nota de trabalho**:
+Registro publicado no incidente durante a tratativa; a sugestão fundamentada é publicada como nota de trabalho.
+_Evitar_: Comentário, log
+
 **Recorrência**:
 Hipótese de padrão comum entre incidentes semanticamente semelhantes que merece investigação operacional; não comprova, por si só, uma causa raiz.
 _Evitar_: Causa raiz, problema confirmado, cluster

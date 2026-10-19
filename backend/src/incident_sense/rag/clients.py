@@ -1,13 +1,15 @@
 """Dependency-injected clients for the RAG pipeline.
 
-The pipeline talks to three things: a chat LLM, an embedding model, and a vector
-store. Each is defined here as a small ``Protocol`` plus a concrete adapter, so
-tests can substitute fakes with no network access (see tests/test_rag.py).
+The pipeline talks to a chat LLM, an embedding model, two vector collections
+(resolved incidents and Problems), the incident base (step 1 loads from it) and
+the work notes (step 7 publishes to them). Each is a small ``Protocol`` or a
+plain object here, so tests can substitute fakes with no network access (see
+tests/test_incident_pipeline.py).
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from openai import OpenAI
@@ -15,12 +17,15 @@ from qdrant_client import QdrantClient
 
 from incident_sense.config import Settings
 from incident_sense.data.ingest import make_qdrant_client
+from incident_sense.data.work_notes import WorkNotesStore, get_work_notes_store
+from incident_sense.models import Incident
 from incident_sense.providers import (
     chat_text,
     embed_texts,
     make_chat_client,
     make_embedding_client,
 )
+from incident_sense.rag.tags import TagCatalog, get_tag_catalog
 
 
 class LLMClient(Protocol):
@@ -58,6 +63,24 @@ class VectorRetriever(Protocol):
     ) -> list[RetrievedHit]:
         """Return up to ``top_k`` scored hits, optionally filtered."""
         ...
+
+
+class IncidentLookup(Protocol):
+    """Find an incident by number (the demo's stand-in for the ITSM)."""
+
+    def get(self, number: str) -> Incident | None:
+        """Return the incident, or None when unknown."""
+        ...
+
+
+class EmptyRetriever:
+    """A collection with nothing in it (used when there is no Problem base)."""
+
+    def search(
+        self, vector: list[float], *, top_k: int, query_filter: Any | None = None
+    ) -> list[RetrievedHit]:
+        """Return no hits."""
+        return []
 
 
 # --- Concrete adapters -------------------------------------------------------
@@ -126,17 +149,35 @@ class QdrantRetriever:
 
 @dataclass(frozen=True)
 class RagDeps:
-    """The three injected clients the pipeline needs."""
+    """The injected clients the pipeline needs.
+
+    Only the first three are required; the rest default to "nothing there" so a
+    caller that only has a chat model, an embedder and an incident index still
+    runs the pipeline (no Problems, no tag catalog, nowhere to publish).
+    """
 
     llm: LLMClient
     embeddings: EmbeddingClient
     retriever: VectorRetriever
+    problem_retriever: VectorRetriever = field(default_factory=EmptyRetriever)
+    catalog: TagCatalog = field(default_factory=TagCatalog)
+    incidents: IncidentLookup | None = None
+    notes: WorkNotesStore | None = None
 
 
 def build_deps(settings: Settings) -> RagDeps:
     """Build the real (network-backed) dependencies from settings."""
+    # Imported here: the repository pulls the clustering artifacts, which only
+    # the live endpoint needs.
+    from incident_sense.api.incidents import get_incident_repository
+
+    client = make_qdrant_client(settings)
     return RagDeps(
         llm=OpenAILLMClient(make_chat_client(settings), settings.llm_model),
         embeddings=OpenAIEmbeddingClient(make_embedding_client(settings), settings.embedding_model),
-        retriever=QdrantRetriever(make_qdrant_client(settings), settings.qdrant_collection),
+        retriever=QdrantRetriever(client, settings.qdrant_collection),
+        problem_retriever=QdrantRetriever(client, settings.qdrant_problems_collection),
+        catalog=get_tag_catalog(),
+        incidents=get_incident_repository(),
+        notes=get_work_notes_store(),
     )

@@ -4,8 +4,10 @@ All tunables live here so the rest of the code never reads ``os.environ``
 directly. Values come from environment variables (and a local ``.env`` during
 development); secrets are never hard-coded.
 
-The numeric retrieval thresholds (``example_top_k`` / ``example_min_similarity``)
-are **illustrative demo values**, not anyone's production tuning.
+The retrieval parameters (cosine floor 0.8, top-K 5 for incidents and 10 for
+Problems) are the public values from João's article on the bank's pipeline.
+They are configuration, not constants: precision and coverage are product
+decisions.
 """
 
 from __future__ import annotations
@@ -59,17 +61,21 @@ class Settings(BaseSettings):
     # the committed vectors on startup: no vector server to host or pay for.
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "incidents_resolved"
+    # Problems (root-cause records) live in their own collection, searched with
+    # their own top-K.
+    qdrant_problems_collection: str = "problems"
     # On startup, seed Qdrant from the committed embeddings if the collection is
     # empty (so `docker compose up` is self-contained). Disable for local API
     # dev when Qdrant is not running.
     auto_seed: bool = True
 
-    # --- Retrieval thresholds (illustrative example values) -------------------
-    # Return at most this many candidates from vector search...
-    example_top_k: int = 5
-    # ...and only those at or above this cosine similarity. Cosine similarity
-    # ranges from -1 to 1; 0.4 is a permissive demo floor, not a tuned value.
-    example_min_similarity: float = 0.4
+    # --- Retrieval (layer 2 of the three-layer retrieval) ---------------------
+    # Keep only hits at or above this cosine similarity (range -1 to 1)...
+    retrieval_min_similarity: float = 0.8
+    # ...from at most this many resolved incidents...
+    incident_top_k: int = 5
+    # ...and at most this many Problems.
+    problem_top_k: int = 10
 
     # --- Web / CORS -----------------------------------------------------------
     # Comma-separated list, so the local and the published site can share one API.
@@ -107,6 +113,11 @@ class Settings(BaseSettings):
         return self.data_dir / "changes.json"
 
     @property
+    def problems_path(self) -> Path:
+        """Path to the committed synthetic Problem records."""
+        return self.data_dir / "problems.json"
+
+    @property
     def precomputed_dir(self) -> Path:
         """Directory with committed embeddings + clustering result + labels."""
         return self.data_dir / "precomputed"
@@ -115,6 +126,25 @@ class Settings(BaseSettings):
     def embeddings_path(self) -> Path:
         """Committed incident embeddings (compressed NumPy archive of id+vector)."""
         return self.precomputed_dir / "embeddings.npz"
+
+    @property
+    def summary_embeddings_path(self) -> Path:
+        """Optional incident vectors built as the article builds the query.
+
+        Written by ``scripts/reembed.py --incidents`` (summary + categoria,
+        subcategoria, empresa). When present, the RAG collection is seeded from
+        it; ``embeddings.npz`` (raw text) keeps serving the clustering.
+        """
+        return self.precomputed_dir / "summary_embeddings.npz"
+
+    @property
+    def problem_embeddings_path(self) -> Path:
+        """Optional real Problem embeddings (``scripts/reembed.py --problems``).
+
+        When absent, each Problem is indexed with the normalized mean vector of
+        its linked incidents (a deterministic fallback that needs no API key).
+        """
+        return self.precomputed_dir / "problem_embeddings.npz"
 
     @property
     def clusters_path(self) -> Path:

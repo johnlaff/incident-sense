@@ -42,7 +42,7 @@ def get_rag_deps() -> RagDeps:
 def suggest(
     request: SuggestRequest, deps: Annotated[RagDeps, Depends(get_rag_deps)]
 ) -> SuggestResponse:
-    """Classify a new incident and, if PROCEDENTE, suggest a grounded resolution.
+    """Run the seven-step pipeline: classify, suggest with sources, publish.
 
     Infrastructure failures (vector store down, AI provider error) are turned
     into a clean, localized 502 so the UI can show a useful message and offer a
@@ -57,7 +57,7 @@ def suggest(
     if chosen != settings.llm_model:
         deps = replace(deps, llm=OpenAILLMClient(make_chat_client(settings), chosen))
     try:
-        return run_suggestion(request, deps, settings)
+        return run_suggestion(request, deps, settings, model=chosen)
     except HTTPException:
         raise
     except Exception as exc:  # noqa: BLE001 — surface a clean error to the client.
