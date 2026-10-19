@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
+import { AULA_BOOT_SCRIPT } from "@/lib/aula-machine";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,6 +48,7 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: AULA_BOOT_SCRIPT }} />
       </head>
       <body>
         <AppShell>{children}</AppShell>

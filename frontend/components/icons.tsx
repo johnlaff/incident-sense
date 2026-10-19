@@ -172,6 +172,15 @@ export const Icons = {
     </>,
   ),
   dot: icon(<circle cx={12} cy={12} r={4} />),
+  play: icon(<path d="M7 5v14l11-7L7 5Z" />),
+  pause: icon(<path d="M8 5v14M16 5v14" />),
+  board: icon(
+    <>
+      <rect x={3} y={4} width={18} height={12} rx={1.5} />
+      <path d="M12 16v4M8 20h8M7 9h6M7 12h9" />
+    </>,
+  ),
+  ruler: icon(<path d="M3 17h18M5 17v-3M9 17v-5M13 17v-3M17 17v-5M21 17v-3" />),
   enter: icon(
     <>
       <path d="M9 10 5 14l4 4" />

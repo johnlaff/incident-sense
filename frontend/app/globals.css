@@ -4504,7 +4504,7 @@ body {
     height: min(648px, calc(100vh - 48px));
     border: 1px solid var(--border-strong);
     border-radius: 16px;
-    animation: panel-in var(--dur-state) var(--ease-out);
+    animation: panel-in var(--dur-move) var(--spring-calm);
   }
   .cop-panel-head {
     padding: 12px 14px;
@@ -4795,9 +4795,8 @@ body {
   .cd-inc:hover {
     transform: none;
   }
-  .legend-item:hover,
-  .legend-item.hot {
-    padding-left: 11px;
+  .legend-item:hover > * {
+    translate: none;
   }
 }
 
@@ -4806,5 +4805,174 @@ body {
   html.scroll-locked,
   html.scroll-locked body {
     overflow: hidden;
+  }
+}
+
+/* ===================================================================== *
+ *  Modo aula: the switch, the caption strip and the room it needs
+ * ===================================================================== */
+.aula-toggle {
+  width: auto;
+  min-width: 34px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+.aula-toggle-t {
+  display: none;
+}
+.aula-toggle.on {
+  color: var(--primary-ink);
+  background: var(--primary-tint);
+  border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+}
+
+.aula-bar-wrap {
+  position: fixed;
+  z-index: 90;
+  left: max(8px, var(--safe-l));
+  right: max(8px, var(--safe-r));
+  bottom: calc(var(--tabbar-h) + var(--safe-b) + 8px);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.aula-bar {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  animation: aula-bar-in var(--dur-move) var(--spring-calm);
+}
+@keyframes aula-bar-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+.aula-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.aula-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-ink);
+  font-variant-numeric: tabular-nums;
+}
+.aula-caption {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 500;
+  text-wrap: pretty;
+}
+.aula-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.aula-ctrl .aula-next {
+  margin-left: auto;
+}
+.aula-btn {
+  border-color: var(--border);
+  width: 40px;
+  height: 40px;
+}
+.aula-btn:disabled,
+.aula-next:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.aula-ctrl .aula-next {
+  height: 40px;
+}
+
+/* Phone: the FAB rises above the strip; the Aurora sheet keeps its input
+   clear and the strip drops to the bottom edge while the sheet is open. */
+:root[data-aula-bar] .cop-fab {
+  translate: 0 calc(-1 * (var(--aula-bar-h, 0px) + 8px));
+}
+@media (max-width: 767px) {
+  body:has(.cop-panel) .aula-bar-wrap {
+    bottom: calc(var(--safe-b) + 8px);
+  }
+  :root[data-aula-bar] .cop-panel {
+    padding-bottom: calc(var(--aula-bar-h, 0px) + 16px);
+  }
+}
+
+@media (min-width: 768px) {
+  .aula-bar-wrap {
+    left: calc(60px + 24px);
+    right: 100px;
+    bottom: 20px;
+  }
+  .aula-bar {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 12px 10px 16px;
+  }
+  .aula-ctrl {
+    flex: none;
+  }
+  :root[data-aula-bar] .cop-fab {
+    translate: none;
+  }
+  /* With the Aurora panel open, the strip becomes the panel's own footer. */
+  body:has(.cop-panel) .aula-bar-wrap {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    width: min(420px, calc(100vw - 32px));
+  }
+  body:has(.cop-panel) .aula-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  :root[data-aula-bar] .cop-panel {
+    bottom: calc(24px + var(--aula-bar-h, 0px) + 8px);
+    height: min(648px, calc(100vh - 56px - var(--aula-bar-h, 0px)));
+  }
+}
+@media (min-width: 921px) {
+  .aula-toggle-t {
+    display: inline;
+  }
+  .aula-bar-wrap {
+    left: calc(232px + 24px);
+  }
+}
+/* Projector: everything a size up for the last row. The type scale is in px,
+   so the app zooms (standard `zoom`) and its height compensates. */
+@media (min-width: 1280px) {
+  :root[data-aula] .app {
+    zoom: 1.125;
+  }
+  :root[data-aula] .app,
+  :root[data-aula] .main {
+    max-height: calc(100vh / 1.125);
+  }
+  :root[data-aula] .aula-caption {
+    font-size: 18px;
+  }
+  :root[data-aula] .aula-count {
+    font-size: 13.5px;
   }
 }
