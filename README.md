@@ -73,15 +73,17 @@ chamadas de IA ao vivo (custo de centavos).
 
 ## 🌐 Publique de graça
 
-A demo pública roda em dois serviços gratuitos: a API no **Render** e o site no
-**Netlify**. Uma única chave da OpenRouter cobre chat e embeddings, e o Qdrant
+A demo pública roda em dois serviços gratuitos: a API no **Render** e o site na
+**Cloudflare** (Workers, via OpenNext). Uma única chave da OpenRouter cobre chat e embeddings, e o Qdrant
 roda em memória dentro da API, semeado com os vetores commitados.
 
 1. **API:** [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/johnlaff/incident-sense)
    cria o serviço a partir do [`render.yaml`](render.yaml). O único campo a
    preencher é `OPENROUTER_API_KEY`.
-2. **Site:** importe o repositório no Netlify (o [`netlify.toml`](netlify.toml)
-   já aponta para `frontend/`) e defina `NEXT_PUBLIC_API_URL` com a URL da API.
+2. **Site:** cadastre os segredos `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID`
+   no repositório e a variável `NEXT_PUBLIC_API_URL` com a URL da API. O workflow
+   [`frontend-deploy`](.github/workflows/frontend-deploy.yml) publica a cada push
+   em `main`. Para publicar da sua máquina: `cd frontend && npm run cf:deploy`.
 3. Ajuste `FRONTEND_ORIGIN` no Render para a URL do site.
 
 As rotas que chamam modelos têm limite por pessoa, por rede e um teto diário
@@ -133,7 +135,7 @@ Detalhes em [docs/clustering-flow.md](docs/clustering-flow.md).
 | **Backend** | Python 3.12 · FastAPI · LlamaIndex · Pydantic · structlog |
 | **IA** | OpenRouter: `openai/text-embedding-3-large` (embeddings) e Claude Haiku 5.5, GPT-6 Luna, Gemini 3.8 Flash, DeepSeek V4.1 Flash e Qwen 3.7 Flash (chat) |
 | **Dados** | Qdrant (busca vetorial) · BERTopic + UMAP + HDBSCAN (clustering) |
-| **Infra** | Docker Compose · Render + Netlify (demo pública gratuita) · GitHub Actions (CI) · imagens multi-stage não-root |
+| **Infra** | Docker Compose · Render + Cloudflare Workers (demo pública gratuita) · GitHub Actions (CI) · imagens multi-stage não-root |
 
 ## 📁 Estrutura
 

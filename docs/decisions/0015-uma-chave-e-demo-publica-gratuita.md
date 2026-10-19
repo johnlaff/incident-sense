@@ -20,8 +20,9 @@ embeddings, OpenRouter para chat) e um servidor Qdrant.
 - **Qdrant em memória** quando `QDRANT_URL=:memory:`: o modo local do
   qdrant-client roda dentro da API e é semeado no startup a partir dos vetores
   commitados. O Docker Compose continua com o servidor Qdrant.
-- **Hospedagem gratuita:** API no Render (Blueprint em `render.yaml`) e site no
-  Netlify (`netlify.toml`).
+- **Hospedagem gratuita:** API no Render (Blueprint em `render.yaml`) e site na
+  Cloudflare Workers via `@opennextjs/cloudflare` (`frontend/wrangler.jsonc`),
+  publicado pelo workflow `frontend-deploy`.
 - **Guarda de uso** antes de qualquer chamada de modelo: janela por cliente
   (id aleatório do navegador), janela por IP mais folgada, porque uma plateia
   inteira divide o mesmo NAT, e teto diário global.
