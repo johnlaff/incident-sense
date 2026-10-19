@@ -9,6 +9,8 @@ export interface AsyncState<T> {
   data: T | null;
   loading: boolean;
   error: string | null;
+  /** HTTP status of the failed request (0 when the server was unreachable). */
+  errorStatus: number | null;
   /** True once a request has been pending long enough to need an explanation. */
   slow: boolean;
   /** Run the request again without reloading the page. */
@@ -38,6 +40,7 @@ export function useAsync<T>(run: () => Promise<T>, deps: unknown[]): AsyncState<
     data: null,
     loading: true,
     error: null,
+    errorStatus: null,
     slow: false,
   });
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
@@ -46,7 +49,7 @@ export function useAsync<T>(run: () => Promise<T>, deps: unknown[]): AsyncState<
     let active = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     // Intentional fetch-in-effect: reset to loading, then commit asynchronously.
-    setState({ data: null, loading: true, error: null, slow: false });
+    setState({ data: null, loading: true, error: null, errorStatus: null, slow: false });
     const slowTimer = setTimeout(
       () => active && setState((s) => (s.loading ? { ...s, slow: true } : s)),
       SLOW_AFTER_MS,
@@ -57,7 +60,7 @@ export function useAsync<T>(run: () => Promise<T>, deps: unknown[]): AsyncState<
         .then((data) => {
           if (!active) return;
           clearTimeout(slowTimer);
-          setState({ data, loading: false, error: null, slow: false });
+          setState({ data, loading: false, error: null, errorStatus: null, slow: false });
         })
         .catch((error: unknown) => {
           if (!active) return;
@@ -72,6 +75,7 @@ export function useAsync<T>(run: () => Promise<T>, deps: unknown[]): AsyncState<
             loading: false,
             slow: false,
             error: error instanceof ApiError ? error.detail : "Erro inesperado.",
+            errorStatus: error instanceof ApiError ? error.status : null,
           });
         });
     };

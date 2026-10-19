@@ -7,7 +7,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
 import { PipelineTrace, type RunPhase } from "@/components/pipeline-trace";
-import { Avatar, PriorityBadge, StateBadge, StateBlock } from "@/components/ui";
+import {
+  Avatar,
+  PriorityBadge,
+  StateBadge,
+  StateBlock,
+  WakeNotice,
+} from "@/components/ui";
 import { activate, useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { api, ApiError } from "@/lib/api";
 import { useAllIncidents, useClusters, useIncident } from "@/lib/incidents";
@@ -73,7 +79,7 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
       setError(
         e instanceof ApiError
           ? e.status === 503
-            ? "A IA não está configurada (falta a chave no .env do servidor)."
+            ? "A IA não está configurada neste servidor."
             : e.detail
           : "Não foi possível falar com a Aurora agora.",
       );
@@ -107,47 +113,93 @@ export default function DetailPage() {
   const params = useParams<{ number: string }>();
   const number = params.number;
   const shell = useShell();
-  const { data, loading, error } = useIncident(number);
+  const { data, loading, error, errorStatus, slow, retry } = useIncident(number);
 
   const record = useMemo(() => (data ? mapDetail(data) : null), [data]);
 
   if (loading) {
     return (
+      <div className="detail-single" aria-busy="true">
+        <Crumbs number={number} />
+        <WakeNotice show={slow} />
+        <div className="card record-card">
+          <div className="record-head record-skel">
+            <span className="sk sk-num" />
+            <span className="sk sk-title" />
+            <span className="sk sk-meta" />
+          </div>
+          <div className="section record-skel">
+            <span className="sk sk-line" />
+            <span className="sk sk-line" />
+            <span className="sk sk-short" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorStatus === 404) {
+    return (
       <div className="detail-single">
-        <div className="crumbs">
-          <Link href="/incidentes">Incidentes</Link>
-          <span>/</span>
-          <span className="mono">{number}</span>
-        </div>
-        <div className="card" style={{ padding: 20 }}>
-          <span className="sk" style={{ width: "60%", height: 18 }} />
-          <div style={{ height: 10 }} />
-          <span className="sk" style={{ width: "40%" }} />
-        </div>
+        <Crumbs number={number} />
+        <StateBlock
+          icon={Icons.alert}
+          variant="error"
+          title="Incidente não encontrado"
+          action={
+            <Link href="/incidentes" className="btn btn-primary btn-sm">
+              Ver todos os incidentes
+            </Link>
+          }
+        >
+          Não existe um incidente com o número {number}. Confira o número ou escolha um na
+          lista.
+        </StateBlock>
       </div>
     );
   }
 
   if (error || !record) {
     return (
-      <StateBlock
-        icon={Icons.alert}
-        variant="error"
-        title="Incidente não encontrado"
-        action={
-          <Link href="/incidentes" className="btn btn-primary btn-sm">
-            Ir para Incidentes
-          </Link>
-        }
-      >
-        {error ?? "O endereço não corresponde a nenhum incidente."}
-      </StateBlock>
+      <div className="detail-single">
+        <Crumbs number={number} />
+        <StateBlock
+          icon={Icons.alert}
+          variant="error"
+          title="Não foi possível abrir o incidente"
+          action={
+            <div className="state-actions">
+              <button className="btn btn-outline btn-sm" onClick={retry}>
+                <Icons.replay />
+                Tentar de novo
+              </button>
+              <Link href="/incidentes" className="btn btn-ghost btn-sm">
+                Voltar para incidentes
+              </Link>
+            </div>
+          }
+        >
+          {error ?? "O servidor não devolveu este incidente."}
+        </StateBlock>
+      </div>
     );
   }
 
   // Key by number so each incident gets a fresh Detail (state, tabs, copilot) —
   // no manual cross-record reset needed.
   return <Detail key={record.number} record={record} peek={shell.peek} />;
+}
+
+function Crumbs({ number }: { number: string }) {
+  return (
+    <nav className="crumbs" aria-label="Você está em">
+      <Link href="/incidentes">Incidentes</Link>
+      <span aria-hidden="true">/</span>
+      <span className="mono" aria-current="page">
+        {number}
+      </span>
+    </nav>
+  );
 }
 
 function WorkNotes({
@@ -225,6 +277,8 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
   const [toast, setToast] = useState<string | null>(null);
   const [assignee, setAssignee] = useState<string | null>(null);
   const [localState, setLocalState] = useState<DsState>(record.state);
+  const [copilotOpen, setCopilotOpen] = useState(false);
+  const reduced = usePrefersReducedMotion();
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function flashToast(msg: string, ms = 2200) {
@@ -258,7 +312,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     requestAnimationFrame(() =>
       document
         .getElementById(latest ? `note-${latest.id}` : "worknotes")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        ?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" }),
     );
   }
 
@@ -305,40 +359,51 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
   }
   function doInsert(text: string) {
     setInserted(text);
+    setCopilotOpen(false);
     setTab("detalhes");
     flashToast("Rascunho inserido nas notas de resolução", 2400);
+    requestAnimationFrame(() =>
+      document
+        .getElementById("resnotes")
+        ?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" }),
+    );
+  }
+  function doDiscard() {
+    setInserted(null);
+    flashToast("Rascunho descartado", 1800);
   }
   function doCopy(text: string) {
     navigator.clipboard?.writeText(text).catch(() => {});
     flashToast("Sugestão copiada", 1800);
   }
 
-  const fields: [string, string, boolean?][] = [
-    ["Categoria", record.category],
-    ["Subcategoria", record.subcategory],
-    ["Empresa", record.empresa],
-    ["Serviço afetado (CI)", record.service, true],
-    ["Grupo de atendimento", record.group, true],
-    ["Impacto", record.impact],
-    ["Urgência", record.urgency],
+  const fields: { label: string; value: string; id?: boolean }[] = [
+    { label: "Categoria", value: record.category },
+    { label: "Subcategoria", value: record.subcategory },
+    { label: "Empresa", value: record.empresa },
+    { label: "Serviço afetado", value: record.service, id: true },
+    { label: "Grupo de atendimento", value: record.group, id: true },
+    { label: "Impacto", value: record.impact },
+    { label: "Urgência", value: record.urgency },
+  ];
+
+  const tabs: { id: Tab; label: string; count?: number }[] = [
+    { id: "detalhes", label: "Detalhes" },
+    { id: "analise", label: "Análise da IA", count: suggest.response?.steps.length },
+    { id: "atividade", label: "Atividade", count: activity.length },
+    { id: "relacionados", label: "Relacionados", count: related.length },
   ];
 
   return (
     <div className="detail-single">
-      <div className="crumbs">
-        <Link href="/incidentes">Incidentes</Link>
-        <span>/</span>
-        <span className="mono">{record.number}</span>
-      </div>
+      <Crumbs number={record.number} />
 
       <div className="card record-card">
         <div className="record-head">
           <div className="top-row">
             <div className="record-title">
               <div className="row">
-                <span className="num mono" style={{ fontSize: 13 }}>
-                  {record.number}
-                </span>
+                <span className="record-num mono">{record.number}</span>
                 <StateBadge state={localState} />
                 <PriorityBadge priority={record.priority} withWord />
               </div>
@@ -353,6 +418,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
               <button
                 className={`btn btn-outline btn-sm${assignee ? " is-on" : ""}`}
                 onClick={doAssign}
+                aria-pressed={Boolean(assignee)}
               >
                 {assignee ? <Icons.checkCircle /> : <Icons.assign />}
                 {assignee ? "Atribuído" : "Atribuir"}
@@ -365,220 +431,278 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
           </div>
         </div>
 
-        <div className="tabs" role="tablist" aria-label="Seções do incidente">
-          <button
-            className={`tab${tab === "detalhes" ? " on" : ""}`}
-            role="tab"
-            aria-selected={tab === "detalhes"}
-            onClick={() => setTab("detalhes")}
-          >
-            Detalhes
-          </button>
-          <button
-            className={`tab${tab === "analise" ? " on" : ""}`}
-            role="tab"
-            aria-selected={tab === "analise"}
-            onClick={() => setTab("analise")}
-          >
-            Análise da IA
-            {suggest.response ? (
-              <span className="tab-n">{suggest.response.steps.length}</span>
-            ) : null}
-          </button>
-          <button
-            className={`tab${tab === "atividade" ? " on" : ""}`}
-            role="tab"
-            aria-selected={tab === "atividade"}
-            onClick={() => setTab("atividade")}
-          >
-            Atividade<span className="tab-n">{activity.length}</span>
-          </button>
-          <button
-            className={`tab${tab === "relacionados" ? " on" : ""}`}
-            role="tab"
-            aria-selected={tab === "relacionados"}
-            onClick={() => setTab("relacionados")}
-          >
-            Relacionados<span className="tab-n">{related.length}</span>
-          </button>
-        </div>
+        <TabList tabs={tabs} current={tab} onChange={setTab} />
 
-        {tab === "detalhes" ? (
-          <>
-            <div className="section">
-              <h2>Classificação</h2>
-              <div className="fields">
-                {fields.map(([label, value, mono]) => (
-                  <div className="field" key={label}>
-                    <label>{label}</label>
-                    <span
-                      className={`val${mono ? " mono" : ""}`}
-                      style={mono ? { fontSize: 13 } : undefined}
+        <div
+          className="tab-panel"
+          role="tabpanel"
+          id={`panel-${tab}`}
+          aria-labelledby={`tab-${tab}`}
+        >
+          {tab === "detalhes" ? (
+            <div className="rec-body">
+              <section className="section rec-desc" aria-labelledby="h-desc">
+                <h2 id="h-desc">Descrição</h2>
+                <p className="rec-prose">{record.description}</p>
+              </section>
+
+              <section className="section rec-res" id="resnotes" aria-labelledby="h-res">
+                <h2 id="h-res">Notas de resolução</h2>
+                {inserted ? (
+                  <div className="resnotes-draft">
+                    <p className="draft-label">
+                      <Icons.aiSpark size={14} />
+                      Rascunho da Aurora: revise antes de salvar
+                    </p>
+                    <p className="rec-prose">{inserted}</p>
+                    <button className="btn btn-ghost btn-sm" onClick={doDiscard}>
+                      <Icons.close />
+                      Descartar rascunho
+                    </button>
+                  </div>
+                ) : record.resolutionNotes ? (
+                  <p className="rec-prose">{record.resolutionNotes}</p>
+                ) : (
+                  <div className="resnotes-empty">
+                    <p>
+                      Ainda sem notas de resolução. A Aurora sugere uma resolução com base
+                      em casos parecidos já resolvidos, e você revisa antes de salvar.
+                    </p>
+                    <button
+                      className="btn btn-outline btn-sm"
+                      onClick={() => setCopilotOpen(true)}
                     >
-                      {value}
-                    </span>
+                      <Icons.aiSpark />
+                      Pedir sugestão à Aurora
+                    </button>
                   </div>
-                ))}
-              </div>
-              {record.clusterLabel ? (
-                <div style={{ marginTop: 14, fontSize: 13, color: "var(--ink-body)" }}>
-                  Faz parte da recorrência{" "}
-                  <Link
-                    href="/recorrencias"
-                    className="cite"
-                    style={{ fontFamily: "var(--font)" }}
-                  >
-                    {record.clusterLabel}
-                  </Link>
-                  .
-                </div>
-              ) : null}
-            </div>
-
-            <div className="section" style={{ borderTop: "1px solid var(--border)" }}>
-              <h2>Descrição</h2>
-              <div className="field full">
-                <span className="val long">{record.description}</span>
-              </div>
-              <h2 style={{ marginTop: 18 }}>Notas de resolução</h2>
-              {inserted ? (
-                <div className="resnotes filled">
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.03em",
-                      textTransform: "uppercase",
-                      color: "var(--primary-ink)",
-                      marginBottom: 6,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    <Icons.aiSpark size={13} />
-                    Rascunho da Aurora, revise antes de salvar
-                  </div>
-                  {inserted}
-                </div>
-              ) : record.resolutionNotes ? (
-                <div className="resnotes filled">{record.resolutionNotes}</div>
-              ) : (
-                <div className="resnotes">
-                  <span className="placeholder">
-                    As notas de resolução aparecerão aqui. Fale com a Aurora (botão no
-                    canto) para inserir uma sugestão fundamentada. Você revisa e salva.
-                  </span>
-                </div>
-              )}
-              <div style={{ marginTop: 16, display: "flex", gap: 24, flexWrap: "wrap" }}>
+                )}
                 {record.closeCode ? (
-                  <div className="field">
-                    <label>Close code</label>
+                  <div className="field rec-close">
+                    <span className="field-label">Tipo de encerramento</span>
                     <span className="val">{record.closeCode}</span>
                   </div>
                 ) : null}
-                <div className="field">
-                  <label>Tags</label>
-                  <div style={{ marginTop: 2 }}>
-                    {record.tags.length ? (
-                      record.tags.map((t) => (
-                        <span className="tag" key={t}>
-                          {t}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="muted">Sem tags</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+              </section>
 
-            <div
-              className="section"
-              id="worknotes"
-              style={{ borderTop: "1px solid var(--border)" }}
-            >
-              <h2>Notas de trabalho</h2>
-              <WorkNotes notes={notes} fresh={freshNote} onCite={peek} />
-            </div>
-          </>
-        ) : tab === "analise" ? (
-          <PipelineTrace
-            phase={suggest.phase}
-            result={suggest.response}
-            error={suggest.error}
-            modelName={modelName(suggest.model)}
-            onRun={() => void suggest.run()}
-            onCite={peek}
-            flashCite={flashCite}
-            onShowNotes={showNotes}
-          />
-        ) : tab === "atividade" ? (
-          <div className="section">
-            <h2>Linha do tempo</h2>
-            <div className="activity">
-              {activity.map((a, i) => (
-                <div className="act" key={i}>
-                  <Avatar who={a.who} cls={`kind-${a.kind}`} />
-                  <div className="act-body">
-                    <div className="act-meta">
-                      <span className="who">{a.who.name}</span>
-                      <span className="when">{a.when}</span>
+              <section className="section rec-aside" aria-labelledby="h-class">
+                <h2 id="h-class">Classificação</h2>
+                <dl className="fields">
+                  {fields.map((f) => (
+                    <div className="field" key={f.label}>
+                      <dt>{f.label}</dt>
+                      <dd className={`val${f.id ? " mono val-id" : ""}`}>{f.value}</dd>
                     </div>
-                    <div className="act-text">{a.text}</div>
+                  ))}
+                  {record.clusterLabel ? (
+                    <div className="field full">
+                      <dt>Recorrência</dt>
+                      <dd className="val">
+                        <Link
+                          className="rec-link"
+                          href={
+                            record.clusterId != null
+                              ? `/recorrencias?grupo=${record.clusterId}`
+                              : "/recorrencias"
+                          }
+                        >
+                          {record.clusterLabel}
+                          <Icons.chevronRight size={14} />
+                        </Link>
+                      </dd>
+                    </div>
+                  ) : null}
+                  <div className="field full">
+                    <dt>Tags</dt>
+                    <dd className="val">
+                      {record.tags.length ? (
+                        <span className="tag-list">
+                          {record.tags.map((t) => (
+                            <span className="tag" key={t}>
+                              {t}
+                            </span>
+                          ))}
+                        </span>
+                      ) : (
+                        <span className="muted">Sem tags</span>
+                      )}
+                    </dd>
                   </div>
-                </div>
-              ))}
+                </dl>
+              </section>
+
+              <section
+                className="section rec-work"
+                id="worknotes"
+                aria-labelledby="h-work"
+              >
+                <h2 id="h-work">Notas de trabalho</h2>
+                <WorkNotes notes={notes} fresh={freshNote} onCite={peek} />
+              </section>
             </div>
-          </div>
-        ) : (
-          <div className="section">
-            <h2>Mesmo serviço ou recorrência</h2>
-            {related.length ? (
-              <div className="related">
-                {related.map((r) => (
-                  <div
-                    className="rel-row"
-                    key={r.number}
-                    {...activate(() => peek(r.number), `${r.number} · ${r.short}`)}
-                  >
-                    <span className="num">{r.number}</span>
-                    <span className="rdesc">{r.short}</span>
-                    <span
-                      className="svc mono"
-                      style={{ fontSize: 12, color: "var(--muted)" }}
-                    >
-                      {r.service}
-                    </span>
-                    <StateBadge state={r.state} />
-                  </div>
+          ) : tab === "analise" ? (
+            <PipelineTrace
+              phase={suggest.phase}
+              result={suggest.response}
+              error={suggest.error}
+              modelName={modelName(suggest.model)}
+              onRun={() => void suggest.run()}
+              onCite={peek}
+              flashCite={flashCite}
+              onShowNotes={showNotes}
+            />
+          ) : tab === "atividade" ? (
+            <section className="section" aria-labelledby="h-act">
+              <h2 id="h-act">Linha do tempo</h2>
+              <ol className="activity">
+                {activity.map((a, i) => (
+                  <li className="act" key={i}>
+                    <Avatar who={a.who} cls={`kind-${a.kind}`} />
+                    <div className="act-body">
+                      <div className="act-meta">
+                        <span className="who">{a.who.name}</span>
+                        <span className="when">{a.when}</span>
+                      </div>
+                      <div className="act-text">{a.text}</div>
+                    </div>
+                  </li>
                 ))}
-              </div>
-            ) : (
-              <div style={{ color: "var(--muted)", fontSize: 13 }}>
-                Nenhum relacionado.
-              </div>
-            )}
-          </div>
-        )}
+              </ol>
+            </section>
+          ) : (
+            <section className="section" aria-labelledby="h-rel">
+              <h2 id="h-rel">Do mesmo serviço ou da mesma recorrência</h2>
+              {related.length ? (
+                <div className="related">
+                  {related.map((r) => (
+                    <div
+                      className="rel-row"
+                      key={r.number}
+                      {...activate(() => peek(r.number), `${r.number} · ${r.short}`)}
+                    >
+                      <span className="num">{r.number}</span>
+                      <span className="rdesc">{r.short}</span>
+                      <span className="svc mono">{r.service}</span>
+                      <StateBadge state={r.state} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="rel-empty">
+                  Nenhum outro incidente no mesmo serviço ou na mesma recorrência.
+                </p>
+              )}
+            </section>
+          )}
+        </div>
       </div>
 
       <CopilotFab
         record={record}
         suggest={suggest}
+        open={copilotOpen}
+        setOpen={setCopilotOpen}
         onInsert={doInsert}
         onCopy={doCopy}
         onOpenAnalysis={() => setTab("analise")}
       />
 
-      {toast ? (
-        <div className="toast">
-          <Icons.checkCircle size={16} />
-          {toast}
-        </div>
-      ) : null}
+      <div className="toast-slot" role="status" aria-live="polite">
+        {toast ? (
+          <div className="toast">
+            <Icons.checkCircle size={16} />
+            {toast}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** Record tabs with the WAI-ARIA keyboard pattern (arrows, Home, End). On a
+ * phone the row scrolls sideways; a fade on the edge says there is more. */
+function TabList({
+  tabs,
+  current,
+  onChange,
+}: {
+  tabs: { id: Tab; label: string; count?: number }[];
+  current: Tab;
+  onChange: (t: Tab) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [edge, setEdge] = useState({ start: false, end: false });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () =>
+      setEdge({
+        start: el.scrollLeft > 2,
+        end: el.scrollLeft + el.clientWidth < el.scrollWidth - 2,
+      });
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", update);
+      ro.disconnect();
+    };
+  }, []);
+
+  // Keep the selected tab in view when the row scrolls sideways.
+  useEffect(() => {
+    const el = ref.current;
+    const btn = el?.querySelector<HTMLElement>(`#tab-${current}`);
+    if (!el || !btn) return;
+    const left = btn.offsetLeft - 24;
+    const right = btn.offsetLeft + btn.offsetWidth + 24 - el.clientWidth;
+    if (el.scrollLeft > left) el.scrollLeft = left;
+    else if (el.scrollLeft < right) el.scrollLeft = right;
+  }, [current]);
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    const i = tabs.findIndex((t) => t.id === current);
+    const next =
+      e.key === "ArrowRight"
+        ? (i + 1) % tabs.length
+        : e.key === "ArrowLeft"
+          ? (i - 1 + tabs.length) % tabs.length
+          : e.key === "Home"
+            ? 0
+            : e.key === "End"
+              ? tabs.length - 1
+              : -1;
+    if (next < 0) return;
+    e.preventDefault();
+    onChange(tabs[next].id);
+    ref.current?.querySelector<HTMLElement>(`#tab-${tabs[next].id}`)?.focus();
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={`tabs${edge.start ? " more-start" : ""}${edge.end ? " more-end" : ""}`}
+      role="tablist"
+      aria-label="Seções do incidente"
+      onKeyDown={onKeyDown}
+    >
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          id={`tab-${t.id}`}
+          className={`tab${t.id === current ? " on" : ""}`}
+          role="tab"
+          aria-selected={t.id === current}
+          aria-controls={`panel-${t.id}`}
+          tabIndex={t.id === current ? 0 : -1}
+          onClick={() => onChange(t.id)}
+        >
+          {t.label}
+          {t.count != null ? <span className="tab-n">{t.count}</span> : null}
+        </button>
+      ))}
     </div>
   );
 }
@@ -592,12 +716,16 @@ type StepStatus = "pending" | "run" | "done";
 function CopilotFab({
   record,
   suggest,
+  open,
+  setOpen,
   onInsert,
   onCopy,
   onOpenAnalysis,
 }: {
   record: IncidentRecord;
   suggest: SuggestionRun;
+  open: boolean;
+  setOpen: (open: boolean) => void;
   onInsert: (text: string) => void;
   onCopy: (text: string) => void;
   onOpenAnalysis: () => void;
@@ -605,7 +733,6 @@ function CopilotFab({
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();
   const reduced = usePrefersReducedMotion();
 
-  const [open, setOpen] = useState(false);
   const phase = suggest.phase;
   const [status, setStatus] = useState<StepStatus[]>(() =>
     Array<StepStatus>(STEP_OUTLINE.length).fill("pending"),
@@ -659,7 +786,7 @@ function CopilotFab({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, modelOpen]);
+  }, [open, modelOpen, setOpen]);
 
   function animate() {
     if (reduced) {
@@ -778,7 +905,7 @@ function CopilotFab({
     );
 
   const sourcesBlock = result?.candidates.length ? (
-    <div className="sources cop-reveal" style={{ animationDelay: "220ms" }}>
+    <div className="sources cop-reveal reveal-3">
       <button
         className={`src-toggle${srcOpen ? " open" : ""}`}
         onClick={() => setSrcOpen((s) => !s)}
@@ -844,7 +971,7 @@ function CopilotFab({
         </div>
 
         {result.verdict === "IMPROCEDENTE" || result.noBase ? (
-          <div className="improcedente cop-reveal" style={{ animationDelay: "120ms" }}>
+          <div className="improcedente cop-reveal reveal-1">
             <div className="imp-head">
               {result.verdict === "IMPROCEDENTE" ? <Icons.alert /> : <Icons.inbox />}
               {result.verdict === "IMPROCEDENTE"
@@ -858,8 +985,8 @@ function CopilotFab({
         ) : (
           <>
             {result.suggestion ? (
-              <div className="suggestion cop-reveal" style={{ animationDelay: "140ms" }}>
-                <h4>Resolução sugerida</h4>
+              <div className="suggestion cop-reveal reveal-2">
+                <h3>Resolução sugerida</h3>
                 <SuggestionMarkdown
                   source={result.suggestion}
                   onCite={peek}
@@ -925,7 +1052,7 @@ function CopilotFab({
           Não consegui responder agora
         </div>
         {errMsg}
-        <div style={{ marginTop: 10 }}>
+        <div className="imp-actions">
           <button className="btn btn-outline btn-sm" onClick={run}>
             <Icons.replay />
             Tentar de novo
