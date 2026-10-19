@@ -110,6 +110,7 @@ export default function RecurrencesPage() {
   const [promoted, setPromoted] = useState<Record<string, string>>({});
   const [declutter, setDeclutter] = useState(0);
   const mapRef = useRef<HTMLDivElement>(null);
+  const detailRef = useRef<HTMLDivElement>(null);
 
   // Fly points from scattered to grouped once the data is in.
   useEffect(() => {
@@ -220,6 +221,17 @@ export default function RecurrencesPage() {
     return () => clearTimeout(t);
   }, [grouped]);
 
+  // When the layout is stacked (map above the list), a group picked on the map
+  // opens its detail far below; bring it into view so the tap has a visible result.
+  useEffect(() => {
+    if (sel == null) return;
+    if (!window.matchMedia("(max-width: 1100px)").matches) return;
+    detailRef.current?.scrollIntoView({
+      behavior: reduced ? "auto" : "smooth",
+      block: "nearest",
+    });
+  }, [sel, reduced]);
+
   const selIncidents = useMemo(() => {
     if (sel == null || !view) return [];
     const target = sel === "outlier" ? -1 : sel;
@@ -262,7 +274,7 @@ export default function RecurrencesPage() {
         }}
       >
         Cada ponto é um incidente, posicionado por similaridade e agrupado por causa raiz.
-        Os rótulos de cada grupo são gerados pela IA. Clique num grupo para inspecionar
+        Os rótulos de cada grupo são gerados pela IA. Selecione um grupo para inspecionar
         seus incidentes e promovê-lo a <b>problema</b>.
       </p>
 
@@ -270,10 +282,8 @@ export default function RecurrencesPage() {
         <div className="card rmap-card">
           <div className="rmap-toolbar">
             <span className="rt-title">Mapa de incidentes</span>
-            <span style={{ color: "var(--muted)", fontSize: 12.5 }}>
-              Agrupado por causa raiz
-            </span>
-            <div style={{ flex: 1 }} />
+            <span className="rt-sub">Agrupado por causa raiz</span>
+            <div className="rt-grow" />
             {sel != null ? (
               <button className="btn btn-ghost btn-sm" onClick={() => setSel(null)}>
                 Ver todos
@@ -387,7 +397,7 @@ export default function RecurrencesPage() {
           </div>
 
           {sel != null && view ? (
-            <div className="cluster-detail">
+            <div className="cluster-detail" ref={detailRef}>
               {(() => {
                 const cluster =
                   sel === "outlier" ? null : view.clusters.find((c) => c.id === sel);
