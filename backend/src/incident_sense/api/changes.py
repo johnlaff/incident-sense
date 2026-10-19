@@ -62,7 +62,9 @@ def get_judge_factory() -> JudgeFactory:
             detail="API key is not configured. Set OPENROUTER_API_KEY to evaluate Changes.",
         )
     client = make_chat_client(settings)
-    return lambda model: OpenAILLMClient(client, model)
+    # The verdict must be in the visible answer: with reasoning on, a long Change
+    # spends the whole output budget on hidden reasoning and returns no JSON.
+    return lambda model: OpenAILLMClient(client, model, reasoning=False)
 
 
 RepoDep = Annotated[ChangeRepository, Depends(get_change_repository)]
