@@ -300,15 +300,17 @@ export default function RecurrencesPage() {
                       key={p.id}
                       aria-hidden="true"
                       className={`rmap-point incident${dim ? " dim" : ""}`}
-                      style={{
-                        left: `${(grouped ? p.tx : p.sx) * 100}%`,
-                        top: `${(grouped ? p.ty : p.sy) * 100}%`,
-                        width: size,
-                        height: size,
-                        background: p.color,
-                        color: p.color,
-                        transitionDelay: grouped ? `${(idx % 9) * 20}ms` : "0ms",
-                      }}
+                      style={
+                        {
+                          "--x": grouped ? p.tx : p.sx,
+                          "--y": grouped ? p.ty : p.sy,
+                          width: size,
+                          height: size,
+                          background: p.color,
+                          color: p.color,
+                          transitionDelay: grouped ? `${(idx % 9) * 20}ms` : "0ms",
+                        } as React.CSSProperties
+                      }
                       title={`${p.id} · ${p.short}`}
                       onMouseEnter={() => setHover(key)}
                       onMouseLeave={() => setHover((h) => (h === key ? null : h))}

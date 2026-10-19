@@ -556,21 +556,13 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .pipe:not(.pipe-outline) .pipe-step {
-    animation: pipe-in 320ms var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 45ms);
-  }
-  .pipe-outline.is-running .pipe-step {
-    animation: pipe-pulse 1.4s var(--ease) infinite;
+    animation: pipe-in var(--dur-move) var(--ease-out) both;
+    animation-delay: calc(min(var(--i, 0), 8) * var(--stagger));
   }
 }
 @keyframes pipe-in {
   from {
     opacity: 0;
     transform: translateY(4px);
-  }
-}
-@keyframes pipe-pulse {
-  50% {
-    opacity: 0.55;
   }
 }

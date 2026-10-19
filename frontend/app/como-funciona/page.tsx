@@ -112,9 +112,15 @@ function Rag() {
       <div className="rag">
         <div className="rag-inner">
           <div className="rag-track" style={{ left: `${INSET}%`, right: `${INSET}%` }}>
-            <div className="rag-track-fill" style={{ width: `${fillPct}%` }} />
+            <div
+              className="rag-track-fill"
+              style={{ "--p": fillPct / 100 } as React.CSSProperties}
+            />
             {showComet ? (
-              <div className="rag-comet" style={{ left: `${fillPct}%` }} />
+              <div
+                className="rag-comet"
+                style={{ "--p": fillPct / 100 } as React.CSSProperties}
+              />
             ) : null}
           </div>
           <div className="rag-stages">
@@ -189,6 +195,9 @@ function rand(seed: number): number {
 // engines, which would otherwise trip a hydration mismatch).
 function pctOf(v: number): string {
   return `${(v * 100).toFixed(2)}%`;
+}
+function fix(v: number): string {
+  return v.toFixed(4);
 }
 
 interface MiniPoint {
@@ -326,15 +335,16 @@ function Clustering() {
               <span
                 key={p.id}
                 className="mc-point"
-                style={{
-                  left: pctOf(grouped ? p.tx : p.sx),
-                  top: pctOf(grouped ? p.ty : p.sy),
-                  width: p.out ? 9 : 12,
-                  height: p.out ? 9 : 12,
-                  background: color,
-                  opacity: p.out && separated ? 0.4 : 1,
-                  transitionDelay: `${(p.id % 6) * 34}ms`,
-                }}
+                style={
+                  {
+                    "--x": fix(grouped ? p.tx : p.sx),
+                    "--y": fix(grouped ? p.ty : p.sy),
+                    "--s": p.out ? 0.75 : 1,
+                    background: color,
+                    opacity: p.out && separated ? 0.4 : 1,
+                    transitionDelay: `${(p.id % 6) * 34}ms`,
+                  } as React.CSSProperties
+                }
               />
             );
           })}
