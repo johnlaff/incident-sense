@@ -164,3 +164,85 @@ def test_suggest_over_quota_returns_429_without_calling_the_model(
     refused = client.post("/api/suggest", json=body, headers=headers)
     assert refused.status_code == 429
     assert len(calls) == made
+
+
+def test_suggest_publishes_on_the_incident_work_notes(client: TestClient) -> None:
+    """End to end: the suggestion shows up on GET /api/incidents/{number}."""
+    from incident_sense.api.incidents import get_incident_repository, get_work_notes
+    from incident_sense.data.repository import IncidentRepository
+    from incident_sense.data.work_notes import WorkNotesStore
+    from incident_sense.models import Incident
+
+    incident = Incident.model_validate(
+        {
+            "number": "INC0099999",
+            "short_description": "Pix sem comprovante",
+            "description": "Valor debitado, comprovante não gerado.",
+            "category": "Pagamentos",
+            "subcategory": "Pix",
+            "cmdb_ci": "PIX-Core",
+            "assignment_group": "Service-Desk-N1",
+            "priority": 2,
+            "impact": 1,
+            "urgency": 1,
+            "state": "New",
+            "opened_at": "2026-06-15T09:00:00",
+            "tags": ["pix"],
+        }
+    )
+    repo = IncidentRepository([incident])
+    store = WorkNotesStore()
+
+    class _LLM:
+        def complete(self, system: str, user: str, **_: object) -> str:
+            if "consulta de busca" in system:
+                return '{"resumo": "Pix sem comprovante", "tags": ["pix"]}'
+            if "REALMENTE relevantes" in system:
+                return '[{"number": "INC0000001", "relevant": true, "reason": "mesma causa"}]'
+            if "INCIDENTE de verdade" in system:
+                return '{"classification": "PROCEDENTE", "justification": "falha"}'
+            return "Reprocesse a conciliação [INC0000001] [INC0000404]."
+
+    class _Retriever:
+        def search(self, vector: list[float], *, top_k: int, query_filter: object = None):  # type: ignore[no-untyped-def]
+            hit = RetrievedHit(
+                number="INC0000001",
+                score=0.93,
+                payload={"short_description": "Pix pendente", "resolution_notes": "ok"},
+            )
+            return [hit]
+
+    client.app.dependency_overrides[get_rag_deps] = lambda: RagDeps(
+        llm=_LLM(),
+        embeddings=_FakeEmbeddings(),
+        retriever=_Retriever(),
+        incidents=repo,
+        notes=store,
+    )
+    client.app.dependency_overrides[get_incident_repository] = lambda: repo
+    client.app.dependency_overrides[get_work_notes] = lambda: store
+
+    body = client.post(
+        "/api/suggest",
+        json={
+            "number": "INC0099999",
+            "short_description": "Pix sem comprovante",
+            "description": "Valor debitado.",
+        },
+    ).json()
+    assert [s["id"] for s in body["steps"]] == [
+        "carregar",
+        "resumir",
+        "embedding",
+        "recuperar",
+        "contexto",
+        "decidir",
+        "sugerir",
+        "publicar",
+    ]
+    assert body["citations"]["flagged"] == [{"id": "INC0000404", "action": "removida"}]
+    assert body["publication"]["published"] is True
+
+    detail = client.get("/api/incidents/INC0099999").json()
+    (note,) = detail["published_notes"]
+    assert note["text"] == body["suggestion"] == "Reprocesse a conciliação [INC0000001]."

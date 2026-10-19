@@ -9,6 +9,11 @@ This module is used two ways:
 * ``scripts/ingest.py`` calls :func:`ingest` (``make seed``).
 * the API's startup hook calls :func:`ensure_seeded`, which is idempotent and
   tolerant of Qdrant still booting.
+
+The synthetic Problems go to their own collection (:func:`ingest_problems`).
+Their vectors come from ``problem_embeddings.npz`` when it exists; otherwise
+each Problem is placed at the normalized mean of its linked incidents' vectors,
+a deterministic fallback that needs no API key.
 """
 
 from __future__ import annotations
@@ -18,14 +23,16 @@ import uuid
 from functools import lru_cache
 from typing import Any
 
+import numpy as np
+import numpy.typing as npt
 from qdrant_client import QdrantClient
 from qdrant_client import models as qm
 
 from incident_sense.config import Settings, get_settings
-from incident_sense.data.loader import load_incidents, resolved_incidents
+from incident_sense.data.loader import load_incidents, load_problems, resolved_incidents
 from incident_sense.data.precomputed import load_embeddings
 from incident_sense.logging import get_logger
-from incident_sense.models import Incident
+from incident_sense.models import Incident, Problem
 
 log = get_logger(__name__)
 
@@ -73,6 +80,7 @@ def _payload(incident: Incident) -> dict[str, Any]:
         "subcategory": incident.subcategory,
         "cmdb_ci": incident.cmdb_ci,
         "assignment_group": incident.assignment_group,
+        "empresa": incident.empresa,
         "priority": int(incident.priority),
         "state": str(incident.state),
         "resolution_notes": incident.resolution_notes,
@@ -81,15 +89,37 @@ def _payload(incident: Incident) -> dict[str, Any]:
     }
 
 
-def ensure_collection(client: QdrantClient, settings: Settings, *, recreate: bool) -> None:
-    """Create the collection (sized to the embedding dim, cosine), optionally fresh."""
-    exists = client.collection_exists(settings.qdrant_collection)
+def _problem_payload(problem: Problem) -> dict[str, Any]:
+    """The metadata stored alongside each Problem vector."""
+    return {
+        "number": problem.number,
+        "short_description": problem.short_description,
+        "description": problem.description,
+        "root_cause": problem.root_cause,
+        "workaround": problem.workaround,
+        "permanent_fix": problem.permanent_fix,
+        "category": problem.category,
+        "subcategory": problem.subcategory,
+        "cmdb_ci": problem.cmdb_ci,
+        "empresa": problem.empresa,
+        "state": problem.state,
+        "tags": problem.tags,
+        "linked_incidents": problem.linked_incidents,
+    }
+
+
+def ensure_collection(
+    client: QdrantClient, settings: Settings, *, recreate: bool, name: str | None = None
+) -> None:
+    """Create a collection (sized to the embedding dim, cosine), optionally fresh."""
+    collection = name or settings.qdrant_collection
+    exists = client.collection_exists(collection)
     if exists and recreate:
-        client.delete_collection(settings.qdrant_collection)
+        client.delete_collection(collection)
         exists = False
     if not exists:
         client.create_collection(
-            settings.qdrant_collection,
+            collection,
             vectors_config=qm.VectorParams(
                 size=settings.embedding_dim,
                 distance=qm.Distance.COSINE,
@@ -97,11 +127,12 @@ def ensure_collection(client: QdrantClient, settings: Settings, *, recreate: boo
         )
 
 
-def collection_count(client: QdrantClient, settings: Settings) -> int:
-    """Number of points in the collection (0 if it does not exist)."""
-    if not client.collection_exists(settings.qdrant_collection):
+def collection_count(client: QdrantClient, settings: Settings, name: str | None = None) -> int:
+    """Number of points in a collection (0 if it does not exist)."""
+    collection = name or settings.qdrant_collection
+    if not client.collection_exists(collection):
         return 0
-    return int(client.count(settings.qdrant_collection).count)
+    return int(client.count(collection).count)
 
 
 def ingest(
@@ -115,7 +146,13 @@ def ingest(
     client = client or make_qdrant_client(settings)
 
     incidents = resolved_incidents(load_incidents())
-    ids, vectors = load_embeddings(settings.embeddings_path)
+    # Prefer the summary-based vectors (scripts/reembed.py) when they exist.
+    source = (
+        settings.summary_embeddings_path
+        if settings.summary_embeddings_path.exists()
+        else settings.embeddings_path
+    )
+    ids, vectors = load_embeddings(source)
     vector_by_number = {number: vectors[index] for index, number in enumerate(ids)}
 
     ensure_collection(client, settings, recreate=recreate)
@@ -136,6 +173,68 @@ def ingest(
     return len(points)
 
 
+def problem_vectors(
+    problems: list[Problem], settings: Settings
+) -> dict[str, npt.NDArray[np.float32]]:
+    """One vector per Problem: real embeddings if committed, else the linked mean.
+
+    The fallback is the normalized mean of the linked incidents' committed
+    vectors: deterministic, offline, and close to every incident in the group.
+    """
+    if settings.problem_embeddings_path.exists():
+        ids, vectors = load_embeddings(settings.problem_embeddings_path)
+        return {number: vectors[index] for index, number in enumerate(ids)}
+    ids, vectors = load_embeddings(settings.embeddings_path)
+    index = {number: position for position, number in enumerate(ids)}
+    out: dict[str, npt.NDArray[np.float32]] = {}
+    for problem in problems:
+        rows = [index[n] for n in problem.linked_incidents if n in index]
+        if not rows:
+            continue
+        mean = vectors[rows].mean(axis=0)
+        norm = float(np.linalg.norm(mean))
+        out[problem.number] = (mean / norm if norm else mean).astype(np.float32)
+    return out
+
+
+def ingest_problems(
+    settings: Settings | None = None,
+    *,
+    client: QdrantClient | None = None,
+    recreate: bool = True,
+) -> int:
+    """Index the synthetic Problems in their own collection; return how many."""
+    settings = settings or get_settings()
+    client = client or make_qdrant_client(settings)
+    problems = load_problems(settings.problems_path)
+    vectors = problem_vectors(problems, settings)
+    name = settings.qdrant_problems_collection
+    ensure_collection(client, settings, recreate=recreate, name=name)
+    points = [
+        qm.PointStruct(
+            id=point_id(problem.number),
+            vector=vectors[problem.number].tolist(),
+            payload=_problem_payload(problem),
+        )
+        for problem in problems
+        if problem.number in vectors
+    ]
+    if points:
+        client.upsert(name, points=points)
+    log.info("ingested", collection=name, points=len(points))
+    return len(points)
+
+
+def ensure_problems_seeded(settings: Settings | None = None) -> int:
+    """Seed the Problems collection once if empty; return its size."""
+    settings = settings or get_settings()
+    client = make_qdrant_client(settings)
+    existing = collection_count(client, settings, settings.qdrant_problems_collection)
+    if existing > 0:
+        return existing
+    return ingest_problems(settings, client=client, recreate=True)
+
+
 def ensure_seeded(
     settings: Settings | None = None, *, retries: int = 30, delay: float = 2.0
 ) -> int:
@@ -152,8 +251,10 @@ def ensure_seeded(
             existing = collection_count(client, settings)
             if existing > 0:
                 log.info("already_seeded", points=existing)
-                return existing
-            return ingest(settings, client=client, recreate=True)
+            else:
+                existing = ingest(settings, client=client, recreate=True)
+            ensure_problems_seeded(settings)
+            return existing
         except Exception as exc:  # noqa: BLE001 - Qdrant may not be reachable yet
             last_error = exc
             log.warning("qdrant_not_ready", attempt=attempt + 1, error=str(exc))

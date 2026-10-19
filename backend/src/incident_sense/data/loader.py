@@ -13,10 +13,11 @@ from pathlib import Path
 from pydantic import TypeAdapter
 
 from incident_sense.config import get_settings
-from incident_sense.models import Incident
+from incident_sense.models import Incident, Problem
 
 # A reusable validator for "a list of incidents" (faster than per-item parsing).
 _INCIDENTS_ADAPTER = TypeAdapter(list[Incident])
+_PROBLEMS_ADAPTER = TypeAdapter(list[Problem])
 
 
 def load_incidents(path: Path | None = None) -> list[Incident]:
@@ -41,3 +42,16 @@ def load_incidents(path: Path | None = None) -> list[Incident]:
 def resolved_incidents(incidents: list[Incident]) -> list[Incident]:
     """Return only incidents that carry a usable resolution (the RAG knowledge)."""
     return [incident for incident in incidents if incident.is_resolved]
+
+
+def load_problems(path: Path | None = None) -> list[Problem]:
+    """Read and validate the committed synthetic Problem records.
+
+    Returns an empty list when the file is missing, so the incident flow keeps
+    working without a Problem base.
+    """
+    problems_path = path or get_settings().problems_path
+    if not problems_path.exists():
+        return []
+    raw = json.loads(problems_path.read_text(encoding="utf-8"))
+    return _PROBLEMS_ADAPTER.validate_python(raw)

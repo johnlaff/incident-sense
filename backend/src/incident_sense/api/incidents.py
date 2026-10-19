@@ -12,6 +12,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from incident_sense.data.repository import IncidentRepository, StateGroup, build_repository
+from incident_sense.data.work_notes import WorkNotesStore, get_work_notes_store
 from incident_sense.models.incident_list import IncidentDetail, IncidentListResponse
 
 router = APIRouter(tags=["incidents"])
@@ -27,7 +28,13 @@ def get_incident_repository() -> IncidentRepository:
     return _cached_repository()
 
 
+def get_work_notes() -> WorkNotesStore:
+    """Provide the process-wide work notes store; overridable in tests."""
+    return get_work_notes_store()
+
+
 RepoDep = Annotated[IncidentRepository, Depends(get_incident_repository)]
+NotesDep = Annotated[WorkNotesStore, Depends(get_work_notes)]
 
 
 @router.get("/incidents", response_model=IncidentListResponse)
@@ -44,12 +51,14 @@ def list_incidents(
 
 
 @router.get("/incidents/{number}", response_model=IncidentDetail)
-def get_incident(number: str, repo: RepoDep) -> IncidentDetail:
-    """Return a single incident's full record (with its cluster), or 404."""
+def get_incident(number: str, repo: RepoDep, notes: NotesDep) -> IncidentDetail:
+    """Return an incident's full record (cluster and published work notes), or 404."""
     incident = repo.get(number)
     if incident is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Incidente {number} não encontrado.",
         )
-    return IncidentDetail.from_incident(incident, repo.get_cluster(number))
+    detail = IncidentDetail.from_incident(incident, repo.get_cluster(number))
+    detail.published_notes = notes.list(number)
+    return detail

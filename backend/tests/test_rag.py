@@ -75,6 +75,17 @@ def _deps(llm: FakeLLM, hits: list[RetrievedHit]) -> RagDeps:
     return RagDeps(llm=llm, embeddings=FakeEmbeddings(), retriever=FakeRetriever(hits))
 
 
+def _incident() -> pipeline.LoadedIncident:
+    return pipeline.LoadedIncident(
+        number=None,
+        short_description="Pix sem comprovante",
+        description="Cliente fez Pix, valor debitado, sem comprovante.",
+        category="Pagamentos",
+        subcategory="Pix",
+        empresa="Banco Meridiano",
+    )
+
+
 def _request() -> SuggestRequest:
     return SuggestRequest(
         short_description="Pix sem comprovante",
@@ -83,19 +94,6 @@ def _request() -> SuggestRequest:
 
 
 # --- step-level tests --------------------------------------------------------
-def test_build_prefilter_none_without_hints() -> None:
-    assert pipeline.build_prefilter(_request()) is None
-
-
-def test_build_prefilter_uses_category_and_ci() -> None:
-    request = SuggestRequest(
-        short_description="x", description="y", category="Pagamentos", cmdb_ci="PIX-Core"
-    )
-    query_filter = pipeline.build_prefilter(request)
-    assert query_filter is not None
-    assert len(query_filter.should) == 2
-
-
 def test_retrieve_drops_below_similarity_floor() -> None:
     deps = _deps(FakeLLM(), [_hit("INC1", 0.9), _hit("INC2", 0.2)])
     kept = pipeline.retrieve(deps, [0.0], top_k=5, min_similarity=0.4, query_filter=None)
@@ -108,7 +106,10 @@ def test_post_filter_annotates_survival_and_reason() -> None:
         ' {"number": "INC2", "relevant": false, "reason": "so palavras"}]'
     )
     deps = _deps(FakeLLM(verdicts=verdicts), [])
-    nodes = pipeline.post_filter(deps, _request(), [_hit("INC1", 0.9), _hit("INC2", 0.8)])
+    nodes, layer = pipeline.post_filter(
+        deps, "Pix sem comprovante", [_hit("INC1", 0.9), _hit("INC2", 0.8)]
+    )
+    assert layer.status == "ok"
     survival = {n.node.metadata["number"]: n.node.metadata["survived"] for n in nodes}
     assert survival == {"INC1": True, "INC2": False}
     # Surviving candidates come first.
@@ -119,15 +120,15 @@ def test_classify_follows_llm_verdict_not_retrieval() -> None:
     # The verdict is about the ticket itself, independent of retrieval: a real
     # incident with no surviving candidate is still PROCEDENTE...
     deps = _deps(FakeLLM(classification="PROCEDENTE"), [])
-    assert pipeline.classify(deps, _request(), []) is Classification.PROCEDENTE
+    assert pipeline.classify(deps, _incident(), []) is Classification.PROCEDENTE
     # ...and a non-incident is IMPROCEDENTE even if candidates survived.
     deps = _deps(FakeLLM(classification="IMPROCEDENTE"), [])
-    surviving = pipeline.post_filter(
+    surviving, _ = pipeline.post_filter(
         _deps(FakeLLM(verdicts='[{"number": "INC1", "relevant": true, "reason": "x"}]'), []),
-        _request(),
+        "Pix sem comprovante",
         [_hit("INC1", 0.9)],
     )
-    assert pipeline.classify(deps, _request(), surviving) is Classification.IMPROCEDENTE
+    assert pipeline.classify(deps, _incident(), surviving) is Classification.IMPROCEDENTE
 
 
 def test_strip_redundant_title_drops_leading_heading() -> None:
@@ -151,7 +152,7 @@ def test_run_suggestion_procedente() -> None:
     )
     deps = _deps(
         FakeLLM(verdicts=verdicts, classification="PROCEDENTE"),
-        [_hit("INC1", 0.88), _hit("INC2", 0.61)],
+        [_hit("INC1", 0.88), _hit("INC2", 0.82)],
     )
     response = pipeline.run_suggestion(_request(), deps, Settings())
 
@@ -163,6 +164,7 @@ def test_run_suggestion_procedente() -> None:
     assert by_number["INC1"].survived_postfilter is True
     assert by_number["INC1"].similarity == 0.88
     assert by_number["INC2"].survived_postfilter is False
+    assert by_number["INC2"].similarity == 0.82
     assert by_number["INC2"].postfilter_reason == "irrelevante"
 
 
@@ -170,7 +172,7 @@ def test_run_suggestion_improcedente_self_service() -> None:
     # A non-incident (e.g. "esqueci minha senha") is IMPROCEDENTE even when a
     # vocabulary-similar case is retrieved and survives the post-filter.
     verdicts = '[{"number": "INC1", "relevant": true, "reason": "parecido"}]'
-    deps = _deps(FakeLLM(verdicts=verdicts, classification="IMPROCEDENTE"), [_hit("INC1", 0.7)])
+    deps = _deps(FakeLLM(verdicts=verdicts, classification="IMPROCEDENTE"), [_hit("INC1", 0.85)])
     response = pipeline.run_suggestion(_request(), deps, Settings())
 
     assert response.classification is Classification.IMPROCEDENTE
@@ -182,7 +184,7 @@ def test_run_suggestion_procedente_without_base() -> None:
     # A real incident whose candidates are all dropped by the post-filter stays
     # PROCEDENTE but carries no grounded suggestion (the "sem base ainda" path).
     verdicts = '[{"number": "INC1", "relevant": false, "reason": "nada a ver"}]'
-    deps = _deps(FakeLLM(verdicts=verdicts, classification="PROCEDENTE"), [_hit("INC1", 0.7)])
+    deps = _deps(FakeLLM(verdicts=verdicts, classification="PROCEDENTE"), [_hit("INC1", 0.85)])
     response = pipeline.run_suggestion(_request(), deps, Settings())
 
     assert response.classification is Classification.PROCEDENTE

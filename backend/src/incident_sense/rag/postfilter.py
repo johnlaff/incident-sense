@@ -6,6 +6,11 @@ with it. After retrieval we therefore ask the LLM, in a single call, whether
 each candidate is *actually* relevant. Each node is annotated with a
 ``survived`` flag and a short ``postfilter_reason`` so the API can show the
 reasoning instead of silently dropping candidates.
+
+If the post-filter fails (the provider errors, or the answer has no usable
+verdict), the original list comes back untouched and ``status`` says
+``fallback``: degrading precision is acceptable, leaving the incident without an
+answer is not.
 """
 
 from __future__ import annotations
@@ -14,8 +19,13 @@ from llama_index.core.bridge.pydantic import PrivateAttr
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore, QueryBundle
 
+from incident_sense.logging import get_logger
 from incident_sense.providers import extract_json
 from incident_sense.rag.clients import LLMClient
+
+log = get_logger(__name__)
+
+FALLBACK_REASON = "pós-filtro indisponível: lista original mantida"
 
 _SYSTEM = (
     "Você é um analista de operações de TI de um banco. Dado um NOVO incidente "
@@ -41,10 +51,22 @@ class LLMPostFilter(BaseNodePostprocessor):
     # The LLM is injected (and thus mockable); PrivateAttr keeps it off the
     # serialized pydantic model that BaseNodePostprocessor is built on.
     _llm: LLMClient = PrivateAttr()
+    _status: str = PrivateAttr(default="ok")
+    _fallback_reason: str | None = PrivateAttr(default=None)
 
     def __init__(self, llm: LLMClient) -> None:
         super().__init__()
         self._llm = llm
+
+    @property
+    def status(self) -> str:
+        """``ok`` when the LLM judged the list, ``fallback`` when it was kept as is."""
+        return self._status
+
+    @property
+    def fallback_reason(self) -> str | None:
+        """Why the original list was kept, when ``status`` is ``fallback``."""
+        return self._fallback_reason
 
     @classmethod
     def class_name(cls) -> str:
@@ -57,7 +79,21 @@ class LLMPostFilter(BaseNodePostprocessor):
         if not nodes:
             return nodes
         new_incident = query_bundle.query_str if query_bundle else ""
-        verdicts = self._judge(new_incident, nodes)
+        try:
+            verdicts = self._judge(new_incident, nodes)
+        except Exception as exc:  # noqa: BLE001 - any provider failure degrades, never fails.
+            log.warning("postfilter_failed", error=str(exc), error_type=type(exc).__name__)
+            verdicts = {}
+            self._fallback_reason = f"erro do provedor de IA ({type(exc).__name__})"
+        else:
+            if not verdicts:
+                self._fallback_reason = "resposta sem avaliações válidas"
+        if self._fallback_reason is not None:
+            self._status = "fallback"
+            for node in nodes:
+                node.node.metadata["survived"] = True
+                node.node.metadata["postfilter_reason"] = FALLBACK_REASON
+            return nodes
         for node in nodes:
             number = str(node.node.metadata.get("number", ""))
             relevant, reason = verdicts.get(number, (True, "não avaliado"))
