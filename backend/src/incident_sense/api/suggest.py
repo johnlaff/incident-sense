@@ -55,7 +55,9 @@ def suggest(
     # requested). Unknown ids resolve to the default, leaving deps untouched.
     chosen = resolve_chat_model(request.model, settings)
     if chosen != settings.llm_model:
-        deps = replace(deps, llm=OpenAILLMClient(make_chat_client(settings), chosen))
+        deps = replace(
+            deps, llm=OpenAILLMClient(make_chat_client(settings), chosen, reasoning=False)
+        )
     try:
         return run_suggestion(request, deps, settings, model=chosen)
     except HTTPException:
