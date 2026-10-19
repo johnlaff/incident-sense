@@ -770,17 +770,18 @@ table.list {
 .section {
   padding: 18px 20px;
 }
+/* Section headings on the record: real headings in sentence case, one step
+   above body text, never an uppercase micro-label. */
 .section :is(h2, h3) {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 12px;
+  font-size: 15px;
+  color: var(--ink);
+  margin-bottom: 10px;
 }
 .fields {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 14px 28px;
+  margin: 0;
 }
 .field {
   display: flex;
@@ -790,14 +791,22 @@ table.list {
 .field.full {
   grid-column: 1 / -1;
 }
-.field label {
-  font-size: 12px;
+.field label,
+.field dt,
+.field .field-label {
+  font-size: 12.5px;
   color: var(--muted);
   font-weight: 500;
+}
+.field dd {
+  margin: 0;
 }
 .field .val {
   color: var(--ink);
   font-weight: 500;
+}
+.field .val-id {
+  font-size: 13px;
 }
 .field .val.long {
   font-weight: 400;
@@ -1000,11 +1009,10 @@ table.list {
   color: var(--ink-body);
   line-height: 1.6;
 }
-.suggestion h4 {
+.suggestion :is(h3, h4) {
   margin: 0 0 6px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--primary-ink);
 }
 /* Markdown rendered by <SuggestionMarkdown> (react-markdown). */
@@ -1581,6 +1589,8 @@ body {
 
 /* activity stream */
 .activity {
+  list-style: none;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -1692,29 +1702,121 @@ body {
   font-size: 13.5px;
 }
 
-/* resolution notes (assist target) */
-.resnotes {
-  margin-top: 14px;
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-sm);
-  padding: 12px 13px;
-  min-height: 64px;
+/* ----- Record body: prose on the left, classification aside -----
+   Phone and tablet stack description, resolution, classification and work
+   notes. From 1101px the classification moves into a side column so the
+   prose keeps a readable measure and the width is put to work. */
+.rec-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.rec-body > .section + .section {
+  border-top: 1px solid var(--border);
+}
+.rec-prose {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.65;
   color: var(--ink-body);
-  font-size: 13px;
-  line-height: 1.6;
-  background: var(--surface);
-  transition:
-    border-color 0.2s,
-    background 0.2s;
+  white-space: pre-line;
+  overflow-wrap: break-word;
 }
-.resnotes.filled {
-  border-style: solid;
-  border-color: var(--primary);
+/* The Aurora draft is the only tinted block: it is not saved yet. */
+.resnotes-draft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
   background: var(--primary-tint);
-  animation: insert-flash 0.6s ease;
+  animation: insert-flash 0.6s var(--ease-out);
 }
-.resnotes .placeholder {
+.draft-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-ink);
+}
+.resnotes-draft .btn-ghost {
+  margin-left: -8px;
+}
+.resnotes-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.resnotes-empty p {
+  margin: 0;
+  max-width: 62ch;
   color: var(--muted);
+  line-height: 1.6;
+}
+.rec-close {
+  margin-top: 16px;
+}
+.rec-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--primary-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--primary-ink) 35%, transparent);
+  text-underline-offset: 3px;
+}
+.rec-link:hover {
+  text-decoration-color: currentColor;
+}
+.rec-link svg {
+  flex: none;
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.tag-list .tag {
+  margin-right: 0;
+}
+.record-num {
+  font-size: 13px;
+  color: var(--ink-body);
+}
+.rel-row .svc {
+  font-size: 12px;
+  color: var(--muted);
+}
+.rel-empty {
+  margin: 0;
+  color: var(--muted);
+}
+.record-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.record-skel .sk-num {
+  width: 180px;
+}
+.record-skel .sk-title {
+  width: min(520px, 80%);
+  height: 20px;
+}
+.record-skel .sk-meta {
+  width: min(320px, 60%);
+}
+.record-skel .sk-line {
+  width: 100%;
+}
+.record-skel .sk-short {
+  width: 55%;
 }
 @keyframes insert-flash {
   0% {
@@ -1801,6 +1903,18 @@ body {
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 6px;
+}
+.reveal-1 {
+  animation-delay: 120ms;
+}
+.reveal-2 {
+  animation-delay: 140ms;
+}
+.reveal-3 {
+  animation-delay: 220ms;
+}
+.imp-actions {
+  margin-top: 10px;
 }
 .improcedente .imp-head svg {
   width: 16px;
@@ -1977,8 +2091,9 @@ body {
 /* ===================================================================== *
  *  Floating copilot — bubble (FAB) + chat panel
  * ===================================================================== */
+/* The record uses the shared page container; the bottom pad keeps the last
+   line clear of the Aurora button. */
 .detail-single {
-  max-width: 960px;
   padding-bottom: 84px;
 }
 .cop-fab {
@@ -1996,22 +2111,23 @@ body {
   place-items: center;
   cursor: pointer;
   box-shadow:
-    0 10px 26px oklch(0.48 0.16 285 / 0.42),
-    0 0 0 4px color-mix(in oklab, var(--primary) 13%, transparent);
+    0 2px 4px oklch(0.255 0.05 285 / 0.16),
+    0 8px 22px oklch(0.255 0.08 285 / 0.24);
   transition:
     transform 0.2s var(--ease),
-    box-shadow 0.3s var(--ease),
+    box-shadow 0.2s var(--ease),
+    background 0.16s var(--ease),
     opacity 0.18s var(--ease);
 }
 .cop-fab:hover {
-  transform: translateY(-3px) scale(1.05);
-  animation: none;
+  background: var(--primary-hover);
+  transform: translateY(-2px);
   box-shadow:
-    0 14px 32px oklch(0.48 0.16 285 / 0.5),
-    0 0 0 5px color-mix(in oklab, var(--primary) 16%, transparent);
+    0 3px 6px oklch(0.255 0.05 285 / 0.18),
+    0 12px 28px oklch(0.255 0.08 285 / 0.28);
 }
 .cop-fab:active {
-  transform: translateY(-1px) scale(1);
+  transform: translateY(0);
 }
 .cop-fab svg {
   width: 27px;
@@ -2021,24 +2137,6 @@ body {
   opacity: 0;
   pointer-events: none;
   transform: scale(0.7);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .cop-fab {
-    animation: fab-breathe 3.4s ease-in-out infinite;
-  }
-}
-@keyframes fab-breathe {
-  0%,
-  100% {
-    box-shadow:
-      0 10px 26px oklch(0.48 0.16 285 / 0.42),
-      0 0 0 4px color-mix(in oklab, var(--primary) 13%, transparent);
-  }
-  50% {
-    box-shadow:
-      0 12px 30px oklch(0.48 0.16 285 / 0.46),
-      0 0 0 11px color-mix(in oklab, var(--primary) 0%, transparent);
-  }
 }
 .cop-panel {
   position: fixed;
@@ -2167,10 +2265,8 @@ body {
   animation: panel-in 0.14s var(--ease, ease);
 }
 .mm-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--muted);
   padding: 8px 9px 5px;
 }
@@ -2293,8 +2389,8 @@ body {
   margin-top: 10px;
   padding-top: 9px;
   border-top: 1px solid var(--border);
-  font-size: 11.5px;
-  color: var(--muted);
+  font-size: 12px;
+  color: var(--ink-body);
   line-height: 1.5;
 }
 
@@ -2441,8 +2537,13 @@ body {
   outline: none;
   transition: border-color 0.15s;
 }
+.cop-input input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
 .cop-input input:focus-visible {
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-tint);
   box-shadow: 0 0 0 3px var(--primary-tint);
 }
 .cop-input .send {
@@ -2894,7 +2995,7 @@ body {
   font-size: 12px;
   font-weight: 600;
   color: var(--ink);
-  background: color-mix(in oklab, var(--surface) 86%, transparent);
+  background: color-mix(in oklab, var(--surface) 94%, transparent);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 2px 9px;
@@ -2906,7 +3007,6 @@ body {
     transform 0.4s var(--ease-out),
     border-color 0.15s ease,
     box-shadow 0.15s ease;
-  backdrop-filter: blur(3px);
   animation: label-fade 0.34s var(--ease-out);
 }
 @keyframes label-fade {
@@ -3336,13 +3436,12 @@ body {
   font-size: 12px;
   font-weight: 600;
   color: var(--ink);
-  background: color-mix(in oklab, var(--surface) 80%, transparent);
+  background: color-mix(in oklab, var(--surface) 94%, transparent);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 2px 9px;
   white-space: nowrap;
   pointer-events: none;
-  backdrop-filter: blur(2px);
   transition: opacity 0.4s ease 0.45s;
 }
 .mc-label.hide {
@@ -3948,6 +4047,22 @@ body {
 .tabs::-webkit-scrollbar {
   display: none;
 }
+/* When the tab row scrolls sideways, fade the edge that hides more tabs. */
+.tabs.more-end {
+  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+}
+.tabs.more-start {
+  mask-image: linear-gradient(to right, transparent, #000 40px);
+}
+.tabs.more-start.more-end {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 40px,
+    #000 calc(100% - 40px),
+    transparent
+  );
+}
 .tab {
   flex: 1 0 auto;
   padding: 12px 10px;
@@ -4420,6 +4535,31 @@ body {
 
 /* ----- 1101px+: side-by-side recurrences, horizontal RAG rail ----- */
 @media (min-width: 1101px) {
+  .rec-body {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 30%);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "desc aside"
+      "res aside"
+      "work aside";
+  }
+  .rec-desc {
+    grid-area: desc;
+  }
+  .rec-res {
+    grid-area: res;
+  }
+  .rec-work {
+    grid-area: work;
+  }
+  .rec-body > .section.rec-aside {
+    grid-area: aside;
+    border-top: 0;
+    border-left: 1px solid var(--border);
+  }
+  .rec-aside .fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .rec-layout {
     grid-template-columns: minmax(0, 1fr) 300px;
   }
@@ -4508,6 +4648,20 @@ body {
     content: "";
     position: absolute;
     inset: -14px -10px;
+  }
+  /* Citation chips and the recurrence link keep their size but get a
+     taller hit area. */
+  .cite {
+    position: relative;
+  }
+  .cite::after {
+    content: "";
+    position: absolute;
+    inset: -12px -2px;
+  }
+  .rec-link {
+    padding: 11px 0;
+    margin: -11px 0;
   }
   .chip-clear {
     min-height: 44px;

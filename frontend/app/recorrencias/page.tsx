@@ -106,6 +106,12 @@ export default function RecurrencesPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLDivElement>(null);
 
+  // A link from an incident (?grupo=<id>) opens with that recurrence selected.
+  useEffect(() => {
+    const grupo = new URLSearchParams(window.location.search).get("grupo");
+    if (grupo && /^\d+$/.test(grupo)) setSel(Number(grupo));
+  }, []);
+
   // Fly points from scattered to grouped once the data is in.
   useEffect(() => {
     if (!view) return;

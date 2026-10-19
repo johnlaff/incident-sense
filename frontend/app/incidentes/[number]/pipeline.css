@@ -222,6 +222,7 @@
 .pipe-suggestion {
   margin-top: 10px;
   font-size: 14px;
+  border: 0;
 }
 .pipe-cites {
   margin-top: 10px;
@@ -301,19 +302,20 @@
 }
 
 /* ----- Step 4: the three layers ----- */
+/* The three layers read as one indented group, not a box inside the card. */
 .layers {
   list-style: none;
   margin: 12px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
 }
 .layer {
-  padding: 12px;
+  padding: 12px 0;
   min-width: 0;
+}
+.layer:first-child {
+  padding-top: 4px;
 }
 .layer + .layer {
   border-top: 1px solid var(--border);
@@ -365,13 +367,12 @@
 .rows {
   margin-top: 12px;
 }
+/* A divided list with rules above and below, not a box inside the card. */
 .rows-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
+  border-block: 1px solid var(--border);
 }
 .row {
   display: grid;
@@ -451,17 +452,18 @@
 }
 
 /* ----- Work notes on the record (step 7 lands here) ----- */
+/* Notes are a flat, divided list; a fresh note gets a short tinted flash. */
 .worknotes {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 .worknote {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  padding: 12px 13px;
+  padding: 4px 0 14px;
   scroll-margin-top: 80px;
+}
+.worknote + .worknote {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
 }
 .worknote-head {
   display: flex;
@@ -479,7 +481,8 @@
   gap: 5px;
 }
 .worknote .md {
-  font-size: 14px;
+  max-width: 62ch;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--ink-body);
 }
@@ -507,12 +510,15 @@
   color: var(--muted);
 }
 .worknote.is-fresh {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  margin-inline: -8px;
+  padding-inline: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-tint);
 }
 .worknotes-empty {
+  margin: 0;
+  max-width: 62ch;
   color: var(--muted);
-  font-size: 13px;
 }
 
 /* Copilot: jump to the full analysis */
