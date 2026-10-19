@@ -31,6 +31,8 @@ out/
 .eslintcache
 coverage/
 .vitest/
+.open-next/
+.wrangler/
 
 # ---- Editors / OS ----
 .idea/
