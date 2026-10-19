@@ -38,7 +38,10 @@ flowchart TD
    falhar, o título vira a consulta e a etapa aparece como "com contorno".
 3. **Embedding.** O texto vetorizado é o resumo concatenado com
    `Categoria`, `Subcategoria` e `Empresa`, com `openai/text-embedding-3-large`
-   (3072 dimensões) via OpenRouter. A resposta devolve esse texto em `query_text`.
+   (3072 dimensões) via OpenRouter. A resposta devolve esse texto em `query_text`,
+   o tamanho do vetor em `dims` e os 24 primeiros valores, arredondados em três
+   casas, em `embedding_preview` (para a tela mostrar o texto virando números sem
+   trafegar o vetor inteiro).
 4. **Recuperação em três camadas** (detalhes abaixo).
 5. **Contexto.** Incidentes e problemas que passaram pelas três camadas formam o
    contexto (`context_ids`).
