@@ -11,7 +11,7 @@ export interface AsyncState<T> {
   error: string | null;
 }
 
-function useAsync<T>(run: () => Promise<T>, deps: unknown[]): AsyncState<T> {
+export function useAsync<T>(run: () => Promise<T>, deps: unknown[]): AsyncState<T> {
   const [state, setState] = useState<AsyncState<T>>({
     data: null,
     loading: true,

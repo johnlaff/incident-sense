@@ -1,0 +1,79 @@
+# Grade de avaliação do preenchimento de Changes.
+#
+# Cada campo recebe nota de 0 a 10 contra os critérios abaixo, num prompt
+# próprio; a nota da Change é a média ponderada pelos pesos (soma 13,5).
+# Mudar o critério é um pull request, não um release: a versão entra na
+# resposta e na chave da trava de conteúdo, então uma grade nova reavalia tudo.
+
+version = "2026-10-19"
+eligibility_threshold = 8.0
+
+[[fields]]
+key = "implementation_plan"
+label = "Plano de implementação"
+weight = 2.5
+criteria = [
+  "passos numerados e executáveis, na ordem em que serão feitos",
+  "comandos, versões, artefatos ou parâmetros concretos",
+  "quem executa e em que janela",
+  "pontos de decisão (quando seguir, quando parar)",
+]
+
+[[fields]]
+key = "validation_plan"
+label = "Plano de validação durante e após a implantação"
+weight = 2.5
+criteria = [
+  "o que será verificado durante e depois da implantação",
+  "métricas ou sinais observáveis com valor esperado",
+  "critério objetivo para acionar o plano de retorno",
+  "por quanto tempo a mudança fica sob observação",
+]
+
+[[fields]]
+key = "objective"
+label = "Objetivo"
+weight = 2.0
+criteria = [
+  "o que muda e em qual serviço",
+  "o problema ou a necessidade que motiva a mudança",
+  "redigido de forma que quem não participou entenda",
+]
+
+[[fields]]
+key = "benefits"
+label = "Benefícios"
+weight = 2.0
+criteria = [
+  "ganho concreto para o negócio, o cliente ou a operação",
+  "quantificado quando possível (tempo, erro, custo, risco)",
+  "coerente com o objetivo declarado",
+]
+
+[[fields]]
+key = "test_justification"
+label = "Justificativa dos testes"
+weight = 2.0
+criteria = [
+  "quais testes foram feitos e em qual ambiente",
+  "resultado obtido, com evidência",
+  "por que esses testes cobrem o risco da mudança, ou por que algum não se aplica",
+]
+
+[[fields]]
+key = "short_description"
+label = "Descrição resumida"
+weight = 1.5
+criteria = [
+  "uma linha que diz a ação e o alvo",
+  "específica o suficiente para distinguir esta Change de outras",
+]
+
+[[fields]]
+key = "prerequisites"
+label = "Pré-requisitos"
+weight = 1.0
+criteria = [
+  "dependências, aprovações, janelas ou backups necessários antes de começar",
+  "verificáveis por quem vai executar",
+]

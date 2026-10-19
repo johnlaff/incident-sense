@@ -102,6 +102,11 @@ class Settings(BaseSettings):
         return self.data_dir / "incidents.json"
 
     @property
+    def changes_path(self) -> Path:
+        """Path to the committed synthetic change requests."""
+        return self.data_dir / "changes.json"
+
+    @property
     def precomputed_dir(self) -> Path:
         """Directory with committed embeddings + clustering result + labels."""
         return self.data_dir / "precomputed"

@@ -1,0 +1,656 @@
+/* ===================================================================== *
+ *  Changes: list and evaluation workspace. Mobile first; the two-column
+ *  workspace opens at 921px, the same breakpoint as the labelled rail.
+ * ===================================================================== */
+
+.chg-page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* ----- List ----- */
+.chg-head {
+  margin-bottom: 6px;
+}
+.chg-lede {
+  color: var(--ink-body);
+  max-width: 64ch;
+  margin: 0 0 16px;
+  line-height: 1.55;
+}
+.chg-seg {
+  display: flex;
+  margin-bottom: 14px;
+}
+.chg-seg button {
+  flex: 1;
+}
+.chg-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.chg-list > li + li {
+  border-top: 1px solid var(--border);
+}
+.chg-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "num go"
+    "title go"
+    "meta go"
+    "tags go";
+  column-gap: 10px;
+  row-gap: 5px;
+  align-items: center;
+  padding: 13px 14px;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.13s var(--ease);
+}
+a.chg-row:hover {
+  background: var(--surface-2);
+}
+a.chg-row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+.chg-row.skeleton {
+  height: 104px;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    var(--surface-2) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.2s ease-in-out infinite;
+}
+.chg-list[aria-busy="true"] > li + li {
+  border-top: 1px solid var(--border);
+}
+.chg-num {
+  grid-area: num;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary-ink);
+}
+.chg-title {
+  grid-area: title;
+  color: var(--ink);
+  font-weight: 550;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.chg-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+}
+.chg-meta .mono {
+  overflow-wrap: anywhere;
+}
+.chg-tags {
+  grid-area: tags;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chg-type {
+  color: var(--primary-ink);
+  background: var(--primary-tint);
+}
+.chg-state {
+  color: var(--st-open);
+  background: var(--st-open-tint);
+}
+.chg-risk {
+  color: var(--p2);
+  background: var(--p2-tint);
+}
+.chg-out {
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+}
+.chg-go {
+  grid-area: go;
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+}
+
+@media (min-width: 768px) {
+  .chg-seg {
+    display: inline-flex;
+  }
+  .chg-row {
+    grid-template-columns: 112px minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "num title tags go"
+      "num meta tags go";
+    column-gap: 16px;
+    padding: 12px 16px;
+  }
+  .chg-num {
+    align-self: start;
+    padding-top: 2px;
+  }
+  .chg-row .chg-tags {
+    justify-content: flex-end;
+  }
+}
+
+/* ----- Detail: record head ----- */
+.chg-detail-skel {
+  display: grid;
+  gap: 12px;
+  padding: 8px 0;
+}
+.chg-record-head {
+  margin-bottom: 18px;
+}
+.chg-record-head .chg-tags {
+  margin-bottom: 10px;
+}
+.chg-record-head h1 {
+  font-size: 20px;
+  line-height: 1.3;
+  margin: 0 0 14px;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.chg-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 18px;
+  margin: 0;
+}
+.chg-facts div {
+  min-width: 0;
+}
+.chg-facts dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.chg-facts dd {
+  margin: 0;
+  color: var(--ink-body);
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----- Detail: layout ----- */
+.chg-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+.chg-aside {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-width: 0;
+}
+@media (min-width: 921px) {
+  .chg-record-head h1 {
+    font-size: 24px;
+  }
+  .chg-grid {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 20px;
+    align-items: start;
+  }
+  .chg-aside {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .chg-fields {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+/* ----- Detail: evaluation panel ----- */
+.chg-run,
+.chg-semantic {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+.chg-run h2,
+.chg-semantic h2 {
+  font-size: 15px;
+  margin: 0;
+}
+.chg-out-note {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink-body);
+  line-height: 1.5;
+}
+.chg-out-note svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--muted);
+}
+.chg-model {
+  display: grid;
+  gap: 6px;
+}
+.chg-model span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.chg-model .select {
+  width: 100%;
+  height: 44px;
+}
+.chg-go-btn {
+  width: 100%;
+  height: 46px;
+  justify-content: center;
+  font-size: 15px;
+}
+.chg-go-btn:disabled {
+  opacity: 0.75;
+  cursor: progress;
+}
+.chg-hint {
+  margin: 0;
+  color: var(--ink-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.chg-error {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  color: var(--danger);
+  line-height: 1.45;
+}
+.chg-error svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+/* ----- Overall score and the 8.0 gate ----- */
+.chg-overall {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.chg-overall-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chg-overall-num {
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.chg-overall-num.good {
+  color: var(--success);
+}
+.chg-overall-num.mid {
+  color: var(--p2);
+}
+.chg-overall-num.low {
+  color: var(--danger);
+}
+.chg-overall-label {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.chg-meter {
+  position: relative;
+  height: 10px;
+  margin: 4px 0 18px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.chg-meter .fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  transition: width 0.5s var(--ease-out);
+}
+.chg-meter .fill.good {
+  background: var(--success);
+}
+.chg-meter .fill.mid {
+  background: var(--p2);
+}
+.chg-meter .fill.low {
+  background: var(--danger);
+}
+.chg-meter .cut {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.chg-meter .cut span {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-body);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.chg-gate {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  line-height: 1.4;
+}
+.chg-gate svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+.chg-gate.open {
+  color: var(--st-resolved);
+  background: var(--st-resolved-tint);
+}
+.chg-gate.closed {
+  color: var(--p2);
+  background: var(--p2-tint);
+}
+.chg-cost {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----- Semantic analysis ----- */
+.chg-semantic h3 {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+.chg-semantic p {
+  margin: 0;
+  color: var(--ink-body);
+  line-height: 1.55;
+}
+.chg-sub {
+  color: var(--muted) !important;
+}
+.chg-sem-scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.chg-sem-scores > div {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  color: var(--ink-body);
+}
+.chg-adh {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.chg-adh.ADERENTE {
+  color: var(--st-resolved);
+  background: var(--st-resolved-tint);
+}
+.chg-adh.PARCIAL {
+  color: var(--p2);
+  background: var(--p2-tint);
+}
+.chg-adh.NAO_ADERENTE {
+  color: var(--p1);
+  background: var(--p1-tint);
+}
+.chg-problems {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--ink-body);
+  line-height: 1.5;
+}
+.chg-muted {
+  color: var(--muted) !important;
+  font-size: 13px;
+}
+
+/* ----- Field cards ----- */
+.chg-fields {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.chg-field {
+  padding: 14px 16px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.chg-field > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.chg-field-title {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.chg-field-title h3 {
+  font-size: 14.5px;
+  margin: 0;
+}
+.chg-weight {
+  color: var(--muted);
+  font-size: 12px;
+}
+.chg-score {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 46px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.chg-score.good {
+  color: var(--st-resolved);
+  background: var(--st-resolved-tint);
+}
+.chg-score.mid {
+  color: var(--p2);
+  background: var(--p2-tint);
+}
+.chg-score.low {
+  color: var(--p1);
+  background: var(--p1-tint);
+}
+.chg-score.pending {
+  color: var(--muted);
+  background: var(--surface-2);
+}
+.chg-score svg {
+  width: 16px;
+  height: 16px;
+}
+.chg-text {
+  margin: 0;
+  color: var(--ink-body);
+  line-height: 1.55;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.chg-edit {
+  display: grid;
+  gap: 8px;
+}
+.chg-edit textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  resize: vertical;
+}
+.chg-edit textarea:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-tint);
+}
+.chg-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.chg-verdict {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--border-strong);
+  background: var(--surface-2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.chg-verdict p {
+  margin: 0;
+  color: var(--ink-body);
+  line-height: 1.5;
+  font-size: 13.5px;
+}
+.chg-guidance {
+  display: flex;
+  gap: 8px;
+  color: var(--primary-ink) !important;
+}
+.chg-guidance svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+}
+.chg-field > footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.chg-field > footer:empty {
+  display: none;
+}
+.chg-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--st-resolved);
+}
+.chg-lock svg {
+  width: 13px;
+  height: 13px;
+}
+.chg-lock.dirty {
+  color: var(--p2);
+}
+.chg-edit-btn {
+  margin-left: auto;
+}
+
+/* ----- Backout plan and tasks ----- */
+.chg-backout {
+  border-style: dashed;
+}
+.chg-backout h4 {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+.chg-tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.chg-tasks li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  color: var(--ink-body);
+  line-height: 1.45;
+}
+.chg-tasks .mono {
+  color: var(--muted);
+  font-size: 12px;
+  padding-top: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chg-meter .fill,
+  .chg-row.skeleton {
+    transition: none;
+    animation: none;
+  }
+}
