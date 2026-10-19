@@ -66,3 +66,17 @@ export function useFocusTrap<T extends HTMLElement>(active = true) {
   }, [active]);
   return ref;
 }
+
+/**
+ * Lock the page scroll while a full-screen surface (sheet, drawer, palette) is
+ * open. The CSS only applies the lock on phone widths, where the surface covers
+ * the whole viewport and a scrolling page behind it would steal touch gestures.
+ */
+export function useScrollLock(active = true) {
+  useEffect(() => {
+    if (!active) return;
+    const root = document.documentElement;
+    root.classList.add("scroll-locked");
+    return () => root.classList.remove("scroll-locked");
+  }, [active]);
+}

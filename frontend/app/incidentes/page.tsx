@@ -194,12 +194,12 @@ export default function IncidentesPage() {
           ))}
         </div>
         <select
-          className="select"
+          className="select toolbar-svc"
           value={service}
           onChange={(e) => setService(e.target.value)}
           aria-label="Filtrar por serviço"
         >
-          <option value="">Todos os serviços</option>
+          <option value="">Todo serviço</option>
           {services.map((s) => (
             <option key={s} value={s}>
               {s}
@@ -207,7 +207,7 @@ export default function IncidentesPage() {
           ))}
         </select>
         <select
-          className="select"
+          className="select toolbar-prio"
           value={priority}
           onChange={(e) => setPriority(e.target.value as "" | PCode)}
           aria-label="Filtrar por prioridade"
@@ -220,10 +220,7 @@ export default function IncidentesPage() {
           ))}
         </select>
         <div className="grow" />
-        <div
-          className={`field-search${query ? " has-clear" : ""}`}
-          style={{ width: 260 }}
-        >
+        <div className={`field-search toolbar-search${query ? " has-clear" : ""}`}>
           <Icons.search />
           <input
             className="input"
@@ -298,7 +295,7 @@ export default function IncidentesPage() {
               <tbody>
                 {loading ? (
                   Array.from({ length: 8 }).map((_, i) => (
-                    <tr key={`sk${i}`}>
+                    <tr key={`sk${i}`} className="sk-row">
                       <td>
                         <span className="sk" style={{ width: 78 }} />
                       </td>
@@ -353,10 +350,10 @@ export default function IncidentesPage() {
                       <td className="svc" data-label="Serviço">
                         {x.service}
                       </td>
-                      <td data-label="Estado">
+                      <td className="st" data-label="Estado">
                         <StateBadge state={x.state} />
                       </td>
-                      <td data-label="Prioridade">
+                      <td className="pr" data-label="Prioridade">
                         <PriorityBadge priority={x.priority} />
                       </td>
                       <td className="when" data-label="Aberto">
