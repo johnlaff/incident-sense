@@ -186,4 +186,14 @@ export const Icons = {
       <path d="M13.7 21a2 2 0 0 1-3.4 0" />
     </>,
   ),
+  // Git pull request: a proposed change waiting for review.
+  changes: icon(
+    <>
+      <circle cx={6} cy={6} r={2.4} />
+      <circle cx={6} cy={18} r={2.4} />
+      <circle cx={18} cy={18} r={2.4} />
+      <path d="M6 8.4v7.2M18 15.6V9a3 3 0 0 0-3-3h-4" />
+      <path d="m13.5 3.5-2.5 2.5 2.5 2.5" />
+    </>,
+  ),
 } satisfies Record<string, IconComponent>;

@@ -257,7 +257,10 @@ export function normalizeSuggestionSpacing(md: string): string {
     }
     out.push(line);
   }
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return out
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 // A line whose content starts with a bold lead-in (**Ação** …) — how the model

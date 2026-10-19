@@ -19,7 +19,8 @@ function splitCitations(value: string): RootContent[] {
   let match: RegExpExecArray | null;
   CITE_TOKEN.lastIndex = 0;
   while ((match = CITE_TOKEN.exec(value)) !== null) {
-    if (match.index > last) out.push({ type: "text", value: value.slice(last, match.index) });
+    if (match.index > last)
+      out.push({ type: "text", value: value.slice(last, match.index) });
     out.push({
       type: "link",
       url: `#${match[1]}`,

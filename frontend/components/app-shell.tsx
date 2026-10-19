@@ -1,6 +1,6 @@
 "use client";
 
-// App shell: topbar, sidenav, theme toggle, ⌘K command palette, notifications,
+// App shell: topbar, sidenav (desktop) or bottom tab bar (phone), theme toggle, ⌘K command palette, notifications,
 // and the global "peek" drawer that opens any cited incident so a suggestion's
 // grounding can be verified without leaving the page. Wraps every route.
 
@@ -18,13 +18,23 @@ import {
 } from "react";
 
 import { Icons, type IconComponent } from "./icons";
+import { NAV_ITEMS, activeNav } from "./nav";
 import { StateBadge, PriorityBadge } from "./ui";
-import { useFocusTrap } from "@/lib/a11y";
+import { useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { useAllIncidents, useIncident } from "@/lib/incidents";
 import { absDate, mapDetail } from "@/lib/model";
 import type { IncidentSummary } from "@/lib/types";
 
 type Theme = "light" | "dark";
+
+// Mobile browser chrome (status bar, URL bar) follows the topbar surface.
+const THEME_COLOR: Record<Theme, string> = { light: "#ffffff", dark: "#202027" };
+
+function syncThemeColor(theme: Theme) {
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", THEME_COLOR[theme]);
+}
 
 interface ShellContextValue {
   /** Open the peek drawer for a cited incident (verify grounding in place). */
@@ -54,13 +64,6 @@ export function useShell(): ShellContextValue {
 
 const DETAIL_RE = /^\/incidentes\/(INC\w+)/;
 
-function screenFor(pathname: string): "incidents" | "recurrences" | "how" | "other" {
-  if (pathname.startsWith("/recorrencias")) return "recurrences";
-  if (pathname.startsWith("/como-funciona")) return "how";
-  if (pathname === "/" || pathname.startsWith("/incidentes")) return "incidents";
-  return "other";
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -84,7 +87,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Sync theme from the attribute the no-flash inline script already applied.
   useEffect(() => {
     const current = document.documentElement.getAttribute("data-theme");
-    if (current === "dark" || current === "light") setTheme(current);
+    if (current === "dark" || current === "light") {
+      setTheme(current);
+      syncThemeColor(current);
+    }
     const mac = /Mac|iPhone|iPad|iPod/.test(
       navigator.platform || navigator.userAgent || "",
     );
@@ -95,6 +101,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     setTheme((t) => {
       const next: Theme = t === "dark" ? "light" : "dark";
       document.documentElement.setAttribute("data-theme", next);
+      syncThemeColor(next);
       try {
         localStorage.setItem("is-theme", next);
       } catch {
@@ -191,23 +198,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     ],
   );
 
-  const active = screenFor(pathname);
-  const navItems = [
-    {
-      key: "incidents",
-      href: "/incidentes",
-      icon: Icons.incidents,
-      label: "Incidentes",
-      count: openCount,
-    },
-    {
-      key: "recurrences",
-      href: "/recorrencias",
-      icon: Icons.recurrences,
-      label: "Recorrências",
-    },
-    { key: "how", href: "/como-funciona", icon: Icons.how, label: "Como funciona" },
-  ] as const;
+  const active = activeNav(pathname);
 
   return (
     <ShellContext.Provider value={ctx}>
@@ -229,7 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </svg>
             </span>
             <span className="brand-name">Banco Meridiano</span>
-            <span className="brand-sep" />
+            <span className="brand-sep" aria-hidden="true" />
             <span className="brand-prod">
               Incident&nbsp;<span className="brand-accent">Sense</span>
             </span>
@@ -252,6 +243,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="kbd">{modKey}K</span>
           </button>
           <div className="topbar-tools">
+            <button
+              className="icon-btn search-btn"
+              onClick={() => setPaletteOpen(true)}
+              title="Buscar"
+              aria-label="Buscar (abre a paleta de comandos)"
+            >
+              <Icons.search />
+            </button>
             <button
               className="icon-btn"
               onClick={toggleTheme}
@@ -287,18 +286,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <nav className="sidenav">
+        <nav className="sidenav" aria-label="Navegação principal">
           <div className="nav-label">Operações</div>
-          {navItems.map((n) => (
+          {NAV_ITEMS.map((n) => (
             <Link
               key={n.key}
               href={n.href}
               className={`nav-item${active === n.key ? " active" : ""}`}
+              aria-current={active === n.key ? "page" : undefined}
+              title={n.label}
             >
               <n.icon />
               <span>{n.label}</span>
-              {"count" in n && n.count != null ? (
-                <span className="nav-count">{n.count}</span>
+              {n.key === "incidents" && openCount != null ? (
+                <span className="nav-count">{openCount}</span>
               ) : null}
             </Link>
           ))}
@@ -313,6 +314,23 @@ export function AppShell({ children }: { children: ReactNode }) {
             {children}
           </div>
         </main>
+
+        {/* Phone navigation: thumb-reachable tabs, shown instead of the rail. */}
+        <nav className="tabbar" aria-label="Navegação principal">
+          {NAV_ITEMS.map((n) => (
+            <Link
+              key={n.key}
+              href={n.href}
+              className={`tab-item${active === n.key ? " active" : ""}`}
+              aria-current={active === n.key ? "page" : undefined}
+            >
+              <span className="tab-ico">
+                <n.icon />
+              </span>
+              <span className="tab-label">{n.short}</span>
+            </Link>
+          ))}
+        </nav>
 
         {paletteOpen ? (
           <CommandPalette
@@ -477,6 +495,7 @@ function CommandPalette({
   const [sel, setSel] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const trapRef = useFocusTrap<HTMLDivElement>();
+  useScrollLock();
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -501,30 +520,14 @@ function CommandPalette({
         sub: "Alternar aparência",
         run: onToggleTheme,
       },
-      {
-        id: "a-inc",
+      ...NAV_ITEMS.map((n): PaletteAction => ({
+        id: `nav-${n.key}`,
         group: "Ir para",
-        icon: Icons.incidents,
-        title: "Incidentes",
-        sub: "Lista de chamados",
-        run: () => onNavigate("/incidentes"),
-      },
-      {
-        id: "a-rec",
-        group: "Ir para",
-        icon: Icons.recurrences,
-        title: "Recorrências",
-        sub: "Mapa de agrupamentos",
-        run: () => onNavigate("/recorrencias"),
-      },
-      {
-        id: "a-how",
-        group: "Ir para",
-        icon: Icons.how,
-        title: "Como funciona",
-        sub: "Fluxo RAG e clustering",
-        run: () => onNavigate("/como-funciona"),
-      },
+        icon: n.icon,
+        title: n.label,
+        sub: n.sub,
+        run: () => onNavigate(n.href),
+      })),
     ];
     const ql = q.trim().toLowerCase();
     const acts = ql
@@ -680,6 +683,7 @@ function PeekDrawer({
 }) {
   const { data, loading, error } = useIncident(number);
   const trapRef = useFocusTrap<HTMLDivElement>();
+  useScrollLock();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -712,7 +716,7 @@ function PeekDrawer({
           </span>
           <button className="drawer-back" onClick={onClose}>
             <Icons.arrowLeft />
-            Voltar ao incidente
+            Voltar<span className="drawer-back-long"> ao incidente</span>
           </button>
         </div>
         <div className="drawer-body">
@@ -808,7 +812,7 @@ function PeekDrawer({
                   </div>
                 ))}
               </div>
-              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              <div className="drawer-actions">
                 <button
                   className="btn btn-outline btn-sm"
                   onClick={() => {

@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icons, type IconComponent } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
 import { Avatar, PriorityBadge, StateBadge, StateBlock } from "@/components/ui";
-import { activate, useFocusTrap } from "@/lib/a11y";
+import { activate, useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { api, ApiError } from "@/lib/api";
 import { useAllIncidents, useClusters, useIncident } from "@/lib/incidents";
 import { usePrefersReducedMotion } from "@/lib/motion";
@@ -176,15 +176,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
       <div className="card record-card">
         <div className="record-head">
           <div className="top-row">
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-                flex: 1,
-                minWidth: 0,
-              }}
-            >
+            <div className="record-title">
               <div className="row">
                 <span className="num mono" style={{ fontSize: 13 }}>
                   {record.number}
@@ -215,21 +207,27 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
           </div>
         </div>
 
-        <div className="tabs">
+        <div className="tabs" role="tablist" aria-label="Seções do incidente">
           <button
             className={`tab${tab === "detalhes" ? " on" : ""}`}
+            role="tab"
+            aria-selected={tab === "detalhes"}
             onClick={() => setTab("detalhes")}
           >
             Detalhes
           </button>
           <button
             className={`tab${tab === "atividade" ? " on" : ""}`}
+            role="tab"
+            aria-selected={tab === "atividade"}
             onClick={() => setTab("atividade")}
           >
             Atividade<span className="tab-n">{record.activity.length}</span>
           </button>
           <button
             className={`tab${tab === "relacionados" ? " on" : ""}`}
+            role="tab"
+            aria-selected={tab === "relacionados"}
             onClick={() => setTab("relacionados")}
           >
             Relacionados<span className="tab-n">{related.length}</span>
@@ -455,6 +453,8 @@ function CopilotFab({
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const msgsRef = useRef<HTMLDivElement>(null);
   const trapRef = useFocusTrap<HTMLDivElement>(open);
+  // On phones the panel is a full-height sheet; keep the record from scrolling under it.
+  useScrollLock(open);
   const curModel = MODELS.find((m) => m.id === model) ?? MODELS[0];
 
   const clearTimers = () => {
