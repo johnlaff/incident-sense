@@ -1,3 +1,4 @@
+import type { Change, ChangeSummary, EvaluateBody, Evaluation, Rubric } from "./changes";
 import type {
   ClustersResponse,
   Health,
@@ -100,6 +101,15 @@ export const api = {
     request<IncidentListResponse>(`/api/incidents${buildQuery(params)}`),
   getIncident: (number: string) =>
     request<IncidentDetail>(`/api/incidents/${encodeURIComponent(number)}`),
+  listChanges: () => request<ChangeSummary[]>("/api/changes"),
+  getChange: (number: string) =>
+    request<Change>(`/api/changes/${encodeURIComponent(number)}`),
+  getRubric: () => request<Rubric>("/api/changes/rubric"),
+  evaluateChange: (number: string, body: EvaluateBody) =>
+    request<Evaluation>(`/api/changes/${encodeURIComponent(number)}/evaluate`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 };
 
 export { buildQuery };
