@@ -690,6 +690,20 @@ a {
     position: absolute;
     inset: -5px;
   }
+  html .pipe-head .btn {
+    height: 44px;
+  }
+  /* Row ids and tag chips stay small; the hit area grows to 44px. */
+  html .row-open,
+  html .tag-btn {
+    position: relative;
+  }
+  html .row-open::after,
+  html .tag-btn::after {
+    content: "";
+    position: absolute;
+    inset: -12px -2px;
+  }
 }
 
 /* Phones: the Aurora button floats over the text; give the record room at

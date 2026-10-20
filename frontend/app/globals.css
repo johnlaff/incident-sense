@@ -1494,7 +1494,7 @@ body {
   margin: 0;
 }
 .shortcut-hint .sh-sep {
-  opacity: 0.5;
+  color: var(--muted);
   margin: 0 3px;
 }
 

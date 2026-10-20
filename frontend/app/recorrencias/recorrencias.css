@@ -566,9 +566,9 @@
   cursor: default;
 }
 .rx-row-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  line-height: 1.35;
+  text-wrap: pretty;
   color: var(--ink);
   font-weight: 550;
 }
@@ -719,9 +719,8 @@
   font-size: 13.5px;
 }
 .rx-svc-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .rx-svc-n {
   color: var(--muted);
@@ -778,9 +777,8 @@
   color: var(--muted);
 }
 .rx-inc-d {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  text-wrap: pretty;
 }
 
 /* ----- Timeline ----- */
