@@ -160,10 +160,12 @@ export function ChapterView({
     >
       <header className="cf-ch-head">
         <div className="cf-ch-titles">
-          {/* A word, not a circle: the steps below are the numbered circles,
-              so the chapter number never reads as a second "1". */}
-          <p className="cf-ch-n">Capítulo {chapter.n} de 7</p>
-          <h2 id={headingId}>{chapter.title}</h2>
+          {/* Chapters are numbered (index, line at the top); the steps inside
+              go by letter, so a chapter "1" never meets a step "1". */}
+          <h2 id={headingId}>
+            <span className="cf-ch-num">{chapter.n}</span>
+            {chapter.title}
+          </h2>
           <p className="cf-why">{chapter.why}</p>
           <p className="cf-who">
             <span className="cf-part-dot" aria-hidden="true" />
@@ -191,7 +193,11 @@ export function ChapterView({
                 aria-current={!staticView && state === "now" ? "step" : undefined}
               >
                 <span className="cf-mark" aria-hidden="true">
-                  {shown === "done" && !staticView ? <Icons.check sw={3} /> : i + 1}
+                  {shown === "done" && !staticView ? (
+                    <Icons.check sw={3} />
+                  ) : (
+                    stepLetter(i)
+                  )}
                 </span>
                 <div className="cf-row-text">
                   <h3>{s.title}</h3>
@@ -228,6 +234,11 @@ export function ChapterView({
       <TechDetails>{details}</TechDetails>
     </section>
   );
+}
+
+/** Steps go by letter (a, b, c), chapters by number. */
+export function stepLetter(i: number): string {
+  return String.fromCharCode(97 + i);
 }
 
 /** Small label that says where a value comes from. */
