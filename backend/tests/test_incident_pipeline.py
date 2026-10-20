@@ -247,6 +247,25 @@ def test_query_is_the_summary_plus_categoria_subcategoria_and_empresa() -> None:
     assert response.summarized_query == "Pix com timeout na confirmação"
 
 
+def test_response_previews_the_query_vector_without_shipping_it() -> None:
+    response, _ = _run()
+
+    # The fake embedder returns a 3-value vector: all of it fits the preview.
+    assert response.dims == 3
+    assert response.embedding_preview == [0.1, 0.2, 0.3]
+
+
+def test_embedding_preview_keeps_the_first_values_rounded() -> None:
+    vector = [i / 7 - 0.5 for i in range(3072)]
+
+    preview = pipeline.embedding_preview(vector)
+
+    assert len(preview) == 24
+    assert preview[0] == -0.5
+    assert preview[1] == round(1 / 7 - 0.5, 3)
+    assert all(len(str(v).split(".")[-1]) <= 3 for v in preview)
+
+
 # --- layer 1: semantic tags -----------------------------------------------------
 def test_semantic_tags_decide_where_to_search() -> None:
     response, spies = _run()

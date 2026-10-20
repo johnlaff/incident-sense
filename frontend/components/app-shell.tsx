@@ -6,6 +6,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { flushSync } from "react-dom";
 import {
   createContext,
   useCallback,
@@ -14,9 +15,11 @@ import {
   useMemo,
   useRef,
   useState,
+  ViewTransition,
   type ReactNode,
 } from "react";
 
+import { AulaProvider, AulaToggle } from "./aula";
 import { Icons, type IconComponent } from "./icons";
 import { NAV_ITEMS, activeNav } from "./nav";
 import { StateBadge, PriorityBadge } from "./ui";
@@ -37,8 +40,10 @@ function syncThemeColor(theme: Theme) {
 }
 
 interface ShellContextValue {
-  /** Open the peek drawer for a cited incident (verify grounding in place). */
-  peek: (number: string) => void;
+  /** Open the peek drawer for a cited incident (verify grounding in place).
+   * Given the element that was tapped, the number flies from it into the
+   * drawer's title (a same-document view transition). */
+  peek: (number: string, from?: HTMLElement) => void;
   /** Navigate to an incident's full record. */
   openIncident: (number: string) => void;
   /** Ask Aurora to suggest a resolution (navigates to the incident if needed). */
@@ -130,11 +135,32 @@ export function AppShell({ children }: { children: ReactNode }) {
     setNotifOpen(false);
   }, [pathname]);
 
-  const peek = useCallback((number: string) => {
-    setPeekId(number);
-    setFlashCite(number);
-    if (flashTimer.current) clearTimeout(flashTimer.current);
-    flashTimer.current = setTimeout(() => setFlashCite(null), 600);
+  const peek = useCallback((number: string, from?: HTMLElement) => {
+    const open = () => {
+      setPeekId(number);
+      setFlashCite(number);
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+      flashTimer.current = setTimeout(() => setFlashCite(null), 600);
+    };
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!from || reduced || typeof document.startViewTransition !== "function") {
+      open();
+      return;
+    }
+    // The tapped chip and the drawer title share one name for the flight; the
+    // chip gives it up inside the update so only the title holds it after.
+    from.style.setProperty("view-transition-name", "peek-num");
+    const clear = () => from.style.removeProperty("view-transition-name");
+    try {
+      const vt = document.startViewTransition(() => {
+        clear();
+        flushSync(open);
+      });
+      vt.finished.finally(clear);
+    } catch {
+      clear();
+      open();
+    }
   }, []);
   useEffect(
     () => () => void (flashTimer.current && clearTimeout(flashTimer.current)),
@@ -145,7 +171,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     (number: string) => {
       setPeekId(null);
       setPaletteOpen(false);
-      router.push(`/incidentes/${number}`);
+      router.push(`/incidentes/${number}`, { transitionTypes: ["nav-forward"] });
     },
     [router],
   );
@@ -165,7 +191,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       }
       setAutoSuggestFor(target);
       setPaletteOpen(false);
-      if (currentDetail !== target) router.push(`/incidentes/${target}`);
+      if (currentDetail !== target)
+        router.push(`/incidentes/${target}`, { transitionTypes: ["nav-forward"] });
     },
     [currentDetail, firstOpen, router],
   );
@@ -202,160 +229,175 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <ShellContext.Provider value={ctx}>
-      <div className="app">
-        <header className="topbar">
-          <Link href="/incidentes" className="brand" style={{ textDecoration: "none" }}>
-            <span className="mark">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                aria-hidden="true"
-              >
-                <circle cx={12} cy={12} r={7.4} strokeWidth={1.6} opacity={0.95} />
-                <line x1={12} y1={4.6} x2={12} y2={19.4} strokeWidth={1.6} />
-                <path d="M5 9.6 Q12 12.4 19 9.6" strokeWidth={1.3} opacity={0.82} />
-                <path d="M5 14.4 Q12 11.6 19 14.4" strokeWidth={1.3} opacity={0.82} />
-              </svg>
-            </span>
-            <span className="brand-name">Banco Meridiano</span>
-            <span className="brand-sep" aria-hidden="true" />
-            <span className="brand-prod">
-              Incident&nbsp;<span className="brand-accent">Sense</span>
-            </span>
-          </Link>
-          <div className="grow" />
-          <button
-            className="field-search search"
-            onClick={() => setPaletteOpen(true)}
-            style={{ cursor: "pointer", textAlign: "left" }}
-            aria-label="Buscar (abre a paleta de comandos)"
-          >
-            <Icons.search />
-            <input
-              className="input"
-              placeholder="Buscar incidentes"
-              readOnly
-              style={{ cursor: "pointer" }}
-              tabIndex={-1}
-            />
-            <span className="kbd">{modKey}K</span>
-          </button>
-          <div className="topbar-tools">
+      <AulaProvider>
+        <div className="app">
+          <header className="topbar">
+            <Link href="/incidentes" className="brand" style={{ textDecoration: "none" }}>
+              <span className="mark">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <circle cx={12} cy={12} r={7.4} strokeWidth={1.6} opacity={0.95} />
+                  <line x1={12} y1={4.6} x2={12} y2={19.4} strokeWidth={1.6} />
+                  <path d="M5 9.6 Q12 12.4 19 9.6" strokeWidth={1.3} opacity={0.82} />
+                  <path d="M5 14.4 Q12 11.6 19 14.4" strokeWidth={1.3} opacity={0.82} />
+                </svg>
+              </span>
+              <span className="brand-name">Banco Meridiano</span>
+              <span className="brand-sep" aria-hidden="true" />
+              <span className="brand-prod">
+                Incident&nbsp;<span className="brand-accent">Sense</span>
+              </span>
+            </Link>
+            <div className="grow" />
             <button
-              className="icon-btn search-btn"
+              className="field-search search"
               onClick={() => setPaletteOpen(true)}
-              title="Buscar"
+              style={{ cursor: "pointer", textAlign: "left" }}
               aria-label="Buscar (abre a paleta de comandos)"
             >
               <Icons.search />
+              <input
+                className="input"
+                placeholder="Buscar incidentes"
+                readOnly
+                style={{ cursor: "pointer" }}
+                tabIndex={-1}
+              />
+              <span className="kbd">{modKey}K</span>
             </button>
-            <button
-              className="icon-btn"
-              onClick={toggleTheme}
-              title={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
-              aria-label={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
-            >
-              {theme === "dark" ? <Icons.sun /> : <Icons.moon />}
-            </button>
-            <div className="notif-wrap">
+            <div className="topbar-tools">
+              <AulaToggle />
               <button
-                className={`icon-btn${notifOpen ? " on" : ""}`}
-                onClick={() => {
-                  if (!notifOpen) setNotifRead(true);
-                  setNotifOpen((o) => !o);
-                }}
-                title="Notificações"
-                aria-label="Notificações"
+                className="icon-btn search-btn"
+                onClick={() => setPaletteOpen(true)}
+                title="Buscar"
+                aria-label="Buscar (abre a paleta de comandos)"
               >
-                <Icons.bell />
-                {!notifRead && items.length > 0 ? <span className="notif-dot" /> : null}
+                <Icons.search />
               </button>
-              {notifOpen ? (
-                <NotificationsMenu
-                  items={items}
-                  onOpen={openIncident}
-                  onClose={() => setNotifOpen(false)}
-                />
-              ) : null}
+              <button
+                className="icon-btn"
+                onClick={toggleTheme}
+                title={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
+                aria-label={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
+              >
+                {theme === "dark" ? <Icons.sun /> : <Icons.moon />}
+              </button>
+              <div className="notif-wrap">
+                <button
+                  className={`icon-btn${notifOpen ? " on" : ""}`}
+                  onClick={() => {
+                    if (!notifOpen) setNotifRead(true);
+                    setNotifOpen((o) => !o);
+                  }}
+                  title="Notificações"
+                  aria-label="Notificações"
+                >
+                  <Icons.bell />
+                  {!notifRead && items.length > 0 ? <span className="notif-dot" /> : null}
+                </button>
+                {notifOpen ? (
+                  <NotificationsMenu
+                    items={items}
+                    onOpen={openIncident}
+                    onClose={() => setNotifOpen(false)}
+                  />
+                ) : null}
+              </div>
+              <div className="avatar" title="João Ferreira · Analista N2">
+                JF
+              </div>
             </div>
-            <div className="avatar" title="João Ferreira · Analista N2">
-              JF
-            </div>
-          </div>
-        </header>
+          </header>
 
-        <nav className="sidenav" aria-label="Navegação principal">
-          <div className="nav-label">Operações</div>
-          {NAV_ITEMS.map((n) => (
-            <Link
-              key={n.key}
-              href={n.href}
-              className={`nav-item${active === n.key ? " active" : ""}`}
-              aria-current={active === n.key ? "page" : undefined}
-              title={n.label}
-            >
-              <n.icon />
-              <span>{n.label}</span>
-              {n.key === "incidents" && openCount != null ? (
-                <span className="nav-count">{openCount}</span>
-              ) : null}
-            </Link>
-          ))}
-          <div className="nav-spacer" />
-          <div className="nav-foot">
-            Banco fictício e dados sintéticos, criados para a demonstração.
-          </div>
-        </nav>
-
-        <main className="main">
-          <div className="screen-enter" key={pathname}>
-            {children}
-          </div>
-        </main>
-
-        {/* Phone navigation: thumb-reachable tabs, shown instead of the rail. */}
-        <nav className="tabbar" aria-label="Navegação principal">
-          {NAV_ITEMS.map((n) => (
-            <Link
-              key={n.key}
-              href={n.href}
-              className={`tab-item${active === n.key ? " active" : ""}`}
-              aria-current={active === n.key ? "page" : undefined}
-            >
-              <span className="tab-ico">
+          <nav className="sidenav" aria-label="Navegação principal">
+            <div className="nav-label">Operações</div>
+            {NAV_ITEMS.map((n) => (
+              <Link
+                key={n.key}
+                href={n.href}
+                className={`nav-item${active === n.key ? " active" : ""}`}
+                aria-current={active === n.key ? "page" : undefined}
+                title={n.label}
+              >
                 <n.icon />
-              </span>
-              <span className="tab-label">{n.short}</span>
-            </Link>
-          ))}
-        </nav>
+                <span>{n.label}</span>
+                {n.key === "incidents" && openCount != null ? (
+                  <span className="nav-count">{openCount}</span>
+                ) : null}
+              </Link>
+            ))}
+            <div className="nav-spacer" />
+            <div className="nav-foot">
+              Banco fictício e dados sintéticos, criados para a demonstração.
+            </div>
+          </nav>
 
-        {paletteOpen ? (
-          <CommandPalette
-            items={items}
-            modKey={modKey}
-            theme={theme}
-            onClose={() => setPaletteOpen(false)}
-            onOpenIncident={openIncident}
-            onNavigate={(href) => {
-              setPaletteOpen(false);
-              router.push(href);
-            }}
-            onSuggest={() => requestSuggest()}
-            onToggleTheme={toggleTheme}
-          />
-        ) : null}
+          <main className="main">
+            {/* Route change: going deeper enters from the right, going back
+                from the left; anything else crossfades. Only the content
+                moves: the top bar and the navigation stay put. */}
+            <ViewTransition
+              key={pathname}
+              enter={{
+                "nav-forward": "from-right",
+                "nav-back": "from-left",
+                default: "fade",
+              }}
+              exit={{ "nav-forward": "to-left", "nav-back": "to-right", default: "fade" }}
+              default="none"
+            >
+              <div className="screen-enter">{children}</div>
+            </ViewTransition>
+          </main>
 
-        {peekId ? (
-          <PeekDrawer
-            number={peekId}
-            onClose={() => setPeekId(null)}
-            onOpen={openIncident}
-          />
-        ) : null}
-      </div>
+          {/* Phone navigation: thumb-reachable tabs, shown instead of the rail. */}
+          <nav className="tabbar" aria-label="Navegação principal">
+            {NAV_ITEMS.map((n) => (
+              <Link
+                key={n.key}
+                href={n.href}
+                className={`tab-item${active === n.key ? " active" : ""}`}
+                aria-current={active === n.key ? "page" : undefined}
+              >
+                <span className="tab-ico">
+                  <n.icon />
+                </span>
+                <span className="tab-label">{n.short}</span>
+              </Link>
+            ))}
+          </nav>
+
+          {paletteOpen ? (
+            <CommandPalette
+              items={items}
+              modKey={modKey}
+              theme={theme}
+              onClose={() => setPaletteOpen(false)}
+              onOpenIncident={openIncident}
+              onNavigate={(href) => {
+                setPaletteOpen(false);
+                router.push(href);
+              }}
+              onSuggest={() => requestSuggest()}
+              onToggleTheme={toggleTheme}
+            />
+          ) : null}
+
+          {peekId ? (
+            <PeekDrawer
+              number={peekId}
+              onClose={() => setPeekId(null)}
+              onOpen={openIncident}
+            />
+          ) : null}
+        </div>
+      </AulaProvider>
     </ShellContext.Provider>
   );
 }

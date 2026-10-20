@@ -52,8 +52,87 @@
 
   --radius: 8px;
   --radius-sm: 6px;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* ----- Motion tokens (motion/direcao.md, 4.1) -----
+     Durations by consequence, curves by meaning. Use as
+     `calc(var(--dur-explain) * var(--motion-scale))` for teaching visuals. */
+  /* tempo */
+  --dur-press: 100ms; /* toque, pressão, hover */
+  --dur-state: 200ms; /* abas, toggles, troca de badge, segmentado */
+  --dur-move: 320ms; /* gaveta, painel, rota, mudança de layout */
+  --dur-explain: 560ms; /* visualização que ensina: régua, barra, portão */
+  --dur-count: 600ms; /* contador de número (teto) */
+  --exit-factor: 0.66; /* saída = 2/3 da entrada */
+  --stagger: 40ms; /* listas, teto de 8 itens */
+  --stagger-explain: 90ms; /* candidatos e segmentos, teto de 10 */
+  --motion-scale: 1; /* modo aula: 1.6 */
+
+  /* curvas */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* chegadas e opacidade */
+  --ease-in-out: cubic-bezier(
+    0.65,
+    0,
+    0.35,
+    1
+  ); /* entre duas posições na tela (trilho) */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* só saídas curtas */
+  /* mola calma: M3 Standard, amortecimento 0,9, sem ultrapassar o alvo */
+  --spring-calm: linear(
+    0,
+    0.025,
+    0.087,
+    0.171,
+    0.264,
+    0.358,
+    0.45,
+    0.535,
+    0.612,
+    0.68,
+    0.739,
+    0.79,
+    0.833,
+    0.868,
+    0.897,
+    0.921,
+    0.94,
+    0.955,
+    0.967,
+    0.976,
+    0.984,
+    0.989,
+    0.993,
+    0.996,
+    1
+  );
+  /* pouso: M3 Expressive spatial default, amortecimento 0,8, passa 1,5% e volta */
+  --spring-land: linear(
+    0,
+    0.047,
+    0.155,
+    0.291,
+    0.432,
+    0.563,
+    0.677,
+    0.771,
+    0.846,
+    0.903,
+    0.945,
+    0.974,
+    0.994,
+    1.005,
+    1.012,
+    1.015,
+    1.015,
+    1.014,
+    1.012,
+    1.01,
+    1.008,
+    1.006,
+    1.004,
+    1.003,
+    1
+  );
+  /* Legacy alias kept so older rules (and changes.css) resolve to the token. */
+  --ease: var(--ease-out);
   --shadow-sm: 0 1px 2px oklch(0.255 0.03 285 / 0.06);
   --shadow-md: 0 6px 20px oklch(0.255 0.05 285 / 0.1);
   --font: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -72,6 +151,21 @@
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
+}
+
+/* Modo aula: teaching visuals run slower (touch feedback stays fast). */
+:root[data-aula] {
+  --motion-scale: 1.6;
+}
+/* Reduced motion keeps the lesson: shorter moves, no counting, no cascades. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-move: 160ms;
+    --dur-explain: 160ms;
+    --dur-count: 0ms;
+    --stagger: 0ms;
+    --stagger-explain: 0ms;
+  }
 }
 
 * {
@@ -274,7 +368,7 @@ h3 {
   background: var(--primary-tint);
   color: var(--ink-body);
   line-height: 1.5;
-  animation: label-fade 0.3s var(--ease-out);
+  animation: label-fade var(--dur-move) var(--ease-out);
 }
 .wake-notice svg {
   flex: none;
@@ -328,8 +422,8 @@ h3 {
   place-items: center;
   border-radius: 999px;
   transition:
-    background 0.2s var(--ease),
-    color 0.2s var(--ease);
+    background var(--dur-state) var(--ease-out),
+    color var(--dur-state) var(--ease-out);
 }
 .tab-ico svg {
   width: 21px;
@@ -367,8 +461,8 @@ h3 {
   border: 1px solid transparent;
   cursor: pointer;
   transition:
-    background 0.15s,
-    border-color 0.15s;
+    background var(--dur-press),
+    border-color var(--dur-press);
 }
 .btn svg {
   width: 16px;
@@ -413,8 +507,8 @@ h3 {
   font: inherit;
   width: 100%;
   transition:
-    border-color 0.15s var(--ease),
-    box-shadow 0.15s var(--ease);
+    border-color var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out);
 }
 .input:focus-visible {
   outline: none;
@@ -499,8 +593,8 @@ h3 {
   -webkit-appearance: none;
   cursor: pointer;
   transition:
-    border-color 0.15s var(--ease),
-    box-shadow 0.15s var(--ease);
+    border-color var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out);
 }
 .select:hover {
   border-color: var(--muted);
@@ -1139,8 +1233,8 @@ table.list {
 }
 body {
   transition:
-    background 0.2s ease,
-    color 0.2s ease;
+    background var(--dur-state) var(--ease-out),
+    color var(--dur-state) var(--ease-out);
 }
 
 /* ===================================================================== *
@@ -1177,8 +1271,8 @@ body {
   place-items: center;
   cursor: pointer;
   transition:
-    background 0.15s,
-    color 0.15s;
+    background var(--dur-press),
+    color var(--dur-press);
 }
 .icon-btn:hover {
   background: var(--surface-2);
@@ -1230,7 +1324,7 @@ body {
   border-radius: 12px;
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  animation: panel-in 0.16s var(--ease, ease);
+  animation: panel-in var(--dur-move) var(--spring-calm);
 }
 .nm-head {
   display: flex;
@@ -1261,7 +1355,7 @@ body {
   padding: 11px 14px;
   cursor: pointer;
   border-bottom: 1px solid var(--border);
-  transition: background 0.14s;
+  transition: background var(--dur-press);
 }
 .nm-item:hover {
   background: var(--surface-2);
@@ -1731,7 +1825,7 @@ body {
   padding: 12px 14px;
   border-radius: var(--radius-sm);
   background: var(--primary-tint);
-  animation: insert-flash 0.6s var(--ease-out);
+  animation: insert-flash calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
 }
 .draft-label {
   display: inline-flex;
@@ -1853,7 +1947,7 @@ body {
   opacity: 1;
 }
 .trace .step.appear {
-  animation: step-in 0.32s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: step-in var(--dur-move) var(--ease-out) both;
 }
 @keyframes step-in {
   from {
@@ -1864,23 +1958,18 @@ body {
   }
 }
 .cands .cand {
-  animation: step-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: step-in var(--dur-move) var(--ease-out) both;
 }
 .cop-reveal {
-  animation: step-in 0.32s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: step-in var(--dur-move) var(--ease-out) both;
 }
 .verdict .b.pulse {
-  animation: verdict-pulse 0.6s ease;
+  animation: verdict-pulse calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
 }
 @keyframes verdict-pulse {
-  0% {
-    transform: scale(0.9);
-  }
-  50% {
-    transform: scale(1.06);
-  }
-  100% {
-    transform: scale(1);
+  from {
+    opacity: 0.4;
+    transform: scale(0.96);
   }
 }
 .verdict .b.bad {
@@ -1905,13 +1994,13 @@ body {
   margin-bottom: 6px;
 }
 .reveal-1 {
-  animation-delay: 120ms;
+  animation-delay: var(--dur-press);
 }
 .reveal-2 {
-  animation-delay: 140ms;
+  animation-delay: var(--dur-press);
 }
 .reveal-3 {
-  animation-delay: 220ms;
+  animation-delay: var(--dur-state);
 }
 .imp-actions {
   margin-top: 10px;
@@ -1924,14 +2013,14 @@ body {
 
 .cite {
   transition:
-    background 0.15s,
-    box-shadow 0.15s;
+    background var(--dur-press),
+    box-shadow var(--dur-press);
 }
 .cite:hover {
   box-shadow: 0 0 0 3px var(--primary-tint);
 }
 .cite.flash {
-  animation: cite-flash 0.5s ease;
+  animation: cite-flash calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
 }
 @keyframes cite-flash {
   0% {
@@ -1966,7 +2055,7 @@ body {
 .why-toggle svg {
   width: 13px;
   height: 13px;
-  transition: transform 0.2s;
+  transition: transform var(--dur-state);
 }
 .why-toggle.open svg {
   transform: rotate(180deg);
@@ -1986,8 +2075,8 @@ body {
   color: var(--ink-body);
   width: 100%;
   transition:
-    border-color 0.15s,
-    background 0.15s;
+    border-color var(--dur-press),
+    background var(--dur-press);
 }
 .prompt-suggest:hover {
   border-color: var(--primary);
@@ -2060,7 +2149,7 @@ body {
   box-shadow: var(--shadow-md);
   padding: 11px 12px;
   pointer-events: none;
-  animation: step-in 0.16s ease both;
+  animation: step-in var(--dur-state) var(--ease-out) both;
 }
 .cand-preview .cp-top {
   display: flex;
@@ -2114,10 +2203,10 @@ body {
     0 2px 4px oklch(0.255 0.05 285 / 0.16),
     0 8px 22px oklch(0.255 0.08 285 / 0.24);
   transition:
-    transform 0.2s var(--ease),
-    box-shadow 0.2s var(--ease),
-    background 0.16s var(--ease),
-    opacity 0.18s var(--ease);
+    transform var(--dur-state) var(--ease-out),
+    box-shadow var(--dur-state) var(--ease-out),
+    background var(--dur-state) var(--ease-out),
+    opacity var(--dur-state) var(--ease-out);
 }
 .cop-fab:hover {
   background: var(--primary-hover);
@@ -2153,7 +2242,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: panel-in 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+  animation: panel-in var(--dur-state) var(--ease-out);
 }
 @keyframes panel-in {
   from {
@@ -2231,8 +2320,8 @@ body {
   font-weight: 550;
   cursor: pointer;
   transition:
-    border-color 0.15s,
-    color 0.15s;
+    border-color var(--dur-press),
+    color var(--dur-press);
 }
 .model-pick:hover {
   border-color: var(--primary);
@@ -2262,7 +2351,7 @@ body {
   border-radius: 12px;
   box-shadow: var(--shadow-md);
   padding: 6px;
-  animation: panel-in 0.14s var(--ease, ease);
+  animation: panel-in var(--dur-press) var(--ease-out);
 }
 .mm-label {
   font-size: 12px;
@@ -2356,8 +2445,8 @@ body {
   color: var(--ink-body);
   cursor: pointer;
   transition:
-    border-color 0.15s,
-    background 0.15s;
+    border-color var(--dur-press),
+    background var(--dur-press);
 }
 .think-toggle:hover {
   border-color: var(--border-strong);
@@ -2372,7 +2461,7 @@ body {
 }
 .think-toggle > svg:last-child {
   color: var(--muted);
-  transition: transform 0.2s;
+  transition: transform var(--dur-state);
 }
 .think-toggle.open > svg:last-child {
   transform: rotate(180deg);
@@ -2414,8 +2503,8 @@ body {
   color: var(--ink-body);
   cursor: pointer;
   transition:
-    border-color 0.15s,
-    background 0.15s;
+    border-color var(--dur-press),
+    background var(--dur-press);
 }
 .src-toggle:hover {
   border-color: var(--border-strong);
@@ -2439,7 +2528,7 @@ body {
 }
 .src-toggle > svg:last-child {
   color: var(--muted);
-  transition: transform 0.2s;
+  transition: transform var(--dur-state);
 }
 .src-toggle.open > svg:last-child {
   transform: rotate(180deg);
@@ -2513,7 +2602,7 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--dur-press);
 }
 .cop-quick:hover {
   background: color-mix(in oklab, var(--primary) 16%, var(--surface));
@@ -2535,7 +2624,7 @@ body {
   font: inherit;
   color: var(--ink-body);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--dur-press);
 }
 .cop-input input::placeholder {
   color: var(--muted);
@@ -2579,7 +2668,7 @@ body {
   align-items: flex-start;
   justify-content: center;
   padding-top: 12vh;
-  animation: scrim-in 0.16s ease;
+  animation: scrim-in var(--dur-state) var(--ease-out);
 }
 @keyframes scrim-in {
   from {
@@ -2596,7 +2685,7 @@ body {
   border-radius: 12px;
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  animation: palette-in 0.16s cubic-bezier(0.22, 0.61, 0.36, 1);
+  animation: palette-in var(--dur-state) var(--ease-out);
 }
 @keyframes palette-in {
   from {
@@ -2748,7 +2837,7 @@ body {
   inset: 0;
   background: oklch(0.2 0.02 285 / 0.4);
   z-index: 90;
-  animation: scrim-in 0.18s ease;
+  animation: scrim-in var(--dur-state) var(--ease-out);
 }
 .drawer {
   position: fixed;
@@ -2762,7 +2851,7 @@ body {
   z-index: 91;
   display: flex;
   flex-direction: column;
-  animation: drawer-in 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+  animation: drawer-in var(--dur-move) var(--spring-calm);
 }
 @keyframes drawer-in {
   from {
@@ -2940,25 +3029,27 @@ body {
   aspect-ratio: 16 / 11;
   min-height: 380px;
   background: var(--surface);
+  container-type: size;
 }
 .rmap-point {
   position: absolute;
+  left: 0;
+  top: 0;
   border-radius: 50%;
+  translate: calc(var(--x) * 100cqw) calc(var(--y) * 100cqh);
   transform: translate(-50%, -50%);
   transition:
-    left 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
-    top 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.4s ease,
-    box-shadow 0.15s ease;
+    translate calc(var(--dur-explain) * 1.25 * var(--motion-scale)) var(--spring-calm),
+    opacity var(--dur-move) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out);
 }
 .rmap-point.incident {
   cursor: pointer;
   transition:
-    left 0.7s var(--ease-out),
-    top 0.7s var(--ease-out),
-    opacity 0.4s ease,
-    transform 0.16s var(--ease),
-    box-shadow 0.16s ease;
+    translate calc(var(--dur-explain) * 1.25 * var(--motion-scale)) var(--spring-calm),
+    opacity var(--dur-move) var(--ease-out),
+    transform var(--dur-state) var(--ease-out),
+    box-shadow var(--dur-state) var(--ease-out);
 }
 .rmap-point.incident::after {
   content: "";
@@ -2967,7 +3058,7 @@ body {
   border-radius: 50%;
   border: 1px solid currentColor;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity var(--dur-press);
 }
 .rmap-point.incident:hover::after {
   opacity: 0.6;
@@ -3003,11 +3094,11 @@ body {
   cursor: pointer;
   z-index: 6;
   transition:
-    opacity 0.22s ease,
-    transform 0.4s var(--ease-out),
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-  animation: label-fade 0.34s var(--ease-out);
+    opacity var(--dur-state) var(--ease-out),
+    transform var(--dur-move) var(--ease-out),
+    border-color var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out);
+  animation: label-fade var(--dur-move) var(--ease-out);
 }
 @keyframes label-fade {
   from {
@@ -3073,16 +3164,19 @@ body {
   cursor: pointer;
   border: 1px solid transparent;
   transition:
-    background 0.16s var(--ease),
-    padding-left 0.16s var(--ease),
-    border-color 0.16s var(--ease);
+    background var(--dur-state) var(--ease-out),
+    border-color var(--dur-state) var(--ease-out);
 }
 .legend-item:hover {
   background: var(--surface-2);
 }
-.legend-item:hover,
-.legend-item.hot {
-  padding-left: 14px;
+/* The hot item nudges its content with translate (no padding reflow). */
+.legend-item > * {
+  transition: translate var(--dur-state) var(--ease-out);
+}
+.legend-item:hover > *,
+.legend-item.hot > * {
+  translate: 3px 0;
 }
 .legend-item.sel {
   background: var(--primary-tint);
@@ -3164,8 +3258,8 @@ body {
   border-radius: 6px;
   cursor: pointer;
   transition:
-    background 0.14s var(--ease),
-    transform 0.14s var(--ease);
+    background var(--dur-press) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 .cd-inc:hover {
   background: var(--surface-2);
@@ -3238,22 +3332,28 @@ body {
   background: var(--border-strong);
   border-radius: 3px;
   z-index: 0;
+  container-type: inline-size;
 }
 .rag-track-fill {
   position: absolute;
   left: 0;
   top: 0;
+  width: 100%;
   height: 100%;
   background: var(--primary);
   border-radius: 3px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left center;
+  scale: var(--p, 0) 1;
+  transition: scale calc(var(--dur-explain) * var(--motion-scale)) var(--ease-in-out);
 }
 .rag-comet {
   position: absolute;
   top: 1.5px;
+  left: 0;
   width: 0;
   height: 0;
-  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  translate: calc(var(--p, 0) * 100cqi) 0;
+  transition: translate calc(var(--dur-explain) * var(--motion-scale)) var(--ease-in-out);
 }
 .rag-comet::before {
   content: "";
@@ -3293,10 +3393,10 @@ body {
   display: grid;
   place-items: center;
   transition:
-    background 0.3s,
-    border-color 0.3s,
-    color 0.3s,
-    box-shadow 0.3s;
+    background var(--dur-move),
+    border-color var(--dur-move),
+    color var(--dur-move),
+    box-shadow var(--dur-move);
 }
 .rag-dot svg {
   width: 18px;
@@ -3313,27 +3413,13 @@ body {
   background: var(--primary);
   color: var(--on-primary);
 }
-@media (prefers-reduced-motion: no-preference) {
-  .rag-stage.active .rag-dot {
-    animation: rag-pulse 1.5s ease-in-out infinite;
-  }
-}
-@keyframes rag-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 4px var(--primary-tint);
-  }
-  50% {
-    box-shadow: 0 0 0 8px color-mix(in oklab, var(--primary) 10%, transparent);
-  }
-}
 .rag-label {
   font-weight: 600;
   color: var(--muted);
   font-size: 13.5px;
   margin-top: 12px;
   line-height: 1.3;
-  transition: color 0.3s;
+  transition: color var(--dur-move);
 }
 .rag-stage.active .rag-label,
 .rag-stage.done .rag-label {
@@ -3415,20 +3501,22 @@ body {
   border-radius: var(--radius);
   background: var(--surface);
   overflow: hidden;
+  container-type: size;
 }
 .mini-cluster .mc-point {
   position: absolute;
-  width: 9px;
-  height: 9px;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  transform: translate(-50%, -50%);
+  translate: calc(var(--x) * 100cqw) calc(var(--y) * 100cqh);
+  transform: translate(-50%, -50%) scale(var(--s, 1));
   transition:
-    left 0.8s cubic-bezier(0.22, 0.61, 0.36, 1),
-    top 0.8s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.4s ease,
-    background 0.45s ease,
-    width 0.3s ease,
-    height 0.3s ease;
+    translate calc(var(--dur-explain) * 1.25 * var(--motion-scale)) var(--spring-calm),
+    transform var(--dur-move) var(--ease-out),
+    opacity var(--dur-move) var(--ease-out),
+    background var(--dur-move) var(--ease-out);
 }
 .mc-label {
   position: absolute;
@@ -3442,7 +3530,7 @@ body {
   padding: 2px 9px;
   white-space: nowrap;
   pointer-events: none;
-  transition: opacity 0.4s ease 0.45s;
+  transition: opacity var(--dur-move) var(--ease-out) var(--dur-move);
 }
 .mc-label.hide {
   opacity: 0;
@@ -3478,9 +3566,9 @@ body {
   background: var(--surface-2);
   border-style: dashed;
   transition:
-    background 0.3s var(--ease),
-    border-color 0.3s,
-    box-shadow 0.3s;
+    background var(--dur-move) var(--ease-out),
+    border-color var(--dur-move),
+    box-shadow var(--dur-move);
 }
 .cstep.active,
 .cstep.done {
@@ -3501,8 +3589,8 @@ body {
   color: var(--muted);
   flex-shrink: 0;
   transition:
-    background 0.3s,
-    color 0.3s;
+    background var(--dur-move),
+    color var(--dur-move);
 }
 .cstep.active .cstep-dot,
 .cstep.done .cstep-dot {
@@ -3554,24 +3642,13 @@ body {
 /* ===================================================================== *
  *  Screen transition + motion polish
  * ===================================================================== */
-.screen-enter {
-  animation: screen-in 0.34s var(--ease-out);
-}
-@keyframes screen-in {
-  from {
-    transform: translateY(8px);
-  }
-  to {
-    transform: none;
-  }
-}
 .btn {
   transition:
-    background 0.16s var(--ease),
-    border-color 0.16s var(--ease),
-    color 0.16s var(--ease),
-    transform 0.12s var(--ease),
-    box-shadow 0.18s var(--ease);
+    background var(--dur-state) var(--ease-out),
+    border-color var(--dur-state) var(--ease-out),
+    color var(--dur-state) var(--ease-out),
+    transform var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-state) var(--ease-out);
 }
 .btn:active {
   transform: translateY(1px) scale(0.985);
@@ -3581,45 +3658,45 @@ body {
 }
 .icon-btn {
   transition:
-    background 0.15s var(--ease),
-    color 0.15s var(--ease),
-    transform 0.12s var(--ease);
+    background var(--dur-press) var(--ease-out),
+    color var(--dur-press) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 .icon-btn:active {
   transform: scale(0.9);
 }
 .nav-item {
   transition:
-    background 0.16s var(--ease),
-    color 0.16s var(--ease);
+    background var(--dur-state) var(--ease-out),
+    color var(--dur-state) var(--ease-out);
 }
 .segmented button {
   transition:
-    background 0.16s var(--ease),
-    color 0.16s var(--ease),
-    box-shadow 0.16s var(--ease);
+    background var(--dur-state) var(--ease-out),
+    color var(--dur-state) var(--ease-out),
+    box-shadow var(--dur-state) var(--ease-out);
 }
 .list tbody tr {
   transition:
-    background 0.13s var(--ease),
-    box-shadow 0.13s var(--ease);
+    background var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out);
 }
 .tab {
   transition:
-    color 0.16s var(--ease),
-    border-color 0.2s var(--ease);
+    color var(--dur-state) var(--ease-out),
+    border-color var(--dur-state) var(--ease-out);
 }
 .card {
   transition:
-    box-shadow 0.22s var(--ease),
-    border-color 0.2s var(--ease);
+    box-shadow var(--dur-state) var(--ease-out),
+    border-color var(--dur-state) var(--ease-out);
 }
 .cand {
   transition:
-    border-color 0.16s var(--ease),
-    background 0.16s var(--ease),
-    transform 0.16s var(--ease),
-    box-shadow 0.16s var(--ease);
+    border-color var(--dur-state) var(--ease-out),
+    background var(--dur-state) var(--ease-out),
+    transform var(--dur-state) var(--ease-out),
+    box-shadow var(--dur-state) var(--ease-out);
 }
 .cand:hover {
   transform: translateY(-1px);
@@ -3632,18 +3709,18 @@ body {
 .pal-item,
 .chip {
   transition:
-    background 0.14s var(--ease),
-    color 0.14s var(--ease),
-    transform 0.14s var(--ease);
+    background var(--dur-press) var(--ease-out),
+    color var(--dur-press) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 .rel-row:hover {
   transform: translateX(2px);
 }
 .cop-quick {
   transition:
-    background 0.16s var(--ease),
-    transform 0.14s var(--ease),
-    box-shadow 0.16s var(--ease);
+    background var(--dur-state) var(--ease-out),
+    transform var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-state) var(--ease-out);
 }
 .cop-quick:hover {
   transform: translateY(-1px);
@@ -3651,15 +3728,15 @@ body {
 }
 .prompt-suggest {
   transition:
-    border-color 0.16s var(--ease),
-    background 0.16s var(--ease),
-    transform 0.14s var(--ease);
+    border-color var(--dur-state) var(--ease-out),
+    background var(--dur-state) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 .prompt-suggest:hover {
   transform: translateY(-1px);
 }
 .avatar {
-  transition: transform 0.14s var(--ease);
+  transition: transform var(--dur-press) var(--ease-out);
 }
 .avatar:hover {
   transform: scale(1.06);
@@ -3684,7 +3761,7 @@ body {
   font-size: 13px;
   font-weight: 550;
   box-shadow: var(--shadow-md);
-  animation: toast-in 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+  animation: toast-in var(--dur-state) var(--ease-out);
 }
 .toast svg {
   color: var(--st-resolved);
@@ -3835,7 +3912,7 @@ body {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-property: opacity, color, background-color, border-color !important;
-    transition-duration: 0.12s !important;
+    transition-duration: var(--dur-move) !important;
     transition-delay: 0s !important;
   }
 }
@@ -4108,7 +4185,7 @@ body {
   height: auto;
   border: 0;
   border-radius: 0;
-  animation: sheet-in 0.28s var(--ease-out);
+  animation: sheet-in var(--dur-move) var(--spring-calm);
 }
 @keyframes sheet-in {
   from {
@@ -4246,7 +4323,7 @@ body {
   width: 3px;
   border-radius: 3px;
   background: var(--border-strong);
-  transition: background 0.3s var(--ease);
+  transition: background var(--dur-move) var(--ease-out);
 }
 .rag-stage.done:not(:last-child)::before {
   background: var(--primary);
@@ -4416,7 +4493,7 @@ body {
     height: min(648px, calc(100vh - 48px));
     border: 1px solid var(--border-strong);
     border-radius: 16px;
-    animation: panel-in 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+    animation: panel-in var(--dur-move) var(--spring-calm);
   }
   .cop-panel-head {
     padding: 12px 14px;
@@ -4707,9 +4784,8 @@ body {
   .cd-inc:hover {
     transform: none;
   }
-  .legend-item:hover,
-  .legend-item.hot {
-    padding-left: 11px;
+  .legend-item:hover > * {
+    translate: none;
   }
 }
 
@@ -4718,5 +4794,253 @@ body {
   html.scroll-locked,
   html.scroll-locked body {
     overflow: hidden;
+  }
+}
+
+/* ===================================================================== *
+ *  Modo aula: the switch, the caption strip and the room it needs
+ * ===================================================================== */
+.aula-toggle {
+  width: auto;
+  min-width: 34px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+.aula-toggle-t {
+  display: none;
+}
+.aula-toggle.on {
+  color: var(--primary-ink);
+  background: var(--primary-tint);
+  border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+}
+
+.aula-bar-wrap {
+  position: fixed;
+  z-index: 90;
+  left: max(8px, var(--safe-l));
+  right: max(8px, var(--safe-r));
+  bottom: calc(var(--tabbar-h) + var(--safe-b) + 8px);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.aula-bar {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  animation: aula-bar-in var(--dur-move) var(--spring-calm);
+}
+@keyframes aula-bar-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+.aula-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.aula-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-ink);
+  font-variant-numeric: tabular-nums;
+}
+.aula-caption {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 500;
+  text-wrap: pretty;
+}
+.aula-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.aula-ctrl .aula-next {
+  margin-left: auto;
+}
+.aula-btn {
+  border-color: var(--border);
+  width: 40px;
+  height: 40px;
+}
+.aula-btn:disabled,
+.aula-next:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.aula-ctrl .aula-next {
+  height: 40px;
+}
+
+/* Content scrolls clear of the strip. */
+:root[data-aula-bar] {
+  scroll-padding-bottom: calc(
+    var(--tabbar-h) + var(--safe-b) + var(--aula-bar-h, 0px) + 24px
+  );
+}
+:root[data-aula-bar] .main {
+  padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + var(--aula-bar-h, 0px) + 32px);
+  scroll-padding-bottom: calc(var(--aula-bar-h, 0px) + 32px);
+}
+
+/* Phone: the FAB rises above the strip; the Aurora sheet keeps its input
+   clear and the strip drops to the bottom edge while the sheet is open. */
+:root[data-aula-bar] .cop-fab {
+  translate: 0 calc(-1 * (var(--aula-bar-h, 0px) + 8px));
+}
+@media (max-width: 767px) {
+  body:has(.cop-panel) .aula-bar-wrap {
+    bottom: calc(var(--safe-b) + 8px);
+  }
+  :root[data-aula-bar] .cop-panel {
+    padding-bottom: calc(var(--aula-bar-h, 0px) + 16px);
+  }
+}
+
+@media (min-width: 768px) {
+  .aula-bar-wrap {
+    left: calc(60px + 24px);
+    right: 100px;
+    bottom: 20px;
+  }
+  .aula-bar {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 12px 10px 16px;
+  }
+  .aula-ctrl {
+    flex: none;
+  }
+  :root[data-aula-bar] .cop-fab {
+    translate: none;
+  }
+  /* With the Aurora panel open, the strip becomes the panel's own footer. */
+  body:has(.cop-panel) .aula-bar-wrap {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    width: min(420px, calc(100vw - 32px));
+  }
+  body:has(.cop-panel) .aula-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  :root[data-aula-bar] .cop-panel {
+    bottom: calc(24px + var(--aula-bar-h, 0px) + 8px);
+    height: min(648px, calc(100vh - 56px - var(--aula-bar-h, 0px)));
+  }
+}
+@media (min-width: 921px) {
+  .aula-toggle-t {
+    display: inline;
+  }
+  .aula-bar-wrap {
+    left: calc(232px + 24px);
+  }
+}
+/* Projector: everything a size up for the last row. The type scale is in px,
+   so the app zooms (standard `zoom`) and its height compensates. */
+@media (min-width: 1280px) {
+  :root[data-aula] .app {
+    zoom: 1.125;
+  }
+  :root[data-aula] .app,
+  :root[data-aula] .main {
+    max-height: calc(100vh / 1.125);
+  }
+  :root[data-aula] .aula-caption {
+    font-size: 18px;
+  }
+  :root[data-aula] .aula-count {
+    font-size: 13.5px;
+  }
+}
+
+/* ===================================================================== *
+ *  View transitions: routes (React <ViewTransition>) and the peek drawer
+ *  Unsupported browsers simply swap the content; nothing waits on these.
+ * ===================================================================== */
+/* The chrome stays still; only named groups animate. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-new(.from-right) {
+  animation: vt-in-right var(--dur-move) var(--spring-calm) both;
+}
+::view-transition-new(.from-left) {
+  animation: vt-in-left var(--dur-move) var(--spring-calm) both;
+}
+::view-transition-old(.to-left),
+::view-transition-old(.to-right),
+::view-transition-old(.fade) {
+  animation: vt-out calc(var(--dur-move) * var(--exit-factor)) var(--ease-exit) both;
+}
+::view-transition-new(.fade) {
+  animation: vt-fade-in var(--dur-state) var(--ease-out) both;
+}
+::view-transition-group(.morph),
+::view-transition-group(peek-num) {
+  animation-duration: var(--dur-move);
+  animation-timing-function: var(--spring-calm);
+}
+.peek-num {
+  view-transition-name: peek-num;
+}
+@keyframes vt-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+}
+@keyframes vt-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(*) {
+    animation: vt-fade-in 160ms var(--ease-out) both !important;
+  }
+  ::view-transition-old(*) {
+    animation: vt-out 120ms var(--ease-exit) both !important;
+  }
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
   }
 }

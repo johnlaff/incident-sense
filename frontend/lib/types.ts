@@ -172,6 +172,10 @@ export interface SuggestResponse {
   incident_number?: string | null;
   summarized_query: string;
   query_text: string;
+  /** First values of the query vector, rounded (absent on older servers). */
+  embedding_preview?: number[];
+  /** Length of the query vector (absent on older servers). */
+  dims?: number;
   classification: Classification;
   suggestion: string | null;
   candidates: RetrievedCandidate[];

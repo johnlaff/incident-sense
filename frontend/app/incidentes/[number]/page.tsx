@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, ViewTransition } from "react";
 
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
-import { PipelineTrace, type RunPhase } from "@/components/pipeline-trace";
+import {
+  IdChip,
+  PipelineTrace,
+  RunStatus,
+  usePipelineLesson,
+  type RunPhase,
+} from "@/components/pipeline-trace";
+import { SimilarityRuler } from "@/components/similarity-ruler";
 import {
   Avatar,
   PriorityBadge,
@@ -30,7 +37,17 @@ import {
   type IncidentRecord,
 } from "@/lib/model";
 import { DEFAULT_MODEL, MODELS, modelName, modelNameFromRoute } from "@/lib/models";
-import { STEP_OUTLINE, mergeNotes } from "@/lib/pipeline";
+import {
+  BEATS,
+  PIPELINE_STEPS,
+  formatSim,
+  layerShown,
+  mergeNotes,
+  retrievalRows,
+  stepReveal,
+  stepViews,
+} from "@/lib/pipeline";
+import { funnel } from "@/lib/ruler";
 import type { SuggestResponse, WorkNote } from "@/lib/types";
 import { SuggestionMarkdown } from "@/components/markdown";
 
@@ -44,6 +61,10 @@ export interface SuggestionRun {
   phase: RunPhase;
   response: SuggestResponse | null;
   error: string | null;
+  /** Date.now() when the request left (null when idle). */
+  startedAt: number | null;
+  /** Round trip of the last answered request, in ms. */
+  durationMs: number | null;
   model: string;
   setModel: (id: string) => void;
   run: () => Promise<void>;
@@ -53,12 +74,16 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
   const [phase, setPhase] = useState<RunPhase>("idle");
   const [response, setResponse] = useState<SuggestResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [durationMs, setDurationMs] = useState<number | null>(null);
   const [model, setModel] = useState(DEFAULT_MODEL);
   const busy = useRef(false);
 
   async function run() {
     if (busy.current) return;
     busy.current = true;
+    const t0 = Date.now();
+    setStartedAt(t0);
     setPhase("running");
     setError(null);
     try {
@@ -73,6 +98,7 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
         priority: Number(record.priority.slice(1)),
         model,
       });
+      setDurationMs(Date.now() - t0);
       setResponse(res);
       setPhase("done");
     } catch (e) {
@@ -89,7 +115,7 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
     }
   }
 
-  return { phase, response, error, model, setModel, run };
+  return { phase, response, error, startedAt, durationMs, model, setModel, run };
 }
 
 interface RelatedRow {
@@ -124,7 +150,10 @@ export default function DetailPage() {
         <WakeNotice show={slow} />
         <div className="card record-card">
           <div className="record-head record-skel">
-            <span className="sk sk-num" />
+            {/* The number is known from the URL: it lands here from the list. */}
+            <ViewTransition name={`inc-${number}`} share="morph" default="none">
+              <span className="record-num mono">{number}</span>
+            </ViewTransition>
             <span className="sk sk-title" />
             <span className="sk sk-meta" />
           </div>
@@ -193,7 +222,9 @@ export default function DetailPage() {
 function Crumbs({ number }: { number: string }) {
   return (
     <nav className="crumbs" aria-label="Você está em">
-      <Link href="/incidentes">Incidentes</Link>
+      <Link href="/incidentes" transitionTypes={["nav-back"]}>
+        Incidentes
+      </Link>
       <span aria-hidden="true">/</span>
       <span className="mono" aria-current="page">
         {number}
@@ -403,7 +434,13 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
           <div className="top-row">
             <div className="record-title">
               <div className="row">
-                <span className="record-num mono">{record.number}</span>
+                <ViewTransition
+                  name={`inc-${record.number}`}
+                  share="morph"
+                  default="none"
+                >
+                  <span className="record-num mono">{record.number}</span>
+                </ViewTransition>
                 <StateBadge state={localState} />
                 <PriorityBadge priority={record.priority} withWord />
               </div>
@@ -546,6 +583,15 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
               result={suggest.response}
               error={suggest.error}
               modelName={modelName(suggest.model)}
+              source={{
+                description: record.description,
+                category: record.category,
+                subcategory: record.subcategory,
+                empresa: record.empresa,
+                tags: record.tags,
+              }}
+              startedAt={suggest.startedAt}
+              durationMs={suggest.durationMs}
               onRun={() => void suggest.run()}
               onCite={peek}
               flashCite={flashCite}
@@ -711,8 +757,6 @@ function TabList({
 //  Floating copilot — Aurora. Animated pipeline trace over the live RAG call.
 // ===========================================================================
 
-type StepStatus = "pending" | "run" | "done";
-
 function CopilotFab({
   record,
   suggest,
@@ -731,12 +775,8 @@ function CopilotFab({
   onOpenAnalysis: () => void;
 }) {
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();
-  const reduced = usePrefersReducedMotion();
 
   const phase = suggest.phase;
-  const [status, setStatus] = useState<StepStatus[]>(() =>
-    Array<StepStatus>(STEP_OUTLINE.length).fill("pending"),
-  );
   const result = useMemo(
     () => (suggest.response ? mapSuggest(suggest.response) : null),
     [suggest.response],
@@ -745,36 +785,24 @@ function CopilotFab({
   const [why, setWhy] = useState(false);
   const model = suggest.model;
   const [modelOpen, setModelOpen] = useState(false);
-  const [showSteps, setShowSteps] = useState(false);
   const [srcOpen, setSrcOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [lastMessage, setLastMessage] = useState("Sugerir resolução para este incidente");
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const msgsRef = useRef<HTMLDivElement>(null);
   const trapRef = useFocusTrap<HTMLDivElement>(open);
   // On phones the panel is a full-height sheet; keep the record from scrolling under it.
   useScrollLock(open);
   const curModel = MODELS.find((m) => m.id === model) ?? MODELS[0];
 
-  const clearTimers = () => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-  };
-
-  // The seven steps plus the gate, with what each decided once the run is back.
-  const decisions = new Map(suggest.response?.steps.map((st) => [st.id, st.decision]));
-  const steps = STEP_OUTLINE.map((o) => ({
-    title: o.gate ? o.title : `${o.order}. ${o.title}`,
-    detail: decisions.get(o.id) ?? null,
-  }));
-
-  // A run started from the "Análise da IA" tab never animated here: show it done.
-  const shown: StepStatus[] =
-    phase === "running"
-      ? status
-      : steps.map((): StepStatus => (phase === "done" ? "done" : "pending"));
-
-  useEffect(() => () => clearTimers(), []);
+  // The same honest replay as the "Análise da IA" tab, in compact form. It
+  // only runs while the panel is open, so a closed panel never takes the
+  // modo aula caption bar from the tab.
+  const shown = phase === "done" ? suggest.response : null;
+  const lesson = usePipelineLesson("aurora", open ? shown : null);
+  const beat = shown ? lesson.step : -1;
+  const views = useMemo(() => (shown ? stepViews(shown) : null), [shown]);
+  const reached = (key: (typeof BEATS)[number]["step"]) =>
+    stepReveal(key, beat) !== "hidden";
 
   // Close on Escape (closing the model menu first if it is open).
   useEffect(() => {
@@ -788,37 +816,11 @@ function CopilotFab({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, modelOpen, setOpen]);
 
-  function animate() {
-    if (reduced) {
-      setStatus(steps.map((): StepStatus => "run"));
-      return;
-    }
-    let st: StepStatus[] = steps.map((): StepStatus => "pending");
-    st[0] = "run";
-    setStatus([...st]);
-    let i = 0;
-    const tick = () => {
-      if (i < steps.length - 1) {
-        st = [...st];
-        st[i] = "done";
-        st[i + 1] = "run";
-        setStatus([...st]);
-        i++;
-        timers.current.push(setTimeout(tick, 420));
-      }
-    };
-    timers.current.push(setTimeout(tick, 480));
-  }
-
   async function run() {
     if (phase === "running") return;
     setWhy(false);
-    setShowSteps(false);
     setSrcOpen(false);
-    animate();
     await suggest.run();
-    clearTimers();
-    setStatus(steps.map((): StepStatus => "done"));
   }
 
   // Send a written message: echo it as the user's bubble, then run the grounded
@@ -846,63 +848,83 @@ function CopilotFab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSuggestFor, record.number]);
 
-  // Keep the chat scrolled to the newest content.
+  // Keep the chat scrolled to the newest content; in modo aula, to the step
+  // being explained.
   useEffect(() => {
-    if (msgsRef.current) msgsRef.current.scrollTop = msgsRef.current.scrollHeight;
-  }, [phase, status, why, open, showSteps, srcOpen]);
+    const box = msgsRef.current;
+    if (!box) return;
+    const current = lesson.aula
+      ? box.querySelector<HTMLElement>('.mini-step[aria-current="step"]')
+      : null;
+    if (current) current.scrollIntoView({ block: "start", behavior: "auto" });
+    else box.scrollTop = box.scrollHeight;
+  }, [phase, beat, why, open, srcOpen, lesson.aula]);
 
   const started = phase !== "idle";
 
-  const stepsList = (
-    <div className="trace">
-      {steps.map((s, i) => (
-        <div key={i} className={`step${shown[i] !== "pending" ? " appear" : ""}`}>
-          <span
-            className={`ico ${shown[i] === "done" ? "done" : shown[i] === "run" ? "run" : "pending"}`}
+  const rail = (
+    <ol
+      className={`mini-rail${shown ? "" : " is-outline"}`}
+      aria-label="Etapas da análise"
+      aria-busy={phase === "running"}
+    >
+      {PIPELINE_STEPS.map((def) => {
+        const view = views?.find((v) => v.key === def.key) ?? null;
+        const reveal = view ? stepReveal(def.key, beat) : "hidden";
+        const stopped =
+          def.key === "classificar" &&
+          reveal !== "hidden" &&
+          views?.find((v) => v.key === "sugerir")?.status === "pulada";
+        return (
+          <li
+            key={def.key}
+            className={`mini-step is-${reveal}${view && reveal !== "hidden" ? ` st-${view.status}` : ""}${
+              def.gate ? " is-gate" : ""
+            }${stopped ? " is-stopped" : ""}`}
+            aria-current={reveal === "current" ? "step" : undefined}
           >
-            {shown[i] === "done" ? (
-              <Icons.check sw={3} />
-            ) : shown[i] === "run" ? (
-              <Icons.loader sw={2.4} />
-            ) : (
-              <span className="dot-sm" />
-            )}
-          </span>
-          <span className="lbl">
-            <b>{s.title}</b>
-            {shown[i] !== "pending" && s.detail ? <> · {s.detail}</> : null}
-          </span>
-        </div>
-      ))}
-    </div>
+            <span className="mini-marker" aria-hidden="true">
+              {reveal === "done" && view?.status === "concluida" && !stopped ? (
+                <Icons.check size={12} sw={3} />
+              ) : (
+                def.order
+              )}
+            </span>
+            <div className="mini-body">
+              <b>{def.title}</b>
+              {view && reveal !== "hidden" ? (
+                def.key === "buscar" && shown ? (
+                  <MiniSearch result={shown} beat={beat} onOpen={peek} />
+                ) : (
+                  <span className="mini-decision">
+                    {def.key === "sugerir" && view.status === "pulada"
+                      ? "Não se aplica."
+                      : view.decisions[0]}
+                  </span>
+                )
+              ) : null}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 
-  const traceSummary = result?.candidates.length
-    ? `Consultei ${result.candidates.length} ${result.candidates.length === 1 ? "caso" : "casos"} para chegar aqui`
-    : "Veja como cheguei a esta conclusão";
-
-  const traceBlock =
-    phase === "running" ? (
-      <div className="think">
-        <div className="think-head">
-          <Icons.loader size={14} className="spin" />
-          Pensando…
-        </div>
-        {stepsList}
-      </div>
-    ) : (
-      <div className="think done">
-        <button
-          className={`think-toggle${showSteps ? " open" : ""}`}
-          onClick={() => setShowSteps((s) => !s)}
-        >
-          <Icons.checkCircle size={15} />
-          <span className="tt-text">{traceSummary}</span>
-          <Icons.chevronDown size={14} />
-        </button>
-        {showSteps ? stepsList : null}
-      </div>
-    );
+  const traceBlock = (
+    <div className={`think${phase === "running" ? "" : " done"}`}>
+      <RunStatus
+        compact
+        running={phase === "running"}
+        startedAt={suggest.startedAt}
+        durationMs={shown ? suggest.durationMs : null}
+        replaying={Boolean(shown) && !lesson.done}
+        aula={lesson.aula}
+        onSkip={lesson.skip}
+        onReplay={lesson.play}
+      />
+      {phase === "error" ? null : rail}
+    </div>
+  );
 
   const sourcesBlock = result?.candidates.length ? (
     <div className="sources cop-reveal reveal-3">
@@ -930,7 +952,7 @@ function CopilotFab({
               <span className="num">{c.id}</span>
               <span className="cdesc">{c.desc}</span>
               <span className="sim" title="Similaridade semântica, de 0 a 1">
-                {c.sim.toFixed(2)}
+                {formatSim(c.sim)}
               </span>
               <span className={`pill ${c.keep ? "pill-keep" : "pill-drop"}`}>
                 {c.keep ? "usado" : "descartado"}
@@ -946,7 +968,7 @@ function CopilotFab({
   ) : null;
 
   const results =
-    phase === "done" && result ? (
+    phase === "done" && result && reached("classificar") ? (
       <>
         <div
           className={`verdict-card cop-reveal ${result.verdict === "PROCEDENTE" ? "ok" : "bad"}`}
@@ -984,7 +1006,7 @@ function CopilotFab({
           </div>
         ) : (
           <>
-            {result.suggestion ? (
+            {result.suggestion && reached("sugerir") ? (
               <div className="suggestion cop-reveal reveal-2">
                 <h3>Resolução sugerida</h3>
                 <SuggestionMarkdown
@@ -997,7 +1019,7 @@ function CopilotFab({
                 </div>
               </div>
             ) : null}
-            {result.suggestion ? (
+            {result.suggestion && lesson.done ? (
               <div className="cop-actions">
                 <button
                   className="btn btn-primary btn-sm"
@@ -1187,5 +1209,69 @@ function CopilotFab({
         </div>
       ) : null}
     </>
+  );
+}
+
+/** Step 4 in the Aurora panel: the funnel and a compact ruler. */
+function MiniSearch({
+  result,
+  beat,
+  onOpen,
+}: {
+  result: SuggestResponse;
+  beat: number;
+  onOpen: (n: string, el?: HTMLElement) => void;
+}) {
+  const incidents = retrievalRows(result, "incidente");
+  const problems = retrievalRows(result, "problema");
+  const f = funnel(result, [...incidents, ...problems]);
+  const floor = result.retrieval.vector.min_similarity;
+  const showVector = layerShown("vetor", beat);
+  const showCheck = layerShown("conferir", beat);
+  return (
+    <div className="mini-search">
+      <span className="mini-decision">
+        {result.retrieval.tags.tags.length ? (
+          <>
+            Tags:{" "}
+            {result.retrieval.tags.tags.map((t) => (
+              <span className="tag" key={t}>
+                {t}
+              </span>
+            ))}
+          </>
+        ) : (
+          "Sem tags: busca no histórico inteiro."
+        )}
+      </span>
+      {showVector ? (
+        <>
+          <SimilarityRuler
+            compact
+            incidents={incidents}
+            problems={problems}
+            floor={floor}
+            onOpen={onOpen}
+          />
+          <span className="mini-funnel">
+            <b className="mono">{f.candidates}</b> candidatos{" → "}
+            <b className="mono">{f.passed}</b> com {formatSim(floor)} ou mais
+            {showCheck ? (
+              <>
+                {" → "}
+                <b className="mono">{f.kept}</b> mantidos pela IA
+              </>
+            ) : null}
+          </span>
+        </>
+      ) : null}
+      {showCheck && result.context_ids.length ? (
+        <span className="mini-ctx">
+          {result.context_ids.map((id) => (
+            <IdChip key={id} id={id} onCite={onOpen} />
+          ))}
+        </span>
+      ) : null}
+    </div>
   );
 }

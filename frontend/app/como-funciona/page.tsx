@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+
+import { useAula, useAulaLesson, type AulaLessonStep } from "@/components/aula";
 
 import { Icons, type IconComponent } from "@/components/icons";
 import { Meridian } from "@/components/ui";
-import { usePrefersReducedMotion } from "@/lib/motion";
+import { BEATS, PIPELINE_STEPS } from "@/lib/pipeline";
 
 const STEPS: { t: string; d: string; icon: IconComponent }[] = [
   {
@@ -46,48 +48,42 @@ const STEPS: { t: string; d: string; icon: IconComponent }[] = [
 const N = STEPS.length;
 const INSET = 100 / (2 * N);
 
-function Rag() {
-  const reduced = usePrefersReducedMotion();
-  const [idx, setIdx] = useState(-1);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  const clear = () => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
+// Captions for modo aula: the same words as the incident pipeline.
+const RAG_LESSON: AulaLessonStep[] = PIPELINE_STEPS.map((step) => {
+  const beat =
+    BEATS.find((b) => b.step === step.key && b.layer === "vetor") ??
+    BEATS.find((b) => b.step === step.key)!;
+  return {
+    title: step.title,
+    caption: beat.caption,
+    counter: `Etapa ${step.order} de 7`,
   };
+});
 
-  useEffect(() => {
-    clear();
-    if (reduced) {
-      setIdx(N);
-      return clear;
-    }
-    setIdx(-1);
-    let i = 0;
-    const step = () => {
-      setIdx(i);
-      i++;
-      if (i <= N) timers.current.push(setTimeout(step, 760));
-    };
-    timers.current.push(setTimeout(step, 320));
-    return clear;
-  }, [reduced]);
+/**
+ * A sequence that stands still (complete) until someone presses
+ * "Reproduzir", and goes step by step in modo aula.
+ */
+function useHowtoLesson(id: string, steps: AulaLessonStep[], fastMs: number) {
+  const { aula } = useAula();
+  // Static and complete until "Reproduzir"; then step by step in modo aula.
+  const [plays, setPlays] = useState(0);
+  const lesson = useAulaLesson({ id, steps, runKey: plays || null, fastMs });
+  return {
+    lesson,
+    /** -1 before the first step, steps.length when everything shows. */
+    idx:
+      lesson.step < 0 && !lesson.playing
+        ? steps.length
+        : lesson.done && !aula
+          ? steps.length
+          : lesson.step,
+    play: () => setPlays((n) => n + 1),
+  };
+}
 
-  function play() {
-    clear();
-    if (reduced) {
-      setIdx(N);
-      return;
-    }
-    setIdx(-1);
-    let i = 0;
-    const step = () => {
-      setIdx(i);
-      i++;
-      if (i <= N) timers.current.push(setTimeout(step, 760));
-    };
-    timers.current.push(setTimeout(step, 320));
-  }
+function Rag() {
+  const { idx, play } = useHowtoLesson("como-rag", RAG_LESSON, 760);
 
   const finished = idx >= N;
   const fillPct = (Math.max(0, Math.min(idx, N - 1)) / (N - 1)) * 100;
@@ -112,9 +108,15 @@ function Rag() {
       <div className="rag">
         <div className="rag-inner">
           <div className="rag-track" style={{ left: `${INSET}%`, right: `${INSET}%` }}>
-            <div className="rag-track-fill" style={{ width: `${fillPct}%` }} />
+            <div
+              className="rag-track-fill"
+              style={{ "--p": fillPct / 100 } as React.CSSProperties}
+            />
             {showComet ? (
-              <div className="rag-comet" style={{ left: `${fillPct}%` }} />
+              <div
+                className="rag-comet"
+                style={{ "--p": fillPct / 100 } as React.CSSProperties}
+              />
             ) : null}
           </div>
           <div className="rag-stages">
@@ -190,6 +192,9 @@ function rand(seed: number): number {
 function pctOf(v: number): string {
   return `${(v * 100).toFixed(2)}%`;
 }
+function fix(v: number): string {
+  return v.toFixed(4);
+}
 
 interface MiniPoint {
   id: number;
@@ -240,49 +245,29 @@ function buildMini(): {
   return { pts, cents };
 }
 
+const CLUSTER_LESSON: AulaLessonStep[] = [
+  {
+    title: "Pontos",
+    caption: "Cada incidente vira um ponto. No começo, tudo está espalhado.",
+  },
+  {
+    title: "Semelhança",
+    caption: "Quanto mais parecidos dois incidentes, mais perto eles ficam.",
+  },
+  {
+    title: "Grupos",
+    caption: "Pontos próximos viram um grupo: uma recorrência, um padrão que se repete.",
+  },
+  {
+    title: "Isolados",
+    caption:
+      "Pontos sem vizinhos ficam de fora, em cinza. São casos únicos, não um padrão.",
+  },
+];
+
 function Clustering() {
-  const reduced = usePrefersReducedMotion();
   const mini = useMemo(() => buildMini(), []);
-  const [step, setStep] = useState(-1);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  const clear = () => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-  };
-
-  useEffect(() => {
-    clear();
-    if (reduced) {
-      setStep(CN);
-      return clear;
-    }
-    setStep(-1);
-    let i = 0;
-    const tick = () => {
-      setStep(i);
-      i++;
-      if (i <= CN) timers.current.push(setTimeout(tick, 1150));
-    };
-    timers.current.push(setTimeout(tick, 380));
-    return clear;
-  }, [reduced]);
-
-  function play() {
-    clear();
-    if (reduced) {
-      setStep(CN);
-      return;
-    }
-    setStep(-1);
-    let i = 0;
-    const tick = () => {
-      setStep(i);
-      i++;
-      if (i <= CN) timers.current.push(setTimeout(tick, 1150));
-    };
-    timers.current.push(setTimeout(tick, 380));
-  }
+  const { idx: step, play } = useHowtoLesson("como-clusters", CLUSTER_LESSON, 1150);
 
   const grouped = step >= 2;
   const separated = step >= 3;
@@ -326,15 +311,16 @@ function Clustering() {
               <span
                 key={p.id}
                 className="mc-point"
-                style={{
-                  left: pctOf(grouped ? p.tx : p.sx),
-                  top: pctOf(grouped ? p.ty : p.sy),
-                  width: p.out ? 9 : 12,
-                  height: p.out ? 9 : 12,
-                  background: color,
-                  opacity: p.out && separated ? 0.4 : 1,
-                  transitionDelay: `${(p.id % 6) * 34}ms`,
-                }}
+                style={
+                  {
+                    "--x": fix(grouped ? p.tx : p.sx),
+                    "--y": fix(grouped ? p.ty : p.sy),
+                    "--s": p.out ? 0.75 : 1,
+                    background: color,
+                    opacity: p.out && separated ? 0.4 : 1,
+                    transitionDelay: `${(p.id % 6) * 34}ms`,
+                  } as React.CSSProperties
+                }
               />
             );
           })}

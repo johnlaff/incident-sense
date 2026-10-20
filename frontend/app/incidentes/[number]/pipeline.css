@@ -25,7 +25,7 @@
   align-self: flex-start;
 }
 
-/* ----- Step list: a numbered spine ----- */
+/* ----- Step list: a numbered spine that fills as the replay runs ----- */
 .pipe {
   list-style: none;
   margin: 0;
@@ -43,8 +43,9 @@
 .pipe-step:last-child {
   padding-bottom: 0;
 }
-/* the spine between markers */
-.pipe-step::before {
+/* the spine between markers, and its fill (scaled, never resized) */
+.pipe-step::before,
+.pipe-step::after {
   content: "";
   position: absolute;
   left: 13.5px;
@@ -53,10 +54,33 @@
   width: 1px;
   background: var(--border-strong);
 }
-.pipe-step:last-child::before {
+.pipe-step::after {
+  width: 2px;
+  left: 13px;
+  background: var(--primary);
+  transform-origin: top;
+  scale: 1 0;
+  transition: scale calc(var(--dur-move) * var(--motion-scale)) var(--ease-in-out);
+}
+.pipe-step.is-done::after {
+  scale: 1 1;
+}
+.pipe-step:last-child::before,
+.pipe-step:last-child::after {
   display: none;
 }
+/* IMPROCEDENTE: the rail stops at the gate; what follows does not apply. */
+.pipe-step.is-stopped::before {
+  background: none;
+  border-left: 1px dashed var(--border-strong);
+}
+.pipe-step.is-stopped::after,
+.pipe-step.st-pulada::after {
+  scale: 1 0;
+}
+
 .pipe-marker {
+  position: relative;
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -65,43 +89,93 @@
   font-family: var(--mono);
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--primary-ink);
-  background: var(--primary-tint);
-  border: 1px solid oklch(from var(--primary) l c h / 0.35);
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
   z-index: 1;
+  transition:
+    background-color var(--dur-state) var(--ease-out),
+    color var(--dur-state) var(--ease-out),
+    border-color var(--dur-state) var(--ease-out);
 }
 .pipe-marker svg {
   width: 14px;
   height: 14px;
 }
-.pipe-step.is-gate .pipe-marker {
-  border-radius: 7px;
-  transform: rotate(45deg) scale(0.86);
-}
-/* keep the marker upright inside the rotated diamond */
-.pipe-step.is-gate .pipe-marker > span {
+.pipe-marker-n {
+  position: relative;
   display: grid;
   place-items: center;
-  transform: rotate(-45deg) scale(1.16);
 }
-.pipe-step.st-pulada .pipe-marker {
+.pipe-step.is-current .pipe-marker {
+  color: var(--primary-ink);
+  background: var(--primary-tint);
+  border: 1px solid var(--primary);
+}
+.pipe-step.is-done .pipe-marker {
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 1px solid var(--primary);
+}
+.pipe-step.is-done.st-pulada .pipe-marker,
+.pipe-step.is-current.st-pulada .pipe-marker {
   color: var(--muted);
   background: var(--surface);
-  border-style: dashed;
-  border-color: var(--border-strong);
+  border: 1px dashed var(--border-strong);
 }
-.pipe-step.st-degradada .pipe-marker {
+.pipe-step.st-degradada:not(.is-hidden) .pipe-marker {
   color: var(--p2);
   background: var(--p2-tint);
-  border-color: oklch(from var(--p2) l c h / 0.4);
+  border: 1px solid oklch(from var(--p2) l c h / 0.4);
 }
-.pipe-outline .pipe-marker {
-  color: var(--muted);
-  background: var(--surface);
-  border-color: var(--border-strong);
+
+/* Step 5, the procedência gate: a diamond in two halves. They part with the
+   landing spring when the run may go on; they stay shut when it stops. */
+.pipe-step.is-gate .pipe-marker {
+  border: 0;
+  background: none;
+  border-radius: 0;
 }
-.pipe-outline.is-running .pipe-marker {
-  color: var(--primary-ink);
+.pipe-step.is-gate .pipe-marker .gate {
+  position: absolute;
+  inset: -2px;
+  width: 32px;
+  height: 32px;
+  overflow: visible;
+}
+.gate path {
+  fill: var(--surface);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+  transition:
+    translate calc(var(--dur-explain) * var(--motion-scale)) var(--spring-land),
+    fill var(--dur-state) var(--ease-out),
+    stroke var(--dur-state) var(--ease-out);
+}
+.pipe-step.is-gate:not(.is-hidden) .gate path {
+  fill: var(--primary-tint);
+  stroke: var(--primary);
+  stroke-dasharray: none;
+}
+.gate.is-open .gate-l {
+  translate: -3px 0;
+}
+.gate.is-open .gate-r {
+  translate: 3px 0;
+}
+.pipe-step.is-gate.is-done:not(.is-stopped) .gate path {
+  fill: var(--primary);
+}
+.pipe-step.is-gate.is-done:not(.is-stopped) .pipe-marker-n {
+  color: var(--on-primary);
+}
+.pipe-step.is-gate.is-stopped .gate path {
+  fill: var(--p1-tint);
+  stroke: var(--p1);
+}
+.pipe-step.is-gate.is-stopped .pipe-marker-n {
+  color: var(--p1);
 }
 
 .pipe-body {
@@ -554,23 +628,932 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .pipe:not(.pipe-outline) .pipe-step {
-    animation: pipe-in 320ms var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 45ms);
-  }
-  .pipe-outline.is-running .pipe-step {
-    animation: pipe-pulse 1.4s var(--ease) infinite;
-  }
+/* ===================================================================== *
+ *  The honest run: real elapsed time, then the replay
+ * ===================================================================== */
+.run-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  min-height: 34px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--ink-body);
 }
-@keyframes pipe-in {
-  from {
+.run-status.is-running {
+  color: var(--primary-ink);
+  font-weight: 600;
+}
+.run-status .spin {
+  animation: spin 0.9s linear infinite;
+}
+.run-clock {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--primary-tint);
+}
+.run-replay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--primary-ink);
+}
+.run-took {
+  color: var(--muted);
+}
+.run-took b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.run-btn {
+  margin-left: auto;
+}
+.run-status.is-compact {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+}
+
+/* A revealed step brings its content in once (no layout animation). */
+.pipe:not(.pipe-outline) .pipe-step:not(.is-hidden) .pipe-body > :not(.pipe-title-row),
+.layer-in {
+  transition:
+    opacity calc(var(--dur-move) * var(--motion-scale)) var(--ease-out),
+    translate calc(var(--dur-move) * var(--motion-scale)) var(--ease-out);
+}
+@starting-style {
+  .pipe:not(.pipe-outline) .pipe-step:not(.is-hidden) .pipe-body > :not(.pipe-title-row),
+  .layer-in {
     opacity: 0;
-    transform: translateY(4px);
+    translate: 0 6px;
   }
 }
-@keyframes pipe-pulse {
-  50% {
-    opacity: 0.55;
+.pipe-step.is-hidden .pipe-title {
+  color: var(--ink-body);
+}
+
+/* ----- Step 1: fields read from the record ----- */
+.loaded-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  color: var(--ink);
+  transition:
+    opacity var(--dur-state) var(--ease-out) calc(min(var(--i, 0), 8) * var(--stagger)),
+    translate var(--dur-state) var(--ease-out) calc(min(var(--i, 0), 8) * var(--stagger));
+}
+@starting-style {
+  .loaded-chip {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+.loaded-k {
+  color: var(--muted);
+  font-size: 12px;
+}
+.pipe-chips.loaded .tag {
+  margin: 0;
+}
+
+/* ----- Step 2: long text in, short summary out ----- */
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+.summary-col p {
+  margin: 0;
+  line-height: 1.55;
+}
+.summary-orig p {
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.summary-new p {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 15px;
+  clip-path: inset(0);
+  transition: clip-path calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out)
+    var(--dur-state);
+}
+@starting-style {
+  .summary-new p {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+.summary-arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  rotate: 90deg;
+  justify-self: start;
+}
+.pipe-label .mono {
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* ----- Step 3: text becomes numbers ----- */
+.vec {
+  margin-top: 12px;
+}
+.vec-bars {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  grid-template-rows: 26px 26px;
+  column-gap: 3px;
+  max-width: 480px;
+  position: relative;
+  border-block: 1px solid transparent;
+}
+.vec-bars::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border-strong);
+}
+.vec-bar {
+  display: block;
+  border-radius: 2px;
+  scale: 1 var(--h);
+  transition: scale calc(var(--dur-explain) * var(--motion-scale)) var(--spring-calm)
+    calc(min(var(--i, 0), 24) * var(--stagger) / 4);
+}
+.vec-bar.pos {
+  grid-row: 1;
+  transform-origin: bottom;
+  background: var(--primary);
+}
+.vec-bar.neg {
+  grid-row: 2;
+  transform-origin: top;
+  background: var(--muted);
+}
+@starting-style {
+  .vec-bar {
+    scale: 1 0;
+  }
+}
+.vec-nums {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-body);
+  word-spacing: 2px;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.vec-missing {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ----- Step 4: the funnel across the layers ----- */
+.funnel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+.funnel-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  position: relative;
+}
+.funnel-stage + .funnel-stage {
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+}
+.funnel-n {
+  min-width: 2.2ch;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition: opacity var(--dur-state) var(--ease-out);
+}
+.funnel-l {
+  font-size: 12.5px;
+  color: var(--muted);
+  max-width: 13ch;
+  line-height: 1.25;
+}
+.funnel-stage.is-pending .funnel-n {
+  opacity: 0.35;
+}
+.funnel-arrow {
+  display: none;
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+}
+.layer-scope {
+  margin: 6px 0 0;
+}
+
+/* ===================================================================== *
+ *  The similarity ruler (layer 2)
+ * ===================================================================== */
+.ruler {
+  margin-top: 14px;
+  --dot: 14px;
+  --lane-h: 18px;
+  --slide: calc(var(--dur-explain) * var(--motion-scale));
+}
+.ruler-axis {
+  position: relative;
+  container-type: inline-size;
+  margin-inline: 10px;
+  padding-top: 26px;
+}
+.ruler-axis > .ruler-plot > .ruler-floor {
+  top: -22px;
+}
+/* The part of the ruler under the floor: what layer 2 leaves out. */
+.ruler-plot {
+  position: relative;
+}
+.ruler-out {
+  position: absolute;
+  left: 0;
+  top: -4px;
+  bottom: 22px;
+  width: 100cqi;
+  transform-origin: left;
+  scale: var(--fx) 1;
+  background: color-mix(in oklab, var(--muted) 7%, transparent);
+  border-radius: 4px;
+}
+.ruler-out-label {
+  position: absolute;
+  right: 6px;
+  top: -2px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.ruler-floor,
+.ruler-simline {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 22px;
+  width: 0;
+  translate: calc(var(--fx) * 100cqi) 0;
+  border-left: 2px solid var(--ink);
+  z-index: 2;
+}
+.ruler-floor-label {
+  position: absolute;
+  left: 4px;
+  top: -2px;
+  font-size: 12px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.ruler-floor-label b {
+  font-weight: 700;
+}
+.ruler-simline {
+  translate: calc(var(--sx) * 100cqi) 0;
+  border-left: 2px dashed var(--primary);
+  top: -4px;
+  bottom: 0;
+}
+.ruler-simline span {
+  position: absolute;
+  left: 4px;
+  bottom: 26px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-ink);
+  background: var(--surface);
+  padding: 0 3px;
+  border-radius: 4px;
+}
+.ruler-track {
+  position: relative;
+  padding-top: 4px;
+}
+.ruler-track-label {
+  position: relative;
+  z-index: 3;
+  width: fit-content;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-body);
+  margin-left: 6px;
+}
+.ruler-track-label .mono {
+  font-weight: 500;
+  color: var(--muted);
+}
+.ruler-lanes {
+  position: relative;
+  height: calc(var(--lanes) * var(--lane-h) + 10px);
+}
+.ruler-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: 1px;
+  background: var(--border-strong);
+}
+.ruler-dot {
+  position: absolute;
+  left: calc(var(--dot) / -2);
+  bottom: calc(var(--lane) * var(--lane-h) + 4px - var(--dot) / 2);
+  width: var(--dot);
+  height: var(--dot);
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+  background: var(--surface);
+  cursor: pointer;
+  z-index: 3;
+  translate: calc(var(--x) * 100cqi) 0;
+  /* Slide to the real cosine first; the verdict color lands after. */
+  transition:
+    translate var(--slide) var(--spring-calm)
+      calc(min(var(--o), 10) * var(--stagger-explain)),
+    background-color var(--dur-state) var(--ease-out)
+      calc(var(--slide) + min(var(--o), 10) * var(--stagger-explain)),
+    border-color var(--dur-state) var(--ease-out)
+      calc(var(--slide) + min(var(--o), 10) * var(--stagger-explain)),
+    scale var(--dur-press) var(--ease-out);
+}
+/* a 44px touch target around a 14px dot */
+.ruler-dot::before {
+  content: "";
+  position: absolute;
+  inset: -15px;
+}
+.ruler-dot.is-pass {
+  background: var(--success);
+  border-color: var(--success);
+}
+.ruler-dot.is-fail {
+  background: var(--surface);
+  border-color: var(--muted);
+}
+@starting-style {
+  .ruler-dot,
+  .ruler-dot.is-pass,
+  .ruler-dot.is-fail {
+    translate: 0 0;
+    background: var(--surface);
+    border-color: var(--border-strong);
+  }
+}
+.ruler-dot:hover,
+.ruler-dot.is-picked {
+  scale: 1.3;
+}
+.ruler-dot.is-picked {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.ruler.is-sim .ruler-dot {
+  transition:
+    translate var(--slide) var(--spring-calm),
+    background-color var(--dur-press) var(--ease-out),
+    border-color var(--dur-press) var(--ease-out),
+    scale var(--dur-press) var(--ease-out);
+}
+.ruler-ticks {
+  position: relative;
+  height: 18px;
+}
+.ruler-ticks span {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  translate: calc(var(--x) * 100cqi - 50%) 0;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* The draggable floor: a native range under the ticks, thumb on the scale. */
+.ruler-range {
+  --thumb: 28px;
+  display: block;
+  position: relative;
+  width: calc(100% + var(--thumb));
+  margin: 2px calc(var(--thumb) / -2) 0;
+  height: 36px;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: ew-resize;
+}
+.ruler-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--primary-tint);
+}
+.ruler-range::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--primary-tint);
+}
+.ruler-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc(2px - var(--thumb) / 2);
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.ruler-range::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid var(--surface);
+}
+.ruler-range:focus-visible {
+  outline: none;
+}
+.ruler-range:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.ruler-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.ruler-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ruler-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+}
+.ruler-swatch.is-pass {
+  background: var(--success);
+  border-color: var(--success);
+}
+.ruler-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 13px;
+}
+.ruler-pick-num {
+  font-weight: 600;
+  color: var(--primary-ink);
+}
+.ruler-pick-desc {
+  color: var(--ink);
+  flex: 1 1 14ch;
+  min-width: 0;
+}
+.ruler-pick-meta {
+  color: var(--muted);
+}
+.ruler-pick-meta b {
+  color: var(--ink);
+}
+.ruler-sim {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+}
+.ruler-sim .btn.is-on {
+  color: var(--primary-ink);
+  border-color: var(--primary);
+  background: var(--primary-tint);
+}
+.ruler-sim-note {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-body);
+}
+.ruler-sim-note b {
+  color: var(--primary-ink);
+}
+.ruler-empty {
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+.ruler.is-compact {
+  margin-top: 6px;
+  --dot: 12px;
+  --lane-h: 15px;
+}
+.ruler.is-compact .ruler-hint {
+  display: none;
+}
+.ruler.is-compact .ruler-track-label,
+.ruler.is-compact .ruler-floor-label,
+.ruler.is-compact .ruler-out-label {
+  font-size: 11.5px;
+}
+
+/* ----- "O que é 0,84?": the cosine as an angle ----- */
+.cosine {
+  margin-top: 6px;
+}
+.cosine-toggle {
+  padding-inline: 8px;
+}
+.cosine-toggle svg {
+  transition: rotate var(--dur-state) var(--ease-out);
+}
+.cosine-toggle[aria-expanded="true"] svg {
+  rotate: 180deg;
+}
+.cosine-fig {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px 16px;
+  align-items: center;
+  margin: 6px 0 0;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.cosine-fig svg {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  overflow: visible;
+}
+.cosine-fan {
+  fill: color-mix(in oklab, var(--success) 14%, transparent);
+}
+.cosine-ref {
+  stroke: var(--muted);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.cosine-arm {
+  rotate: var(--a);
+  transition: rotate calc(var(--dur-explain) * var(--motion-scale)) var(--spring-calm)
+    var(--dur-state);
+}
+@starting-style {
+  .cosine-arm {
+    rotate: 0deg;
+  }
+}
+.cosine-arm line,
+.cosine-arm path {
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+.cosine-fig text {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--muted);
+}
+.cosine-fig text.cosine-a {
+  fill: var(--primary-ink);
+  font-weight: 700;
+  font-size: 12px;
+}
+.cosine-fig figcaption {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-body);
+  max-width: 62ch;
+}
+
+/* ----- Layer 2 full list, behind a disclosure ----- */
+.layer-list {
+  margin-top: 10px;
+}
+.layer-list summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-ink);
+  padding: 6px 0;
+  width: fit-content;
+}
+
+/* ----- Layer 3: kept or dropped, stamped one by one ----- */
+.row-open {
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary-ink);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--primary) 35%, transparent);
+  text-underline-offset: 3px;
+  justify-self: start;
+}
+.row-open:hover {
+  text-decoration-color: currentColor;
+}
+.row.is-stamped .row-pill {
+  transition:
+    opacity var(--dur-state) var(--ease-out)
+      calc(min(var(--i, 0), 10) * var(--stagger-explain) + var(--dur-state)),
+    scale var(--dur-state) var(--ease-out)
+      calc(min(var(--i, 0), 10) * var(--stagger-explain) + var(--dur-state));
+}
+@starting-style {
+  .row.is-stamped .row-pill {
+    opacity: 0;
+    scale: 1.35;
+  }
+}
+.row-desc {
+  position: relative;
+  justify-self: start;
+}
+.row.is-stamped.is-dropped .row-desc {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--muted);
+  transition: text-decoration-color calc(var(--dur-explain) * var(--motion-scale))
+    var(--ease-out) calc(min(var(--i, 0), 10) * var(--stagger-explain) + var(--dur-move));
+}
+@starting-style {
+  .row.is-stamped.is-dropped .row-desc {
+    text-decoration-color: transparent;
+  }
+}
+.row.is-stamped.is-dropped {
+  opacity: 0.7;
+}
+.row-cited {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-ink);
+}
+.row.is-flash {
+  animation: row-flash calc(var(--dur-explain) * 1.6 * var(--motion-scale))
+    var(--ease-out);
+}
+@keyframes row-flash {
+  from {
+    background: var(--primary-tint);
+    box-shadow: inset 2px 0 0 var(--primary);
+  }
+}
+
+/* ----- Step 6: where each citation came from ----- */
+.cited {
+  margin-top: 12px;
+}
+.cited-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cited-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+  font-size: 13px;
+  color: var(--ink-body);
+}
+.cited-what {
+  color: var(--muted);
+}
+
+/* ===================================================================== *
+ *  Aurora panel: the same seven steps, compact
+ * ===================================================================== */
+.mini-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mini-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 9px;
+  padding-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.mini-step:last-child {
+  padding-bottom: 0;
+}
+.mini-step::before,
+.mini-step::after {
+  content: "";
+  position: absolute;
+  left: 9.5px;
+  top: 22px;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-strong);
+}
+.mini-step::after {
+  left: 9px;
+  width: 2px;
+  background: var(--primary);
+  transform-origin: top;
+  scale: 1 0;
+  transition: scale calc(var(--dur-move) * var(--motion-scale)) var(--ease-in-out);
+}
+.mini-step.is-done::after {
+  scale: 1 1;
+}
+.mini-step.is-stopped::after,
+.mini-step.st-pulada::after {
+  scale: 1 0;
+}
+.mini-step:last-child::before,
+.mini-step:last-child::after {
+  display: none;
+}
+.mini-marker {
+  position: relative;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  transition:
+    background-color var(--dur-state) var(--ease-out),
+    color var(--dur-state) var(--ease-out);
+}
+.mini-step.is-gate .mini-marker {
+  border-radius: 5px;
+  rotate: 45deg;
+  scale: 0.86;
+}
+.mini-step.is-gate .mini-marker > * {
+  rotate: -45deg;
+}
+.mini-step.is-current .mini-marker {
+  color: var(--primary-ink);
+  background: var(--primary-tint);
+  border: 1px solid var(--primary);
+}
+.mini-step.is-done .mini-marker {
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 1px solid var(--primary);
+}
+.mini-step.st-pulada:not(.is-hidden) .mini-marker {
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+}
+.mini-step.is-stopped .mini-marker {
+  color: var(--p1);
+  background: var(--p1-tint);
+  border: 1px solid var(--p1);
+}
+.mini-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 1px;
+}
+.mini-body > b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.mini-step.is-hidden .mini-body > b {
+  color: var(--muted);
+  font-weight: 500;
+}
+.mini-decision {
+  color: var(--ink-body);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mini-step:not(.is-hidden) .mini-body > :not(b) {
+  transition: opacity calc(var(--dur-move) * var(--motion-scale)) var(--ease-out);
+}
+@starting-style {
+  .mini-step:not(.is-hidden) .mini-body > :not(b) {
+    opacity: 0;
+  }
+}
+.mini-search {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.mini-search .tag {
+  margin: 0 4px 0 0;
+}
+.mini-funnel {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.mini-funnel b {
+  color: var(--ink);
+}
+.mini-ctx {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+@media (min-width: 768px) {
+  .summary {
+    grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .summary-arrow {
+    rotate: none;
+    margin-top: 26px;
+  }
+  .cosine-fig {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .funnel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .funnel-stage {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+  .funnel-stage + .funnel-stage {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .funnel-arrow {
+    display: block;
   }
 }

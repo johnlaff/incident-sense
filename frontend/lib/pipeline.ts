@@ -1,11 +1,15 @@
 // View model for the incident suggestion pipeline (the seven steps of João's
-// article plus the procedência gate). Pure functions, so the screen never reads
-// raw wire fields and the mapping is unit-tested.
+// article; the procedência gate is step 5). Pure functions, so the screen never
+// reads raw wire fields and the mapping is unit-tested.
+//
+// One vocabulary everywhere (pipeline, Aurora panel, Como funciona):
+// 1 Carregar · 2 Resumir · 3 Transformar em números · 4 Buscar e conferir
+// (tags, vetor, pós-filtro) · 5 Classificar · 6 Sugerir · 7 Publicar.
 
 import type {
   CitationFlag,
-  PipelineStep,
   RecordKind,
+  StepId,
   StepStatus,
   SuggestResponse,
   TagLayer,
@@ -82,18 +86,6 @@ export function layerCounts(rows: RetrievalRow[]): LayerCounts {
   return { passed, total: rows.length, kept, dropped: passed - kept };
 }
 
-/** The numbered steps (1 to 7) and the gate, in the article's order. */
-export function orderedSteps(res: SuggestResponse): PipelineStep[] {
-  return [...res.steps].sort(
-    (a, b) => a.order - b.order || Number(a.gate) - Number(b.gate),
-  );
-}
-
-/** Short label for a step's position: "1" ... "7", or "?" for the gate. */
-export function stepMarker(step: PipelineStep): string {
-  return step.gate ? "?" : String(step.order);
-}
-
 export function citationSummary(flags: CitationFlag[]): string {
   if (!flags.length) return "Todas as citações estão no contexto recuperado.";
   const removed = flags.filter((f) => f.action === "removida").length;
@@ -114,74 +106,6 @@ export function mergeNotes(
   return [...loaded, fresh];
 }
 
-export interface StepOutline {
-  id: PipelineStep["id"];
-  order: number;
-  gate: boolean;
-  title: string;
-  hint: string;
-}
-
-/** The pipeline before (or while) it runs: what each step is for. */
-export const STEP_OUTLINE: StepOutline[] = [
-  {
-    id: "carregar",
-    order: 1,
-    gate: false,
-    title: "Carregar o incidente",
-    hint: "O registro é lido da base, com categoria, subcategoria, empresa e tags.",
-  },
-  {
-    id: "resumir",
-    order: 2,
-    gate: false,
-    title: "Resumo por IA",
-    hint: "A IA resume o chamado. O resumo, nunca o texto cru, vira a consulta.",
-  },
-  {
-    id: "embedding",
-    order: 3,
-    gate: false,
-    title: "Embedding do resumo",
-    hint: "Resumo, categoria, subcategoria e empresa viram um único vetor.",
-  },
-  {
-    id: "recuperar",
-    order: 4,
-    gate: false,
-    title: "Recuperação em três camadas",
-    hint: "Tags decidem onde procurar, o vetor mede o que parece e o LLM filtra o que serve.",
-  },
-  {
-    id: "contexto",
-    order: 5,
-    gate: false,
-    title: "Contexto de casos semelhantes",
-    hint: "Incidentes e problemas que passaram pelas três camadas formam o contexto.",
-  },
-  {
-    id: "decidir",
-    order: 5,
-    gate: true,
-    title: "Incidente procedente?",
-    hint: "Se não for falha técnica, não há sugestão: classificar sem propor também é resposta.",
-  },
-  {
-    id: "sugerir",
-    order: 6,
-    gate: false,
-    title: "Sugestão com fontes",
-    hint: "A resposta cita as fontes; citações fora do contexto são removidas ou sinalizadas.",
-  },
-  {
-    id: "publicar",
-    order: 7,
-    gate: false,
-    title: "Publicação no incidente",
-    hint: "A sugestão volta para as notas de trabalho do incidente.",
-  },
-];
-
 /** Similarity with a PT-BR decimal comma, truncated to two places ("0,84").
  *
  * Truncated, not rounded: a 0.7999 hit must not read "0,80" next to an
@@ -192,4 +116,233 @@ export function formatSim(value: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+}
+
+// ---------------------------------------------------------------------------
+// The seven steps, one vocabulary
+// ---------------------------------------------------------------------------
+
+export type LessonStepKey =
+  "carregar" | "resumir" | "numeros" | "buscar" | "classificar" | "sugerir" | "publicar";
+
+export interface StepDef {
+  key: LessonStepKey;
+  order: number;
+  title: string;
+  /** What the step is for, shown before (and while) the run. */
+  hint: string;
+  /** Backend step ids folded into this step ("contexto" closes step 4). */
+  sources: StepId[];
+  /** Step 5 is the procedência gate. */
+  gate?: boolean;
+}
+
+export const PIPELINE_STEPS: StepDef[] = [
+  {
+    key: "carregar",
+    order: 1,
+    title: "Carregar",
+    hint: "O registro é lido da base, com categoria, subcategoria, empresa e tags.",
+    sources: ["carregar"],
+  },
+  {
+    key: "resumir",
+    order: 2,
+    title: "Resumir",
+    hint: "A IA resume o chamado. O resumo, nunca o texto cru, vira a consulta.",
+    sources: ["resumir"],
+  },
+  {
+    key: "numeros",
+    order: 3,
+    title: "Transformar em números",
+    hint: "Resumo, categoria, subcategoria e empresa viram um vetor de números.",
+    sources: ["embedding"],
+  },
+  {
+    key: "buscar",
+    order: 4,
+    title: "Buscar e conferir",
+    hint: "Tags decidem onde procurar, o vetor mede o que parece e uma IA confere o que serve.",
+    sources: ["recuperar", "contexto"],
+  },
+  {
+    key: "classificar",
+    order: 5,
+    title: "Classificar",
+    hint: "É falha técnica? Se não for, não há sugestão: saber não responder também é resposta.",
+    sources: ["decidir"],
+    gate: true,
+  },
+  {
+    key: "sugerir",
+    order: 6,
+    title: "Sugerir",
+    hint: "A resposta cita as fontes; citação fora do contexto é removida ou sinalizada.",
+    sources: ["sugerir"],
+  },
+  {
+    key: "publicar",
+    order: 7,
+    title: "Publicar",
+    hint: "A sugestão volta para as notas de trabalho do incidente.",
+    sources: ["publicar"],
+  },
+];
+
+export interface StepView extends StepDef {
+  status: StepStatus;
+  /** What the backend says the step decided (several for step 4). */
+  decisions: string[];
+}
+
+const STATUS_WEIGHT: Record<StepStatus, number> = {
+  concluida: 0,
+  pulada: 1,
+  degradada: 2,
+};
+
+/** The seven steps with the run's status and decisions folded in. */
+export function stepViews(res: SuggestResponse): StepView[] {
+  return PIPELINE_STEPS.map((def) => {
+    const parts = def.sources
+      .map((id) => res.steps.find((s) => s.id === id))
+      .filter((s): s is NonNullable<typeof s> => Boolean(s));
+    // A degraded part degrades the step; a step with no part did not run.
+    const status = parts.length
+      ? parts.reduce<StepStatus>(
+          (worst, p) =>
+            STATUS_WEIGHT[p.status] > STATUS_WEIGHT[worst] ? p.status : worst,
+          "concluida",
+        )
+      : "pulada";
+    return { ...def, status, decisions: parts.map((p) => p.decision) };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// The replay, beat by beat (modo aula captions from motion/direcao.md, 6)
+// ---------------------------------------------------------------------------
+
+export type SearchLayer = "tags" | "vetor" | "conferir";
+
+export interface Beat {
+  step: LessonStepKey;
+  layer?: SearchLayer;
+  title: string;
+  caption: string;
+  counter: string;
+}
+
+export const BEATS: Beat[] = [
+  {
+    step: "carregar",
+    title: "Carregar",
+    counter: "Etapa 1 de 7",
+    caption: "Primeiro a IA lê o chamado: título, descrição, categoria, empresa e tags.",
+  },
+  {
+    step: "resumir",
+    title: "Resumir",
+    counter: "Etapa 2 de 7",
+    caption:
+      "O texto do usuário é bagunçado. A IA escreve um resumo curto, e é o resumo que vai para a busca.",
+  },
+  {
+    step: "numeros",
+    title: "Transformar em números",
+    counter: "Etapa 3 de 7",
+    caption:
+      "O resumo vira 3072 números. Textos com sentido parecido viram números parecidos.",
+  },
+  {
+    step: "buscar",
+    layer: "tags",
+    title: "Buscar: tags",
+    counter: "Etapa 4 de 7 · tags",
+    caption: "Antes de comparar, as tags dizem em que parte do histórico procurar.",
+  },
+  {
+    step: "buscar",
+    layer: "vetor",
+    title: "Buscar: vetor",
+    counter: "Etapa 4 de 7 · vetor",
+    caption:
+      "Comparamos com o histórico. Quanto mais perto de 1, mais parecido. Abaixo de 0,80 fica de fora.",
+  },
+  {
+    step: "buscar",
+    layer: "conferir",
+    title: "Conferir",
+    counter: "Etapa 4 de 7 · conferir",
+    caption:
+      "Parecer não basta. Uma IA lê cada candidato e descarta o que não ajuda neste caso.",
+  },
+  {
+    step: "classificar",
+    title: "Classificar",
+    counter: "Etapa 5 de 7",
+    caption:
+      "É falha técnica? Se não for, a IA não sugere nada. Saber não responder também é resposta.",
+  },
+  {
+    step: "sugerir",
+    title: "Sugerir",
+    counter: "Etapa 6 de 7",
+    caption:
+      "A sugestão só pode citar casos que passaram pela busca. Citação de fora é removida.",
+  },
+  {
+    step: "publicar",
+    title: "Publicar",
+    counter: "Etapa 7 de 7",
+    caption:
+      "A sugestão volta para o incidente como nota. Quem decide é a pessoa analista.",
+  },
+];
+
+/** The 3 in "3072 números" comes from the run when the server reports it. */
+export function beatsFor(dims: number | null | undefined, minSimilarity: number): Beat[] {
+  return BEATS.map((b) => {
+    if (b.step === "numeros" && dims)
+      return { ...b, caption: b.caption.replace("3072", dims.toLocaleString("pt-BR")) };
+    if (b.layer === "vetor")
+      return { ...b, caption: b.caption.replace("0,80", formatSim(minSimilarity)) };
+    return b;
+  });
+}
+
+/** How far the replay got: "hidden" (outline), "current" or "done". */
+export type Reveal = "hidden" | "current" | "done";
+
+export function stepReveal(key: LessonStepKey, beat: number): Reveal {
+  if (beat < 0) return "hidden";
+  const first = BEATS.findIndex((b) => b.step === key);
+  let last = first;
+  while (last + 1 < BEATS.length && BEATS[last + 1].step === key) last++;
+  if (beat < first) return "hidden";
+  return beat <= last ? "current" : "done";
+}
+
+/** Is a retrieval layer on screen at this beat? */
+export function layerShown(layer: SearchLayer, beat: number): boolean {
+  const at = BEATS.findIndex((b) => b.layer === layer);
+  return beat >= at;
+}
+
+/** Words in a text, for "112 palavras → 24 palavras". */
+export function wordCount(text: string): number {
+  return text.trim() ? text.trim().split(/\s+/).length : 0;
+}
+
+/** Where a cited id sits in the search, for the citation-to-row link. */
+export function citationSource(
+  id: string,
+  res: SuggestResponse,
+): { row: RetrievalRow | null; inContext: boolean } {
+  const rows = [...retrievalRows(res, "incidente"), ...retrievalRows(res, "problema")];
+  return {
+    row: rows.find((r) => r.number === id) ?? null,
+    inContext: res.context_ids.includes(id),
+  };
 }

@@ -210,6 +210,18 @@ def build_query_text(summary: str, incident: LoadedIncident) -> str:
     )
 
 
+EMBEDDING_PREVIEW_SIZE = 24
+
+
+def embedding_preview(vector: list[float], size: int = EMBEDDING_PREVIEW_SIZE) -> list[float]:
+    """The first ``size`` values of the query vector, rounded to 3 places.
+
+    Enough for the UI to show the text becoming numbers; the full vector
+    (thousands of floats) never leaves the server.
+    """
+    return [round(float(v), 3) for v in vector[:size]]
+
+
 def embed_query(deps: RagDeps, query: str) -> list[float]:
     """Embed the retrieval query."""
     return deps.embeddings.embed(query)
@@ -749,6 +761,8 @@ def run_suggestion(
         incident_number=incident.number if incident.from_base else None,
         summarized_query=summary,
         query_text=query_text,
+        embedding_preview=embedding_preview(vector),
+        dims=len(vector),
         classification=classification,
         suggestion=suggestion,
         candidates=[_to_candidate(n) for n in nodes if n.node.metadata.get("kind") == "incidente"],

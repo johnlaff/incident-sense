@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  BEATS,
+  beatsFor,
+  citationSource,
   citationSummary,
   formatSim,
   layerCounts,
+  layerShown,
   mergeNotes,
-  orderedSteps,
   retrievalRows,
-  stepMarker,
+  stepReveal,
+  stepViews,
+  wordCount,
 } from "@/lib/pipeline";
 import type { WorkNote } from "@/lib/types";
 
@@ -38,16 +43,73 @@ describe("retrievalRows", () => {
   });
 });
 
-describe("orderedSteps", () => {
-  it("orders by step number with the gate after the context", () => {
-    const steps = orderedSteps(suggestFixture());
-    expect(steps.map((s) => s.id)).toEqual([
-      "carregar",
-      "contexto",
-      "decidir",
-      "publicar",
+describe("stepViews", () => {
+  it("folds the backend steps into the seven-step vocabulary", () => {
+    const views = stepViews(suggestFixture());
+    expect(views.map((v) => v.title)).toEqual([
+      "Carregar",
+      "Resumir",
+      "Transformar em números",
+      "Buscar e conferir",
+      "Classificar",
+      "Sugerir",
+      "Publicar",
     ]);
-    expect(steps.map(stepMarker)).toEqual(["1", "5", "?", "7"]);
+    // "contexto" closes step 4; the procedência gate is step 5.
+    expect(views[3].decisions).toEqual(["Contexto."]);
+    expect(views[4]).toMatchObject({ gate: true, decisions: ["Procedente."] });
+    // Steps the run did not report read as not applicable.
+    expect(views[1].status).toBe("pulada");
+  });
+
+  it("a degraded part degrades the whole step", () => {
+    const res = suggestFixture();
+    res.steps.push({
+      id: "recuperar",
+      order: 4,
+      title: "x",
+      status: "degradada",
+      decision: "Pós-filtro indisponível.",
+      gate: false,
+    });
+    expect(stepViews(res)[3].status).toBe("degradada");
+  });
+});
+
+describe("the replay beats", () => {
+  it("reveals one step after the other, step 4 in three layers", () => {
+    expect(BEATS).toHaveLength(9);
+    expect(stepReveal("carregar", -1)).toBe("hidden");
+    expect(stepReveal("carregar", 0)).toBe("current");
+    expect(stepReveal("carregar", 1)).toBe("done");
+    expect(stepReveal("buscar", 3)).toBe("current");
+    expect(stepReveal("buscar", 5)).toBe("current");
+    expect(stepReveal("buscar", 6)).toBe("done");
+    expect(layerShown("vetor", 3)).toBe(false);
+    expect(layerShown("vetor", 4)).toBe(true);
+    expect(layerShown("conferir", 5)).toBe(true);
+  });
+
+  it("captions take the real vector size and floor, without em dashes", () => {
+    const beats = beatsFor(3072, 0.8);
+    expect(beats[2].caption).toContain("3.072 números");
+    expect(beats[4].caption).toContain("Abaixo de 0,80");
+    expect(beatsFor(1536, 0.75)[4].caption).toContain("0,75");
+    for (const b of BEATS) {
+      expect(b.caption).not.toMatch(/[\u2014\u2013]/);
+      expect(b.caption.length).toBeLessThanOrEqual(110);
+    }
+  });
+});
+
+describe("wordCount and citationSource", () => {
+  it("counts words and ties a citation to its search row", () => {
+    expect(wordCount("  Pix  debitado sem comprovante ")).toBe(4);
+    expect(wordCount("")).toBe(0);
+    const src = citationSource("INC0051986", suggestFixture());
+    expect(src.row?.outcome).toBe("mantido");
+    expect(src.inContext).toBe(true);
+    expect(citationSource("INC9", suggestFixture()).row).toBeNull();
   });
 });
 

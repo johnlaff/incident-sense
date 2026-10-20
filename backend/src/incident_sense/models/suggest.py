@@ -212,6 +212,14 @@ class SuggestResponse(BaseModel):
     query_text: str = Field(
         default="", description="What was embedded: summary + categoria, subcategoria, empresa."
     )
+    embedding_preview: list[float] = Field(
+        default_factory=list,
+        description=(
+            "The first values of the query vector (step 3), rounded to 3 places, so the "
+            "UI can show text turning into numbers without shipping the whole vector."
+        ),
+    )
+    dims: int = Field(default=0, ge=0, description="Length of the query vector.")
     classification: Classification
     suggestion: str | None = Field(
         default=None,
