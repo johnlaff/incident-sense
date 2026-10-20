@@ -794,7 +794,8 @@ const STEP_TARGET: Record<StepId, string> = {
   media: ".chg-scale",
   portao: ".chg-gate",
   coerencia: ".chg-sem-scores",
-  problemas: ".chg-sem-body",
+  // The list of inconsistencies ends in the verdict line: show both.
+  problemas: ".chg-final",
 };
 
 export function useFollowStep(
