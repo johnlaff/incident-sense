@@ -1,14 +1,15 @@
 /* ===================================================================== *
-   Concept language: one color, one icon, one shape per idea of the lesson.
+   Concept language ("Claro"): one color, one icon, one shape per idea.
    Components: components/concepts.tsx. Tokens: --c-* in globals.css.
-   Shapes carry the meaning too, so color is never alone:
-     records (INC, PRB, CHG)  solid "pulseira" band with a snap dot
-     similar past case        the same band, hollow
-     AI step                  dashed violet outline
-     AI output                violet tinted block, star icon
-     human decision           solid ink pill
-     score                    big mono number + band word
-     gate                     diamond + yes/no verdict
+   Color lives in small things (the icon, a dot, a hairline, a faint tint);
+   text stays ink so the page reads calm. Shape carries meaning too:
+     records (INC, PRB, CHG)  tinted tag: colored icon + mono number
+     similar past case        the same tag, hollow with a dashed edge
+     AI step                  dashed violet circle
+     AI output                faint violet sheet, star icon
+     human decision           solid ink circle / ink button
+     score                    large tabular number + band badge
+     gate                     outlined diamond + yes/no verdict
  * ===================================================================== */
 
 /* Per-concept variables: every class below reads --k, --k-on, --k-tint... */
@@ -90,114 +91,120 @@
   --k-line: var(--border-strong);
 }
 
-/* ----- Pulseira: the record's identity band ----- */
+/* Sections that are not concepts (Recorrências) stay neutral. */
+.k-rec {
+  --k: var(--ink-body);
+  --k-on: var(--surface);
+  --k-tint: var(--surface-2);
+  --k-ink: var(--ink);
+  --k-line: var(--border-strong);
+}
+
+/* ----- Record tag: the record's identity ----- */
 .rtag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 26px;
-  padding: 0 10px 0 8px;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px 0 6px;
   border-radius: 6px;
-  background: var(--k);
-  color: var(--k-on);
+  background: var(--k-tint);
+  color: var(--k-ink);
+  border: 1px solid color-mix(in oklab, var(--k-line) 70%, transparent);
   font-family: var(--mono);
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   line-height: 1;
   white-space: nowrap;
-  border: 1.5px solid var(--k);
   font-variant-numeric: tabular-nums;
 }
 .rtag svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   flex: none;
-  stroke-width: 2.4;
-}
-/* The snap: a small punched dot at the band's end, like a wristband. */
-.rtag::after {
-  content: "";
-  width: 4px;
-  height: 4px;
-  margin-left: 1px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.45;
+  stroke-width: 2.2;
+  color: var(--k);
 }
 .rtag-sm {
-  height: 22px;
-  padding: 0 8px 0 6px;
-  font-size: var(--fs-xs);
+  height: 21px;
+  padding: 0 6px 0 5px;
+  gap: 4px;
+  font-size: 0.75rem;
 }
 .rtag-sm svg {
   width: 12px;
   height: 12px;
 }
 .rtag-lg {
-  height: 34px;
-  padding: 0 14px 0 10px;
-  font-size: var(--fs-md);
+  height: 30px;
+  padding: 0 11px 0 9px;
+  gap: 6px;
+  font-size: var(--fs-sm);
   border-radius: 8px;
 }
 .rtag-lg svg {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
 }
 .rtag-ghost {
   background: var(--surface);
-  color: var(--k-ink);
+  color: var(--ink-body);
   border-style: dashed;
   border-color: var(--k-line);
 }
 
-/* ----- Concept icon chip: the shape differs per concept ----- */
+/* ----- Concept icon: small tile, the shape differs per concept ----- */
 .cicon {
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   flex: none;
-  border-radius: 10px;
-  background: var(--k);
-  color: var(--k-on);
+  border-radius: 9px;
+  background: var(--k-tint);
+  color: var(--k);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--k-line) 60%, transparent);
 }
 .cicon svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 .cicon-similar {
   background: var(--surface);
   color: var(--k-ink);
-  border: 2px dashed var(--k-line);
+  box-shadow: none;
+  border: 1.5px dashed var(--k-line);
 }
 .cicon-ai-step {
   background: var(--surface);
   color: var(--k-ink);
-  border: 2px dashed var(--k);
+  box-shadow: none;
+  border: 1.5px dashed var(--k);
   border-radius: 50%;
 }
 .cicon-ai-out {
-  background: var(--k-tint);
   color: var(--k-ink);
-  border: 2px solid var(--k-line);
 }
 .cicon-human {
-  border-radius: 999px;
+  background: var(--k);
+  color: var(--k-on);
+  box-shadow: none;
+  border-radius: 50%;
 }
 .cicon-score {
-  background: var(--k-tint);
   color: var(--k-ink);
-  border-radius: 999px;
+  border-radius: 50%;
 }
 .cicon-gate {
   background: transparent;
   color: var(--k-ink);
+  box-shadow: none;
 }
 .cicon-gate svg {
-  width: 30px;
-  height: 30px;
-  stroke-width: 1.8;
+  width: 26px;
+  height: 26px;
+  stroke-width: 1.6;
 }
 
 /* ----- Inline label (icon + name), for section heads and tags ----- */
@@ -206,58 +213,62 @@
   align-items: center;
   gap: 6px;
   font-size: var(--fs-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--k-ink);
+  letter-spacing: -0.005em;
 }
 .clabel svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   flex: none;
+  color: var(--k);
 }
 
 /* Generic concept surfaces for blocks drawn by screens */
 .k-surface {
   background: var(--k-tint);
-  border: 1px solid var(--k-line);
+  border: 1px solid color-mix(in oklab, var(--k-line) 70%, transparent);
   border-radius: var(--radius);
 }
 .k-ai-step-box {
-  border: 2px dashed var(--c-ai-line);
+  border: 1px dashed var(--c-ai-line);
   border-radius: var(--radius);
   background: var(--surface);
 }
 .k-ai-out-box {
   background: var(--c-ai-tint);
-  border: 2px solid var(--c-ai-line);
+  border: 1px solid var(--c-ai-line);
   border-radius: var(--radius);
 }
 
-/* ----- Score: big number with its band word ----- */
+/* ----- Score: large tabular number with its band badge ----- */
 .score {
   display: inline-flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   line-height: 1;
 }
 .score-num {
   font-family: var(--font);
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "cv05";
   color: var(--score-c);
   font-size: var(--fs-score);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
 }
 .score-md .score-num {
   font-size: var(--fs-2xl);
+  letter-spacing: -0.03em;
 }
 .score-xl .score-num {
   font-size: var(--fs-score-xl);
 }
 .score-max {
-  font-size: 0.42em;
-  font-weight: 600;
+  font-size: 0.4em;
+  font-weight: 500;
   color: var(--muted);
-  margin-left: 2px;
+  margin-left: 3px;
   letter-spacing: 0;
 }
 .score-band {
@@ -265,16 +276,18 @@
   align-items: center;
   gap: 5px;
   align-self: flex-start;
-  padding: 3px 9px 3px 7px;
+  height: 22px;
+  padding: 0 8px 0 6px;
   border-radius: 999px;
   background: var(--score-tint);
   color: var(--score-c);
-  font-size: var(--fs-sm);
-  font-weight: 700;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1;
 }
 .score-band svg {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
 }
 .score-high {
   --score-c: var(--score-high);
@@ -289,18 +302,18 @@
   --score-tint: var(--score-low-tint);
 }
 
-/* ----- Gate: diamond + rule + verdict ----- */
+/* ----- Gate: outlined diamond + rule + verdict ----- */
 .gatemark {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
 }
 .gatemark-diamond {
   position: relative;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   flex: none;
   display: grid;
   place-items: center;
@@ -311,14 +324,14 @@
   position: absolute;
   inset: 5px;
   rotate: 45deg;
-  border: 2.5px solid currentColor;
-  border-radius: 4px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
   background: var(--surface);
 }
 .gatemark-diamond svg {
   position: relative;
-  width: 15px;
-  height: 15px;
+  width: 13px;
+  height: 13px;
 }
 .gatemark-pass .gatemark-diamond {
   color: var(--gate-pass);
@@ -333,8 +346,12 @@
   background: var(--score-low-tint);
 }
 .gatemark-verdict {
-  font-size: var(--fs-sm);
-  padding: 3px 9px;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 0 9px;
   border-radius: 999px;
 }
 .gatemark-pass .gatemark-verdict {
@@ -354,16 +371,20 @@
 .tech > summary {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 36px;
-  padding: 4px 10px 4px 6px;
-  border-radius: var(--radius-sm);
+  gap: 5px;
+  min-height: 32px;
+  padding: 4px 8px 4px 4px;
+  margin-left: -4px;
+  border-radius: 7px;
   font-size: var(--fs-sm);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--muted);
   cursor: pointer;
   list-style: none;
   user-select: none;
+  transition:
+    color var(--dur-press) var(--ease-out),
+    background var(--dur-press) var(--ease-out);
 }
 .tech > summary::-webkit-details-marker {
   display: none;
@@ -373,9 +394,12 @@
   background: var(--surface-2);
 }
 .tech > summary svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   transition: rotate var(--dur-state) var(--ease-out);
+}
+.tech[open] > summary {
+  color: var(--ink);
 }
 .tech[open] > summary svg {
   rotate: 90deg;
@@ -385,14 +409,24 @@
   padding: 12px 14px;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
+  border: 1px solid var(--border);
   font-size: var(--fs-sm);
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--ink-body);
+}
+.tech[open] > .tech-body {
+  animation: tech-in var(--dur-state) var(--ease-out);
+}
+@keyframes tech-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 .tech-body code,
 .tech-body .mono {
   font-family: var(--mono);
-  font-size: 0.95em;
+  font-size: 0.92em;
 }
 .tech-body p {
   margin: 0 0 6px;
@@ -401,44 +435,52 @@
   margin: 0;
 }
 
-/* ----- Legend ----- */
+/* ----- Legend: a quiet list, separated by hairlines ----- */
 .legend {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 0 32px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
 }
 .legend-item {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  padding: 12px 14px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
 }
 .legend-item b {
   display: block;
   color: var(--ink);
   font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 .legend-item p {
   margin: 2px 0 0;
   font-size: var(--fs-sm);
   color: var(--muted);
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
-/* A band that opens its record */
+/* A tag that opens its record */
 .tag-btn {
   border: 0;
   padding: 0;
   background: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 7px;
   line-height: 0;
+}
+.tag-btn .rtag {
+  transition:
+    background var(--dur-press) var(--ease-out),
+    border-color var(--dur-press) var(--ease-out);
+}
+.tag-btn:hover .rtag {
+  border-color: var(--k);
 }
 .tag-btn:hover .rtag-ghost {
   background: var(--c-inc-tint);

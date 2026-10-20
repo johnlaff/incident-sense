@@ -143,7 +143,7 @@ export default function LessonPage() {
                   ))}
                 </ul>
               ) : null}
-              <Link href={s.href} className="btn btn-primary stop-cta">
+              <Link href={s.href} className="btn btn-outline stop-cta">
                 {s.cta}
                 <Icons.arrowRight />
               </Link>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Atkinson_Hyperlegible_Mono, Atkinson_Hyperlegible_Next } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 
 import "./globals.css";
 import "./concepts.css";
@@ -7,16 +7,17 @@ import "./shell.css";
 import { AppShell } from "@/components/app-shell";
 import { AULA_BOOT_SCRIPT } from "@/lib/aula-machine";
 
-// Atkinson Hyperlegible was drawn for readers with low vision: every letter
-// and digit has a distinct shape (0 and O, 1, l and I), which is what a room
-// reading INC numbers and scores from a projector or a phone at arm's length needs.
-const sans = Atkinson_Hyperlegible_Next({
+// Inter for every word on screen: a neutral, very legible UI face that holds
+// up on a phone and on a projector. JetBrains Mono only for record numbers and
+// measured values: its 0 (dotted), O, 1, l and I all differ, which matters for
+// a room reading INC0052233 from the back row.
+const sans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const mono = Atkinson_Hyperlegible_Mono({
+const mono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
@@ -34,7 +35,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#131a2b",
+  themeColor: "#ffffff",
 };
 
 // Set the theme before paint so there is no light→dark flash on reload.
