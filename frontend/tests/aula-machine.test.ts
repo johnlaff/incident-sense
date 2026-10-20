@@ -21,6 +21,7 @@ describe("aulaReducer", () => {
       step: 0,
       total: 7,
       playing: false,
+      ended: false,
     });
   });
 
@@ -32,23 +33,44 @@ describe("aulaReducer", () => {
     expect(run(s, { type: "goto", step: -4 }).step).toBe(0);
   });
 
-  it("stops autoplay on the last step", () => {
+  it("autoplay plays the last step out before the run ends", () => {
     let s = run(AULA_IDLE, { type: "start", total: 3, playing: true });
-    expect(s.playing).toBe(true);
-    s = run(s, { type: "next" });
-    expect(s.playing).toBe(true);
-    s = run(s, { type: "next" });
-    expect(s).toEqual({ step: 2, total: 3, playing: false });
+    s = run(s, { type: "next" }, { type: "next" });
+    // On the last index, still playing: done is not the same as the last index.
+    expect(s).toEqual({ step: 2, total: 3, playing: true, ended: false });
     expect(isLastStep(s)).toBe(true);
+    s = run(s, { type: "next" });
+    expect(s).toEqual({ step: 2, total: 3, playing: false, ended: true });
+  });
+
+  it("reaching the last step by hand ends the run at once", () => {
+    const s = run(
+      AULA_IDLE,
+      { type: "start", total: 2, playing: false },
+      { type: "next" },
+    );
+    expect(s.ended).toBe(true);
+    expect(run(s, { type: "prev" }).ended).toBe(false);
+    expect(run(s, { type: "prev" }, { type: "goto", step: 1 }).ended).toBe(true);
   });
 
   it("stepping back pauses, and play from the end starts over", () => {
     let s = run(AULA_IDLE, { type: "start", total: 4, playing: true }, { type: "prev" });
     expect(s.playing).toBe(false);
     s = run(s, { type: "finish" });
-    expect(s.step).toBe(3);
+    expect(s).toEqual({ step: 3, total: 4, playing: false, ended: true });
     s = run(s, { type: "play" });
-    expect(s).toEqual({ step: 0, total: 4, playing: true });
+    expect(s).toEqual({ step: 0, total: 4, playing: true, ended: false });
+  });
+
+  it("pausing on the last step ends the run", () => {
+    const s = run(
+      AULA_IDLE,
+      { type: "start", total: 2, playing: true },
+      { type: "next" },
+      { type: "pause" },
+    );
+    expect(s).toEqual({ step: 1, total: 2, playing: false, ended: true });
   });
 
   it("skip reveals everything and clear reveals nothing", () => {
@@ -57,16 +79,18 @@ describe("aulaReducer", () => {
       { type: "start", total: 5, playing: true },
       { type: "finish" },
     );
-    expect(s).toEqual({ step: 4, total: 5, playing: false });
+    expect(s).toEqual({ step: 4, total: 5, playing: false, ended: true });
     expect(run(s, { type: "clear" })).toEqual(AULA_IDLE);
   });
 
-  it("ignores moves while nothing runs and never autoplays a single step", () => {
+  it("ignores moves while nothing runs; a single step still plays out", () => {
     expect(run(AULA_IDLE, { type: "next" }, { type: "prev" })).toEqual(AULA_IDLE);
-    expect(run(AULA_IDLE, { type: "start", total: 1, playing: true }).playing).toBe(
-      false,
-    );
-    expect(run(AULA_IDLE, { type: "start", total: 0, playing: true }).step).toBe(-1);
+    expect(run(AULA_IDLE, { type: "finish" })).toEqual(AULA_IDLE);
+    const one = run(AULA_IDLE, { type: "start", total: 1, playing: true });
+    expect(one).toEqual({ step: 0, total: 1, playing: true, ended: false });
+    expect(run(one, { type: "next" }).ended).toBe(true);
+    expect(run(AULA_IDLE, { type: "start", total: 1, playing: false }).ended).toBe(true);
+    expect(run(AULA_IDLE, { type: "start", total: 0, playing: true })).toEqual(AULA_IDLE);
   });
 });
 

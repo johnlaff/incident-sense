@@ -31,7 +31,6 @@ import {
   aulaFromQuery,
   aulaKeyAction,
   aulaReducer,
-  isLastStep,
   type KeyTarget,
 } from "@/lib/aula-machine";
 import { usePrefersReducedMotion } from "@/lib/motion";
@@ -40,6 +39,8 @@ import { usePrefersReducedMotion } from "@/lib/motion";
 export const AULA_PLAY_MS = 2400;
 /** Outside modo aula a replay runs on its own and stays under 2 s in total. */
 export const FAST_REPLAY_MS = 240;
+/** Same factor as `--motion-scale` under `data-aula` in globals.css. */
+export const AULA_MOTION_SCALE = 1.6;
 
 export interface AulaLessonStep {
   /** Short name of the step, e.g. "Buscar: vetor". */
@@ -48,6 +49,12 @@ export interface AulaLessonStep {
   caption: string;
   /** Counter shown before the caption; defaults to "Etapa n de total". */
   counter?: string;
+  /**
+   * How long this step plays out before the next one, outside modo aula
+   * (defaults to the lesson's `fastMs`). In "Reproduzir tudo" it is scaled by
+   * the aula motion scale (1,6) and never shorter than 2,4 s.
+   */
+  durationMs?: number;
 }
 
 interface LessonSnapshot {
@@ -201,7 +208,10 @@ export interface AulaLesson {
   step: number;
   total: number;
   playing: boolean;
-  /** Every step is revealed. */
+  /**
+   * The run is over: the last step has played out (autoplay), was reached by
+   * hand, or "Pular" was pressed. False while the last step is still playing.
+   */
   done: boolean;
   next: () => void;
   prev: () => void;
@@ -225,11 +235,19 @@ export function useAulaLesson({
   steps,
   runKey,
   fastMs = FAST_REPLAY_MS,
+  reducedMotion = "finish",
 }: {
   id: string;
   steps: AulaLessonStep[];
   runKey: unknown;
+  /** Default step length outside modo aula, when a step has no `durationMs`. */
   fastMs?: number;
+  /**
+   * With prefers-reduced-motion and outside modo aula: "finish" jumps to the
+   * end (default); "pace" keeps the step timing, so the screen can crossfade
+   * step by step instead of moving.
+   */
+  reducedMotion?: "finish" | "pace";
 }): AulaLesson {
   const ctx = useContext(AulaContext);
   if (!ctx) throw new Error("useAulaLesson must be used within <AulaProvider>");
@@ -253,15 +271,21 @@ export function useAulaLesson({
     }
     runRef.current += 1;
     dispatch({ type: "start", total, playing: !aulaRef.current });
-    if (!aulaRef.current && reducedRef.current) dispatch({ type: "finish" });
-  }, [runKey, total]);
+    if (!aulaRef.current && reducedRef.current && reducedMotion === "finish") {
+      dispatch({ type: "finish" });
+    }
+  }, [runKey, total, reducedMotion]);
 
   // Autoplay: fast outside aula, one step every 2,4 s in "Reproduzir tudo".
   useEffect(() => {
     if (!state.playing) return;
-    const t = setTimeout(() => dispatch({ type: "next" }), aula ? AULA_PLAY_MS : fastMs);
+    const own = steps[state.step]?.durationMs;
+    const ms = aula
+      ? Math.max(AULA_PLAY_MS, (own ?? 0) * AULA_MOTION_SCALE)
+      : (own ?? fastMs);
+    const t = setTimeout(() => dispatch({ type: "next" }), ms);
     return () => clearTimeout(t);
-  }, [state.playing, state.step, aula, fastMs]);
+  }, [state.playing, state.step, aula, fastMs, steps]);
 
   const next = useCallback(() => dispatch({ type: "next" }), []);
   const prev = useCallback(() => dispatch({ type: "prev" }), []);
@@ -295,7 +319,7 @@ export function useAulaLesson({
     step: state.step,
     total: state.total,
     playing: state.playing,
-    done: isLastStep(state),
+    done: state.ended,
     next,
     prev,
     goTo,

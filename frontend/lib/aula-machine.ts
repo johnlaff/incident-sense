@@ -8,8 +8,16 @@
 export interface AulaState {
   step: number;
   total: number;
-  /** Advancing on its own (fast replay, or "Reproduzir tudo" in aula). */
+  /**
+   * Advancing on its own (fast replay, or "Reproduzir tudo" in aula). On the
+   * last step it means the step is still playing out before the run ends.
+   */
   playing: boolean;
+  /**
+   * The run is over: the last step is on screen and has finished playing (or
+   * was reached by hand, or skipped to). Distinct from "on the last index".
+   */
+  ended: boolean;
 }
 
 export type AulaAction =
@@ -22,40 +30,53 @@ export type AulaAction =
   | { type: "pause" }
   | { type: "clear" };
 
-export const AULA_IDLE: AulaState = { step: -1, total: 0, playing: false };
+export const AULA_IDLE: AulaState = { step: -1, total: 0, playing: false, ended: false };
 
 function clamp(step: number, total: number): number {
   return Math.max(total ? 0 : -1, Math.min(step, total - 1));
 }
 
 export function aulaReducer(state: AulaState, action: AulaAction): AulaState {
+  const last = state.total - 1;
   switch (action.type) {
     case "start": {
       const total = Math.max(0, action.total);
-      return { step: total ? 0 : -1, total, playing: action.playing && total > 1 };
+      if (!total) return AULA_IDLE;
+      const playing = action.playing;
+      return { step: 0, total, playing, ended: !playing && total === 1 };
     }
     case "next": {
       if (!state.total) return state;
-      const step = clamp(state.step + 1, state.total);
-      // Reaching the last step ends any autoplay.
-      return { ...state, step, playing: state.playing && step < state.total - 1 };
+      // On the last step, "next" ends the run (autoplay calls it once the
+      // last step has played out).
+      if (state.step >= last) return { ...state, playing: false, ended: true };
+      const step = state.step + 1;
+      return { ...state, step, ended: !state.playing && step === last };
     }
     case "prev":
       if (!state.total) return state;
-      return { ...state, step: clamp(state.step - 1, state.total), playing: false };
-    case "goto":
+      return {
+        ...state,
+        step: clamp(state.step - 1, state.total),
+        playing: false,
+        ended: false,
+      };
+    case "goto": {
       if (!state.total) return state;
-      return { ...state, step: clamp(action.step, state.total), playing: false };
+      const step = clamp(action.step, state.total);
+      return { ...state, step, playing: false, ended: step === last };
+    }
     case "finish":
-      return { ...state, step: state.total - 1, playing: false };
+      if (!state.total) return state;
+      return { ...state, step: last, playing: false, ended: true };
     case "play":
-      if (!state.total || state.step >= state.total - 1) {
-        // Replaying from the end starts over, like any media player.
-        return state.total ? { ...state, step: 0, playing: state.total > 1 } : state;
-      }
-      return { ...state, playing: true };
+      if (!state.total) return state;
+      // Replaying from the end starts over, like any media player.
+      if (state.ended || state.step < 0)
+        return { ...state, step: 0, playing: true, ended: false };
+      return { ...state, playing: true, ended: false };
     case "pause":
-      return { ...state, playing: false };
+      return { ...state, playing: false, ended: state.total > 0 && state.step === last };
     case "clear":
       return AULA_IDLE;
   }
