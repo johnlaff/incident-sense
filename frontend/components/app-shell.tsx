@@ -796,7 +796,7 @@ function PeekDrawer({
               </div>
               <div className="peek-title">
                 <h2>{inc.title}</h2>
-                <p>{`${inc.service} · ${inc.group} · ${inc.rel}`}</p>
+                <p>{`${inc.service} · ${inc.group} · aberto em ${inc.opened}`}</p>
               </div>
 
               {inc.resolutionNotes ? (

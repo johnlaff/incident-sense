@@ -211,6 +211,21 @@
   align-items: center;
   gap: 12px;
 }
+/* While the hero's seven-station line is on screen, the pager keeps its
+   place and its hairline but its content stays out of sight (page.tsx
+   watches the line), so the seven chapters are never listed twice. */
+.cf-index > * {
+  transition:
+    opacity var(--dur-state, 200ms) var(--ease-out),
+    visibility 0s linear 0s;
+}
+.cf-index[data-hidden] > * {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--dur-state, 200ms) var(--ease-out),
+    visibility 0s linear var(--dur-state, 200ms);
+}
 .cf-index-now {
   margin: 0;
   min-width: 0;

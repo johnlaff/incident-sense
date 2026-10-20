@@ -38,6 +38,7 @@ import {
   readMotion,
   useElapsed,
   useFollowStep,
+  Verdict,
   type Motion,
 } from "../evaluation";
 import {
@@ -407,10 +408,6 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   {reusedCount(result) > 0 &&
                     ` · ${reusedCount(result)} ${reusedCount(result) === 1 ? "nota reaproveitada" : "notas reaproveitadas"}`}
                   {" · "}
-                  {(result.duration_ms / 1000).toLocaleString("pt-BR", {
-                    maximumFractionDigits: 1,
-                  })}{" "}
-                  s{" · "}
                   {modelNameFromRoute(result.model)}
                   <br />
                   Critérios versão {result.rubric_version}
@@ -428,6 +425,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               skipped={playback.skipped}
               motion={motion}
             />
+          )}
+
+          {showResult && result.scope.in_scope && (gateClosed || at("problemas")) && (
+            <Verdict key={`ver-${epoch}`} result={result} />
           )}
         </aside>
 

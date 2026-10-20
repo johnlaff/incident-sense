@@ -147,10 +147,10 @@ a.prb-row:focus-visible {
 }
 
 /* ----- Record ----- */
+/* The definition follows the meta line with space alone: a short dashed
+   rule here read as a loose divider. */
 .prb-head-def {
-  margin-top: 4px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border);
+  margin-top: 12px;
 }
 
 /* Cause, workaround, fix: the order is the story, so it reads as a chain. */

@@ -1001,13 +1001,6 @@ a.chg-row:focus-visible {
 .chg-adh-label.NAO_ADERENTE {
   color: var(--p1);
 }
-.chg-adh-pct {
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
 .chg-adh-meter {
   position: relative;
   display: block;
@@ -1454,4 +1447,29 @@ a.chg-row:focus-visible {
   .chg-text-wrap[data-long="true"][data-open="false"] .chg-text {
     --fold-lines: 5;
   }
+}
+
+/* The closing line of a reading: may it go on to a person's approval? */
+.chg-final {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 560;
+  color: var(--ink);
+}
+.chg-final svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+}
+.chg-final.ok svg {
+  color: var(--st-resolved);
+}
+.chg-final.no svg {
+  color: var(--p1);
 }

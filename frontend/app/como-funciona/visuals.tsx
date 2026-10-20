@@ -408,7 +408,7 @@ export function Coherence() {
       </figcaption>
       <div className="cf-coh-rows">
         <div className="cf-coh-row is-high" style={{ "--v": 0.904, "--i": 0 } as Style}>
-          <span className="cf-coh-l">Preenchimento</span>
+          <span className="cf-coh-l">Média ponderada</span>
           <span className="cf-bar-track" aria-hidden="true">
             <i className="cf-bar" />
           </span>
@@ -422,7 +422,7 @@ export function Coherence() {
           <span className="cf-bar-track" aria-hidden="true">
             <i className="cf-bar" />
           </span>
-          <b className="mono">{CHG2_COHERENCE}</b>
+          <b className="mono">{br(CHG2_COHERENCE)}</b>
         </div>
       </div>
       <p className="cf-problem">

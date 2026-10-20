@@ -1,4 +1,4 @@
-// Pins the group palette rules from the second independent review (item 2).
+// Pins the group palette rules from the second and third independent reviews.
 import { describe, expect, it } from "vitest";
 
 import { CLUSTER_TONES } from "@/lib/model";
@@ -32,6 +32,16 @@ describe("CLUSTER_TONES", () => {
   it("has nine tones, none purple near the AI violet", () => {
     expect(CLUSTER_TONES).toHaveLength(9);
     for (const t of CLUSTER_TONES) expect(t.h < 262 || t.h > 335).toBe(true);
+  });
+
+  it("stays off the concept hues (Incidente, Problema, Change)", () => {
+    const gap = (a: number, b: number) => {
+      const d = Math.abs(a - b) % 360;
+      return Math.min(d, 360 - d);
+    };
+    for (const t of CLUSTER_TONES)
+      for (const concept of [255, 68, 178])
+        expect(gap(t.h, concept), `hue ${t.h} vs ${concept}`).toBeGreaterThanOrEqual(26);
   });
 
   it("keeps every pair apart in both themes", () => {

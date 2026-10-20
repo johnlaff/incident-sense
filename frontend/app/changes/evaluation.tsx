@@ -271,7 +271,8 @@ export function PlaybackBar({
 }) {
   const playing = !playback.done;
   const step = steps[Math.max(0, Math.min(playback.index, steps.length - 1))];
-  const took = fmt(seconds, 1);
+  // A reused reading comes back in no time; "0,0 s" reads like a glitch.
+  const took = seconds >= 0.1 ? `Resultado em ${fmt(seconds, 1)} s` : "Resultado pronto";
   return (
     <div className="chg-playbar" aria-live="polite">
       {playing ? (
@@ -289,7 +290,7 @@ export function PlaybackBar({
       ) : (
         <>
           <p>
-            <span className="chg-playbar-count">Resultado em {took} s</span>
+            <span className="chg-playbar-count">{took}</span>
             <span>{steps.length} etapas repassadas</span>
           </p>
           <button className="btn btn-ghost btn-sm" onClick={playback.replay}>
@@ -637,9 +638,9 @@ export function Coherence({
             run={onScores}
             delay={0}
             dur={skipped ? 0 : motion.count}
-            label={`Consistência ${nota(s.consistency_score)} de 10`}
+            label={`Coerência ${nota(s.consistency_score)} de 10`}
           />
-          <span>{"consistência entre os campos, de\u00a00\u00a0a\u00a010"}</span>
+          <span>{"coerência entre os campos, de\u00a00\u00a0a\u00a010"}</span>
         </div>
         <div className="chg-sem-tile chg-adh-tile">
           <div className="chg-adh-row">
@@ -651,7 +652,6 @@ export function Coherence({
               )}
               {ADHERENCE_LABEL[s.backout_adherence]}
             </span>
-            <span className="chg-adh-pct">{s.backout_adherence_percent}%</span>
           </div>
           <span
             className={`chg-adh-meter ${s.backout_adherence}`}
@@ -664,7 +664,12 @@ export function Coherence({
           >
             <span className="fill" />
           </span>
-          <span>plano de retorno x tarefas cadastradas</span>
+          {/* A second, narrower fact than the 0 to 10 coherence: how much of
+              the backout plan shows up among the registered tasks. */}
+          <span>
+            <b className="mono">{s.backout_adherence_percent}%</b> do plano de retorno
+            aparece nas tarefas cadastradas
+          </span>
         </div>
       </div>
 
@@ -693,10 +698,47 @@ export function Coherence({
         )}
         <h3>Raciocínio</h3>
         <p>{s.reasoning}</p>
-        <h3>Orientação ao autor</h3>
-        <p>{s.guidance}</p>
+        {s.guidance.trim() ? (
+          <>
+            <h3>Orientação ao autor</h3>
+            <p>{s.guidance}</p>
+          </>
+        ) : null}
       </div>
     </section>
+  );
+}
+
+/**
+ * The last line of the reading: may this change go on to a person's approval?
+ * The rubric only has the weighted-average cut; past it, any inconsistency the
+ * AI points out holds the change back until the author fixes it.
+ */
+export function Verdict({ result }: { result: Evaluation }) {
+  const overall = overallOf(result);
+  if (overall === null) return null;
+  const avg = fmt(overall, 2);
+  const cut = nota(result.threshold);
+  const problems = result.semantic?.problems.length ?? 0;
+  const passed = gatePassed(result);
+  const ok = passed && result.semantic !== null && problems === 0;
+  let text: string;
+  if (!passed) {
+    text = `Não segue para aprovação: a média ponderada ficou em ${avg}, abaixo do corte de ${cut}.`;
+  } else if (result.semantic === null) {
+    text = `A média ponderada passou do corte (${avg}), mas a análise de coerência não rodou: avalie de novo antes de pedir aprovação.`;
+  } else if (problems > 0) {
+    text = `Ainda não segue para aprovação: a média ponderada passou do corte (${avg}), mas a IA apontou ${
+      problems === 1 ? "1 incoerência" : `${problems} incoerências`
+    } entre os campos.`;
+  } else {
+    text = `Pode seguir para a aprovação de uma pessoa: a média ponderada passou do corte (${avg}) e a IA não apontou incoerência.`;
+  }
+  return (
+    <p className={`card chg-final ${ok ? "ok" : "no"}`} role="status">
+      {ok ? <Icons.checkCircle /> : <Icons.alert />}
+      <span>{text}</span>
+    </p>
   );
 }
 
@@ -752,7 +794,8 @@ const STEP_TARGET: Record<StepId, string> = {
   media: ".chg-scale",
   portao: ".chg-gate",
   coerencia: ".chg-sem-scores",
-  problemas: ".chg-sem-body",
+  // The list of inconsistencies ends in the verdict line: show both.
+  problemas: ".chg-final",
 };
 
 export function useFollowStep(

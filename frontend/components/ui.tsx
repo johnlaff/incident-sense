@@ -31,10 +31,16 @@ export function PriorityBadge({
 }) {
   const label = PRIORITY_LABEL[priority];
   return (
-    <span className={`badge ${priority}`} title={`Prioridade ${label}`}>
+    <span className={`badge ${priority}`} title={`Prioridade ${label.toLowerCase()}`}>
       <span className="dot" />
-      {withWord && <span className="badge-word">Prioridade · </span>}
-      {label}
+      {withWord ? (
+        <>
+          <span className="badge-word">Prioridade </span>
+          <span className="badge-level">{label.toLowerCase()}</span>
+        </>
+      ) : (
+        label
+      )}
     </span>
   );
 }

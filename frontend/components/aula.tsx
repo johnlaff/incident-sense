@@ -12,6 +12,7 @@
 //
 // The step machine itself is pure (lib/aula-machine.ts).
 
+import Link from "next/link";
 import {
   createContext,
   useCallback,
@@ -392,16 +393,23 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
           >
             {lesson.playing ? <Icons.pause /> : <Icons.play />}
           </button>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm aula-next"
-            onClick={lesson.next}
-            disabled={last}
-            title="Próxima etapa (seta para a direita, espaço ou PageDown)"
-          >
-            {last ? "Fim" : "Próxima etapa"}
-            {last ? null : <Icons.arrowRight />}
-          </button>
+          {last ? (
+            // The lesson is over: the next useful step is the next stop.
+            <Link href="/aula?aula=1" className="btn btn-primary btn-sm aula-next">
+              Voltar ao roteiro
+              <Icons.arrowRight />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm aula-next"
+              onClick={lesson.next}
+              title="Próxima etapa (seta para a direita, espaço ou PageDown)"
+            >
+              Próxima etapa
+              <Icons.arrowRight />
+            </button>
+          )}
         </div>
       </div>
     </div>

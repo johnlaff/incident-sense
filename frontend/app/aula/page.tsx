@@ -59,13 +59,16 @@ export default function LessonPage() {
                         <span className="pick-text">
                           <b>{keepWhole(p.title)}</b>
                           <small className="pick-status">
-                            {/* Each fact stays whole; lines break at the dot. */}
-                            {p.status.split(" · ").map((part, k) => (
-                              <span key={part}>
-                                {k > 0 ? " · " : null}
-                                <span className="meta-item">{part}</span>
-                              </span>
-                            ))}
+                            {/* Each fact stays whole; the dots are drawn by CSS
+                                so a wrapped line never keeps a loose one. */}
+                            <span className="pick-facts">
+                              {p.status.split(" · ").map((part, k) => (
+                                <span key={part} className="meta-item">
+                                  {k > 0 ? <span className="sr-only">, </span> : null}
+                                  {part}
+                                </span>
+                              ))}
+                            </span>
                           </small>
                           <small>{p.note}</small>
                         </span>

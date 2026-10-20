@@ -35,6 +35,8 @@ const STATE_RANK: Record<DsState, number> = {
 };
 
 const TABS: Tab[] = ["open", "resolved", "all"];
+/** The list opens on what still needs work. */
+const DEFAULT_TAB: Tab = "open";
 const TAB_LABEL: Record<Tab, string> = {
   open: "Abertos",
   resolved: "Resolvidos",
@@ -51,7 +53,7 @@ function readFilters() {
   const tab = p.get("estado") as Tab | null;
   const prio = p.get("prioridade") as PCode | null;
   return {
-    tab: tab && TABS.includes(tab) ? tab : "all",
+    tab: tab && TABS.includes(tab) ? tab : DEFAULT_TAB,
     service: p.get("servico") ?? "",
     priority: prio && PCODES.includes(prio) ? prio : "",
     query: p.get("q") ?? "",
@@ -62,7 +64,7 @@ export default function IncidentesPage() {
   const { openIncident, blocked } = useShell();
   const { data, loading, error, slow, retry } = useAllIncidents();
 
-  const [tab, setTab] = useState<Tab>("all");
+  const [tab, setTab] = useState<Tab>(DEFAULT_TAB);
   const [service, setService] = useState("");
   const [priority, setPriority] = useState<"" | PCode>("");
   const [query, setQuery] = useState("");
@@ -84,7 +86,7 @@ export default function IncidentesPage() {
   useEffect(() => {
     if (!hydrated) return;
     const p = new URLSearchParams();
-    if (tab !== "all") p.set("estado", tab);
+    if (tab !== DEFAULT_TAB) p.set("estado", tab);
     if (service) p.set("servico", service);
     if (priority) p.set("prioridade", priority);
     if (query) p.set("q", query);
@@ -228,12 +230,12 @@ export default function IncidentesPage() {
   const services = data?.services ?? [];
 
   const chips: { k: string; label: string; sub?: string; clear: () => void }[] = [];
-  if (tab !== "all")
+  if (tab === "resolved")
     chips.push({
       k: "tab",
       label: TAB_LABEL[tab],
       sub: "Estado",
-      clear: () => setTab("all"),
+      clear: () => setTab(DEFAULT_TAB),
     });
   if (service)
     chips.push({ k: "svc", label: service, sub: "Serviço", clear: () => setService("") });
@@ -248,7 +250,7 @@ export default function IncidentesPage() {
     chips.push({ k: "q", label: `“${query}”`, sub: "Busca", clear: () => setQuery("") });
 
   function clearAll() {
-    setTab("all");
+    setTab(DEFAULT_TAB);
     setService("");
     setPriority("");
     setQuery("");
@@ -454,7 +456,7 @@ export default function IncidentesPage() {
                         <PriorityBadge priority={x.priority} />
                       </td>
                       <td className="when" data-label="Aberto">
-                        {x.rel}
+                        {x.opened}
                       </td>
                     </tr>
                   ))
