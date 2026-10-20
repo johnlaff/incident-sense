@@ -115,6 +115,7 @@ export function PipelineTrace({
   const lesson = usePipelineLesson("pipeline", shown);
   const views = useMemo(() => (shown ? stepViews(shown) : null), [shown]);
   const beat = shown ? lesson.step : -1;
+  const finished = lesson.done && !lesson.aula;
   const listRef = useRef<HTMLOListElement>(null);
 
   // In modo aula the step being explained comes into view on every move.
@@ -174,7 +175,11 @@ export function PipelineTrace({
       >
         {PIPELINE_STEPS.map((def) => {
           const view = views?.find((v) => v.key === def.key) ?? null;
-          const reveal: Reveal = view ? stepReveal(def.key, beat) : "hidden";
+          const at: Reveal = view ? stepReveal(def.key, beat) : "hidden";
+          // Once the replay is over nothing is "being played": the last step
+          // reads as done, like its "Concluída" chip (modo aula keeps it lit
+          // while the narrator is on it).
+          const reveal: Reveal = at === "current" && finished ? "done" : at;
           return (
             <StepItem
               key={def.key}
@@ -897,9 +902,11 @@ function CitedSources({
               {row ? (
                 <button
                   type="button"
-                  className="btn btn-ghost btn-sm"
+                  className="btn btn-outline btn-sm"
                   onClick={() => show(id)}
                 >
+                  {/* It jumps back up to the row in the search step. */}
+                  <Icons.arrowUp />
                   Ver na busca
                 </button>
               ) : null}
