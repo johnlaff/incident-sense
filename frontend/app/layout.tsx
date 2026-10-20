@@ -1,20 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Atkinson_Hyperlegible_Mono, Atkinson_Hyperlegible_Next } from "next/font/google";
 
 import "./globals.css";
+import "./concepts.css";
+import "./shell.css";
 import { AppShell } from "@/components/app-shell";
 import { AULA_BOOT_SCRIPT } from "@/lib/aula-machine";
 
-const inter = Inter({
+// Atkinson Hyperlegible was drawn for readers with low vision: every letter
+// and digit has a distinct shape (0 and O, 1, l and I), which is what a room
+// reading INC numbers and scores from a projector or a phone at arm's length needs.
+const sans = Atkinson_Hyperlegible_Next({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const mono = Atkinson_Hyperlegible_Mono({
   subsets: ["latin"],
-  weight: ["500", "600"],
-  variable: "--font-jetbrains-mono",
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -30,7 +34,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: "#131a2b",
 };
 
 // Set the theme before paint so there is no light→dark flash on reload.
@@ -44,7 +48,7 @@ export default function RootLayout({
       lang="pt-BR"
       data-theme="light"
       suppressHydrationWarning
-      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${sans.variable} ${mono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

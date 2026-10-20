@@ -1,0 +1,445 @@
+/* ===================================================================== *
+   Concept language: one color, one icon, one shape per idea of the lesson.
+   Components: components/concepts.tsx. Tokens: --c-* in globals.css.
+   Shapes carry the meaning too, so color is never alone:
+     records (INC, PRB, CHG)  solid "pulseira" band with a snap dot
+     similar past case        the same band, hollow
+     AI step                  dashed violet outline
+     AI output                violet tinted block, star icon
+     human decision           solid ink pill
+     score                    big mono number + band word
+     gate                     diamond + yes/no verdict
+ * ===================================================================== */
+
+/* Per-concept variables: every class below reads --k, --k-on, --k-tint... */
+.rtag-inc,
+.cicon-inc,
+.clabel-inc,
+.legend-inc,
+.cicon-similar,
+.clabel-similar,
+.legend-similar,
+.k-inc {
+  --k: var(--c-inc);
+  --k-on: var(--c-inc-on);
+  --k-tint: var(--c-inc-tint);
+  --k-ink: var(--c-inc-ink);
+  --k-line: var(--c-inc-line);
+}
+.rtag-prb,
+.cicon-prb,
+.clabel-prb,
+.legend-prb,
+.k-prb {
+  --k: var(--c-prb);
+  --k-on: var(--c-prb-on);
+  --k-tint: var(--c-prb-tint);
+  --k-ink: var(--c-prb-ink);
+  --k-line: var(--c-prb-line);
+}
+.rtag-chg,
+.cicon-chg,
+.clabel-chg,
+.legend-chg,
+.k-chg {
+  --k: var(--c-chg);
+  --k-on: var(--c-chg-on);
+  --k-tint: var(--c-chg-tint);
+  --k-ink: var(--c-chg-ink);
+  --k-line: var(--c-chg-line);
+}
+.cicon-ai-step,
+.clabel-ai-step,
+.legend-ai-step,
+.cicon-ai-out,
+.clabel-ai-out,
+.legend-ai-out,
+.k-ai {
+  --k: var(--c-ai);
+  --k-on: var(--c-ai-on);
+  --k-tint: var(--c-ai-tint);
+  --k-ink: var(--c-ai-ink);
+  --k-line: var(--c-ai-line);
+}
+.cicon-human,
+.clabel-human,
+.legend-human,
+.k-human {
+  --k: var(--c-human);
+  --k-on: var(--c-human-on);
+  --k-tint: var(--c-human-tint);
+  --k-ink: var(--c-human-ink);
+  --k-line: var(--c-human-line);
+}
+.cicon-score,
+.clabel-score,
+.legend-score {
+  --k: var(--score-high);
+  --k-on: var(--on-primary);
+  --k-tint: var(--score-high-tint);
+  --k-ink: var(--score-high);
+  --k-line: var(--score-high);
+}
+.cicon-gate,
+.clabel-gate,
+.legend-gate {
+  --k: var(--ink);
+  --k-on: var(--surface);
+  --k-tint: var(--surface-2);
+  --k-ink: var(--ink);
+  --k-line: var(--border-strong);
+}
+
+/* ----- Pulseira: the record's identity band ----- */
+.rtag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  border-radius: 6px;
+  background: var(--k);
+  color: var(--k-on);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  border: 1.5px solid var(--k);
+  font-variant-numeric: tabular-nums;
+}
+.rtag svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  stroke-width: 2.4;
+}
+/* The snap: a small punched dot at the band's end, like a wristband. */
+.rtag::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  margin-left: 1px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.45;
+}
+.rtag-sm {
+  height: 22px;
+  padding: 0 8px 0 6px;
+  font-size: var(--fs-xs);
+}
+.rtag-sm svg {
+  width: 12px;
+  height: 12px;
+}
+.rtag-lg {
+  height: 34px;
+  padding: 0 14px 0 10px;
+  font-size: var(--fs-md);
+  border-radius: 8px;
+}
+.rtag-lg svg {
+  width: 17px;
+  height: 17px;
+}
+.rtag-ghost {
+  background: var(--surface);
+  color: var(--k-ink);
+  border-style: dashed;
+  border-color: var(--k-line);
+}
+
+/* ----- Concept icon chip: the shape differs per concept ----- */
+.cicon {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 10px;
+  background: var(--k);
+  color: var(--k-on);
+}
+.cicon svg {
+  width: 20px;
+  height: 20px;
+}
+.cicon-similar {
+  background: var(--surface);
+  color: var(--k-ink);
+  border: 2px dashed var(--k-line);
+}
+.cicon-ai-step {
+  background: var(--surface);
+  color: var(--k-ink);
+  border: 2px dashed var(--k);
+  border-radius: 50%;
+}
+.cicon-ai-out {
+  background: var(--k-tint);
+  color: var(--k-ink);
+  border: 2px solid var(--k-line);
+}
+.cicon-human {
+  border-radius: 999px;
+}
+.cicon-score {
+  background: var(--k-tint);
+  color: var(--k-ink);
+  border-radius: 999px;
+}
+.cicon-gate {
+  background: transparent;
+  color: var(--k-ink);
+}
+.cicon-gate svg {
+  width: 30px;
+  height: 30px;
+  stroke-width: 1.8;
+}
+
+/* ----- Inline label (icon + name), for section heads and tags ----- */
+.clabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--k-ink);
+}
+.clabel svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+/* Generic concept surfaces for blocks drawn by screens */
+.k-surface {
+  background: var(--k-tint);
+  border: 1px solid var(--k-line);
+  border-radius: var(--radius);
+}
+.k-ai-step-box {
+  border: 2px dashed var(--c-ai-line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.k-ai-out-box {
+  background: var(--c-ai-tint);
+  border: 2px solid var(--c-ai-line);
+  border-radius: var(--radius);
+}
+
+/* ----- Score: big number with its band word ----- */
+.score {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1;
+}
+.score-num {
+  font-family: var(--font);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--score-c);
+  font-size: var(--fs-score);
+  letter-spacing: -0.03em;
+}
+.score-md .score-num {
+  font-size: var(--fs-2xl);
+}
+.score-xl .score-num {
+  font-size: var(--fs-score-xl);
+}
+.score-max {
+  font-size: 0.42em;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 2px;
+  letter-spacing: 0;
+}
+.score-band {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  background: var(--score-tint);
+  color: var(--score-c);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.score-band svg {
+  width: 13px;
+  height: 13px;
+}
+.score-high {
+  --score-c: var(--score-high);
+  --score-tint: var(--score-high-tint);
+}
+.score-mid {
+  --score-c: var(--score-mid);
+  --score-tint: var(--score-mid-tint);
+}
+.score-low {
+  --score-c: var(--score-low);
+  --score-tint: var(--score-low-tint);
+}
+
+/* ----- Gate: diamond + rule + verdict ----- */
+.gatemark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.gatemark-diamond {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+}
+.gatemark-diamond::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  rotate: 45deg;
+  border: 2.5px solid currentColor;
+  border-radius: 4px;
+  background: var(--surface);
+}
+.gatemark-diamond svg {
+  position: relative;
+  width: 15px;
+  height: 15px;
+}
+.gatemark-pass .gatemark-diamond {
+  color: var(--gate-pass);
+}
+.gatemark-pass .gatemark-diamond::before {
+  background: var(--score-high-tint);
+}
+.gatemark-fail .gatemark-diamond {
+  color: var(--gate-fail);
+}
+.gatemark-fail .gatemark-diamond::before {
+  background: var(--score-low-tint);
+}
+.gatemark-verdict {
+  font-size: var(--fs-sm);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.gatemark-pass .gatemark-verdict {
+  background: var(--score-high-tint);
+  color: var(--score-high);
+}
+.gatemark-fail .gatemark-verdict {
+  background: var(--score-low-tint);
+  color: var(--score-low);
+}
+
+/* ----- "Ver detalhes técnicos": the jargon lives behind one tap ----- */
+.tech {
+  margin-top: 10px;
+  border-radius: var(--radius-sm);
+}
+.tech > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 10px 4px 6px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.tech > summary::-webkit-details-marker {
+  display: none;
+}
+.tech > summary:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.tech > summary svg {
+  width: 16px;
+  height: 16px;
+  transition: rotate var(--dur-state) var(--ease-out);
+}
+.tech[open] > summary svg {
+  rotate: 90deg;
+}
+.tech-body {
+  margin-top: 6px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--ink-body);
+}
+.tech-body code,
+.tech-body .mono {
+  font-family: var(--mono);
+  font-size: 0.95em;
+}
+.tech-body p {
+  margin: 0 0 6px;
+}
+.tech-body p:last-child {
+  margin: 0;
+}
+
+/* ----- Legend ----- */
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+.legend-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.legend-item b {
+  display: block;
+  color: var(--ink);
+  font-size: var(--fs-md);
+}
+.legend-item p {
+  margin: 2px 0 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* A band that opens its record */
+.tag-btn {
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  line-height: 0;
+}
+.tag-btn:hover .rtag-ghost {
+  background: var(--c-inc-tint);
+}

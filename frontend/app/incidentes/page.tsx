@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, ViewTransition } from "react";
 
+import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
 import {
@@ -259,6 +260,11 @@ export default function IncidentesPage() {
         </span>
       </div>
 
+      <p className="page-lede">
+        Cada linha é um chamado: algo quebrou no banco e alguém avisou. Abra um para ver a
+        IA sugerir uma solução.
+      </p>
+
       <WakeNotice show={slow} />
 
       <div className="toolbar">
@@ -358,12 +364,12 @@ export default function IncidentesPage() {
               </caption>
               <thead>
                 <tr>
-                  {sortBtn("num", "Número", { width: 112 })}
+                  {sortBtn("num", "Número", { width: 158 })}
                   {sortBtn("desc", "Título")}
                   {sortBtn("svc", "Serviço", { width: 176 }, "col-svc")}
                   {sortBtn("state", "Estado", { width: 128 })}
                   {sortBtn("priority", "Prioridade", { width: 112 })}
-                  {sortBtn("when", "Aberto", { width: 100 })}
+                  {sortBtn("when", "Aberto", { width: 112 })}
                 </tr>
               </thead>
               <tbody>
@@ -421,7 +427,9 @@ export default function IncidentesPage() {
                             share="morph"
                             default="none"
                           >
-                            <span>{x.number}</span>
+                            <span>
+                              <RecordTag number={x.number} size="sm" />
+                            </span>
                           </ViewTransition>
                           <span className="sr-only">{`: ${x.short}`}</span>
                         </Link>

@@ -23,9 +23,9 @@ export const STEP_STATUS_LABEL: Record<StepStatus, string> = {
 };
 
 export const TAG_SOURCE_LABEL: Record<TagLayer["source"], string> = {
-  incidente: "tags do próprio incidente",
-  ia: "tags escolhidas pela IA no resumo",
-  catalogo: "tags usuais da categoria e subcategoria",
+  incidente: "vieram do próprio incidente",
+  ia: "a IA escolheu ao resumir",
+  catalogo: "são as usuais da categoria",
   nenhuma: "nenhuma tag reconhecida",
 };
 
@@ -33,7 +33,7 @@ export const TAG_SOURCE_LABEL: Record<TagLayer["source"], string> = {
 export type Outcome = "abaixo" | "mantido" | "descartado" | "mantido-fallback";
 
 export const OUTCOME_LABEL: Record<Outcome, string> = {
-  abaixo: "abaixo do limiar",
+  abaixo: "pouco parecido",
   mantido: "mantido",
   descartado: "descartado",
   "mantido-fallback": "mantido (lista original)",
@@ -142,35 +142,35 @@ export const PIPELINE_STEPS: StepDef[] = [
     key: "carregar",
     order: 1,
     title: "Carregar",
-    hint: "O registro é lido da base, com categoria, subcategoria, empresa e tags.",
+    hint: "A IA lê o chamado: o que o cliente escreveu, a categoria e as tags.",
     sources: ["carregar"],
   },
   {
     key: "resumir",
     order: 2,
     title: "Resumir",
-    hint: "A IA resume o chamado. O resumo, nunca o texto cru, vira a consulta.",
+    hint: "O texto do cliente é longo e confuso. Um resumo curto encontra casos melhores.",
     sources: ["resumir"],
   },
   {
     key: "numeros",
     order: 3,
     title: "Transformar em números",
-    hint: "Resumo, categoria, subcategoria e empresa viram um vetor de números.",
+    hint: "O resumo vira uma lista de números. Textos de sentido parecido viram números parecidos.",
     sources: ["embedding"],
   },
   {
     key: "buscar",
     order: 4,
     title: "Buscar e conferir",
-    hint: "Tags decidem onde procurar, o vetor mede o que parece e uma IA confere o que serve.",
+    hint: "Procura incidentes já resolvidos parecidos com este. Depois uma IA confere se cada um serve mesmo.",
     sources: ["recuperar", "contexto"],
   },
   {
     key: "classificar",
     order: 5,
     title: "Classificar",
-    hint: "É falha técnica? Se não for, não há sugestão: saber não responder também é resposta.",
+    hint: "É falha técnica? Se não for, a IA não sugere nada. Saber não responder também é resposta.",
     sources: ["decidir"],
     gate: true,
   },
@@ -178,14 +178,14 @@ export const PIPELINE_STEPS: StepDef[] = [
     key: "sugerir",
     order: 6,
     title: "Sugerir",
-    hint: "A resposta cita as fontes; citação fora do contexto é removida ou sinalizada.",
+    hint: "A IA escreve a solução citando só os casos que encontrou. Cada citação abre o caso.",
     sources: ["sugerir"],
   },
   {
     key: "publicar",
     order: 7,
     title: "Publicar",
-    hint: "A sugestão volta para as notas de trabalho do incidente.",
+    hint: "A sugestão vira nota no incidente. Quem decide se usa é a pessoa analista.",
     sources: ["publicar"],
   },
 ];

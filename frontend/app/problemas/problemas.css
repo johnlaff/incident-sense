@@ -30,7 +30,7 @@
   width: 16px;
   height: 16px;
   margin-top: 2px;
-  color: var(--primary-ink);
+  color: var(--c-prb-ink);
 }
 
 /* ----- List ----- */
@@ -79,7 +79,7 @@ a.prb-row:hover {
   background: var(--surface-2);
 }
 a.prb-row:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 3px solid var(--focus);
   outline-offset: -2px;
 }
 .prb-row-head {
@@ -93,7 +93,7 @@ a.prb-row:focus-visible {
   font-family: var(--mono);
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-prb-ink);
 }
 .prb-title {
   grid-area: title;
@@ -199,7 +199,7 @@ a.prb-row:focus-visible {
   height: 12px;
 }
 .prb-step.is-cause {
-  color: var(--primary-ink);
+  color: var(--c-prb-ink);
 }
 .prb-step.is-workaround {
   color: var(--p2);
@@ -297,7 +297,7 @@ a.prb-row:focus-visible {
   color: var(--ink);
 }
 .rec-prb-head svg {
-  color: var(--primary-ink);
+  color: var(--c-prb-ink);
 }
 .rec-prb-list {
   list-style: none;
@@ -329,7 +329,7 @@ a.prb-row:focus-visible {
   background: var(--surface-2);
 }
 .rec-prb-row:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 3px solid var(--focus);
   outline-offset: -2px;
 }
 .rec-prb-row .prb-num {
@@ -379,9 +379,28 @@ a.prb-row:focus-visible {
 }
 
 .prb-inline-link {
-  color: var(--primary-ink);
+  color: var(--c-prb-ink);
   font-weight: 600;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+}
+
+/* Pulseira: the PRB band and big, plain heads */
+.prb-num .rtag,
+.record-num .rtag {
+  vertical-align: middle;
+}
+.prb-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.prb-def svg {
+  color: var(--c-prb-ink);
+}
+.prb-step-label {
+  font-size: var(--fs-md);
+}
+.prb-step-text {
+  font-size: var(--fs-md);
 }

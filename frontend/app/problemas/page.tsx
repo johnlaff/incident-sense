@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ViewTransition, type CSSProperties } from "react";
 
+import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { ProblemDefinition, ProblemStateBadge } from "@/components/problem";
 import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
@@ -27,8 +28,8 @@ export default function ProblemasPage() {
       <div className="page-lede">
         <ProblemDefinition />
         <p className="prb-lede-more">
-          Quando a Aurora sugere uma resolução, ela consulta estes registros junto com os
-          incidentes resolvidos e cita os que usou.
+          A IA também consulta estes registros quando sugere uma solução, e cita os que
+          usou.
         </p>
       </div>
       <WakeNotice show={slow} />
@@ -68,7 +69,9 @@ export default function ProblemasPage() {
               >
                 <span className="prb-row-head">
                   <ViewTransition name={`prb-${p.number}`} share="morph" default="none">
-                    <span className="prb-num">{p.number}</span>
+                    <span className="prb-num">
+                      <RecordTag number={p.number} />
+                    </span>
                   </ViewTransition>
                   <ProblemStateBadge state={p.state} />
                 </span>

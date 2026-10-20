@@ -7,6 +7,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, type CSSProperties } from "react";
 
+import { RecordTag } from "./concepts";
 import { Icons } from "./icons";
 import { useFocusTrap, useScrollLock } from "@/lib/a11y";
 import {
@@ -133,7 +134,9 @@ export function ProblemPeekDrawer({
       >
         <div className="drawer-head">
           <span className="peek-label">Problema</span>
-          <span className="mono peek-num">{number}</span>
+          <span className="peek-num">
+            <RecordTag number={number} />
+          </span>
           <button className="drawer-back" onClick={onClose}>
             <Icons.arrowLeft />
             Voltar<span className="drawer-back-long"> à tela anterior</span>
@@ -165,11 +168,11 @@ export function ProblemPeekDrawer({
                       <button
                         type="button"
                         key={inc.number}
-                        className="cite"
+                        className="tag-btn"
                         onClick={(e) => onPeekIncident(inc.number, e.currentTarget)}
                         aria-label={`Abrir incidente ${inc.number}: ${inc.short_description}`}
                       >
-                        {inc.number}
+                        <RecordTag number={inc.number} size="sm" />
                       </button>
                     ))}
                     {linked.length > PEEK_LINKED ? (
