@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { use, useMemo, useState, type CSSProperties } from "react";
 
+import { useAulaLesson } from "@/components/aula";
 import { Icons } from "@/components/icons";
 import { StateBlock, WakeNotice } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -30,12 +31,12 @@ import {
   FieldScoreChip,
   Ledger,
   PlaybackBar,
+  type Playback,
   RunningNote,
   STILL,
   readMotion,
   useElapsed,
   useFollowStep,
-  usePlayback,
   type Motion,
 } from "../evaluation";
 import {
@@ -151,7 +152,36 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       previous && previous.fields.length > 0 ? weightedSegments(previous.fields) : null,
     [previous],
   );
-  const playback = usePlayback(steps, runKey, motion.scale);
+  // Modo aula drives the same steps: tap, arrows, Space or PageDown in aula;
+  // outside it they play on their own at each step's length.
+  const lessonSteps = useMemo(
+    () => steps.map((s) => ({ title: s.title, caption: s.caption, durationMs: s.ms })),
+    [steps],
+  );
+  const lesson = useAulaLesson({
+    id: "mudanca-avaliacao",
+    steps: lessonSteps,
+    runKey: result ? runKey : null,
+    // Reduced motion keeps the pacing; the steps crossfade instead of moving.
+    reducedMotion: "pace",
+  });
+  const [replays, setReplays] = useState(0);
+  const [skippedRun, setSkippedRun] = useState<string | null>(null);
+  const runId = `${runKey}-${replays}`;
+  const playback: Playback = {
+    index: lesson.done ? steps.length : lesson.step,
+    done: lesson.done,
+    skipped: skippedRun === runId,
+    epoch: replays,
+    skip: () => {
+      setSkippedRun(runId);
+      lesson.skip();
+    },
+    replay: () => {
+      setReplays((n) => n + 1);
+      lesson.replay();
+    },
+  };
   const showResult = phase !== "running" && result !== null && avg !== null;
   const at = (id: StepId) => showResult && reached(steps, playback.index, id);
   const gateClosed = at("portao") && result !== null && !gatePassed(result);

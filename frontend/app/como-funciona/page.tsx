@@ -73,7 +73,11 @@ function useHowtoLesson(id: string, steps: AulaLessonStep[], fastMs: number) {
     lesson,
     /** -1 before the first step, steps.length when everything shows. */
     idx:
-      lesson.step < 0 ? steps.length : lesson.done && !aula ? steps.length : lesson.step,
+      lesson.step < 0 && !lesson.playing
+        ? steps.length
+        : lesson.done && !aula
+          ? steps.length
+          : lesson.step,
     play: () => setPlays((n) => n + 1),
   };
 }

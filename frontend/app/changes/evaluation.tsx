@@ -83,52 +83,21 @@ export function readMotion(): Motion {
 }
 
 /* ------------------------------------------------------------------ *
- *  Playback: a local step index over the pure step list.
- *  Wiring to modo aula later: replace this hook with useAula(steps).
+ *  Playback: the step index the screen reads. ChangeWorkspace builds it
+ *  from useAulaLesson (components/aula.tsx), so modo aula drives it too.
  * ------------------------------------------------------------------ */
 
 export interface Playback {
   /** -1 before the first step; steps.length once everything has settled. */
   index: number;
+  /** The run is over (the last step played out, was reached, or skipped). */
+  done: boolean;
   /** True when the viewer jumped to the end: counters skip their count. */
   skipped: boolean;
   /** Bumps on replay, used as a React key so the sequence remounts. */
   epoch: number;
   skip: () => void;
   replay: () => void;
-}
-
-export function usePlayback(steps: Step[], runKey: number, scale: number): Playback {
-  const [state, setState] = useState({
-    key: runKey,
-    index: -1,
-    skipped: false,
-    epoch: 0,
-  });
-  const current =
-    state.key === runKey ? state : { key: runKey, index: -1, skipped: false, epoch: 0 };
-
-  useEffect(() => {
-    if (steps.length === 0 || current.index >= steps.length) return;
-    // Step -1 lasts one frame so the first step's entrance actually plays.
-    const wait = current.index < 0 ? 40 : steps[current.index].ms * scale;
-    const id = window.setTimeout(
-      () => setState({ ...current, index: current.index + 1 }),
-      wait,
-    );
-    return () => window.clearTimeout(id);
-    // `current` is rebuilt every render; its fields are the real dependencies.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current.index, current.key, current.epoch, steps, scale]);
-
-  return {
-    index: current.index,
-    skipped: current.skipped,
-    epoch: current.epoch,
-    skip: () => setState({ ...current, index: steps.length, skipped: true }),
-    replay: () =>
-      setState({ ...current, index: -1, skipped: false, epoch: current.epoch + 1 }),
-  };
 }
 
 /** Whole seconds since `running` turned true; a real clock, not progress. */
@@ -296,7 +265,7 @@ export function PlaybackBar({
   playback: Playback;
   seconds: number;
 }) {
-  const playing = playback.index < steps.length;
+  const playing = !playback.done;
   const step = steps[Math.max(0, Math.min(playback.index, steps.length - 1))];
   const took = fmt(seconds, 1);
   return (

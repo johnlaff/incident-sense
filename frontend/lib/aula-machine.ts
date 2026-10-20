@@ -42,8 +42,10 @@ export function aulaReducer(state: AulaState, action: AulaAction): AulaState {
     case "start": {
       const total = Math.max(0, action.total);
       if (!total) return AULA_IDLE;
-      const playing = action.playing;
-      return { step: 0, total, playing, ended: !playing && total === 1 };
+      // Autoplay starts one tick before the first step (a pre-roll), so the
+      // first step mounts hidden and its entrance can play.
+      if (action.playing) return { step: -1, total, playing: true, ended: false };
+      return { step: 0, total, playing: false, ended: total === 1 };
     }
     case "next": {
       if (!state.total) return state;
@@ -72,8 +74,7 @@ export function aulaReducer(state: AulaState, action: AulaAction): AulaState {
     case "play":
       if (!state.total) return state;
       // Replaying from the end starts over, like any media player.
-      if (state.ended || state.step < 0)
-        return { ...state, step: 0, playing: true, ended: false };
+      if (state.ended) return { ...state, step: 0, playing: true, ended: false };
       return { ...state, playing: true, ended: false };
     case "pause":
       return { ...state, playing: false, ended: state.total > 0 && state.step === last };

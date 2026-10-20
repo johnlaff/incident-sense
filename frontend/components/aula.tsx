@@ -39,6 +39,8 @@ import { usePrefersReducedMotion } from "@/lib/motion";
 export const AULA_PLAY_MS = 2400;
 /** Outside modo aula a replay runs on its own and stays under 2 s in total. */
 export const FAST_REPLAY_MS = 240;
+/** Autoplay holds "nothing shown" this long, so first entrances can play. */
+const PREROLL_MS = 40;
 /** Same factor as `--motion-scale` under `data-aula` in globals.css. */
 export const AULA_MOTION_SCALE = 1.6;
 
@@ -220,6 +222,8 @@ export interface AulaLesson {
   skip: () => void;
   /** Play from here, or start over from the end ("Reproduzir tudo"). */
   play: () => void;
+  /** Start this run over from the top, like a new `runKey` ("Repassar"). */
+  replay: () => void;
   pause: () => void;
 }
 
@@ -256,33 +260,33 @@ export function useAulaLesson({
   const [state, dispatch] = useReducer(aulaReducer, AULA_IDLE);
   const total = steps.length;
 
-  // Start (or clear) on a new run. Toggling modo aula mid-run keeps the step.
-  const aulaRef = useRef(aula);
-  const reducedRef = useRef(reduced);
-  const runRef = useRef(0);
-  useEffect(() => {
-    aulaRef.current = aula;
-    reducedRef.current = reduced;
-  }, [aula, reduced]);
-  useEffect(() => {
+  // Start (or clear) on a new run, during render, so the first render with a
+  // new result never shows the previous run's step. Toggling modo aula
+  // mid-run keeps the step.
+  const [seen, setSeen] = useState<{ key: unknown } | null>(null);
+  const [run, setRun] = useState(0);
+  if (seen === null || seen.key !== runKey) {
+    setSeen({ key: runKey });
     if (runKey == null) {
       dispatch({ type: "clear" });
-      return;
+    } else {
+      setRun((n) => n + 1);
+      dispatch({ type: "start", total, playing: !aula });
+      if (!aula && reduced && reducedMotion === "finish") dispatch({ type: "finish" });
     }
-    runRef.current += 1;
-    dispatch({ type: "start", total, playing: !aulaRef.current });
-    if (!aulaRef.current && reducedRef.current && reducedMotion === "finish") {
-      dispatch({ type: "finish" });
-    }
-  }, [runKey, total, reducedMotion]);
+  }
 
   // Autoplay: fast outside aula, one step every 2,4 s in "Reproduzir tudo".
   useEffect(() => {
     if (!state.playing) return;
     const own = steps[state.step]?.durationMs;
-    const ms = aula
-      ? Math.max(AULA_PLAY_MS, (own ?? 0) * AULA_MOTION_SCALE)
-      : (own ?? fastMs);
+    // Step -1 is a one-frame pre-roll so the first step's entrance plays.
+    const ms =
+      state.step < 0
+        ? PREROLL_MS
+        : aula
+          ? Math.max(AULA_PLAY_MS, (own ?? 0) * AULA_MOTION_SCALE)
+          : (own ?? fastMs);
     const t = setTimeout(() => dispatch({ type: "next" }), ms);
     return () => clearTimeout(t);
   }, [state.playing, state.step, aula, fastMs, steps]);
@@ -292,6 +296,11 @@ export function useAulaLesson({
   const goTo = useCallback((step: number) => dispatch({ type: "goto", step }), []);
   const skip = useCallback(() => dispatch({ type: "finish" }), []);
   const play = useCallback(() => dispatch({ type: "play" }), []);
+  // Start the same run over, as a new run would (pre-roll outside aula).
+  const replay = useCallback(() => {
+    setRun((n) => n + 1);
+    dispatch({ type: "start", total, playing: !aula });
+  }, [total, aula]);
   const pause = useCallback(() => dispatch({ type: "pause" }), []);
   const playing = state.playing;
   const togglePlay = useCallback(
@@ -302,7 +311,7 @@ export function useAulaLesson({
   useEffect(() => {
     publish({
       id,
-      run: runRef.current,
+      run,
       step: state.step,
       total: state.total,
       playing: state.playing,
@@ -311,7 +320,7 @@ export function useAulaLesson({
       prev,
       togglePlay,
     });
-  }, [id, state, steps, next, prev, togglePlay, publish]);
+  }, [id, run, state, steps, next, prev, togglePlay, publish]);
   useEffect(() => () => retire(id), [id, retire]);
 
   return {
@@ -325,6 +334,7 @@ export function useAulaLesson({
     goTo,
     skip,
     play,
+    replay,
     pause,
   };
 }

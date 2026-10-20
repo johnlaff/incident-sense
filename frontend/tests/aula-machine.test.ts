@@ -33,9 +33,15 @@ describe("aulaReducer", () => {
     expect(run(s, { type: "goto", step: -4 }).step).toBe(0);
   });
 
+  it("autoplay pre-rolls one tick before the first step", () => {
+    const s = run(AULA_IDLE, { type: "start", total: 3, playing: true });
+    expect(s).toEqual({ step: -1, total: 3, playing: true, ended: false });
+    expect(run(s, { type: "next" }).step).toBe(0);
+  });
+
   it("autoplay plays the last step out before the run ends", () => {
     let s = run(AULA_IDLE, { type: "start", total: 3, playing: true });
-    s = run(s, { type: "next" }, { type: "next" });
+    s = run(s, { type: "next" }, { type: "next" }, { type: "next" });
     // On the last index, still playing: done is not the same as the last index.
     expect(s).toEqual({ step: 2, total: 3, playing: true, ended: false });
     expect(isLastStep(s)).toBe(true);
@@ -68,6 +74,7 @@ describe("aulaReducer", () => {
       AULA_IDLE,
       { type: "start", total: 2, playing: true },
       { type: "next" },
+      { type: "next" },
       { type: "pause" },
     );
     expect(s).toEqual({ step: 1, total: 2, playing: false, ended: true });
@@ -86,7 +93,11 @@ describe("aulaReducer", () => {
   it("ignores moves while nothing runs; a single step still plays out", () => {
     expect(run(AULA_IDLE, { type: "next" }, { type: "prev" })).toEqual(AULA_IDLE);
     expect(run(AULA_IDLE, { type: "finish" })).toEqual(AULA_IDLE);
-    const one = run(AULA_IDLE, { type: "start", total: 1, playing: true });
+    const one = run(
+      AULA_IDLE,
+      { type: "start", total: 1, playing: true },
+      { type: "next" },
+    );
     expect(one).toEqual({ step: 0, total: 1, playing: true, ended: false });
     expect(run(one, { type: "next" }).ended).toBe(true);
     expect(run(AULA_IDLE, { type: "start", total: 1, playing: false }).ended).toBe(true);
