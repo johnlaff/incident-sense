@@ -4484,6 +4484,10 @@ body {
     display: flex;
   }
   .main {
+    /* The scroller is also the containing block, so an absolutely placed
+       descendant (a .sr-only label) scrolls inside it instead of stretching
+       the document and dragging the top bar and the rail along. */
+    position: relative;
     overflow: auto;
     padding: 24px 28px;
   }
