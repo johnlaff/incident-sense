@@ -639,7 +639,7 @@ export function Coherence({
             dur={skipped ? 0 : motion.count}
             label={`Consistência ${nota(s.consistency_score)} de 10`}
           />
-          <span>consistência entre os campos, de 0 a 10</span>
+          <span>{"consistência entre os campos, de\u00a00\u00a0a\u00a010"}</span>
         </div>
         <div className="chg-sem-tile chg-adh-tile">
           <div className="chg-adh-row">

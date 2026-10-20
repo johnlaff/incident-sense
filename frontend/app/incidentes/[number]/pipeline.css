@@ -673,12 +673,52 @@
   border-radius: 999px;
   background: var(--c-ai-tint);
 }
+/* A label, not a control: the only replay control is "Repassar". */
 .run-replay {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-weight: 600;
-  color: var(--c-ai-ink);
+  font-weight: 500;
+  color: var(--ink-body);
+}
+
+/* Phone summary: "Ver o passo" opens one step's detail. */
+.pipe-fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  margin: 2px 0 0 -2px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+.pipe-fold svg {
+  color: var(--muted);
+  transition: rotate var(--dur-state) var(--ease-out);
+}
+.pipe-fold[aria-expanded="true"] svg {
+  rotate: 90deg;
+}
+.pipe-fold:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@media (pointer: coarse) {
+  .pipe-fold {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pipe-fold svg {
+    transition: none;
+  }
 }
 .run-took {
   color: var(--muted);

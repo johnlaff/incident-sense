@@ -10,7 +10,14 @@
 //    modo aula). Step 4 opens into the three retrieval layers: tags, the
 //    similarity ruler with the 0,80 floor, and the post-filter stamps.
 
-import { useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 import { useAulaLesson } from "./aula";
 import {
@@ -24,7 +31,7 @@ import { Icons, type IconComponent } from "./icons";
 import { SuggestionMarkdown } from "./markdown";
 import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
 import { buildSuggestionMarkdown } from "@/lib/model";
-import { formatSeconds, useElapsedSeconds } from "@/lib/motion";
+import { formatSeconds, useElapsedSeconds, useIsPhone } from "@/lib/motion";
 import {
   OUTCOME_LABEL,
   PIPELINE_STEPS,
@@ -138,13 +145,9 @@ export function PipelineTrace({
           onClick={onRun}
           disabled={running}
         >
-          {running ? (
-            <Icons.loader className="spin" />
-          ) : result ? (
-            <Icons.replay />
-          ) : (
-            <Icons.aiSpark />
-          )}
+          {/* A new run is an AI action (spark); replaying the last run is the
+              one "Repassar" button below, the only replay icon on the page. */}
+          {running ? <Icons.loader className="spin" /> : <Icons.aiSpark />}
           {running ? "Analisando" : result ? "Analisar de novo" : "Analisar com a IA"}
         </button>
       </div>
@@ -252,7 +255,6 @@ export function RunStatus({
   return (
     <div className={`run-status${compact ? " is-compact" : ""}`}>
       <span className="run-replay">
-        <Icons.replay size={14} />
         {replaying ? "Repassando o que a IA fez" : "O que a IA fez, etapa por etapa"}
       </span>
       <span className="run-took">
@@ -272,6 +274,11 @@ export function RunStatus({
   );
 }
 
+const OPEN_STEP_EVENT = "pipe:open-step";
+
+// On a phone these stay open after the run: the answer and the hand-off.
+const ALWAYS_OPEN = new Set<LessonStepKey>(["sugerir", "publicar"]);
+
 // Steps that already carry their own "Ver detalhes técnicos".
 const OWN_DETAILS = new Set<LessonStepKey>(["numeros", "buscar", "classificar"]);
 
@@ -289,6 +296,20 @@ function StepItem({
   children: ReactNode;
 }) {
   const Icon = view ? STATUS_ICON[view.status] : null;
+  const phone = useIsPhone();
+  const [open, setOpen] = useState(false);
+  // A citation link can ask a folded step to open (see CitedSources).
+  useEffect(() => {
+    function onOpen(e: Event) {
+      if ((e as CustomEvent<string>).detail === def.key) setOpen(true);
+    }
+    window.addEventListener(OPEN_STEP_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_STEP_EVENT, onOpen);
+  }, [def.key]);
+  // On a phone the run reads as a summary: each step is its title and one
+  // line; its detail opens on a tap. The step being played stays open, and
+  // the answer and the hand-off (Sugerir, Publicar) are always shown.
+  const folds = phone && view !== null && reveal === "done" && !ALWAYS_OPEN.has(def.key);
   return (
     <li
       className={`pipe-step is-${reveal}${view ? ` st-${view.status}` : ""}${
@@ -320,14 +341,29 @@ function StepItem({
           ) : null}
         </div>
         <p className={`pipe-decision${view ? "" : " is-hint"}`}>{def.hint}</p>
-        {children}
-        {view && view.decisions.length && !OWN_DETAILS.has(def.key) ? (
-          <TechDetails summary="O que o servidor registrou">
-            {view.decisions.map((d, i) => (
-              <p key={i}>{d}</p>
-            ))}
-          </TechDetails>
+        {folds ? (
+          <button
+            type="button"
+            className="pipe-fold"
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <Icons.chevronRight size={14} />
+            {open ? "Esconder o passo" : "Ver o passo"}
+          </button>
         ) : null}
+        {folds && !open ? null : (
+          <>
+            {children}
+            {view && view.decisions.length && !OWN_DETAILS.has(def.key) ? (
+              <TechDetails summary="O que o servidor registrou">
+                {view.decisions.map((d, i) => (
+                  <p key={i}>{d}</p>
+                ))}
+              </TechDetails>
+            ) : null}
+          </>
+        )}
       </div>
     </li>
   );
@@ -819,9 +855,16 @@ function CitedSources({
 }) {
   const cited = result.citations.cited;
   if (!cited.length) return null;
-  function show(id: string) {
+  function show(id: string, retry = true) {
     const row = document.getElementById(`src-${id}`);
-    if (!row) return;
+    if (!row) {
+      // On a phone the Buscar step may be folded: open it, then try again.
+      if (retry) {
+        window.dispatchEvent(new CustomEvent(OPEN_STEP_EVENT, { detail: "buscar" }));
+        requestAnimationFrame(() => requestAnimationFrame(() => show(id, false)));
+      }
+      return;
+    }
     // A folded (dropped) source opens before it scrolls into view.
     const fold = row.closest("details");
     if (fold) fold.open = true;

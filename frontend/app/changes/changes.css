@@ -31,11 +31,12 @@
 .chg-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  /* The chevron sits on the number's row, so the title gets the full width. */
   grid-template-areas:
     "num go"
-    "title go"
-    "meta go"
-    "tags go";
+    "title title"
+    "meta meta"
+    "tags tags";
   column-gap: 10px;
   row-gap: 5px;
   align-items: center;
@@ -169,8 +170,19 @@ a.chg-row:focus-visible {
 .chg-facts dd {
   margin: 0;
   color: var(--ink-body);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   font-variant-numeric: tabular-nums;
+}
+/* Phones: two short facts side by side, the long ones (group, window) on a
+   row of their own, so a name like Sustentacao-Pagamentos stays whole. */
+@media (max-width: 559.98px) {
+  .chg-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+  .chg-facts .wide {
+    grid-column: 1 / -1;
+    order: 1;
+  }
 }
 
 /* ----- Detail: layout ----- */
@@ -1320,8 +1332,9 @@ a.chg-row:focus-visible {
 .chg-num .rtag {
   vertical-align: middle;
 }
+/* 1.25rem on a phone keeps a long Change title to three lines. */
 .chg-record-head h1 {
-  font-size: clamp(1.5rem, 1.1rem + 1.6vw, var(--fs-2xl));
+  font-size: clamp(1.25rem, 0.8rem + 2vw, var(--fs-2xl));
   font-weight: 600;
   line-height: 1.18;
   letter-spacing: -0.028em;

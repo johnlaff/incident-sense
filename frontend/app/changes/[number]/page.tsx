@@ -266,11 +266,11 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             <dt>Serviço</dt>
             <dd>{keepWhole(change.cmdb_ci)}</dd>
           </div>
-          <div>
+          <div className="wide">
             <dt>Grupo responsável</dt>
             <dd>{keepWhole(change.assignment_group)}</dd>
           </div>
-          <div>
+          <div className="wide">
             <dt>Janela de execução</dt>
             <dd>
               {absDate(change.planned_start)} até {absDate(change.planned_end)}

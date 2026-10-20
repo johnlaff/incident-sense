@@ -51,11 +51,12 @@
 .prb-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  /* The chevron sits on the head row, so title and cause get the full width. */
   grid-template-areas:
     "head go"
-    "title go"
-    "cause go"
-    "meta go";
+    "title title"
+    "cause cause"
+    "meta meta";
   column-gap: 10px;
   row-gap: 5px;
   align-items: center;
@@ -64,6 +65,15 @@
   color: inherit;
   text-decoration: none;
   transition: background var(--dur-press) var(--ease-out);
+}
+@media (min-width: 768px) {
+  .prb-row {
+    grid-template-areas:
+      "head go"
+      "title go"
+      "cause go"
+      "meta go";
+  }
 }
 a.prb-row:hover {
   background: var(--surface-2);
