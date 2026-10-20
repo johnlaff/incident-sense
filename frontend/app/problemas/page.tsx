@@ -7,7 +7,7 @@ import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { ProblemDefinition, ProblemStateBadge } from "@/components/problem";
 import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
-import { problemState, useProblems } from "@/lib/problems";
+import { causeSummary, problemState, useProblems } from "@/lib/problems";
 
 import "./problemas.css";
 import { keepWhole } from "@/lib/text";
@@ -74,7 +74,7 @@ export default function ProblemasPage() {
                 </span>
                 <span className="prb-title">{keepWhole(p.short_description)}</span>
                 <span className="prb-cause">
-                  <b>Causa raiz:</b> {p.root_cause}
+                  <b>Causa raiz:</b> {causeSummary(p.root_cause)}
                 </span>
                 <span className="prb-meta">
                   <span>{keepWhole(p.cmdb_ci)}</span>

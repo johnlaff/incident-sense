@@ -349,7 +349,8 @@ a.chg-row:focus-visible {
 }
 .chg-text {
   margin: 0;
-  max-width: 64ch;
+  /* Inter's "0" is wide: 54ch holds about 70 to 75 characters. */
+  max-width: 54ch;
   color: var(--ink-body);
   font-size: 15px;
   line-height: 1.6;
@@ -1389,20 +1390,36 @@ a.chg-row:focus-visible {
   color: var(--ink-body);
 }
 
-/* Long field text folds on a phone: five lines, then "Ler tudo". */
+/* Long field text folds: five lines on a phone, eight on a wide screen,
+   then "Ler tudo". The button's text lines up with the field text. */
 .chg-more {
   display: none;
 }
+/* A fade, not an ellipsis: the text is cut by the fold, never by "...". */
+.chg-text-wrap[data-long="true"][data-open="false"] .chg-text {
+  --fold-lines: 8;
+  max-height: calc(var(--fold-lines) * 1.6em);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 3.2em), transparent);
+}
+.chg-text-wrap[data-long="true"] .chg-more {
+  display: inline-flex;
+  margin: 6px 0 0;
+  padding-inline: 0;
+  height: auto;
+  min-height: 32px;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+}
+.chg-text-wrap[data-long="true"] .chg-more:hover {
+  background: none;
+  text-decoration-color: currentColor;
+}
 @media (max-width: 767.98px) {
   .chg-text-wrap[data-long="true"][data-open="false"] .chg-text {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 5;
-    line-clamp: 5;
-    overflow: hidden;
-  }
-  .chg-text-wrap[data-long="true"] .chg-more {
-    display: inline-flex;
-    margin: 4px 0 0 -10px;
+    --fold-lines: 5;
   }
 }

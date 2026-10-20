@@ -99,10 +99,8 @@ a.prb-row:focus-visible {
   color: var(--ink-body);
   font-size: 13.5px;
   line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-width: 60ch;
+  text-wrap: pretty;
 }
 .prb-cause b {
   color: var(--ink);
@@ -216,6 +214,8 @@ a.prb-row:focus-visible {
 }
 .prb-step-text {
   margin: 4px 0 0;
+  /* About 70 characters a line (Inter's "0" is wide). */
+  max-width: 54ch;
   color: var(--ink-body);
   font-size: 15px;
   line-height: 1.65;
