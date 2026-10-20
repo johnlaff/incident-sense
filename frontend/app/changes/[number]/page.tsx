@@ -279,15 +279,14 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           <section className="card chg-run" aria-labelledby="run-h">
             <h2 id="run-h">Nota da IA para este pedido</h2>
             <p className="chg-run-lede">
-              Uma IA juíza lê cada campo e dá nota de 0 a 10, sempre com os mesmos
-              critérios. Quem aprova a mudança continua sendo uma pessoa.
+              Nota de 0 a 10 por campo. Quem aprova é uma pessoa.
             </p>
             {!inScope ? (
               <p className="chg-out-note">
                 <Icons.alert />
                 <span>
-                  {result?.scope.reason ?? outOfScopeReason(change)} Ficar sem nota não é
-                  o mesmo que tirar nota baixa: esta mudança só não entra nos critérios.
+                  {result?.scope.reason ?? outOfScopeReason(change)} Sem nota não é nota
+                  baixa.
                 </span>
               </p>
             ) : (
@@ -486,7 +485,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     </div>
                   </div>
                 ) : (
-                  <p className="chg-text">{valueOf(f.key)}</p>
+                  <LongText text={valueOf(f.key)} />
                 )}
 
                 {score && !isDirty && editing !== f.key && (
@@ -537,7 +536,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 <span className="chg-weight">entra só na conferência de coerência</span>
               </div>
             </header>
-            <p className="chg-text">{change.backout_plan}</p>
+            <LongText text={change.backout_plan} />
             <h4>Tarefas cadastradas</h4>
             <ol className="chg-tasks">
               {change.tasks.map((t) => (
@@ -550,6 +549,27 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           </article>
         </section>
       </div>
+    </div>
+  );
+}
+
+/** A field's text, folded to a few lines on a phone until the reader opens it. */
+function LongText({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  const long = text.length > 280;
+  return (
+    <div className="chg-text-wrap" data-long={long} data-open={open}>
+      <p className="chg-text">{text}</p>
+      {long ? (
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm chg-more"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? "Mostrar menos" : "Ler tudo"}
+        </button>
+      ) : null}
     </div>
   );
 }

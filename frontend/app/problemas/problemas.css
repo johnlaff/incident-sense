@@ -38,9 +38,6 @@
   display: grid;
   gap: 8px;
 }
-.prb-lede-more {
-  margin: 0;
-}
 .prb-list {
   list-style: none;
   margin: 0;

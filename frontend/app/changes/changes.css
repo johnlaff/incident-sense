@@ -1438,3 +1438,21 @@ a.chg-row:focus-visible {
   font-size: var(--fs-md);
   color: var(--ink-body);
 }
+
+/* Long field text folds on a phone: five lines, then "Ler tudo". */
+.chg-more {
+  display: none;
+}
+@media (max-width: 767.98px) {
+  .chg-text-wrap[data-long="true"][data-open="false"] .chg-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    overflow: hidden;
+  }
+  .chg-text-wrap[data-long="true"] .chg-more {
+    display: inline-flex;
+    margin: 4px 0 0 -10px;
+  }
+}

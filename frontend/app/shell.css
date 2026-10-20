@@ -550,6 +550,8 @@ table.list {
 .cite {
   display: inline-flex;
   align-items: center;
+  flex: none;
+  min-width: max-content;
   height: 20px;
   margin: 0 1px;
   padding: 0 6px;

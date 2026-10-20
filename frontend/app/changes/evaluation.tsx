@@ -443,10 +443,7 @@ export function Average({
       }
     >
       <h3>Média ponderada</h3>
-      <p className="chg-caption">
-        Campos mais importantes pesam mais. Cada pedaço da barra é nota × peso, dividido
-        pela soma dos pesos.
-      </p>
+      <p className="chg-caption">Campos mais importantes pesam mais.</p>
 
       <div className="chg-avg-head">
         <ScoreChip
@@ -625,10 +622,7 @@ export function Coherence({
         <h2 id="sem-h">Coerência entre os campos</h2>
         {s.reused && <span className="chg-reused">reaproveitada: nada mudou</span>}
       </header>
-      <p className="chg-caption">
-        A IA lê os campos juntos e confere se contam a mesma história. O plano de retorno
-        precisa desfazer o que as tarefas fazem.
-      </p>
+      <p className="chg-caption">O plano de retorno desfaz o que as tarefas fazem?</p>
 
       <div className="chg-sem-scores" data-on={onScores}>
         <div className="chg-sem-tile">

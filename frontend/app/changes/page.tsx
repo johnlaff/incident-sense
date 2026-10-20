@@ -34,9 +34,7 @@ export default function ChangesPage() {
         )}
       </div>
       <p className="page-lede">
-        Antes de mexer em produção, alguém preenche um pedido de mudança. Abra um: a IA dá
-        nota de 0 a 10 a cada campo e, se a média passar de 8,0, confere se o plano de
-        retorno desfaz o que foi feito.
+        Pedidos para mexer em produção. Abra um e veja a nota da IA.
       </p>
       <WakeNotice show={slow} />
 

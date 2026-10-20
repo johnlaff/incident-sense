@@ -250,14 +250,14 @@ export function reasonFor(g: RecGroup, totalWeeks: number, problems = 0): string
     const all = top.count === g.size;
     return `${span}, ${all ? "todos" : `${Math.round(g.topShare * 100)}%`} no ${top.name}. ${
       problems > 0
-        ? "O mesmo defeito voltando tantas vezes já virou investigação de causa:"
-        : "O mesmo defeito voltando tantas vezes pede uma investigação de causa: um problema."
+        ? "Já virou investigação de causa:"
+        : "Pede uma investigação de causa: um problema."
     }`;
   }
   if (v === "mixed") {
-    return `${span}, espalhados por ${g.services.length} serviços. Pode ser sobra juntada pela semelhança do texto. Confira os casos antes de abrir um problema.`;
+    return `${span}, espalhados por ${g.services.length} serviços. Confira os casos antes de abrir um problema.`;
   }
-  return `${span} parecidos. Muitos casos parecidos juntos pedem uma investigação de causa.`;
+  return `${span} parecidos. Pedem uma investigação de causa.`;
 }
 
 // ----- Geometry ----------------------------------------------------------------

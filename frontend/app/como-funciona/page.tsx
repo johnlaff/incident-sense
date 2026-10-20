@@ -91,8 +91,7 @@ const CONTENT: Record<
     ],
     source: (
       <>
-        Mil Changes por dia não é exagero: foram 1.084 no dia de pico, segundo o{" "}
-        <Cite who="solange" />. O resto é do demo, com a CHG0031002 como exemplo.
+        Pico de 1.084 Changes em um dia, segundo o <Cite who="solange" />.
       </>
     ),
     details: (
@@ -143,12 +142,7 @@ const CONTENT: Record<
       <Tasks key="t" />,
       <Coherence key="c" />,
     ],
-    source: (
-      <>
-        Os textos são da CHG0031002 do demo. As notas 9,04 e 4 saíram no ensaio da
-        palestra e podem mudar com o modelo.
-      </>
-    ),
+    source: <>As notas 9,04 e 4 saíram no ensaio e podem mudar com o modelo.</>,
     details: (
       <Tech
         rows={[
@@ -178,9 +172,6 @@ const CONTENT: Record<
   },
   "cap-3": {
     visuals: [<Load key="l" />, <Summarize key="s" />, <Vectorize key="v" />],
-    source: (
-      <>O incidente e seus campos são do demo. O resumo e os números são de exemplo.</>
-    ),
     details: (
       <Tech
         rows={[
@@ -213,8 +204,7 @@ const CONTENT: Record<
     visuals: [<TagFilter key="t" />, <Ruler key="r" />, <PostFilter key="p" />],
     source: (
       <>
-        As contagens de tags são do demo. As similaridades e os vereditos são de exemplo;
-        no app, saem da busca real. Corte e top-K são os do <Cite who="joao" />.
+        Corte e top-K do <Cite who="joao" />.
       </>
     ),
     details: (
@@ -248,11 +238,6 @@ const CONTENT: Record<
   },
   "cap-5": {
     visuals: [<Classify key="c" />, <Suggest key="s" />, <Publish key="p" />],
-    source: (
-      <>
-        Os registros são do demo. A sugestão e a nota publicada são exemplos de formato.
-      </>
-    ),
     details: (
       <Tech
         rows={[
@@ -274,8 +259,8 @@ const CONTENT: Record<
     stage: (idx, total) => <ClusterStage idx={idx} total={total} />,
     source: (
       <>
-        No demo, o mapa real tem {CLUSTERS_DEMO.incidents} incidentes em{" "}
-        {CLUSTERS_DEMO.groups} grupos. O exemplo de 200 incidentes em 5 grupos é do{" "}
+        No demo: {CLUSTERS_DEMO.incidents} incidentes, {CLUSTERS_DEMO.groups} grupos,{" "}
+        {CLUSTERS_DEMO.isolated} isolados. O exemplo de 200 em 5 grupos é do{" "}
         <Cite who="joao" />.
       </>
     ),
@@ -312,9 +297,6 @@ const CONTENT: Record<
   },
   "cap-7": {
     visuals: [<ProblemCard key="p" />, <Loop key="l" />, <BackToSearch key="b" />],
-    source: (
-      <>O Problema e sua causa são do demo. A Change da correção fica fora do demo.</>
-    ),
     details: (
       <Tech
         rows={[
@@ -527,8 +509,8 @@ export default function HowItWorksPage() {
       <aside className="cf-next">
         <h2>Próximo passo nos dois lados: medir</h2>
         <p>
-          Um gabarito de casos conhecidos, rodado a cada troca de prompt ou modelo. Isso
-          é eval: medir que melhorou, não achar.
+          Um gabarito de casos conhecidos, rodado a cada troca de prompt ou modelo. Isso é
+          eval: medir que melhorou, não achar.
         </p>
         <Origin kind="fora" />
       </aside>
