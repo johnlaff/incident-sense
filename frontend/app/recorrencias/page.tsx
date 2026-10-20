@@ -1,462 +1,323 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
-import { Icons } from "@/components/icons";
+import { useAulaLesson, type AulaLessonStep } from "@/components/aula";
 import { useShell } from "@/components/app-shell";
-import { LoadError, Meridian, WakeNotice } from "@/components/ui";
-import { activate } from "@/lib/a11y";
-import { useClusters } from "@/lib/incidents";
+import { Icons } from "@/components/icons";
+import { LoadError, WakeNotice } from "@/components/ui";
+import { useAllIncidents, useClusters } from "@/lib/incidents";
 import { usePrefersReducedMotion } from "@/lib/motion";
-import { clusterColor } from "@/lib/model";
-import type { ClustersResponse } from "@/lib/types";
 
-const OUTLIER_GREY = "oklch(0.62 0.012 285)";
+import { GroupDetail, GroupList, PromoteAction } from "./group-panel";
+import type { Focus } from "./map-engine";
+import { buildRecData, matchesFilter, monthLabel, reasonFor, verdictOf, type RecFilter } from "./model";
+import { RecMap } from "./rec-map";
+import { GroupTimeline } from "./timeline";
 
-interface MapPoint {
-  id: string;
-  clusterId: number;
-  isOutlier: boolean;
-  color: string;
-  short: string;
-  tx: number;
-  ty: number;
-  sx: number;
-  sy: number;
-}
+import "./recorrencias.css";
 
-interface MapCluster {
-  id: number;
-  label: string;
-  size: number;
-  color: string;
-  cx: number;
-  cy: number;
-}
-
-interface MapView {
-  points: MapPoint[];
-  clusters: MapCluster[];
-  outliers: number;
-}
-
-function grand(seed: number): number {
-  const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
-  return x - Math.floor(x);
-}
-
-function buildView(data: ClustersResponse): MapView {
-  const xs = data.points.map((p) => p.x);
-  const ys = data.points.map((p) => p.y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-  const nx = (x: number) => 0.06 + ((x - minX) / (maxX - minX || 1)) * 0.88;
-  const ny = (y: number) => 0.06 + ((y - minY) / (maxY - minY || 1)) * 0.88;
-
-  const points: MapPoint[] = data.points.map((p, idx) => ({
-    id: p.id,
-    clusterId: p.cluster_id,
-    isOutlier: p.is_outlier,
-    color: clusterColor(p.cluster_id, p.is_outlier),
-    short: p.short_description,
-    tx: nx(p.x),
-    ty: ny(p.y),
-    sx: 0.1 + grand(idx * 5 + 3) * 0.8,
-    sy: 0.12 + grand(idx * 5 + 11) * 0.76,
-  }));
-
-  const clusters: MapCluster[] = data.clusters
-    .filter((c) => c.cluster_id >= 0)
-    .map((c) => {
-      // Prefer non-outlier members for the centroid; fall back to all members so
-      // a cluster whose points are all outliers doesn't pin its label to (0,0).
-      const strict = points.filter((p) => p.clusterId === c.cluster_id && !p.isOutlier);
-      const own =
-        strict.length > 0 ? strict : points.filter((p) => p.clusterId === c.cluster_id);
-      return { c, own };
-    })
-    .filter(({ own }) => own.length > 0)
-    .map(({ c, own }) => ({
-      id: c.cluster_id,
-      label: c.label,
-      size: c.size,
-      color: clusterColor(c.cluster_id, false),
-      cx: own.reduce((s, p) => s + p.tx, 0) / own.length,
-      cy: own.reduce((s, p) => s + p.ty, 0) / own.length,
-    }))
-    .sort((a, b) => b.size - a.size);
-
-  return { points, clusters, outliers: data.outliers };
-}
+const LAST = 4;
 
 export default function RecurrencesPage() {
   const { openIncident } = useShell();
-  const { data, loading, error, slow, retry } = useClusters();
+  const clusters = useClusters();
+  const list = useAllIncidents();
   const reduced = usePrefersReducedMotion();
 
-  const view = useMemo(() => (data ? buildView(data) : null), [data]);
+  // The map waits for the incident list (service and date) a short while; if
+  // it fails, the map still plays without the timeline and the filters.
+  const listSettled = !list.loading;
+  const data = useMemo(
+    () =>
+      clusters.data && listSettled ? buildRecData(clusters.data, list.data?.items ?? null) : null,
+    [clusters.data, list.data, listSettled],
+  );
 
-  const [grouped, setGrouped] = useState(false);
-  const [sel, setSel] = useState<number | "outlier" | null>(null);
-  const [hover, setHover] = useState<number | "outlier" | null>(null);
-  const [promoted, setPromoted] = useState<Record<string, string>>({});
-  const [declutter, setDeclutter] = useState(0);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const detailRef = useRef<HTMLDivElement>(null);
+  const featured = data?.groups.find((g) => g.id === data.featuredId) ?? null;
 
-  // A link from an incident (?grupo=<id>) opens with that recurrence selected.
+  const steps = useMemo<AulaLessonStep[]>(() => {
+    const n = data?.incidents.length ?? 0;
+    let last = "O grupo que mais se repete num serviço só vira um problema para investigar a causa.";
+    if (featured) {
+      const top = featured.services[0];
+      const where = top
+        ? top.count === featured.size
+          ? `, todos no ${top.name}`
+          : `, ${Math.round(featured.topShare * 100)}% no ${top.name}`
+        : "";
+      last = `${featured.label}: ${featured.size} casos${where}. Vale abrir um problema.`;
+    }
+    return [
+      {
+        title: "Incidentes",
+        caption: `Cada ponto é um incidente real. Sem análise, são ${n} casos soltos.`,
+        durationMs: 700,
+      },
+      {
+        title: "Semelhança",
+        caption: "A IA compara o texto de cada caso. Os parecidos se aproximam.",
+        durationMs: 1500,
+      },
+      {
+        title: "Densidade",
+        caption: "Muitos casos parecidos juntos viram um grupo; quem fica sozinho é caso isolado.",
+        durationMs: 900,
+      },
+      {
+        title: "Nomes",
+        caption: "A IA dá um nome curto a cada grupo. O número diz quantos casos ele tem.",
+        durationMs: 900,
+      },
+      { title: "Problema", caption: last, durationMs: 600 },
+    ];
+  }, [data, featured]);
+
+  const lesson = useAulaLesson({
+    id: "recorrencias",
+    steps,
+    runKey: data,
+    reducedMotion: "finish",
+  });
+
+  // Focus: the lesson's last step focuses the featured group; a tap wins.
+  const [picked, setPicked] = useState<{ focus: Focus } | null>(null);
+  const [filter, setFilter] = useState<RecFilter>({ service: null, month: null });
+  const [promoted, setPromoted] = useState<Record<string, boolean>>({});
+
+  // ?grupo=<id> (from an incident) opens on the end state, that group focused.
+  const { skip } = lesson;
   useEffect(() => {
+    if (!data) return;
     const grupo = new URLSearchParams(window.location.search).get("grupo");
-    if (grupo && /^\d+$/.test(grupo)) setSel(Number(grupo));
-  }, []);
+    if (!grupo || !/^\d+$/.test(grupo)) return;
+    skip();
+    setPicked({ focus: Number(grupo) });
+  }, [data, skip]);
 
-  // Fly points from scattered to grouped once the data is in.
-  useEffect(() => {
-    if (!view) return;
-    if (reduced) {
-      setGrouped(true);
-      return;
-    }
-    setGrouped(false);
-    const t = setTimeout(() => setGrouped(true), 240);
-    return () => clearTimeout(t);
-  }, [view, reduced]);
+  const step = lesson.step;
+  const focus: Focus = picked ? picked.focus : step >= LAST ? (data?.featuredId ?? null) : null;
+  const stage = step <= 0 ? 0 : Math.min(3, step);
+  // A group picked by hand needs the groups drawn.
+  const effectiveStage = picked && picked.focus != null && stage < 2 ? 3 : stage;
 
-  function regroup() {
-    if (reduced) {
-      setGrouped(true);
-      return;
-    }
-    setGrouped(false);
-    setTimeout(() => setGrouped(true), 260);
+  function choose(f: Focus) {
+    // A tap mid-lesson outside modo aula ends the show and keeps the choice.
+    if (!lesson.aula && !lesson.done) lesson.skip();
+    setPicked({ focus: f });
   }
 
-  // Collision-avoidance: keep every cluster label visible but non-overlapping.
-  useLayoutEffect(() => {
-    const map = mapRef.current;
-    if (!map || !grouped) return;
-    const mapR = map.getBoundingClientRect();
-    const pad = 8;
-    const labels = Array.from(map.querySelectorAll<HTMLElement>(".rmap-label"));
-    const ny = new Map<HTMLElement, number>();
-    const nx = new Map<HTMLElement, number>();
-    labels.forEach((l) => {
-      ny.set(l, 0);
-      nx.set(l, 0);
-      l.style.transition = "none";
-      l.style.setProperty("--nudge", "0px");
-      l.style.setProperty("--nudge-x", "0px");
+  function replay() {
+    setPicked(null);
+    lesson.replay();
+  }
+
+  const mask = useMemo(() => {
+    const m = new Uint8Array(data?.incidents.length ?? 0);
+    data?.incidents.forEach((inc, i) => {
+      m[i] = matchesFilter(inc, filter) ? 1 : 0;
     });
-    const measure = (l: HTMLElement) => l.getBoundingClientRect();
-    const moveY = (l: HTMLElement, dy: number) => {
-      const v = (ny.get(l) ?? 0) + dy;
-      ny.set(l, v);
-      l.style.setProperty("--nudge", `${v}px`);
-    };
-    const moveX = (l: HTMLElement, dx: number) => {
-      const v = (nx.get(l) ?? 0) + dx;
-      nx.set(l, v);
-      l.style.setProperty("--nudge-x", `${v}px`);
-    };
+    return m;
+  }, [data, filter]);
 
-    labels.forEach((l) => {
-      const r = measure(l);
-      if (r.right > mapR.right - pad) moveX(l, -(r.right - (mapR.right - pad)));
-      else if (r.left < mapR.left + pad) moveX(l, mapR.left + pad - r.left);
-    });
+  const matched = useMemo(() => {
+    const out = new Map<number, number>();
+    data?.groups.forEach((g) => out.set(g.id, g.members.reduce((s, i) => s + mask[i], 0)));
+    return out;
+  }, [data, mask]);
+  const matchedTotal = useMemo(() => mask.reduce((s, v) => s + v, 0), [mask]);
+  const filtering = filter.service != null || filter.month != null;
 
-    for (let iter = 0; iter < 14; iter++) {
-      let moved = false;
-      const items = labels.map((l) => ({ el: l, r: measure(l) }));
-      for (let i = 0; i < items.length; i++) {
-        for (let j = i + 1; j < items.length; j++) {
-          const a = items[i].r;
-          const b = items[j].r;
-          const ox = a.left < b.right + 6 && b.left < a.right + 6;
-          const oy = a.top < b.bottom + 4 && b.top < a.bottom + 4;
-          if (ox && oy) {
-            const half = (Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) + 5) / 2;
-            const upper = a.top <= b.top ? items[i] : items[j];
-            const lower = upper === items[i] ? items[j] : items[i];
-            moveY(upper.el, -half);
-            moveY(lower.el, half);
-            upper.r = measure(upper.el);
-            lower.r = measure(lower.el);
-            moved = true;
-          }
-        }
-      }
-      if (!moved) break;
-    }
+  const focusGroup =
+    data && typeof focus === "number" ? (data.groups.find((g) => g.id === focus) ?? null) : null;
 
-    const rects = labels.map(measure);
-    const minTop = Math.min(...rects.map((r) => r.top));
-    const maxBot = Math.max(...rects.map((r) => r.bottom));
-    let shift = 0;
-    if (minTop < mapR.top + pad) shift = mapR.top + pad - minTop;
-    else if (maxBot > mapR.bottom - pad) shift = mapR.bottom - pad - maxBot;
-    if (shift) labels.forEach((l) => moveY(l, shift));
-
-    void map.offsetHeight;
-    labels.forEach((l) => {
-      l.style.transition = "";
-    });
-  }, [grouped, declutter, view]);
-
-  useEffect(() => {
-    function onResize() {
-      setDeclutter((t) => t + 1);
-    }
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  useEffect(() => {
-    if (!grouped) return;
-    const t = setTimeout(() => setDeclutter((x) => x + 1), 160);
-    if (document.fonts?.ready)
-      document.fonts.ready.then(() => setDeclutter((x) => x + 1));
-    return () => clearTimeout(t);
-  }, [grouped]);
-
-  // When the layout is stacked (map above the list), a group picked on the map
-  // opens its detail far below; bring it into view so the tap has a visible result.
-  useEffect(() => {
-    if (sel == null) return;
-    if (!window.matchMedia("(max-width: 1100px)").matches) return;
-    detailRef.current?.scrollIntoView({
-      behavior: reduced ? "auto" : "smooth",
-      block: "nearest",
-    });
-  }, [sel, reduced]);
-
-  const selIncidents = useMemo(() => {
-    if (sel == null || !view) return [];
-    const target = sel === "outlier" ? -1 : sel;
-    return view.points.filter((p) =>
-      sel === "outlier" ? p.isOutlier : p.clusterId === target,
-    );
-  }, [sel, view]);
-
-  if (error) {
+  if (clusters.error) {
     return (
       <div className="card">
         <LoadError
           title="Não foi possível carregar as recorrências"
-          error={error}
-          onRetry={retry}
+          error={clusters.error}
+          onRetry={clusters.retry}
         />
       </div>
     );
   }
 
+  const current = step >= 0 ? steps[step] : null;
+  const showCaption =
+    !lesson.aula && current != null && !(step === LAST && picked && picked.focus !== data?.featuredId);
+
   return (
-    <div>
+    <div className="rx-page">
       <div className="page-head">
         <h1>Recorrências</h1>
         <span className="count">
-          {view
-            ? `${view.clusters.length} grupos · ${view.points.length} incidentes`
+          {data
+            ? `${data.groups.length} grupos · ${data.incidents.length} incidentes`
             : "Carregando…"}
         </span>
       </div>
       <p className="page-lede">
-        Cada ponto é um incidente. Os parecidos ficam perto uns dos outros e formam
-        grupos: cada grupo é uma recorrência, um padrão que vale investigar. A IA deu nome
-        aos grupos. Escolha um para ver os incidentes e abrir um <b>problema</b>.
+        Cada ponto é um incidente. Os parecidos se juntam e formam grupos; um grupo grande é um
+        problema que se repete.
       </p>
-      <WakeNotice show={slow} />
+      <WakeNotice show={clusters.slow || list.slow} />
 
-      <div className="rec-layout">
-        <div className="card rmap-card">
-          <div className="rmap-toolbar">
-            <span className="rt-title">Mapa de incidentes</span>
-            <span className="rt-sub">Agrupados por semelhança</span>
-            <div className="rt-grow" />
-            {sel != null ? (
-              <button className="btn btn-ghost btn-sm" onClick={() => setSel(null)}>
-                Mostrar todos
+      <div className="rx-layout">
+        <div className="card rx-card">
+          <div className="rx-toolbar">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm rx-play"
+              onClick={replay}
+              disabled={!data}
+            >
+              {lesson.done || step < 0 ? <Icons.replay /> : <Icons.play />}
+              Reproduzir
+            </button>
+            {!lesson.aula && !lesson.done && step >= 0 ? (
+              <button type="button" className="btn btn-ghost btn-sm" onClick={lesson.skip}>
+                Pular
               </button>
             ) : null}
-            <button className="btn btn-outline btn-sm" onClick={regroup}>
-              <Icons.replay />
-              Repetir animação
-            </button>
+            <div className="rx-grow" />
+            {data?.hasDetails ? (
+              <div className="rx-filters">
+                <label className="rx-sr" htmlFor="rx-svc">
+                  Serviço
+                </label>
+                <select
+                  id="rx-svc"
+                  className="select rx-select"
+                  value={filter.service ?? ""}
+                  onChange={(e) => setFilter((f) => ({ ...f, service: e.target.value || null }))}
+                >
+                  <option value="">Todos os serviços</option>
+                  {data.services.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                <div className="segmented rx-period" role="group" aria-label="Período">
+                  <button
+                    type="button"
+                    className={filter.month == null ? "on" : ""}
+                    aria-pressed={filter.month == null}
+                    onClick={() => setFilter((f) => ({ ...f, month: null }))}
+                  >
+                    Tudo
+                  </button>
+                  {data.months.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      className={filter.month === m ? "on" : ""}
+                      aria-pressed={filter.month === m}
+                      onClick={() => setFilter((f) => ({ ...f, month: f.month === m ? null : m }))}
+                    >
+                      {monthLabel(m)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
-          <div className="rmap" ref={mapRef}>
-            {loading || !view ? (
-              <div className="rmap-loading">Carregando o mapa…</div>
+
+          <div className="rx-stage">
+            {data ? (
+              <RecMap
+                data={data}
+                stage={effectiveStage}
+                focus={focus}
+                mask={mask}
+                matched={matched}
+                reduced={reduced}
+                onFocus={choose}
+                onOpenIncident={openIncident}
+              />
             ) : (
-              <>
-                {view.points.map((p, idx) => {
-                  const active = sel ?? hover;
-                  const key = p.isOutlier ? "outlier" : p.clusterId;
-                  const dim = active != null && active !== key;
-                  const size = p.isOutlier ? 7 : 9;
-                  return (
-                    <span
-                      key={p.id}
-                      aria-hidden="true"
-                      className={`rmap-point incident${dim ? " dim" : ""}`}
-                      style={
-                        {
-                          "--x": grouped ? p.tx : p.sx,
-                          "--y": grouped ? p.ty : p.sy,
-                          width: size,
-                          height: size,
-                          background: p.color,
-                          color: p.color,
-                          transitionDelay: grouped ? `${(idx % 9) * 20}ms` : "0ms",
-                        } as React.CSSProperties
-                      }
-                      title={`${p.id} · ${p.short}`}
-                      onMouseEnter={() => setHover(key)}
-                      onMouseLeave={() => setHover((h) => (h === key ? null : h))}
-                      onClick={() => openIncident(p.id)}
-                    />
-                  );
-                })}
-                {grouped
-                  ? view.clusters.map((c) => {
-                      const active = sel ?? hover;
-                      const dim = active != null && active !== c.id;
-                      return (
-                        <div
-                          key={c.id}
-                          className={`rmap-label${dim ? " dim" : ""}`}
-                          style={{ left: `${c.cx * 100}%`, top: `${c.cy * 100 - 10}%` }}
-                          title={c.label}
-                          aria-pressed={sel === c.id}
-                          onMouseEnter={() => setHover(c.id)}
-                          onMouseLeave={() => setHover((h) => (h === c.id ? null : h))}
-                          {...activate(
-                            () => setSel(sel === c.id ? null : c.id),
-                            `${c.label}, ${c.size} incidentes`,
-                          )}
-                        >
-                          <span className="rl-t">{c.label}</span>
-                          <span className="rl-n">{c.size}</span>
-                        </div>
-                      );
-                    })
-                  : null}
-              </>
+              <div className="rx-loading">
+                <span className="rx-loading-dots" aria-hidden="true" />
+                Carregando o mapa…
+              </div>
             )}
+            {filtering && data ? (
+              <div className="rx-filter-note" role="status">
+                Mostrando {matchedTotal} de {data.incidents.length}
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setFilter({ service: null, month: null })}
+                >
+                  Limpar
+                </button>
+              </div>
+            ) : null}
           </div>
+
+          <ol className="rx-steps" aria-label="Etapas da demonstração">
+            {steps.map((s, i) => (
+              <li key={s.title}>
+                <button
+                  type="button"
+                  className={`rx-step${i === step ? " on" : ""}${i < step ? " past" : ""}`}
+                  aria-current={i === step ? "step" : undefined}
+                  disabled={!data}
+                  onClick={() => {
+                    setPicked(null);
+                    lesson.goTo(i);
+                  }}
+                >
+                  <span className="rx-step-n">{i + 1}</span>
+                  <span className="rx-step-t">{s.title}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <p className="rx-caption" aria-live="polite">
+            {showCaption ? current.caption : " "}
+          </p>
+
+          {focusGroup ? (
+            <div
+              className="rx-strip rx-mobile-only"
+              style={{ "--hue": focusGroup.hue } as CSSProperties}
+            >
+              <GroupTimeline key={focusGroup.id} group={focusGroup} weeks={data!.weeks} month={filter.month} compact />
+              <p className="rx-reason">{reasonFor(focusGroup, data!.weeks.length)}</p>
+              <PromoteAction
+                verdict={verdictOf(focusGroup)}
+                promoted={Boolean(promoted[String(focusGroup.id)])}
+                onPromote={() => setPromoted((m) => ({ ...m, [String(focusGroup.id)]: true }))}
+              />
+            </div>
+          ) : null}
+
+          <p className="rx-foot">
+            Posição dos grupos: projeção real dos textos (UMAP). Dentro de cada grupo os pontos foram
+            espaçados para não se cobrirem; os do centro são os mais típicos.
+          </p>
         </div>
 
-        <div className="card rec-side">
-          <div className="rec-side-list">
-            <div className="rec-side-head">
-              <h2>Grupos</h2>
-              <span>incidentes</span>
-            </div>
-            <div className="legend">
-              {(view?.clusters ?? []).map((c) => (
-                <div
-                  key={c.id}
-                  className={`legend-item${sel === c.id ? " sel" : ""}${hover === c.id ? " hot" : ""}`}
-                  aria-pressed={sel === c.id}
-                  {...activate(() => setSel(sel === c.id ? null : c.id))}
-                  onMouseEnter={() => setHover(c.id)}
-                  onMouseLeave={() => setHover((h) => (h === c.id ? null : h))}
-                >
-                  <span className="sw" style={{ background: c.color }} />
-                  <span className="lg-label">{c.label}</span>
-                  <span className="lg-n">{c.size}</span>
-                </div>
-              ))}
-              {view && view.outliers > 0 ? (
-                <div
-                  className={`legend-item${sel === "outlier" ? " sel" : ""}${hover === "outlier" ? " hot" : ""}`}
-                  aria-pressed={sel === "outlier"}
-                  {...activate(() => setSel(sel === "outlier" ? null : "outlier"))}
-                  onMouseEnter={() => setHover("outlier")}
-                  onMouseLeave={() => setHover((h) => (h === "outlier" ? null : h))}
-                >
-                  <span className="sw" style={{ background: OUTLIER_GREY }} />
-                  <span className="lg-label">Casos isolados</span>
-                  <span className="lg-n">{view.outliers}</span>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          {sel != null && view ? (
-            <div className="cluster-detail" ref={detailRef}>
-              {(() => {
-                const cluster =
-                  sel === "outlier" ? null : view.clusters.find((c) => c.id === sel);
-                const label =
-                  sel === "outlier" ? "Casos isolados" : (cluster?.label ?? "");
-                const color =
-                  sel === "outlier" ? OUTLIER_GREY : (cluster?.color ?? OUTLIER_GREY);
-                const prb = promoted[String(sel)];
-                return (
-                  <>
-                    <h3>
-                      <span className="sw" style={{ background: color }} />
-                      {label}
-                    </h3>
-                    <div className="cd-sub">
-                      {sel === "outlier"
-                        ? `${selIncidents.length} incidentes sem padrão em comum`
-                        : `${selIncidents.length} incidentes neste grupo`}
-                    </div>
-                    <div className="cd-list">
-                      {selIncidents.map((x) => (
-                        <div
-                          className="cd-inc"
-                          key={x.id}
-                          {...activate(() => openIncident(x.id), `${x.id} · ${x.short}`)}
-                        >
-                          <span className="num">{x.id}</span>
-                          <span className="cdd">{x.short}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {sel === "outlier" ? (
-                      <p className="cd-note">
-                        Casos isolados não viram problema: não se repetem o bastante para
-                        indicar um padrão.
-                      </p>
-                    ) : prb ? (
-                      <p className="cd-done" role="status">
-                        <Icons.checkCircle size={16} />
-                        Problema <span className="mono">{prb}</span> aberto para este
-                        grupo
-                      </p>
-                    ) : (
-                      <button
-                        className="btn btn-primary btn-sm cd-promote"
-                        onClick={() =>
-                          setPromoted((m) => ({
-                            ...m,
-                            [String(sel)]:
-                              `PRB00${40210 + (typeof sel === "number" ? sel : 0)}`,
-                          }))
-                        }
-                      >
-                        <Icons.promote />
-                        Abrir problema
-                      </button>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
+        <aside className="card rx-side">
+          {data && focus != null && (focusGroup || focus === "outlier") ? (
+            <GroupDetail
+              key={String(focus)}
+              data={data}
+              group={focusGroup ?? "outlier"}
+              filter={filter}
+              promoted={Boolean(promoted[String(focus)])}
+              onPromote={() => setPromoted((m) => ({ ...m, [String(focus)]: true }))}
+              onOpenIncident={openIncident}
+              onClose={() => setPicked({ focus: null })}
+            />
+          ) : data ? (
+            <GroupList data={data} matched={matched} focus={focus} onFocus={choose} />
           ) : (
-            <div className="cluster-detail">
-              <Meridian ticks={14} style={{ marginBottom: 12 }} />
-              <p className="cd-note">
-                Escolha um grupo no mapa ou nesta lista para ver os incidentes e abrir um
-                problema: o registro que investiga a causa de incidentes repetidos.
-              </p>
-            </div>
+            <div className="rx-loading small">Carregando os grupos…</div>
           )}
-        </div>
+        </aside>
       </div>
     </div>
   );
