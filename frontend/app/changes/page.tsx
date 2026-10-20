@@ -10,6 +10,7 @@ import { STATE_LABEL, TYPE_LABEL, useChanges, type ChangeSummary } from "@/lib/c
 import { absDate } from "@/lib/model";
 
 import "./changes.css";
+import { keepWhole } from "@/lib/text";
 
 type Tab = "scope" | "all";
 
@@ -87,10 +88,9 @@ export default function ChangesPage() {
                 <span className="chg-num">
                   <RecordTag number={c.number} size="sm" />
                 </span>
-                <span className="chg-title">{c.short_description}</span>
+                <span className="chg-title">{keepWhole(c.short_description)}</span>
                 <span className="chg-meta">
                   <span className="mono">{c.cmdb_ci}</span>
-                  <span aria-hidden="true">·</span>
                   <span>{absDate(c.planned_start)}</span>
                 </span>
                 <span className="chg-tags">

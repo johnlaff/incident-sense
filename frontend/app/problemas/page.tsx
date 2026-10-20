@@ -10,6 +10,7 @@ import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
 import { problemState, useProblems } from "@/lib/problems";
 
 import "./problemas.css";
+import { keepWhole } from "@/lib/text";
 
 export default function ProblemasPage() {
   const { data, loading, error, slow, retry } = useProblems();
@@ -71,7 +72,7 @@ export default function ProblemasPage() {
                   </ViewTransition>
                   <ProblemStateBadge state={p.state} />
                 </span>
-                <span className="prb-title">{p.short_description}</span>
+                <span className="prb-title">{keepWhole(p.short_description)}</span>
                 <span className="prb-cause">
                   <b>Causa raiz:</b> {p.root_cause}
                 </span>

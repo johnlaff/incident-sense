@@ -286,6 +286,33 @@
     gap: 3px;
   }
 }
+/* Phones: the chapter name gets its own full line (never cut), the numbers
+   spread across the row below with 44px hit areas. */
+@media (max-width: 767px) {
+  .cf-index {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .cf-index-now {
+    flex: 1 1 100%;
+    white-space: normal;
+    overflow: visible;
+  }
+  .cf-index-list {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+  .cf-index a {
+    position: relative;
+    min-width: 34px;
+    height: 34px;
+  }
+  .cf-index a::after {
+    content: "";
+    position: absolute;
+    inset: -5px -3px;
+  }
+}
 @media (min-width: 768px) {
   /* The main area scrolls with 24px 28px of padding: stick flush to its top. */
   .cf-index {

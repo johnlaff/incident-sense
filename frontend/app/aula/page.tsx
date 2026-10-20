@@ -10,6 +10,7 @@ import {
   type ConceptKey,
 } from "@/components/concepts";
 import { Icons } from "@/components/icons";
+import { keepWhole } from "@/lib/text";
 
 export const metadata: Metadata = {
   title: "Aula: como a IA ajuda depois do deploy · Incident Sense",
@@ -133,7 +134,7 @@ export default function LessonPage() {
                       <Link href={p.href} className="stop-pick">
                         <RecordTag number={p.number} size="sm" />
                         <span className="pick-text">
-                          <b>{p.title}</b>
+                          <b>{keepWhole(p.title)}</b>
                           <small>{p.note}</small>
                         </span>
                         <Icons.chevronRight />

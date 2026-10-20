@@ -21,6 +21,7 @@ import {
   type IncidentRow,
   type PCode,
 } from "@/lib/model";
+import { keepWhole } from "@/lib/text";
 
 type Tab = "open" | "resolved" | "all";
 type SortKey = "num" | "desc" | "svc" | "state" | "priority" | "when";
@@ -210,7 +211,13 @@ export default function IncidentesPage() {
       >
         {label}
         {isActive ? (
-          <span className="sort-ico">{sortDir === "asc" ? "↑" : "↓"}</span>
+          <span className="sort-ico" aria-hidden="true">
+            {sortDir === "asc" ? (
+              <Icons.arrowUp size={13} />
+            ) : (
+              <Icons.arrowDown size={13} />
+            )}
+          </span>
         ) : null}
       </th>
     );
@@ -363,9 +370,9 @@ export default function IncidentesPage() {
               </caption>
               <thead>
                 <tr>
-                  {sortBtn("num", "Número", { width: 158 })}
+                  {sortBtn("num", "Número", { width: 150 })}
                   {sortBtn("desc", "Título")}
-                  {sortBtn("svc", "Serviço", { width: 176 }, "col-svc")}
+                  {sortBtn("svc", "Serviço", { width: 200 }, "col-svc")}
                   {sortBtn("state", "Estado", { width: 128 })}
                   {sortBtn("priority", "Prioridade", { width: 112 })}
                   {sortBtn("when", "Aberto", { width: 112 })}
@@ -435,10 +442,10 @@ export default function IncidentesPage() {
                       </td>
                       <td className="desc" data-label="Título">
                         {x.short}
-                        <span className="desc-svc">{x.service}</span>
+                        <span className="desc-svc">{keepWhole(x.service)}</span>
                       </td>
                       <td className="svc" data-label="Serviço">
-                        {x.service}
+                        {keepWhole(x.service)}
                       </td>
                       <td className="st" data-label="Estado">
                         <StateBadge state={x.state} />

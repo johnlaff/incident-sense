@@ -4,6 +4,9 @@
 // group rule, the week buckets).
 
 import type { ClusterPoint, ClustersResponse, IncidentSummary } from "@/lib/types";
+import { keepWhole } from "@/lib/text";
+
+export { keepWhole };
 
 /** Hues shared with lib/model.ts clusterColor, so a group keeps its color. */
 export const GROUP_HUES = [
@@ -239,10 +242,6 @@ export function verdictOf(g: RecGroup): Verdict {
 }
 
 /** One or two short sentences, built only from the group's own numbers. */
-/** A name like "PIX-Core" never breaks at its hyphen inside a sentence. */
-export function keepWhole(name: string): string {
-  return name.replace(/-/g, "\u2011");
-}
 
 export function reasonFor(g: RecGroup, totalWeeks: number, problems = 0): string {
   const v = verdictOf(g);

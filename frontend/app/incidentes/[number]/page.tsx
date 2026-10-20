@@ -53,6 +53,7 @@ import type { SuggestResponse, WorkNote } from "@/lib/types";
 import { SuggestionMarkdown } from "@/components/markdown";
 
 import "./pipeline.css";
+import { keepWhole } from "@/lib/text";
 
 type Tab = "detalhes" | "analise" | "atividade" | "relacionados";
 
@@ -446,7 +447,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 <StateBadge state={localState} />
                 <PriorityBadge priority={record.priority} withWord />
               </div>
-              <h1>{record.title}</h1>
+              <h1>{keepWhole(record.title)}</h1>
               <div className="meta">
                 {`${record.service} · ${record.group} · ${
                   localState === "resolved" ? "resolvido" : `aberto ${record.rel}`
