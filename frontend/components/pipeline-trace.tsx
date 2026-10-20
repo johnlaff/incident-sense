@@ -565,6 +565,13 @@ function Layers({
                 <b className="mono">{vector.problem_top_k}</b> problemas
               </span>
             </div>
+            <p className="layer-note prb-term">
+              <Icons.problems size={13} />
+              <span>
+                <b>Problema:</b> causa raiz conhecida de incidentes que se repetem, com a
+                solução.
+              </span>
+            </p>
             <SimilarityRuler
               incidents={incidents}
               problems={problems}
@@ -705,7 +712,6 @@ function RowGroup({
               : r.outcome === "descartado"
                 ? { cls: "drop", label: OUTCOME_LABEL.descartado }
                 : { cls: "keep", label: OUTCOME_LABEL[r.outcome] };
-          const openable = r.kind === "incidente";
           return (
             <li
               key={`${stage}-${r.number}`}
@@ -715,18 +721,14 @@ function RowGroup({
               }`}
               style={{ "--i": i } as Style}
             >
-              {openable ? (
-                <button
-                  type="button"
-                  className="row-num mono row-open"
-                  onClick={(e) => onCite(r.number, e.currentTarget)}
-                  aria-label={`Abrir ${r.number}: ${r.desc}`}
-                >
-                  {r.number}
-                </button>
-              ) : (
-                <span className="row-num mono">{r.number}</span>
-              )}
+              <button
+                type="button"
+                className="row-num mono row-open"
+                onClick={(e) => onCite(r.number, e.currentTarget)}
+                aria-label={`Abrir ${r.number}: ${r.desc}`}
+              >
+                {r.number}
+              </button>
               <span className="row-desc">{r.desc}</span>
               <span className="row-sim mono" title="Similaridade de cosseno">
                 {formatSim(r.sim)}
@@ -844,21 +846,15 @@ function count(n: number, one: string, many: string): string {
 }
 
 export function IdChip({ id, onCite }: { id: string; onCite: CiteHandler }) {
-  if (id.startsWith("INC")) {
-    return (
-      <button
-        type="button"
-        className="cite"
-        onClick={(e) => onCite(id, e.currentTarget)}
-        aria-label={`Abrir incidente ${id}`}
-      >
-        {id}
-      </button>
-    );
-  }
+  const problem = id.startsWith("PRB");
   return (
-    <span className="cite cite-prb" title={`Problema ${id}`}>
+    <button
+      type="button"
+      className={`cite${problem ? " cite-prb" : ""}`}
+      onClick={(e) => onCite(id, e.currentTarget)}
+      aria-label={problem ? `Abrir problema ${id}` : `Abrir incidente ${id}`}
+    >
       {id}
-    </span>
+    </button>
   );
 }

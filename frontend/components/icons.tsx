@@ -196,6 +196,13 @@ export const Icons = {
     </>,
   ),
   // Git pull request: a proposed change waiting for review.
+  // Several incidents converging on one root cause.
+  problems: icon(
+    <>
+      <path d="M5 4.5 12 13M12 4v9M19 4.5 12 13" />
+      <circle cx={12} cy={17.5} r={3} />
+    </>,
+  ),
   changes: icon(
     <>
       <circle cx={6} cy={6} r={2.4} />

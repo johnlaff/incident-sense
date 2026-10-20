@@ -240,7 +240,7 @@ function WorkNotes({
 }: {
   notes: WorkNote[];
   fresh: string | null;
-  onCite: (n: string) => void;
+  onCite: (n: string, el?: HTMLElement) => void;
 }) {
   const { flashCite } = useShell();
   if (!notes.length) {
@@ -277,22 +277,21 @@ function WorkNotes({
           {note.sources.length ? (
             <div className="worknote-src">
               Fontes:
-              {note.sources.map((id) =>
-                id.startsWith("INC") ? (
-                  <button
-                    type="button"
-                    className="cite"
-                    key={id}
-                    onClick={() => onCite(id)}
-                  >
-                    {id}
-                  </button>
-                ) : (
-                  <span className="cite cite-prb" key={id} title={`Problema ${id}`}>
-                    {id}
-                  </span>
-                ),
-              )}
+              {note.sources.map((id) => (
+                <button
+                  type="button"
+                  className={`cite${id.startsWith("PRB") ? " cite-prb" : ""}`}
+                  key={id}
+                  onClick={(e) => onCite(id, e.currentTarget)}
+                  aria-label={
+                    id.startsWith("PRB")
+                      ? `Abrir problema ${id}`
+                      : `Abrir incidente ${id}`
+                  }
+                >
+                  {id}
+                </button>
+              ))}
             </div>
           ) : null}
         </article>
