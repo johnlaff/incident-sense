@@ -599,13 +599,8 @@
 }
 .cf-cite-link {
   display: inline;
-  color: var(--primary-ink);
-  text-underline-offset: 3px;
-}
-.cf-cite-link svg {
-  display: inline-block;
-  margin-left: 3px;
-  vertical-align: -1px;
+  color: var(--muted);
+  font-style: normal;
 }
 .cf-ch-foot {
   display: flex;

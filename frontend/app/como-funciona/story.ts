@@ -13,17 +13,16 @@
 import type { AulaLessonStep } from "@/components/aula";
 
 // ---------------------------------------------------------------------------
-// Sources (public articles; the numbers on the page cite them)
+// Sources (the speakers' articles; cited by author and date only, the
+// publisher stays out of the demo)
 // ---------------------------------------------------------------------------
 
 export const SOURCES = {
   solange: {
-    label: "Artigo do Solange no bradesco.io (08/10/2026)",
-    href: "https://bradesco.io/?shareid=134",
+    label: "Artigo do Solange (08/10/2026)",
   },
   joao: {
-    label: "Artigo do João no bradesco.io (09/10/2026)",
-    href: "https://bradesco.io/?shareid=135",
+    label: "Artigo do João (09/10/2026)",
   },
 } as const;
 

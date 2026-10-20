@@ -69,12 +69,7 @@ function Tech({ rows }: { rows: [string, ReactNode][] }) {
 
 function Cite({ who }: { who: keyof typeof SOURCES }) {
   const s = SOURCES[who];
-  return (
-    <a className="cf-cite-link" href={s.href} target="_blank" rel="noreferrer">
-      {s.label}
-      <Icons.external size={12} />
-    </a>
-  );
+  return <cite className="cf-cite-link">{s.label}</cite>;
 }
 
 const CONTENT: Record<
