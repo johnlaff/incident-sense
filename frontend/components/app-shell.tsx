@@ -6,6 +6,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { flushSync } from "react-dom";
 import {
   createContext,
   useCallback,
@@ -38,8 +39,10 @@ function syncThemeColor(theme: Theme) {
 }
 
 interface ShellContextValue {
-  /** Open the peek drawer for a cited incident (verify grounding in place). */
-  peek: (number: string) => void;
+  /** Open the peek drawer for a cited incident (verify grounding in place).
+   * Given the element that was tapped, the number flies from it into the
+   * drawer's title (a same-document view transition). */
+  peek: (number: string, from?: HTMLElement) => void;
   /** Navigate to an incident's full record. */
   openIncident: (number: string) => void;
   /** Ask Aurora to suggest a resolution (navigates to the incident if needed). */
@@ -131,11 +134,32 @@ export function AppShell({ children }: { children: ReactNode }) {
     setNotifOpen(false);
   }, [pathname]);
 
-  const peek = useCallback((number: string) => {
-    setPeekId(number);
-    setFlashCite(number);
-    if (flashTimer.current) clearTimeout(flashTimer.current);
-    flashTimer.current = setTimeout(() => setFlashCite(null), 600);
+  const peek = useCallback((number: string, from?: HTMLElement) => {
+    const open = () => {
+      setPeekId(number);
+      setFlashCite(number);
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+      flashTimer.current = setTimeout(() => setFlashCite(null), 600);
+    };
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!from || reduced || typeof document.startViewTransition !== "function") {
+      open();
+      return;
+    }
+    // The tapped chip and the drawer title share one name for the flight; the
+    // chip gives it up inside the update so only the title holds it after.
+    from.style.setProperty("view-transition-name", "peek-num");
+    const clear = () => from.style.removeProperty("view-transition-name");
+    try {
+      const vt = document.startViewTransition(() => {
+        clear();
+        flushSync(open);
+      });
+      vt.finished.finally(clear);
+    } catch {
+      clear();
+      open();
+    }
   }, []);
   useEffect(
     () => () => void (flashTimer.current && clearTimeout(flashTimer.current)),

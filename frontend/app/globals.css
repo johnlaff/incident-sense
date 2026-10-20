@@ -3642,17 +3642,6 @@ body {
 /* ===================================================================== *
  *  Screen transition + motion polish
  * ===================================================================== */
-.screen-enter {
-  animation: screen-in var(--dur-move) var(--ease-out);
-}
-@keyframes screen-in {
-  from {
-    transform: translateY(8px);
-  }
-  to {
-    transform: none;
-  }
-}
 .btn {
   transition:
     background var(--dur-state) var(--ease-out),
@@ -4902,6 +4891,17 @@ body {
   height: 40px;
 }
 
+/* Content scrolls clear of the strip. */
+:root[data-aula-bar] {
+  scroll-padding-bottom: calc(
+    var(--tabbar-h) + var(--safe-b) + var(--aula-bar-h, 0px) + 24px
+  );
+}
+:root[data-aula-bar] .main {
+  padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + var(--aula-bar-h, 0px) + 32px);
+  scroll-padding-bottom: calc(var(--aula-bar-h, 0px) + 32px);
+}
+
 /* Phone: the FAB rises above the strip; the Aurora sheet keeps its input
    clear and the strip drops to the bottom edge while the sheet is open. */
 :root[data-aula-bar] .cop-fab {
@@ -4975,4 +4975,16 @@ body {
   :root[data-aula] .aula-count {
     font-size: 13.5px;
   }
+}
+
+/* ===================================================================== *
+ *  View transitions: routes (React <ViewTransition>) and the peek drawer
+ *  Unsupported browsers simply swap the content; nothing waits on these.
+ * ===================================================================== */
+::view-transition-group(peek-num) {
+  animation-duration: var(--dur-move);
+  animation-timing-function: var(--spring-calm);
+}
+.peek-num {
+  view-transition-name: peek-num;
 }

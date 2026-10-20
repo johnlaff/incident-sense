@@ -58,7 +58,7 @@ export function SuggestionMarkdown({
   flashCite,
 }: {
   source: string;
-  onCite: (n: string) => void;
+  onCite: (n: string, el?: HTMLElement) => void;
   flashCite: string | null;
 }) {
   const components: Components = {
@@ -78,7 +78,7 @@ export function SuggestionMarkdown({
           <button
             type="button"
             className={`cite${flashCite === n ? " flash" : ""}`}
-            onClick={() => onCite(n)}
+            onClick={(e) => onCite(n, e.currentTarget)}
             aria-label={`Abrir incidente citado ${n}`}
           >
             {n}

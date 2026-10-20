@@ -1,31 +1,60 @@
 "use client";
 
-// The incident suggestion pipeline, step by step: the seven steps of the
-// article plus the procedência gate, each with what it decided. Step 4 opens
-// into the three retrieval layers with every candidate kept or dropped.
+// The incident suggestion pipeline, told honestly in two phases.
+//
+// 1. Rodando: the request is on the server. The seven steps sit in outline
+//    with one indicator and the real elapsed seconds; no step pretends to be
+//    "in progress", because the API answers everything at once.
+// 2. Repassando o que a IA fez: when the answer is back, the steps reveal in
+//    order with what each one decided (under 2 s, skippable; step by step in
+//    modo aula). Step 4 opens into the three retrieval layers: tags, the
+//    similarity ruler with the 0,80 floor, and the post-filter stamps.
 
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from "react";
 
+import { useAulaLesson } from "./aula";
 import { Icons, type IconComponent } from "./icons";
 import { SuggestionMarkdown } from "./markdown";
-import { activate } from "@/lib/a11y";
+import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
 import { buildSuggestionMarkdown } from "@/lib/model";
+import { formatSeconds, useElapsedSeconds } from "@/lib/motion";
 import {
   OUTCOME_LABEL,
-  STEP_OUTLINE,
+  PIPELINE_STEPS,
   STEP_STATUS_LABEL,
   TAG_SOURCE_LABEL,
+  beatsFor,
+  citationSource,
   citationSummary,
   formatSim,
-  layerCounts,
-  orderedSteps,
+  layerShown,
   retrievalRows,
-  stepMarker,
+  stepReveal,
+  stepViews,
+  wordCount,
+  type LessonStepKey,
+  type Reveal,
   type RetrievalRow,
+  type StepDef,
+  type StepView,
 } from "@/lib/pipeline";
-import type { PipelineStep, StepStatus, SuggestResponse } from "@/lib/types";
+import { funnel } from "@/lib/ruler";
+import type { StepStatus, SuggestResponse } from "@/lib/types";
 
 export type RunPhase = "idle" | "running" | "done" | "error";
+
+type Style = CSSProperties & Record<`--${string}`, string | number>;
+
+/** What the record itself says, for steps 1 and 2. */
+export interface PipelineSource {
+  description: string;
+  category: string;
+  subcategory: string;
+  empresa: string;
+  tags: string[];
+}
+
+export type CiteHandler = (n: string, el?: HTMLElement) => void;
 
 const STATUS_ICON: Record<StepStatus, IconComponent> = {
   concluida: Icons.check,
@@ -33,11 +62,23 @@ const STATUS_ICON: Record<StepStatus, IconComponent> = {
   degradada: Icons.alert,
 };
 
+/** The replay as a lesson: beats, captions and the current beat. */
+export function usePipelineLesson(id: string, result: SuggestResponse | null) {
+  const beats = useMemo(
+    () => beatsFor(result?.dims, result?.retrieval.vector.min_similarity ?? 0.8),
+    [result],
+  );
+  return useAulaLesson({ id, steps: beats, runKey: result });
+}
+
 export function PipelineTrace({
   phase,
   result,
   error,
   modelName,
+  source,
+  startedAt,
+  durationMs,
   onRun,
   onCite,
   flashCite,
@@ -47,12 +88,31 @@ export function PipelineTrace({
   result: SuggestResponse | null;
   error: string | null;
   modelName: string;
+  source: PipelineSource;
+  startedAt: number | null;
+  durationMs: number | null;
   onRun: () => void;
-  onCite: (n: string) => void;
+  onCite: CiteHandler;
   flashCite: string | null;
   onShowNotes: () => void;
 }) {
   const running = phase === "running";
+  const shown = running ? null : result;
+  const lesson = usePipelineLesson("pipeline", shown);
+  const views = useMemo(() => (shown ? stepViews(shown) : null), [shown]);
+  const beat = shown ? lesson.step : -1;
+  const listRef = useRef<HTMLOListElement>(null);
+
+  // In modo aula the step being explained comes into view on every move.
+  useEffect(() => {
+    if (!lesson.aula || beat < 0) return;
+    const current = listRef.current?.querySelector<HTMLElement>(
+      '.pipe-step[aria-current="step"]',
+    );
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    current?.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
+  }, [beat, lesson.aula]);
+
   return (
     <div className="section pipe-section">
       <div className="pipe-head">
@@ -88,123 +148,222 @@ export function PipelineTrace({
         </div>
       ) : null}
 
-      {result && phase !== "running" ? (
-        <ol className="pipe" aria-label="Etapas do pipeline">
-          {orderedSteps(result).map((step, i) => (
-            <StepItem key={step.id} step={step} index={i}>
-              <StepDetail
-                step={step}
-                result={result}
-                modelName={modelName}
-                onCite={onCite}
-                flashCite={flashCite}
-                onShowNotes={onShowNotes}
-              />
+      <RunStatus
+        running={running}
+        startedAt={startedAt}
+        durationMs={shown ? durationMs : null}
+        replaying={Boolean(shown) && !lesson.done}
+        aula={lesson.aula}
+        onSkip={lesson.skip}
+        onReplay={lesson.play}
+      />
+
+      <ol
+        ref={listRef}
+        className={`pipe${shown ? "" : " pipe-outline"}${running ? " is-running" : ""}`}
+        aria-label="Etapas do pipeline"
+        aria-busy={running}
+      >
+        {PIPELINE_STEPS.map((def) => {
+          const view = views?.find((v) => v.key === def.key) ?? null;
+          const reveal: Reveal = view ? stepReveal(def.key, beat) : "hidden";
+          return (
+            <StepItem
+              key={def.key}
+              def={def}
+              view={reveal === "hidden" ? null : view}
+              reveal={reveal}
+              stopped={stoppedAfterGate(views, def.key, beat)}
+            >
+              {view && reveal !== "hidden" && shown ? (
+                <StepDetail
+                  step={def.key}
+                  result={shown}
+                  source={source}
+                  beat={beat}
+                  modelName={modelName}
+                  onCite={onCite}
+                  flashCite={flashCite}
+                  onShowNotes={onShowNotes}
+                />
+              ) : null}
             </StepItem>
-          ))}
-        </ol>
-      ) : (
-        <ol
-          className={`pipe pipe-outline${running ? " is-running" : ""}`}
-          aria-label="Etapas do pipeline"
-          aria-busy={running}
-        >
-          {STEP_OUTLINE.map((s) => (
-            <li key={s.id} className={`pipe-step${s.gate ? " is-gate" : ""}`}>
-              <span className="pipe-marker" aria-hidden>
-                <span>
-                  {running ? <Icons.loader className="spin" /> : s.gate ? "?" : s.order}
-                </span>
-              </span>
-              <div className="pipe-body">
-                <div className="pipe-title">
-                  <span className="sr-only">
-                    {s.gate ? "Decisão" : `Etapa ${s.order}`}:{" "}
-                  </span>
-                  {s.title}
-                </div>
-                <p className="pipe-decision is-hint">{s.hint}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+/** Step 5 said IMPROCEDENTE (or no context): the rail stops at the gate. */
+function stoppedAfterGate(
+  views: StepView[] | null,
+  key: LessonStepKey,
+  beat: number,
+): boolean {
+  if (!views || key !== "classificar") return false;
+  const sugerir = views.find((v) => v.key === "sugerir");
+  return sugerir?.status === "pulada" && stepReveal("classificar", beat) !== "hidden";
+}
+
+/** One line on what is happening right now, with real time only. */
+export function RunStatus({
+  running,
+  startedAt,
+  durationMs,
+  replaying,
+  aula,
+  onSkip,
+  onReplay,
+  compact = false,
+}: {
+  running: boolean;
+  startedAt: number | null;
+  durationMs: number | null;
+  replaying: boolean;
+  aula: boolean;
+  onSkip: () => void;
+  onReplay: () => void;
+  compact?: boolean;
+}) {
+  const seconds = useElapsedSeconds(running ? startedAt : null);
+  if (running) {
+    return (
+      <div className={`run-status is-running${compact ? " is-compact" : ""}`}>
+        <Icons.loader className="spin" size={15} />
+        <span role="status">A Aurora está analisando no servidor</span>
+        <span className="run-clock mono" aria-hidden="true">
+          {seconds} s
+        </span>
+      </div>
+    );
+  }
+  if (durationMs == null) return null;
+  return (
+    <div className={`run-status${compact ? " is-compact" : ""}`}>
+      <span className="run-replay">
+        <Icons.replay size={14} />
+        {replaying ? "Repassando o que a IA fez" : "O que a IA fez, etapa por etapa"}
+      </span>
+      <span className="run-took">
+        resposta em <b className="mono">{formatSeconds(durationMs)}</b>
+      </span>
+      {replaying && !aula ? (
+        <button type="button" className="btn btn-ghost btn-sm run-btn" onClick={onSkip}>
+          Pular
+        </button>
+      ) : !replaying ? (
+        <button type="button" className="btn btn-ghost btn-sm run-btn" onClick={onReplay}>
+          <Icons.replay />
+          Repassar
+        </button>
+      ) : null}
     </div>
   );
 }
 
 function StepItem({
-  step,
-  index,
+  def,
+  view,
+  reveal,
+  stopped,
   children,
 }: {
-  step: PipelineStep;
-  index: number;
+  def: StepDef;
+  view: StepView | null;
+  reveal: Reveal;
+  stopped: boolean;
   children: ReactNode;
 }) {
-  const Icon = STATUS_ICON[step.status];
+  const Icon = view ? STATUS_ICON[view.status] : null;
   return (
     <li
-      className={`pipe-step st-${step.status}${step.gate ? " is-gate" : ""}`}
-      style={{ "--i": index } as React.CSSProperties}
+      className={`pipe-step is-${reveal}${view ? ` st-${view.status}` : ""}${
+        def.gate ? " is-gate" : ""
+      }${stopped ? " is-stopped" : ""}`}
+      aria-current={reveal === "current" ? "step" : undefined}
     >
-      <span className="pipe-marker" aria-hidden>
-        <span>{stepMarker(step)}</span>
+      <span className="pipe-marker" aria-hidden="true">
+        {def.gate ? <GateMark open={reveal !== "hidden" && !stopped} /> : null}
+        <span className="pipe-marker-n">
+          {reveal === "done" && view?.status === "concluida" && !def.gate ? (
+            <Icons.check size={14} sw={2.8} />
+          ) : (
+            def.order
+          )}
+        </span>
       </span>
       <div className="pipe-body">
         <div className="pipe-title-row">
           <h3 className="pipe-title">
-            <span className="sr-only">
-              {step.gate ? "Decisão" : `Etapa ${step.order}`}:{" "}
-            </span>
-            {step.title}
+            <span className="sr-only">Etapa {def.order}: </span>
+            {def.title}
           </h3>
-          <span className={`pipe-status st-${step.status}`}>
-            <Icon size={12} sw={2.6} />
-            {STEP_STATUS_LABEL[step.status]}
-          </span>
+          {view && Icon ? (
+            <span className={`pipe-status st-${view.status}`}>
+              <Icon size={12} sw={2.6} />
+              {STEP_STATUS_LABEL[view.status]}
+            </span>
+          ) : null}
         </div>
-        <p className="pipe-decision">{step.decision}</p>
+        {view ? (
+          view.decisions.map((d, i) => (
+            <p className="pipe-decision" key={i}>
+              {d}
+            </p>
+          ))
+        ) : (
+          <p className="pipe-decision is-hint">{def.hint}</p>
+        )}
         {children}
       </div>
     </li>
   );
 }
 
+/** The procedência gate: a diamond whose halves part when it lets the run on. */
+function GateMark({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={`gate${open ? " is-open" : ""}`}
+      viewBox="0 0 32 32"
+      aria-hidden="true"
+    >
+      <path className="gate-l" d="M16 2 L2 16 L16 30 Z" />
+      <path className="gate-r" d="M16 2 L30 16 L16 30 Z" />
+    </svg>
+  );
+}
+
 function StepDetail({
   step,
   result,
+  source,
+  beat,
   modelName,
   onCite,
   flashCite,
   onShowNotes,
 }: {
-  step: PipelineStep;
+  step: LessonStepKey;
   result: SuggestResponse;
+  source: PipelineSource;
+  beat: number;
   modelName: string;
-  onCite: (n: string) => void;
+  onCite: CiteHandler;
   flashCite: string | null;
   onShowNotes: () => void;
 }) {
-  switch (step.id) {
-    case "embedding":
-      return (
-        <div className="pipe-block">
-          <div className="pipe-label">Texto vetorizado</div>
-          <pre className="pipe-query">{result.query_text}</pre>
-        </div>
-      );
-    case "recuperar":
-      return <Layers result={result} onCite={onCite} />;
-    case "contexto":
-      return result.context_ids.length ? (
-        <div className="pipe-chips">
-          {result.context_ids.map((id) => (
-            <IdChip key={id} id={id} onCite={onCite} />
-          ))}
-        </div>
-      ) : null;
-    case "decidir":
+  switch (step) {
+    case "carregar":
+      return <LoadedFields source={source} />;
+    case "resumir":
+      return <Summary original={source.description} summary={result.summarized_query} />;
+    case "numeros":
+      return <Numbers result={result} />;
+    case "buscar":
+      return <Layers result={result} beat={beat} onCite={onCite} />;
+    case "classificar":
       return (
         <div
           className={`pipe-verdict ${result.classification === "PROCEDENTE" ? "ok" : "bad"}`}
@@ -233,6 +392,7 @@ function StepDetail({
               Gerado por <b>{modelName}</b>.
             </div>
           </div>
+          <CitedSources result={result} onCite={onCite} />
           <Citations result={result} />
         </>
       ) : null;
@@ -243,9 +403,410 @@ function StepDetail({
           Ver nas notas de trabalho
         </button>
       ) : null;
-    default:
-      return null;
   }
+}
+
+/** Step 1: the fields the analysis reads, as read from the record. */
+function LoadedFields({ source }: { source: PipelineSource }) {
+  const fields: [string, string][] = [
+    ["Categoria", source.category],
+    ["Subcategoria", source.subcategory],
+    ["Empresa", source.empresa],
+  ];
+  return (
+    <div className="pipe-block">
+      <div className="pipe-label">Lido do registro</div>
+      <div className="pipe-chips loaded">
+        {fields.map(([k, v], i) => (
+          <span className="loaded-chip" key={k} style={{ "--i": i } as Style}>
+            <span className="loaded-k">{k}</span> {v || "não informada"}
+          </span>
+        ))}
+        {source.tags.map((t, i) => (
+          <span className="tag loaded-chip" key={t} style={{ "--i": i + 3 } as Style}>
+            {t}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Step 2: the long original next to the short summary that becomes the query. */
+function Summary({ original, summary }: { original: string; summary: string }) {
+  const before = wordCount(original);
+  const after = wordCount(summary);
+  return (
+    <div className="pipe-block summary">
+      <div className="summary-col summary-orig">
+        <div className="pipe-label">
+          Texto do chamado <span className="mono">{before} palavras</span>
+        </div>
+        <p>{original}</p>
+      </div>
+      <Icons.arrowRight className="summary-arrow" />
+      <div className="summary-col summary-new">
+        <div className="pipe-label">
+          Resumo usado na busca <span className="mono">{after} palavras</span>
+        </div>
+        <p>{summary}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Step 3: what was embedded, and the first real values of the vector. */
+function Numbers({ result }: { result: SuggestResponse }) {
+  const preview = result.embedding_preview ?? [];
+  const dims = result.dims ?? 0;
+  const peak = preview.reduce((m, v) => Math.max(m, Math.abs(v)), 0) || 1;
+  const fmt = (v: number) =>
+    v.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  return (
+    <div className="pipe-block">
+      <div className="pipe-label">Texto vetorizado</div>
+      <pre className="pipe-query">{result.query_text}</pre>
+      {preview.length ? (
+        <div className="vec">
+          <div className="pipe-label">
+            Vira {dims ? <b className="mono">{dims.toLocaleString("pt-BR")}</b> : null}{" "}
+            números. Os {preview.length} primeiros, de verdade:
+          </div>
+          <div className="vec-bars" aria-hidden="true">
+            {preview.map((v, i) => (
+              <span
+                key={i}
+                className={`vec-bar ${v >= 0 ? "pos" : "neg"}`}
+                style={{ "--h": Math.abs(v) / peak, "--i": i } as Style}
+              />
+            ))}
+          </div>
+          <p className="vec-nums mono">
+            [{preview.map(fmt).join("  ")}
+            {dims > preview.length ? "  …" : ""}]
+          </p>
+        </div>
+      ) : (
+        <p className="vec-missing">
+          Este servidor não devolve os valores do vetor; só o texto acima é real aqui.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Layers({
+  result,
+  beat,
+  onCite,
+}: {
+  result: SuggestResponse;
+  beat: number;
+  onCite: CiteHandler;
+}) {
+  const { tags, vector, postfilter } = result.retrieval;
+  const incidents = retrievalRows(result, "incidente");
+  const problems = retrievalRows(result, "problema");
+  const rows = [...incidents, ...problems];
+  const f = funnel(result, rows);
+  const reached = rows.filter((r) => r.outcome !== "abaixo");
+  const showVector = layerShown("vetor", beat);
+  const showCheck = layerShown("conferir", beat);
+  const best = [...reached].sort((a, b) => b.sim - a.sim)[0] ?? null;
+
+  return (
+    <>
+      <Funnel
+        topK={f.topK}
+        candidates={showVector ? f.candidates : null}
+        passed={showVector ? f.passed : null}
+        kept={showCheck ? f.kept : null}
+        floor={vector.min_similarity}
+      />
+      <ol className="layers" aria-label="Camadas da busca">
+        <li className="layer layer-in">
+          <div className="layer-head">
+            <Icons.filter size={15} />
+            <span className="layer-name">Camada 1: tags</span>
+            <span className="layer-what">decidem onde procurar</span>
+          </div>
+          <p className="layer-decision">{tags.decision}</p>
+          {tags.tags.length ? (
+            <div className="pipe-chips">
+              {tags.tags.map((t) => (
+                <span className="tag" key={t}>
+                  {t}
+                </span>
+              ))}
+              <span className="layer-note">{TAG_SOURCE_LABEL[tags.source]}</span>
+            </div>
+          ) : null}
+          <p className="layer-note layer-scope">
+            {tags.filter_applied
+              ? "A busca só olha a parte do histórico com estas tags."
+              : "Sem filtro de tags: a busca olha o histórico inteiro."}
+          </p>
+        </li>
+
+        {showVector ? (
+          <li className="layer layer-in">
+            <div className="layer-head">
+              <Icons.vectorSearch size={15} />
+              <span className="layer-name">Camada 2: vetor</span>
+              <span className="layer-what">mede o que parece</span>
+            </div>
+            <p className="layer-decision">{vector.decision}</p>
+            <div className="layer-params">
+              <span>
+                limiar <b className="mono">{formatSim(vector.min_similarity)}</b>
+              </span>
+              <span>
+                até <b className="mono">{vector.incident_top_k}</b> incidentes e{" "}
+                <b className="mono">{vector.problem_top_k}</b> problemas
+              </span>
+            </div>
+            <SimilarityRuler
+              incidents={incidents}
+              problems={problems}
+              floor={vector.min_similarity}
+              onOpen={onCite}
+            />
+            {best ? <CosineAngle sim={best.sim} floor={vector.min_similarity} /> : null}
+            <details className="layer-list">
+              <summary>Ver a lista completa da camada 2</summary>
+              <RowGroup
+                title="Incidentes resolvidos"
+                rows={incidents}
+                stage="vector"
+                onCite={onCite}
+              />
+              <RowGroup
+                title="Problemas"
+                rows={problems}
+                stage="vector"
+                onCite={onCite}
+              />
+            </details>
+          </li>
+        ) : null}
+
+        {showCheck ? (
+          <li className="layer layer-in">
+            <div className="layer-head">
+              <Icons.funnel size={15} />
+              <span className="layer-name">Camada 3: conferência por IA</span>
+              <span className="layer-what">decide o que serve</span>
+            </div>
+            <p className="layer-decision">{postfilter.decision}</p>
+            {postfilter.status === "fallback" ? (
+              <div className="pipe-alert is-warn">
+                <Icons.alert />
+                <div>
+                  <b>Conferência indisponível</b> ({postfilter.fallback_reason}). A lista
+                  original foi mantida: a precisão cai, mas o incidente não fica sem
+                  resposta.
+                </div>
+              </div>
+            ) : null}
+            {reached.length ? (
+              <RowGroup
+                title={`${count(f.kept, "mantido", "mantidos")} e ${count(
+                  f.passed - f.kept,
+                  "descartado",
+                  "descartados",
+                )}`}
+                rows={reached}
+                stage="postfilter"
+                cited={new Set(result.citations.cited)}
+                onCite={onCite}
+              />
+            ) : (
+              <div className="layer-empty">Nenhum candidato chegou a esta camada.</div>
+            )}
+            <div className="pipe-block">
+              <div className="pipe-label">Contexto entregue à sugestão</div>
+              {result.context_ids.length ? (
+                <div className="pipe-chips">
+                  {result.context_ids.map((id) => (
+                    <IdChip key={id} id={id} onCite={onCite} />
+                  ))}
+                </div>
+              ) : (
+                <p className="layer-note">
+                  Vazio: nenhum caso passou pelas três camadas.
+                </p>
+              )}
+            </div>
+          </li>
+        ) : null}
+      </ol>
+    </>
+  );
+}
+
+/** "15 → 6 → 3": what each layer let through. Numbers appear with their layer. */
+function Funnel({
+  topK,
+  candidates,
+  passed,
+  kept,
+  floor,
+}: {
+  topK: number;
+  candidates: number | null;
+  passed: number | null;
+  kept: number | null;
+  floor: number;
+}) {
+  const stages: { n: number | null; label: string }[] = [
+    { n: candidates, label: `candidatos (até ${topK})` },
+    { n: passed, label: `com ${formatSim(floor)} ou mais` },
+    { n: kept, label: "mantidos pela IA" },
+  ];
+  return (
+    <div className="funnel" aria-label="Funil das camadas">
+      {stages.map((s, i) => (
+        <div className={`funnel-stage${s.n == null ? " is-pending" : ""}`} key={i}>
+          {i > 0 ? <Icons.arrowRight className="funnel-arrow" /> : null}
+          <span className="funnel-n mono">{s.n ?? "?"}</span>
+          <span className="funnel-l">{s.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RowGroup({
+  title,
+  rows,
+  stage,
+  cited,
+  onCite,
+}: {
+  title: string;
+  rows: RetrievalRow[];
+  stage: "vector" | "postfilter";
+  cited?: Set<string>;
+  onCite: CiteHandler;
+}) {
+  if (!rows.length) {
+    return <div className="layer-empty">{title}: nenhum resultado.</div>;
+  }
+  return (
+    <div className="rows">
+      <div className="rows-title">{title}</div>
+      <ul className="rows-list">
+        {rows.map((r, i) => {
+          const pill =
+            stage === "vector"
+              ? r.outcome === "abaixo"
+                ? { cls: "drop", label: "abaixo do limiar" }
+                : { cls: "keep", label: "passou" }
+              : r.outcome === "descartado"
+                ? { cls: "drop", label: OUTCOME_LABEL.descartado }
+                : { cls: "keep", label: OUTCOME_LABEL[r.outcome] };
+          const openable = r.kind === "incidente";
+          return (
+            <li
+              key={`${stage}-${r.number}`}
+              id={stage === "postfilter" ? `src-${r.number}` : undefined}
+              className={`row${pill.cls === "drop" ? " is-dropped" : ""}${
+                stage === "postfilter" ? " is-stamped" : ""
+              }`}
+              style={{ "--i": i } as Style}
+            >
+              {openable ? (
+                <button
+                  type="button"
+                  className="row-num mono row-open"
+                  onClick={(e) => onCite(r.number, e.currentTarget)}
+                  aria-label={`Abrir ${r.number}: ${r.desc}`}
+                >
+                  {r.number}
+                </button>
+              ) : (
+                <span className="row-num mono">{r.number}</span>
+              )}
+              <span className="row-desc">{r.desc}</span>
+              <span className="row-sim mono" title="Similaridade de cosseno">
+                {formatSim(r.sim)}
+              </span>
+              <span className={`row-pill ${pill.cls}`}>
+                {pill.cls === "keep" ? (
+                  <Icons.check size={11} sw={3} />
+                ) : (
+                  <Icons.close size={11} sw={3} />
+                )}
+                {pill.label}
+              </span>
+              {stage === "postfilter" && r.reason ? (
+                <span className="row-reason">{r.reason}</span>
+              ) : null}
+              {cited?.has(r.number) ? (
+                <span className="row-cited">
+                  <Icons.lightbulb size={12} />
+                  citado na sugestão
+                </span>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/** Each source the suggestion cites, tied back to where it came from. */
+function CitedSources({
+  result,
+  onCite,
+}: {
+  result: SuggestResponse;
+  onCite: CiteHandler;
+}) {
+  const cited = result.citations.cited;
+  if (!cited.length) return null;
+  function show(id: string) {
+    const row = document.getElementById(`src-${id}`);
+    if (!row) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    row.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    row.classList.remove("is-flash");
+    // Restart the one-shot highlight.
+    void row.offsetWidth;
+    row.classList.add("is-flash");
+  }
+  return (
+    <div className="cited">
+      <div className="pipe-label">De onde vem cada citação</div>
+      <ul className="cited-list">
+        {cited.map((id) => {
+          const { row, inContext } = citationSource(id, result);
+          return (
+            <li key={id}>
+              <IdChip id={id} onCite={onCite} />
+              <span className="cited-what">
+                {row
+                  ? `similaridade ${formatSim(row.sim)}, ${OUTCOME_LABEL[row.outcome]} na conferência`
+                  : inContext
+                    ? "no contexto recuperado"
+                    : "fora do contexto"}
+              </span>
+              {row ? (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => show(id)}
+                >
+                  Ver na busca
+                </button>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 }
 
 function Citations({ result }: { result: SuggestResponse }) {
@@ -267,8 +828,8 @@ function Citations({ result }: { result: SuggestResponse }) {
               </span>
               <span className="pipe-flag-what">
                 {f.action === "removida"
-                  ? "removida do texto: não está no contexto recuperado"
-                  : "mantida no texto e marcada: não está no contexto recuperado"}
+                  ? "removida do texto: não estava no contexto recuperado"
+                  : "mantida no texto e marcada: não estava no contexto recuperado"}
               </span>
             </li>
           ))}
@@ -278,169 +839,19 @@ function Citations({ result }: { result: SuggestResponse }) {
   );
 }
 
-function Layers({
-  result,
-  onCite,
-}: {
-  result: SuggestResponse;
-  onCite: (n: string) => void;
-}) {
-  const { tags, vector, postfilter } = result.retrieval;
-  const incidents = retrievalRows(result, "incidente");
-  const problems = retrievalRows(result, "problema");
-  const inc = layerCounts(incidents);
-  const prb = layerCounts(problems);
-  const reached = [...incidents, ...problems].filter((r) => r.outcome !== "abaixo");
-  return (
-    <ol className="layers" aria-label="Camadas da recuperação">
-      <li className="layer">
-        <div className="layer-head">
-          <Icons.filter size={15} />
-          <span className="layer-name">Camada 1 · Tags semânticas</span>
-          <span className="layer-what">decidem onde procurar</span>
-        </div>
-        <p className="layer-decision">{tags.decision}</p>
-        {tags.tags.length ? (
-          <div className="pipe-chips">
-            {tags.tags.map((t) => (
-              <span className="tag" key={t}>
-                {t}
-              </span>
-            ))}
-            <span className="layer-note">{TAG_SOURCE_LABEL[tags.source]}</span>
-          </div>
-        ) : null}
-      </li>
-
-      <li className="layer">
-        <div className="layer-head">
-          <Icons.vectorSearch size={15} />
-          <span className="layer-name">Camada 2 · Vetor</span>
-          <span className="layer-what">mede o que parece</span>
-        </div>
-        <p className="layer-decision">{vector.decision}</p>
-        <div className="layer-params">
-          <span>
-            cosseno mínimo <b className="mono">{formatSim(vector.min_similarity)}</b>
-          </span>
-          <span>
-            top-K incidentes <b className="mono">{vector.incident_top_k}</b>
-          </span>
-          <span>
-            top-K problemas <b className="mono">{vector.problem_top_k}</b>
-          </span>
-        </div>
-        <RowGroup
-          title={`Incidentes resolvidos · ${inc.passed} de ${inc.total} passaram`}
-          rows={incidents}
-          stage="vector"
-          onCite={onCite}
-        />
-        <RowGroup
-          title={`Problemas · ${prb.passed} de ${prb.total} passaram`}
-          rows={problems}
-          stage="vector"
-          onCite={onCite}
-        />
-      </li>
-
-      <li className="layer">
-        <div className="layer-head">
-          <Icons.funnel size={15} />
-          <span className="layer-name">Camada 3 · Pós-filtro por LLM</span>
-          <span className="layer-what">decide o que serve</span>
-        </div>
-        <p className="layer-decision">{postfilter.decision}</p>
-        {postfilter.status === "fallback" ? (
-          <div className="pipe-alert is-warn">
-            <Icons.alert />
-            <div>
-              <b>Pós-filtro indisponível</b> ({postfilter.fallback_reason}). A lista
-              original foi mantida: a precisão cai, mas o incidente não fica sem resposta.
-            </div>
-          </div>
-        ) : null}
-        {reached.length ? (
-          <RowGroup
-            title={`${count(inc.kept + prb.kept, "mantido", "mantidos")} · ${count(inc.dropped + prb.dropped, "descartado", "descartados")}`}
-            rows={reached}
-            stage="postfilter"
-            onCite={onCite}
-          />
-        ) : null}
-      </li>
-    </ol>
-  );
-}
-
-function RowGroup({
-  title,
-  rows,
-  stage,
-  onCite,
-}: {
-  title: string;
-  rows: RetrievalRow[];
-  stage: "vector" | "postfilter";
-  onCite: (n: string) => void;
-}) {
-  if (!rows.length) {
-    return <div className="layer-empty">{title.split(" · ")[0]}: nenhum resultado.</div>;
-  }
-  return (
-    <div className="rows">
-      <div className="rows-title">{title}</div>
-      <ul className="rows-list">
-        {rows.map((r) => {
-          const pill =
-            stage === "vector"
-              ? r.outcome === "abaixo"
-                ? { cls: "drop", label: "abaixo do limiar" }
-                : { cls: "keep", label: "passou" }
-              : r.outcome === "descartado"
-                ? { cls: "drop", label: OUTCOME_LABEL.descartado }
-                : { cls: "keep", label: OUTCOME_LABEL[r.outcome] };
-          const openable = r.kind === "incidente";
-          return (
-            <li
-              key={`${stage}-${r.number}`}
-              className={`row${pill.cls === "drop" ? " is-dropped" : ""}${openable ? " is-openable" : ""}`}
-              {...(openable
-                ? activate(() => onCite(r.number), `${r.number} · ${r.desc}`)
-                : {})}
-            >
-              <span className="row-num mono">{r.number}</span>
-              <span className="row-desc">{r.desc}</span>
-              <span className="row-sim mono" title="Similaridade de cosseno">
-                {formatSim(r.sim)}
-              </span>
-              <span className={`row-pill ${pill.cls}`}>
-                {pill.cls === "keep" ? (
-                  <Icons.check size={11} sw={3} />
-                ) : (
-                  <Icons.close size={11} sw={3} />
-                )}
-                {pill.label}
-              </span>
-              {stage === "postfilter" && r.reason ? (
-                <span className="row-reason">{r.reason}</span>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
 function count(n: number, one: string, many: string): string {
   return `${n} ${n === 1 ? one : many}`;
 }
 
-function IdChip({ id, onCite }: { id: string; onCite: (n: string) => void }) {
+export function IdChip({ id, onCite }: { id: string; onCite: CiteHandler }) {
   if (id.startsWith("INC")) {
     return (
-      <button type="button" className="cite" onClick={() => onCite(id)}>
+      <button
+        type="button"
+        className="cite"
+        onClick={(e) => onCite(id, e.currentTarget)}
+        aria-label={`Abrir incidente ${id}`}
+      >
         {id}
       </button>
     );

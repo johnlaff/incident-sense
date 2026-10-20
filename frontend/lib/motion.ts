@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 const QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -20,4 +20,28 @@ export function usePrefersReducedMotion(): boolean {
     () => window.matchMedia(QUERY).matches,
     () => false,
   );
+}
+
+/**
+ * Whole seconds since `startedAt` (a Date.now() stamp), ticking once a
+ * second while it is set. Real elapsed time, never an estimate of progress.
+ */
+export function useElapsedSeconds(startedAt: number | null): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (startedAt == null) return;
+    const tick = () => setNow(Date.now());
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+  return startedAt == null ? 0 : Math.max(0, Math.floor((now - startedAt) / 1000));
+}
+
+/** "8,4 s" with the PT-BR comma. */
+export function formatSeconds(ms: number): string {
+  return `${(ms / 1000).toLocaleString("pt-BR", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })} s`;
 }
