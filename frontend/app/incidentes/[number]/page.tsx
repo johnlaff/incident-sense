@@ -794,9 +794,11 @@ function CopilotFab({
   useScrollLock(open);
   const curModel = MODELS.find((m) => m.id === model) ?? MODELS[0];
 
-  // The same honest replay as the "Análise da IA" tab, in compact form.
+  // The same honest replay as the "Análise da IA" tab, in compact form. It
+  // only runs while the panel is open, so a closed panel never takes the
+  // modo aula caption bar from the tab.
   const shown = phase === "done" ? suggest.response : null;
-  const lesson = usePipelineLesson("aurora", shown);
+  const lesson = usePipelineLesson("aurora", open ? shown : null);
   const beat = shown ? lesson.step : -1;
   const views = useMemo(() => (shown ? stepViews(shown) : null), [shown]);
   const reached = (key: (typeof BEATS)[number]["step"]) =>

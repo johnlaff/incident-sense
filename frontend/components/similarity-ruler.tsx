@@ -262,8 +262,8 @@ export function CosineAngle({ sim, floor }: { sim: number; floor: number }) {
                 d={`M${ox + len - 8} ${oy - 5} L${ox + len} ${oy} L${ox + len - 8} ${oy + 5}`}
               />
             </g>
-            <text className="cosine-fan-t" x={ox + len - 4} y={oy - len * 0.52}>
-              {formatSim(floor)} = {Math.round(floorAngle)}°
+            <text className="cosine-fan-t" x={ox} y={12}>
+              limiar {formatSim(floor)} = {Math.round(floorAngle)}°
             </text>
             <text className="cosine-a" x={ox + 34} y={oy - 8}>
               {Math.round(angle)}°
