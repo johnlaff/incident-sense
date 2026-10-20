@@ -284,7 +284,7 @@ const CONTENT: Record<
         rows={[
           [
             "Pipeline",
-            "BERTopic: embeddings dos incidentes, UMAP para 2 dimensões com cosseno (semente fixa), HDBSCAN e rótulo curto escrito por um LLM.",
+            "BERTopic: HDBSCAN agrupa os embeddings dos incidentes (cosseno), um LLM escreve o rótulo curto e o UMAP (semente fixa) só desenha o mapa em 2 dimensões.",
           ],
           [
             "Por que HDBSCAN",
@@ -296,7 +296,7 @@ const CONTENT: Record<
           ],
           [
             "Casos isolados",
-            `Com os dados sintéticos atuais, o demo não deixou nenhum caso isolado (${CLUSTERS_DEMO.isolated}). O mapa acima mostra o conceito.`,
+            `No demo, ${CLUSTERS_DEMO.isolated} incidentes ficaram de fora de qualquer grupo. A maioria é suporte interno (projetor, ramal, ar-condicionado), que não se repete o bastante para virar recorrência.`,
           ],
           [
             "Offline",

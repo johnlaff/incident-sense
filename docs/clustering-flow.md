@@ -13,18 +13,21 @@ A recomputação (`backend/scripts/precompute.py`) usa o **BERTopic**, que encad
 
 ```mermaid
 flowchart LR
-    E[Embeddings 3072d] --> U[UMAP -> 2D cosseno]
-    U --> H[HDBSCAN]
+    E[Embeddings 3072d] --> H[HDBSCAN cosseno]
     H --> R[Rótulos por LLM]
+    E --> U[UMAP -> 2D cosseno]
     R --> J[(clusters.json)]
+    U --> J
 ```
 
 1. **Embeddings** dos incidentes (OpenAI, 3072d) — os mesmos commitados que
    semeiam o Qdrant.
-2. **UMAP** reduz para **2D** com métrica **cosseno** e `random_state` fixo. As
-   coordenadas 2D já saem prontas para plotar.
-3. **HDBSCAN** agrupa sobre o espaço reduzido. Pontos em regiões de baixa
-   densidade viram **ruído** (`cluster_id = -1`) — os _outliers_.
+2. **HDBSCAN** agrupa os próprios embeddings (normalizados, então a distância
+   euclidiana ordena como o cosseno), com `min_cluster_size=8` e
+   `min_samples=7`. Pontos em regiões de baixa densidade viram **ruído**
+   (`cluster_id = -1`), os _outliers_.
+3. **UMAP** reduz para **2D** com métrica **cosseno** e `random_state` fixo, só
+   para desenhar o mapa.
 4. A **representação OpenAI** do BERTopic gera um **rótulo curto em português**
    para cada cluster (ex.: "Timeout em pagamentos via Pix").
 
@@ -45,11 +48,13 @@ suficiente é marcado como **ruído** (`cluster_id = -1`). Na visualização ess
 outliers aparecem em **cinza**, de-enfatizados — é o tratamento de ruído
 acontecendo à vista.
 
-### Por que clusterizar em 2D
+### Por que não clusterizar em 2D
 
-O BERTopic clusteriza sobre o espaço reduzido pelo UMAP. Reduzindo direto para
-2D, o mesmo espaço serve para **clusterizar** e para **plotar** — simples e
-legível para um dataset deste tamanho.
+A primeira versão clusterizava sobre o UMAP 2D. Com `min_dist=0`, o UMAP aperta
+incidentes pouco parecidos numa ilha densa, e o HDBSCAN leu os 70 chamados de
+ruído (suporte interno: projetor, ramal, ar-condicionado) como um grupo, sem
+nenhum caso isolado. Nos embeddings originais esses chamados são esparsos, e o
+HDBSCAN deixa a maioria de fora (59 de 70). O UMAP ficou só para o mapa.
 
 ## Determinismo
 
