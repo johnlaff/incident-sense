@@ -1075,6 +1075,13 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+/* The end labels sit inside the scale instead of hanging past its edges. */
+.ruler-ticks span:first-child {
+  translate: calc(var(--x) * 100cqi) 0;
+}
+.ruler-ticks span:last-child {
+  translate: calc(var(--x) * 100cqi - 100%) 0;
+}
 /* The draggable floor: a native range under the ticks, thumb on the scale. */
 .ruler-range {
   --thumb: 28px;

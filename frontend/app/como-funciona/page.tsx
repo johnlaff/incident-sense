@@ -433,8 +433,7 @@ export default function HowItWorksPage() {
       <header className="cf-hero">
         <h1>Depois do deploy, do começo ao fim</h1>
         <p className="cf-lede">
-          O caminho de uma mudança até o incidente, e de volta. Em cada capítulo, o que a
-          IA faz, por que importa e onde ver isso funcionando no Incident Sense.
+          Da mudança ao incidente, e de volta. Sete capítulos, um passo de cada vez.
         </p>
         <ol className="cf-life" aria-label="O caminho de qualquer software">
           {LIFE.map((s, i) => (
@@ -467,14 +466,12 @@ export default function HowItWorksPage() {
           {aula ? (
             <>
               <Icons.board size={16} />
-              Modo aula: cada capítulo começa quando chega ao meio da tela. Avance com a
-              seta, o espaço ou o passador de slides.
+              Modo aula: avance com a seta, o espaço ou o passador.
             </>
           ) : (
             <>
               <Icons.play size={16} />
-              Role para ler. Em cada capítulo, &quot;Reproduzir passo a passo&quot; anima
-              a sequência; o modo aula, na barra de cima, vai uma etapa por toque.
+              Role para ler. &quot;Reproduzir passo a passo&quot; anima cada capítulo.
             </>
           )}
         </p>
@@ -530,10 +527,8 @@ export default function HowItWorksPage() {
       <aside className="cf-next">
         <h2>Próximo passo nos dois lados: medir</h2>
         <p>
-          Do lado da Change, um gabarito humano para calibrar a nota. Do lado do
-          incidente, uma bateria fixa de casos com resolução conhecida, rodada a cada
-          troca de prompt, modelo ou base. Isso se chama eval: a diferença entre achar que
-          melhorou e medir que melhorou.
+          Um gabarito de casos conhecidos, rodado a cada troca de prompt ou modelo. Isso
+          é eval: medir que melhorou, não achar.
         </p>
         <Origin kind="fora" />
       </aside>
@@ -541,8 +536,8 @@ export default function HowItWorksPage() {
       <footer className="howto-foot cf-foot">
         <Meridian ticks={28} />
         <p>
-          O Banco Meridiano é fictício e os dados são sintéticos. A IA sugere e mostra as
-          fontes; quem decide e responde pela resolução é a pessoa analista.
+          Banco Meridiano é fictício e os dados são sintéticos. A IA sugere; a pessoa
+          analista decide.
         </p>
       </footer>
     </div>

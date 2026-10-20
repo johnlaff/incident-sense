@@ -546,6 +546,40 @@ table.list {
   text-decoration-color: var(--border-strong);
 }
 
+/* ----- Citations inside an AI answer: a small record tag that opens it ----- */
+.cite {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin: 0 1px;
+  padding: 0 6px;
+  vertical-align: 1px;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--c-inc-ink);
+  background: var(--surface);
+  border: 1px solid var(--c-inc-line);
+  border-radius: 5px;
+}
+.cite:hover {
+  border-color: var(--c-inc);
+  background: var(--c-inc-tint);
+}
+[data-theme="dark"] .cite {
+  background: var(--surface);
+}
+.cite.cite-prb {
+  color: var(--c-prb-ink);
+  border-color: var(--c-prb-line);
+}
+.cite.cite-prb:hover {
+  border-color: var(--c-prb);
+  background: var(--c-prb-tint);
+}
+
 /* ----- Browser surfaces in the palette ----- */
 ::selection {
   background: color-mix(in oklab, var(--c-ai) 22%, transparent);
