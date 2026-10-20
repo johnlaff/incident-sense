@@ -9,6 +9,7 @@ import { useEffect, type CSSProperties } from "react";
 
 import { RecordTag } from "./concepts";
 import { Icons } from "./icons";
+import { MetaLine } from "./ui";
 import { useFocusTrap, useScrollLock } from "@/lib/a11y";
 import {
   PROBLEM_DEFINITION,
@@ -153,7 +154,9 @@ export function ProblemPeekDrawer({
               </div>
               <div className="peek-title">
                 <h2>{data.short_description}</h2>
-                <p>{`${data.cmdb_ci} · ${data.assignment_group}`}</p>
+                <p>
+                  <MetaLine items={[data.cmdb_ci, data.assignment_group]} />
+                </p>
               </div>
               <ProblemChain problem={data} className="prb-peek-chain" />
               {linked.length ? (

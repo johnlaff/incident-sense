@@ -17,6 +17,7 @@ import {
 import { SimilarityRuler } from "@/components/similarity-ruler";
 import {
   Avatar,
+  MetaLine,
   PriorityBadge,
   StateBadge,
   StateBlock,
@@ -449,9 +450,14 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
               </div>
               <h1>{keepWhole(record.title)}</h1>
               <div className="meta">
-                {`${record.service} · ${record.group} · ${
-                  localState === "resolved" ? "resolvido" : `aberto ${record.rel}`
-                }${assignee ? ` · ${assignee}` : ""}`}
+                <MetaLine
+                  items={[
+                    record.service,
+                    record.group,
+                    localState === "resolved" ? "resolvido" : `aberto ${record.rel}`,
+                    assignee,
+                  ]}
+                />
               </div>
             </div>
             <div className="record-actions">
@@ -511,6 +517,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                     </p>
                     <button
                       className="btn btn-ai"
+                      data-ai-entry=""
                       onClick={() => {
                         setTab("analise");
                         if (suggest.phase !== "running") void suggest.run();
@@ -788,6 +795,40 @@ function CopilotFab({
   quiet?: boolean;
 }) {
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();
+
+  // Two AI buttons on one screen compete: while "Analisar com a IA" is in
+  // view, the floating Aurora button steps aside.
+  const [entryInView, setEntryInView] = useState(false);
+  useEffect(() => {
+    const visible = new Set<Element>();
+    let watched: Element[] = [];
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) visible.add(e.target);
+        else visible.delete(e.target);
+      }
+      setEntryInView(visible.size > 0);
+    });
+    function sync() {
+      const now = [...document.querySelectorAll("[data-ai-entry]")];
+      if (now.length === watched.length && now.every((el, i) => el === watched[i]))
+        return;
+      io.disconnect();
+      visible.clear();
+      watched = now;
+      now.forEach((el) => io.observe(el));
+      if (now.length === 0) setEntryInView(false);
+    }
+    sync();
+    // The tab content changes under the button: re-watch only when the set
+    // of entry buttons itself changed.
+    const mo = new MutationObserver(sync);
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      io.disconnect();
+      mo.disconnect();
+    };
+  }, []);
 
   const phase = suggest.phase;
   const result = useMemo(
@@ -1099,7 +1140,7 @@ function CopilotFab({
   return (
     <>
       <button
-        className={`cop-fab${open ? " hidden" : ""}${quiet ? " quiet" : ""}`}
+        className={`cop-fab${open || entryInView ? " hidden" : ""}${quiet ? " quiet" : ""}`}
         onClick={() => setOpen(true)}
         aria-label="Falar com a Aurora"
         title="Aurora · assistente de resolução"

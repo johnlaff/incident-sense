@@ -142,8 +142,25 @@ export interface Step {
   ms: number;
 }
 
+/** Round to two places, the way evaluator.py rounds the overall grade. */
+export function round2(n: number): number {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+/**
+ * The one overall grade every view shows: the weighted average of the field
+ * scores and weights the API sent, rounded like evaluator.py. Headline, bar,
+ * formula and the 8,0 gate all read this, so they can never disagree.
+ */
+export function overallOf(ev: Evaluation): number | null {
+  // null is the backend saying "not graded" (out of scope); keep it.
+  if (ev.overall === null || ev.fields.length === 0) return ev.overall;
+  return round2(weightedSegments(ev.fields).average);
+}
+
 export function gatePassed(ev: Evaluation): boolean {
-  return ev.overall !== null && ev.overall >= ev.threshold;
+  const overall = overallOf(ev);
+  return overall !== null && overall >= ev.threshold;
 }
 
 /**
@@ -155,7 +172,7 @@ export function buildSteps(
   previous?: Evaluation | null,
   t: Timing = DEFAULT_TIMING,
 ): Step[] {
-  if (ev.overall === null || ev.fields.length === 0) return [];
+  if (overallOf(ev) === null || ev.fields.length === 0) return [];
   const n = ev.fields.length;
   const cut = fmt(ev.threshold);
   const reused = ev.fields.filter((f) => f.reused).length;

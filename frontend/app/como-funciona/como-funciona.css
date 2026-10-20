@@ -152,14 +152,6 @@
   height: calc(var(--life-h) - 10px);
   background: var(--border-strong);
 }
-.cf-life-n.is-deploy .cf-life-dot {
-  background: var(--cf-fail);
-  border-color: var(--cf-fail);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cf-fail) 22%, transparent);
-}
-.cf-life-n.is-deploy > span {
-  color: var(--cf-fail);
-}
 .cf-hint {
   display: flex;
   gap: 8px;
@@ -313,9 +305,15 @@
     white-space: normal;
     overflow: visible;
   }
+  /* The seven numbers sit evenly across the row: the part groups drop out
+     of the layout, so 2 to 3 is the same step as 1 to 2. */
   .cf-index-list {
     flex: 1 1 100%;
     justify-content: space-between;
+  }
+  .cf-index-part,
+  .cf-index-list ol {
+    display: contents;
   }
   .cf-index a {
     position: relative;
@@ -405,24 +403,14 @@
   }
 }
 .cf-ch-head {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
   margin-bottom: 24px;
 }
 .cf-ch-n {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in oklab, var(--cf-part) 55%, var(--border));
+  margin: 0 0 6px;
   color: var(--cf-part-ink);
+  font-size: var(--fs-sm, 0.875rem);
   font-weight: 600;
-  font-size: 1.0625rem;
   font-variant-numeric: tabular-nums;
-  margin-top: 2px;
 }
 .cf-ch-head h2 {
   font-size: 1.5rem;
@@ -454,13 +442,7 @@
 }
 @media (min-width: 1101px) {
   .cf-ch-head {
-    gap: 18px;
     margin-bottom: 32px;
-  }
-  .cf-ch-n {
-    width: 48px;
-    height: 48px;
-    font-size: 1.375rem;
   }
   .cf-ch-head h2 {
     font-size: 2rem;

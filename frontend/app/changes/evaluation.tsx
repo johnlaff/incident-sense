@@ -21,6 +21,7 @@ import {
   fmtWeight,
   formulaTerms,
   gatePassed,
+  overallOf,
   parseTime,
   reached,
   type Step,
@@ -161,6 +162,7 @@ function ScoreChip({
   delay,
   dur,
   big = false,
+  places = 1,
   label,
 }: {
   score: number;
@@ -169,6 +171,8 @@ function ScoreChip({
   delay: number;
   dur: number;
   big?: boolean;
+  /** Decimal places; the overall uses two, like the formula under it. */
+  places?: number;
   label: string;
 }) {
   const { value, finished } = useCount(score, from, run, delay, dur);
@@ -180,7 +184,7 @@ function ScoreChip({
       role="img"
       aria-label={label}
     >
-      <span aria-hidden="true">{nota(value)}</span>
+      <span aria-hidden="true">{fmt(value, places)}</span>
     </span>
   );
 }
@@ -350,7 +354,7 @@ export function Ledger({
                 <span className="chg-led-label">
                   <span>{r.label}</span>
                   <span className="chg-led-meta">
-                    peso {fmtWeight(r.weight)}
+                    peso {fmtWeight(seg?.weight ?? r.weight)}
                     {seg?.reused && run && (
                       <span
                         className="chg-reused"
@@ -419,7 +423,8 @@ export function Average({
   const at = (id: StepId) => reached(steps, index, id);
   const onMedia = at("media");
   const onGate = at("portao");
-  const overall = result.overall ?? 0;
+  // Same number as the formula's result: one source for headline, bar and gate.
+  const overall = overallOf(result) ?? 0;
   const passed = gatePassed(result);
   const n = avg.segments.length;
   const terms = formulaTerms(avg);
@@ -453,7 +458,8 @@ export function Average({
           run={onMedia}
           delay={landDelay}
           dur={skipped ? 0 : motion.count}
-          label={`Média ponderada ${nota(overall)} de 10`}
+          places={2}
+          label={`Média ponderada ${fmt(overall, 2)} de 10`}
         />
         <span className="chg-overall-label">
           média ponderada
@@ -462,7 +468,7 @@ export function Average({
         </span>
         {previousOverall !== null && onMedia && (
           <span className="chg-avg-before">
-            antes {nota(previousOverall)}
+            antes {fmt(previousOverall, 2)}
             <DeltaChip delta={Math.round((overall - previousOverall) * 10) / 10} />
           </span>
         )}
@@ -473,7 +479,7 @@ export function Average({
         data-on={onMedia}
         data-gate={onGate ? (passed ? "open" : "closed") : "idle"}
         role="img"
-        aria-label={`Barra de 0 a 10: média ${nota(overall)}, corte em ${cut}. ${
+        aria-label={`Barra de 0 a 10: média ${fmt(overall, 2)}, corte em ${cut}. ${
           passed ? "Passou do corte." : "Ficou abaixo do corte."
         }`}
       >
@@ -543,7 +549,7 @@ export function Average({
           style={{ "--i": n + 1 } as Vars}
         >
           = {fmt(avg.numerator, 2)} ÷ {fmtWeight(avg.totalWeight)} ={" "}
-          <b>{fmt(avg.average, 2)}</b>
+          <b>{fmt(overall, 2)}</b>
         </span>
       </p>
 
@@ -560,7 +566,7 @@ export function Average({
                 <b>Abaixo do corte: a análise de coerência não roda.</b>{" "}
                 {roundsToCut
                   ? `${fmt(overall, 2)} ainda é menos que ${cut}.`
-                  : `Faltam ${fmt(result.threshold - overall)} pontos para ${cut}.`}{" "}
+                  : `Faltam ${fmt(result.threshold - overall, 2)} pontos para ${cut}.`}{" "}
                 Melhore os campos marcados.
               </>
             )}
@@ -633,7 +639,7 @@ export function Coherence({
             dur={skipped ? 0 : motion.count}
             label={`Consistência ${nota(s.consistency_score)} de 10`}
           />
-          <span>consistência entre os campos, de 0 a 10</span>
+          <span>{"consistência entre os campos, de\u00a00\u00a0a\u00a010"}</span>
         </div>
         <div className="chg-sem-tile chg-adh-tile">
           <div className="chg-adh-row">

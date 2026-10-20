@@ -89,7 +89,7 @@ export function SimilarityRuler({
               >
                 <div className="ruler-track-label">
                   {t.label}
-                  <span className="mono">
+                  <span className="ruler-count">
                     {" "}
                     {dots.filter((d) => d.passed).length} de {dots.length}
                   </span>

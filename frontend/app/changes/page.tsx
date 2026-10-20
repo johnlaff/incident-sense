@@ -90,14 +90,28 @@ export default function ChangesPage() {
                 </span>
                 <span className="chg-title">{keepWhole(c.short_description)}</span>
                 <span className="chg-meta">
-                  <span className="mono">{c.cmdb_ci}</span>
+                  <span>{keepWhole(c.cmdb_ci)}</span>
                   <span>{absDate(c.planned_start)}</span>
                 </span>
+                {/* Only what varies: almost every Change is Normal and Nova,
+                    so those words show up only on the one that is not. */}
                 <span className="chg-tags">
-                  <span className="badge chg-type">{TYPE_LABEL[c.type] ?? c.type}</span>
-                  <span className="badge chg-state">
-                    {STATE_LABEL[c.state] ?? c.state}
+                  <span className="badge chg-risk">
+                    <span className="dot" />
+                    Risco {c.risk.toLowerCase()}
                   </span>
+                  {c.type !== "Normal" && (
+                    <span className="badge chg-type">
+                      <span className="dot" />
+                      {TYPE_LABEL[c.type] ?? c.type}
+                    </span>
+                  )}
+                  {c.state !== "New" && (
+                    <span className="badge chg-state">
+                      <span className="dot" />
+                      {STATE_LABEL[c.state] ?? c.state}
+                    </span>
+                  )}
                   {!c.in_scope && (
                     <span className="badge chg-out">
                       <Icons.dot />

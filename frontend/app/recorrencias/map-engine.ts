@@ -123,7 +123,7 @@ export class MapEngine {
 
   private buildColors(): void {
     const L = this.palette.dark ? 0.76 : 0.6;
-    this.grey = `oklch(${L} 0.012 285)`;
+    this.grey = `oklch(${L} 0.012 265)`;
     this.ramps.clear();
     this.tints.clear();
     for (const g of this.data?.groups ?? []) {

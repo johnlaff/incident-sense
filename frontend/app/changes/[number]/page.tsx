@@ -12,7 +12,6 @@ import {
   EVALUATED_FIELDS,
   STATE_LABEL,
   TYPE_LABEL,
-  nota,
   useChange,
   useRubric,
   type Change,
@@ -42,7 +41,9 @@ import {
 } from "../evaluation";
 import {
   buildSteps,
+  fmtWeight,
   gatePassed,
+  overallOf,
   reached,
   weightedSegments,
   type StepId,
@@ -246,23 +247,30 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           <RecordTag number={change.number} size="lg" />
         </div>
         <div className="chg-tags">
-          <span className="badge chg-type">{TYPE_LABEL[change.type] ?? change.type}</span>
+          <span className="badge chg-type">
+            <span className="dot" />
+            {TYPE_LABEL[change.type] ?? change.type}
+          </span>
           <span className="badge chg-state">
+            <span className="dot" />
             {STATE_LABEL[change.state] ?? change.state}
           </span>
-          <span className="badge chg-risk">Risco {change.risk.toLowerCase()}</span>
+          <span className="badge chg-risk">
+            <span className="dot" />
+            Risco {change.risk.toLowerCase()}
+          </span>
         </div>
         <h1>{keepWhole(change.short_description)}</h1>
         <dl className="chg-facts">
           <div>
             <dt>Serviço</dt>
-            <dd className="mono">{change.cmdb_ci}</dd>
+            <dd>{keepWhole(change.cmdb_ci)}</dd>
           </div>
-          <div>
+          <div className="wide">
             <dt>Grupo responsável</dt>
-            <dd>{change.assignment_group}</dd>
+            <dd>{keepWhole(change.assignment_group)}</dd>
           </div>
-          <div>
+          <div className="wide">
             <dt>Janela de execução</dt>
             <dd>
               {absDate(change.planned_start)} até {absDate(change.planned_end)}
@@ -346,7 +354,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               </>
             )}
 
-            {showResult && result.overall !== null && (
+            {showResult && overallOf(result) !== null && (
               <PlaybackBar
                 steps={steps}
                 playback={playback}
@@ -355,7 +363,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             )}
 
             {inScope &&
-              (phase === "running" || (showResult && result.overall !== null)) && (
+              (phase === "running" || (showResult && overallOf(result) !== null)) && (
                 <Ledger
                   key={`led-${epoch}`}
                   rows={orderedFields}
@@ -370,13 +378,13 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 />
               )}
 
-            {showResult && result.overall !== null && at("notas") && (
+            {showResult && overallOf(result) !== null && at("notas") && (
               <Average
                 key={`avg-${epoch}`}
                 result={result}
                 avg={avg}
                 previousAvg={previousAvg}
-                previousOverall={previous?.overall ?? null}
+                previousOverall={previous ? overallOf(previous) : null}
                 index={playback.index}
                 steps={steps}
                 skipped={playback.skipped}
@@ -384,7 +392,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               />
             )}
 
-            {showResult && result.overall !== null && (
+            {showResult && overallOf(result) !== null && (
               <TechDetails summary="Custo e versão dos critérios">
                 <p className="chg-cost" data-on={at("portao")}>
                   {result.model_calls === 0
@@ -437,7 +445,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   <div className="chg-field-title">
                     <h3>{f.label}</h3>
                     <span className="chg-weight">
-                      peso {nota(f.weight).replace(",0", "")}
+                      peso {fmtWeight(seg?.weight ?? f.weight)}
                       {below && <span className="chg-below">abaixo do corte</span>}
                     </span>
                   </div>
@@ -519,7 +527,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   )}
                   {inScope && editing !== f.key && phase !== "running" && (
                     <button
-                      className="btn btn-ghost btn-sm chg-edit-btn"
+                      className="btn btn-outline btn-sm chg-edit-btn"
                       onClick={() => startEdit(f.key)}
                     >
                       Editar campo

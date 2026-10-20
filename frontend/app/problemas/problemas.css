@@ -3,15 +3,8 @@
  *  moves its classification into a side column at 1101px, like incidents.
  * ===================================================================== */
 
-/* ----- State badge: resolved, or a known error still waiting for the fix ----- */
-.prb-badge.is-resolved {
-  color: var(--st-resolved);
-  background: var(--st-resolved-tint);
-}
-.prb-badge.is-known {
-  color: var(--p2);
-  background: var(--p2-tint);
-}
+/* State badge: resolved, or a known error still waiting for the fix. It is a
+   plain fact like any badge (shell.css): neutral mark plus a word. */
 
 /* The one-sentence definition every Problem screen carries. */
 .prb-def {
@@ -58,11 +51,12 @@
 .prb-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  /* The chevron sits on the head row, so title and cause get the full width. */
   grid-template-areas:
     "head go"
-    "title go"
-    "cause go"
-    "meta go";
+    "title title"
+    "cause cause"
+    "meta meta";
   column-gap: 10px;
   row-gap: 5px;
   align-items: center;
@@ -71,6 +65,15 @@
   color: inherit;
   text-decoration: none;
   transition: background var(--dur-press) var(--ease-out);
+}
+@media (min-width: 768px) {
+  .prb-row {
+    grid-template-areas:
+      "head go"
+      "title go"
+      "cause go"
+      "meta go";
+  }
 }
 a.prb-row:hover {
   background: var(--surface-2);
@@ -106,10 +109,8 @@ a.prb-row:focus-visible {
   color: var(--ink-body);
   font-size: 13.5px;
   line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-width: 60ch;
+  text-wrap: pretty;
 }
 .prb-cause b {
   color: var(--ink);
@@ -124,8 +125,8 @@ a.prb-row:focus-visible {
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
 }
-.prb-meta .mono {
-  overflow-wrap: anywhere;
+.prb-meta > span {
+  white-space: nowrap;
 }
 .prb-go {
   grid-area: go;
@@ -223,6 +224,8 @@ a.prb-row:focus-visible {
 }
 .prb-step-text {
   margin: 4px 0 0;
+  /* About 70 characters a line (Inter's "0" is wide). */
+  max-width: 54ch;
   color: var(--ink-body);
   font-size: 15px;
   line-height: 1.65;

@@ -173,9 +173,11 @@ export function RecMap({
     setLabels(
       placeLabels(layout.disks, sizes, layout.w, layout.h, {
         // A focused group keeps its name; the others shrink to their counts.
+        // On a phone the focused one stays a count too: a full name there
+        // covers the groups around it, and the caption already names it.
         compactAll: layout.w < 560 || typeof focus === "number",
         onDisk: true,
-        full: typeof focus === "number" ? focus : null,
+        full: typeof focus === "number" && layout.w >= 560 ? focus : null,
       }),
     );
   }, [layout, data, focus]);
@@ -292,8 +294,8 @@ export function RecMap({
 
       {preview && cardStyle ? (
         <div
-          className={`rx-peek${pinned != null ? " pinned" : ""}`}
-          style={{ ...cardStyle, "--hue": group?.hue ?? 285 } as CSSProperties}
+          className={`rx-peek${pinned != null ? " pinned" : ""}${group ? "" : " rx-iso"}`}
+          style={{ ...cardStyle, "--hue": group?.hue ?? 265 } as CSSProperties}
           role={pinned != null ? "dialog" : "tooltip"}
           aria-label={`${preview.id}: ${preview.short}`}
         >

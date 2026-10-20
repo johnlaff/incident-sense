@@ -78,3 +78,14 @@ export function useProblems(): AsyncState<ProblemSummary[]> {
 export function useProblem(number: string): AsyncState<ProblemDetail> {
   return useAsync(() => api.getProblem(number), [number]);
 }
+
+/**
+ * The root cause for a list card: the first clause, whole, never cut with
+ * "...". "A; B" keeps "A." and the full text stays on the Problem's page.
+ */
+export function causeSummary(rootCause: string): string {
+  const text = rootCause.trim();
+  const cut = text.search(/[;:]/);
+  if (cut <= 0) return text;
+  return `${text.slice(0, cut).trimEnd()}.`;
+}

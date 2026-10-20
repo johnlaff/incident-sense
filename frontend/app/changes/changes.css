@@ -31,11 +31,12 @@
 .chg-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  /* The chevron sits on the number's row, so the title gets the full width. */
   grid-template-areas:
     "num go"
-    "title go"
-    "meta go"
-    "tags go";
+    "title title"
+    "meta meta"
+    "tags tags";
   column-gap: 10px;
   row-gap: 5px;
   align-items: center;
@@ -90,8 +91,8 @@ a.chg-row:focus-visible {
   font-variant-numeric: tabular-nums;
   min-width: 0;
 }
-.chg-meta .mono {
-  overflow-wrap: anywhere;
+.chg-meta > span {
+  white-space: nowrap;
 }
 .chg-tags {
   grid-area: tags;
@@ -99,22 +100,10 @@ a.chg-row:focus-visible {
   flex-wrap: wrap;
   gap: 6px;
 }
-.chg-type {
-  color: var(--c-chg-ink);
-  background: var(--c-chg-tint);
-}
-.chg-state {
-  color: var(--st-open);
-  background: var(--st-open-tint);
-}
-.chg-risk {
-  color: var(--p2);
-  background: var(--p2-tint);
-}
+/* Type, state and risk are plain facts: a neutral dot and a word, no tint
+   (the badge rule in shell.css). */
 .chg-out {
   color: var(--muted);
-  background: var(--surface-2);
-  border: 1px dashed var(--border-strong);
 }
 .chg-go {
   grid-area: go;
@@ -181,8 +170,19 @@ a.chg-row:focus-visible {
 .chg-facts dd {
   margin: 0;
   color: var(--ink-body);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   font-variant-numeric: tabular-nums;
+}
+/* Phones: two short facts side by side, the long ones (group, window) on a
+   row of their own, so a name like Sustentacao-Pagamentos stays whole. */
+@media (max-width: 559.98px) {
+  .chg-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+  .chg-facts .wide {
+    grid-column: 1 / -1;
+    order: 1;
+  }
 }
 
 /* ----- Detail: layout ----- */
@@ -361,7 +361,8 @@ a.chg-row:focus-visible {
 }
 .chg-text {
   margin: 0;
-  max-width: 64ch;
+  /* Inter's "0" is wide: 54ch holds about 70 to 75 characters. */
+  max-width: 54ch;
   color: var(--ink-body);
   font-size: 15px;
   line-height: 1.6;
@@ -409,10 +410,16 @@ a.chg-row:focus-visible {
   line-height: 1.5;
   font-size: 13.5px;
 }
+/* The AI's advice: plain ink inside its AI box. Not teal or green, which
+   read as Mudança or as "approved". */
 .chg-guidance {
   display: flex;
   gap: 8px;
-  color: var(--c-chg-ink) !important;
+  color: var(--ink) !important;
+  font-weight: 500;
+}
+.chg-guidance svg {
+  color: var(--c-ai-ink);
 }
 .chg-guidance svg {
   flex: none;
@@ -1317,9 +1324,9 @@ a.chg-row:focus-visible {
     min-height: 36px;
     padding: 4px;
   }
+  /* "peso" reads as a column: same x on every row, notes wrap under it. */
   .chg-led-label {
-    grid-auto-flow: column;
-    justify-content: start;
+    grid-template-columns: minmax(0, 1fr) 13ch;
     align-items: baseline;
     gap: 8px;
   }
@@ -1331,8 +1338,9 @@ a.chg-row:focus-visible {
 .chg-num .rtag {
   vertical-align: middle;
 }
+/* 1.25rem on a phone keeps a long Change title to three lines. */
 .chg-record-head h1 {
-  font-size: clamp(1.5rem, 1.1rem + 1.6vw, var(--fs-2xl));
+  font-size: clamp(1.25rem, 0.8rem + 2vw, var(--fs-2xl));
   font-weight: 600;
   line-height: 1.18;
   letter-spacing: -0.028em;
@@ -1352,8 +1360,17 @@ a.chg-row:focus-visible {
 }
 .chg-run h2,
 .chg-semantic h2 {
-  /* 19px on phones keeps a clear step under the 24px title. */
   font-size: clamp(1.1875rem, 1rem + 0.8vw, var(--fs-xl));
+}
+/* Phones: the page title is 20px (long Change titles stay short), so card
+   and section titles sit at 16px semibold, one clear step under it. */
+@media (max-width: 767.98px) {
+  section.chg-run h2,
+  section.chg-semantic h2,
+  .chg-field .chg-field-title h3 {
+    font-size: var(--fs-md, 1rem);
+    font-weight: 600;
+  }
 }
 .chg-ledger h3,
 .chg-avg h3 {
@@ -1401,20 +1418,41 @@ a.chg-row:focus-visible {
   color: var(--ink-body);
 }
 
-/* Long field text folds on a phone: five lines, then "Ler tudo". */
+/* Long field text folds: five lines on a phone, eight on a wide screen,
+   then "Ler tudo". The button's text lines up with the field text. */
 .chg-more {
   display: none;
 }
+/* A fade, not an ellipsis: the text is cut by the fold, never by "...". */
+.chg-text-wrap[data-long="true"][data-open="false"] .chg-text {
+  --fold-lines: 8;
+  max-height: calc(var(--fold-lines) * 1.6em);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 3.2em), transparent);
+}
+.chg-text-wrap[data-long="true"] .chg-more {
+  display: inline-flex;
+  margin: 6px 0 0;
+  padding-inline: 0;
+  height: auto;
+  min-height: 32px;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+}
+@media (pointer: coarse) {
+  .chg-text-wrap[data-long="true"] .chg-more {
+    min-height: 44px;
+  }
+}
+.chg-text-wrap[data-long="true"] .chg-more:hover {
+  background: none;
+  text-decoration-color: currentColor;
+}
 @media (max-width: 767.98px) {
   .chg-text-wrap[data-long="true"][data-open="false"] .chg-text {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 5;
-    line-clamp: 5;
-    overflow: hidden;
-  }
-  .chg-text-wrap[data-long="true"] .chg-more {
-    display: inline-flex;
-    margin: 4px 0 0 -10px;
+    --fold-lines: 5;
   }
 }

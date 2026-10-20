@@ -8,7 +8,7 @@ import { useShell } from "@/components/app-shell";
 import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { ProblemChain, ProblemDefinition, ProblemStateBadge } from "@/components/problem";
-import { StateBadge, StateBlock, WakeNotice } from "@/components/ui";
+import { MetaLine, StateBadge, StateBlock, WakeNotice } from "@/components/ui";
 import { activate } from "@/lib/a11y";
 import { mapSummary } from "@/lib/model";
 import { useProblem, type ProblemDetail } from "@/lib/problems";
@@ -148,9 +148,13 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
             </div>
             <h1>{keepWhole(problem.short_description)}</h1>
             <div className="meta">
-              {`${problem.cmdb_ci} · ${problem.assignment_group} · ${
-                linked.length === 1 ? "1 incidente" : `${linked.length} incidentes`
-              }`}
+              <MetaLine
+                items={[
+                  problem.cmdb_ci,
+                  problem.assignment_group,
+                  linked.length === 1 ? "1 incidente" : `${linked.length} incidentes`,
+                ]}
+              />
             </div>
           </div>
           <ProblemDefinition className="prb-head-def" />
@@ -173,7 +177,7 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
               {fields.map(([k, v]) => (
                 <div className="field" key={k}>
                   <dt>{k}</dt>
-                  <dd className="val">{v}</dd>
+                  <dd className="val">{keepWhole(v)}</dd>
                 </div>
               ))}
               {problem.cluster_label ? (

@@ -292,8 +292,10 @@
     height: 100%;
     padding-bottom: 0;
   }
+  /* Each button sits right under its own column's text, not at a shared
+     bottom line far from what it opens. */
   .stop-cta {
-    margin-top: auto;
+    margin-top: 4px;
   }
   .lesson-hero h1 {
     font-size: 3rem;

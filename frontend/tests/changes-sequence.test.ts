@@ -6,6 +6,7 @@ import {
   fmtDelta,
   formulaTerms,
   gatePassed,
+  overallOf,
   parseTime,
   reached,
   scoreDelta,
@@ -159,9 +160,8 @@ describe("buildSteps", () => {
 
   it("treats exactly the threshold as passing, like the backend", () => {
     expect(gatePassed(evaluation([8, 8, 8, 8, 8, 8, 8]))).toBe(true);
-    expect(gatePassed({ ...evaluation([8, 8, 8, 8, 8, 8, 8]), overall: 7.99 })).toBe(
-      false,
-    );
+    // 107,9 / 13,5 = 7,99: below the cut even though it rounds to 8,0.
+    expect(gatePassed(evaluation([8, 8, 8, 8, 8, 8, 7.9]))).toBe(false);
   });
 
   it("explains reuse on a re-evaluation", () => {
@@ -201,5 +201,24 @@ describe("reached", () => {
     expect(reached(steps, 0, "media")).toBe(false);
     expect(reached(steps, 99, "coerencia")).toBe(false);
     expect(reached(steps, steps.length, "portao")).toBe(true);
+  });
+});
+
+describe("one overall for headline, bar, formula and gate", () => {
+  it("matches the backend: rehearsal grades land on 9,04", () => {
+    const ev = evaluation([9.2, 9, 9.4, 8.6, 9.2, 9, 8.6]);
+    expect(overallOf(ev)).toBe(9.04);
+    expect(gatePassed(ev)).toBe(true);
+  });
+
+  it("derives from the fields even when the sent overall disagrees", () => {
+    // A stale or hand-made overall must never sit next to a formula that says otherwise.
+    const ev = evaluation([9.1, 8.4, 8.8, 7.2, 9, 6.1, 4.5], { overall: 8.2 });
+    expect(overallOf(ev)).toBe(7.96);
+    expect(gatePassed(ev)).toBe(false);
+  });
+
+  it("falls back to the sent overall when there are no fields", () => {
+    expect(overallOf(evaluation([], { fields: [], overall: null }))).toBeNull();
   });
 });

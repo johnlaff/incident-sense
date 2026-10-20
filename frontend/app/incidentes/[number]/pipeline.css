@@ -673,12 +673,52 @@
   border-radius: 999px;
   background: var(--c-ai-tint);
 }
+/* A label, not a control: the only replay control is "Repassar". */
 .run-replay {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-weight: 600;
-  color: var(--c-ai-ink);
+  font-weight: 500;
+  color: var(--ink-body);
+}
+
+/* Phone summary: "Ver o passo" opens one step's detail. */
+.pipe-fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  margin: 2px 0 0 -2px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+.pipe-fold svg {
+  color: var(--muted);
+  transition: rotate var(--dur-state) var(--ease-out);
+}
+.pipe-fold[aria-expanded="true"] svg {
+  rotate: 90deg;
+}
+.pipe-fold:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@media (pointer: coarse) {
+  .pipe-fold {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pipe-fold svg {
+    transition: none;
+  }
 }
 .run-took {
   color: var(--muted);
@@ -908,7 +948,8 @@
 .ruler-axis {
   position: relative;
   container-type: inline-size;
-  margin-inline: 10px;
+  /* Room for the end labels, which center on 0,50 and 1,00 like the rest. */
+  margin-inline: 18px;
   padding-top: 26px;
 }
 .ruler-axis > .ruler-plot > .ruler-floor {
@@ -992,9 +1033,10 @@
   color: var(--ink-body);
   margin-left: 6px;
 }
-.ruler-track-label .mono {
+.ruler-track-label .ruler-count {
   font-weight: 500;
   color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 .ruler-lanes {
   position: relative;
@@ -1011,7 +1053,8 @@
 .ruler-dot {
   position: absolute;
   left: calc(var(--dot) / -2);
-  bottom: calc(var(--lane) * var(--lane-h) + 4px - var(--dot) / 2);
+  /* Each dot rests on its line, never across it. */
+  bottom: calc(var(--lane) * var(--lane-h) + 5px);
   width: var(--dot);
   height: var(--dot);
   padding: 0;
@@ -1081,13 +1124,6 @@
   font-size: 11.5px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
-}
-/* The end labels sit inside the scale instead of hanging past its edges. */
-.ruler-ticks span:first-child {
-  translate: calc(var(--x) * 100cqi) 0;
-}
-.ruler-ticks span:last-child {
-  translate: calc(var(--x) * 100cqi - 100%) 0;
 }
 /* The draggable floor: a native range under the ticks, thumb on the scale. */
 .ruler-range {
@@ -1785,6 +1821,10 @@
 .vec-big span {
   color: var(--muted);
 }
+.vec-plain {
+  margin: 4px 0 8px;
+  color: var(--ink-body);
+}
 
 /* Step 5: the gate */
 .pipe-gate {
@@ -1860,6 +1900,15 @@
 .funnel-l {
   font-size: var(--fs-sm);
   color: var(--muted);
+}
+/* The three counts read as one row: the number never wraps away from its
+   label, and labels break between words only. */
+.funnel-n {
+  white-space: nowrap;
+}
+.funnel-l {
+  max-width: none;
+  text-wrap: balance;
 }
 
 /* Dropped candidates fold under the kept ones, one tap away. */

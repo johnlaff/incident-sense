@@ -1,6 +1,6 @@
 // Shared UI atoms (badges, meridian motif, avatar, empty/error block).
 // Presentational only, safe as Server Components.
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 import { Icons, type IconComponent } from "./icons";
 import {
@@ -11,6 +11,7 @@ import {
   type DsState,
   type PCode,
 } from "@/lib/model";
+import { keepWhole } from "@/lib/text";
 
 export function StateBadge({ state }: { state: DsState }) {
   return (
@@ -32,7 +33,8 @@ export function PriorityBadge({
   return (
     <span className={`badge ${priority}`} title={`Prioridade ${label}`}>
       <span className="dot" />
-      {withWord ? `Prioridade · ${label}` : label}
+      {withWord && <span className="badge-word">Prioridade · </span>}
+      {label}
     </span>
   );
 }
@@ -134,5 +136,23 @@ export function LoadError({
     >
       {error}
     </StateBlock>
+  );
+}
+
+/**
+ * A record's meta line ("PIX-Core · Sustentacao-Pagamentos · aberto há 7
+ * meses"). Each fact stays whole on one line; only the separators break.
+ */
+export function MetaLine({ items }: { items: (string | false | null | undefined)[] }) {
+  const parts = items.filter((t): t is string => Boolean(t));
+  return (
+    <>
+      {parts.map((t, i) => (
+        <Fragment key={i}>
+          {i > 0 && " · "}
+          <span className="meta-item">{keepWhole(t)}</span>
+        </Fragment>
+      ))}
+    </>
   );
 }

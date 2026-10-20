@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  causeSummary,
   isProblemNumber,
   problemState,
   problemsForGroup,
@@ -58,5 +59,18 @@ describe("problemsForGroup", () => {
 
   it("returns nothing for a group no Problem explains", () => {
     expect(problemsForGroup(all, ["INC7"])).toEqual([]);
+  });
+});
+
+describe("causeSummary", () => {
+  it("keeps the first clause whole, never an ellipsis", () => {
+    expect(
+      causeSummary(
+        "Pool de threads do PIX-Core dimensionado para o volume médio; o timeout do cliente HTTP estava abaixo.",
+      ),
+    ).toBe("Pool de threads do PIX-Core dimensionado para o volume médio.");
+    expect(
+      causeSummary("Renovação de certificado manual, sem alerta de expiração."),
+    ).toBe("Renovação de certificado manual, sem alerta de expiração.");
   });
 });

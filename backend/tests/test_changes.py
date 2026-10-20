@@ -211,3 +211,32 @@ def test_truncated_semantic_reply_is_retried_once(client: TestClient) -> None:
     assert response.status_code == 200
     assert response.json()["semantic"]["backout_adherence"] == "PARCIAL"
     assert judge.semantic_calls == 2
+
+
+def test_skip_reason_never_rounds_up_to_the_cut(client: TestClient) -> None:
+    """A weighted 7.96 is below 8.0; the reason must not read "8.0 abaixo de 8.0"."""
+    grades = {
+        "implementation_plan": 9.1,
+        "validation_plan": 8.4,
+        "objective": 8.8,
+        "benefits": 7.2,
+        "test_justification": 9.0,
+        "short_description": 6.1,
+        "prerequisites": 4.5,
+    }
+    by_label = {f.label: grades[f.key] for f in load_rubric().fields}
+
+    class _PerField(_Judge):
+        def complete(self, system: str, user: str, **_: object) -> str:
+            label = user.split("CAMPO AVALIADO: ", 1)[1].split("\n", 1)[0].strip()
+            return json.dumps({"score": by_label[label], "diagnosis": "ok", "guidance": ""})
+
+    judge = _PerField(field_score=0)
+    repo = ChangeRepository([_change("CHG1")])
+    client.app.dependency_overrides[get_change_repository] = lambda: repo
+    client.app.dependency_overrides[get_evaluation_cache] = lambda: EvaluationCache()
+    client.app.dependency_overrides[get_judge_factory] = lambda: lambda _model: judge
+    body = client.post("/api/changes/CHG1/evaluate", json={}).json()
+    assert body["overall"] == 7.96
+    assert body["semantic"] is None
+    assert body["semantic_skipped_reason"].startswith("Nota 7.96 abaixo de 8.0")

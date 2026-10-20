@@ -159,10 +159,10 @@ export function ChapterView({
       aria-labelledby={headingId}
     >
       <header className="cf-ch-head">
-        <span className="cf-ch-n" aria-hidden="true">
-          {chapter.n}
-        </span>
         <div className="cf-ch-titles">
+          {/* A word, not a circle: the steps below are the numbered circles,
+              so the chapter number never reads as a second "1". */}
+          <p className="cf-ch-n">Capítulo {chapter.n} de 7</p>
           <h2 id={headingId}>{chapter.title}</h2>
           <p className="cf-why">{chapter.why}</p>
           <p className="cf-who">

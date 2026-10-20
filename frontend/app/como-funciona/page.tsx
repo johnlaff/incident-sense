@@ -324,7 +324,7 @@ const PART_ORDER: PartKey[] = ["antes", "depois", "ciclo"];
 const LIFE = [
   { t: "Código" },
   { t: "Change", to: "cap-1" },
-  { t: "Deploy", deploy: true },
+  { t: "Deploy" },
   { t: "Incidente", to: "cap-3" },
   { t: "Recorrência", to: "cap-6" },
   { t: "Problema", to: "cap-7" },
@@ -348,28 +348,41 @@ export default function HowItWorksPage() {
     signals.current[id] = s;
   }, []);
 
-  // The chapter that crosses the band at 40% of the screen height is the
-  // current one: it drives the index and, in modo aula, the lesson.
+  // The current chapter is the last one whose top has passed 45% of the
+  // screen. Read from positions on every scroll (not from which observer
+  // entry fired), so a tall sticky stage in modo aula cannot leave the index
+  // a chapter behind. It drives the index and, in modo aula, the lesson.
   useEffect(() => {
     const els = CHAPTERS.map((c) => document.getElementById(c.id)).filter(
       (el): el is HTMLElement => el !== null,
     );
-    const io = new IntersectionObserver(
-      (entries) => {
-        const hit = entries.find((e) => e.isIntersecting);
-        if (!hit) return;
-        const id = hit.target.id;
-        const prev = focusedRef.current;
-        if (id === prev) return;
-        const order = (x: string) => CHAPTERS.findIndex((c) => c.id === x);
-        setFromBelow(order(id) < order(prev));
-        focusedRef.current = id;
-        setFocused(id);
-      },
-      { rootMargin: "-40% 0px -55% 0px" },
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    let frame = 0;
+    function pick() {
+      frame = 0;
+      const line = window.innerHeight * 0.45;
+      let id = els[0]?.id;
+      for (const el of els) {
+        if (el.getBoundingClientRect().top <= line) id = el.id;
+      }
+      const prev = focusedRef.current;
+      if (!id || id === prev) return;
+      const order = (x: string) => CHAPTERS.findIndex((c) => c.id === x);
+      setFromBelow(order(id) < order(prev));
+      focusedRef.current = id;
+      setFocused(id);
+    }
+    function onScroll() {
+      if (!frame) frame = requestAnimationFrame(pick);
+    }
+    // The page scrolls the window on phones and the .main pane on desktop.
+    document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    window.addEventListener("resize", onScroll);
+    pick();
+    return () => {
+      document.removeEventListener("scroll", onScroll, { capture: true });
+      window.removeEventListener("resize", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
 
   // Modo aula: once a chapter's last step is on screen, the next press of the
@@ -415,13 +428,14 @@ export default function HowItWorksPage() {
       <header className="cf-hero">
         <h1>Depois do deploy, do começo ao fim</h1>
         <p className="cf-lede">
-          Da mudança ao incidente, e de volta. Sete capítulos, um passo de cada vez.
+          Da mudança ao incidente, e de volta. O caminho abaixo, contado em sete capítulos
+          curtos.
         </p>
         <ol className="cf-life" aria-label="O caminho de qualquer software">
           {LIFE.map((s, i) => (
             <li
               key={s.t}
-              className={`cf-life-n${"deploy" in s ? " is-deploy" : ""}`}
+              className="cf-life-n"
               style={{ "--i": i } as React.CSSProperties}
             >
               {"to" in s ? (

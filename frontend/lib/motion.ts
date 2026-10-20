@@ -45,3 +45,20 @@ export function formatSeconds(ms: number): string {
     maximumFractionDigits: 1,
   })} s`;
 }
+
+const PHONE = "(max-width: 767.98px)";
+
+function subscribePhone(onChange: () => void): () => void {
+  const mq = window.matchMedia(PHONE);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+/** True on a phone-width screen (same breakpoint as the CSS). False on SSR. */
+export function useIsPhone(): boolean {
+  return useSyncExternalStore(
+    subscribePhone,
+    () => window.matchMedia(PHONE).matches,
+    () => false,
+  );
+}
