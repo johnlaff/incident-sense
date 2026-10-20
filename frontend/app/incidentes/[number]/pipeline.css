@@ -1601,7 +1601,7 @@
   font-size: var(--fs-md);
   line-height: 1.65;
   color: var(--ink-body);
-  max-width: 68ch;
+  max-width: 54ch;
 }
 .rec-body .section :is(h2, h3) {
   font-size: var(--fs-md);
