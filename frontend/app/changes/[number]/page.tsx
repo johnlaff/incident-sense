@@ -12,7 +12,6 @@ import {
   EVALUATED_FIELDS,
   STATE_LABEL,
   TYPE_LABEL,
-  nota,
   useChange,
   useRubric,
   type Change,
@@ -42,7 +41,9 @@ import {
 } from "../evaluation";
 import {
   buildSteps,
+  fmtWeight,
   gatePassed,
+  overallOf,
   reached,
   weightedSegments,
   type StepId,
@@ -346,7 +347,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               </>
             )}
 
-            {showResult && result.overall !== null && (
+            {showResult && overallOf(result) !== null && (
               <PlaybackBar
                 steps={steps}
                 playback={playback}
@@ -355,7 +356,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             )}
 
             {inScope &&
-              (phase === "running" || (showResult && result.overall !== null)) && (
+              (phase === "running" || (showResult && overallOf(result) !== null)) && (
                 <Ledger
                   key={`led-${epoch}`}
                   rows={orderedFields}
@@ -370,13 +371,13 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 />
               )}
 
-            {showResult && result.overall !== null && at("notas") && (
+            {showResult && overallOf(result) !== null && at("notas") && (
               <Average
                 key={`avg-${epoch}`}
                 result={result}
                 avg={avg}
                 previousAvg={previousAvg}
-                previousOverall={previous?.overall ?? null}
+                previousOverall={previous ? overallOf(previous) : null}
                 index={playback.index}
                 steps={steps}
                 skipped={playback.skipped}
@@ -384,7 +385,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               />
             )}
 
-            {showResult && result.overall !== null && (
+            {showResult && overallOf(result) !== null && (
               <TechDetails summary="Custo e versão dos critérios">
                 <p className="chg-cost" data-on={at("portao")}>
                   {result.model_calls === 0
@@ -437,7 +438,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   <div className="chg-field-title">
                     <h3>{f.label}</h3>
                     <span className="chg-weight">
-                      peso {nota(f.weight).replace(",0", "")}
+                      peso {fmtWeight(seg?.weight ?? f.weight)}
                       {below && <span className="chg-below">abaixo do corte</span>}
                     </span>
                   </div>

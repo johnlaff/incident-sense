@@ -290,7 +290,8 @@ class ChangeEvaluator:
             semantic = self._semantic(change, values, backout, scores)
         else:
             skipped = (
-                f"Nota {overall:.1f} abaixo de {rubric.eligibility_threshold:.1f}: o problema "
+                # Two places, like the overall itself: 7.96 must not read "8.0 abaixo de 8.0".
+                f"Nota {overall:.2f} abaixo de {rubric.eligibility_threshold:.1f}: o problema "
                 "ainda é campo vazio ou genérico, e apontar incoerência entre campos não "
                 "ajuda o autor agora."
             )
