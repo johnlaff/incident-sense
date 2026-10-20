@@ -289,7 +289,7 @@ const CONTENT: Record<
           ],
           [
             "Problemas",
-            "Ao escolher um grupo, Recorrências mostra os Problemas que já explicam a causa. Um grupo sem Problema ganha o botão Abrir problema, que no demo só registra na tela.",
+            "Ao escolher um grupo, a tela Grupos mostra os Problemas que já explicam a causa. Um grupo sem Problema ganha o botão Abrir problema, que no demo só registra na tela.",
           ],
         ]}
       />
@@ -430,7 +430,11 @@ export default function HowItWorksPage() {
   return (
     <div className="cf">
       <header className="cf-hero">
-        <h1>Depois do deploy, do começo ao fim</h1>
+        {/* The page is "Sobre a IA" in the tab and the menu; the eyebrow says so. */}
+        <h1>
+          <span className="cf-eyebrow">Sobre a IA</span>
+          Depois do deploy, do começo ao fim
+        </h1>
         <p className="cf-lede">
           Da mudança ao incidente, e de volta. O caminho abaixo, contado em sete capítulos
           curtos.

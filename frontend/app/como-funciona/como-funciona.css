@@ -92,6 +92,14 @@
   letter-spacing: -0.02em;
   max-width: 22ch;
 }
+.cf-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: var(--fs-sm, 14px);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--muted);
+}
 .cf-lede {
   margin: 10px 0 0;
   max-width: 60ch;

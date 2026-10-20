@@ -710,7 +710,7 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     title: "Agrupar as recorrências",
     why: "Muitos incidentes, poucas causas: os parecidos formam grupos, e grupo grande pede um Problema.",
-    app: { href: "/recorrencias", label: "Ver no app: Recorrências" },
+    app: { href: "/recorrencias", label: "Ver no app: Grupos" },
     steps: [
       {
         title: "Cada incidente é um ponto",
