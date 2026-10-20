@@ -255,10 +255,6 @@ export class MapEngine {
     return null;
   }
 
-  pointAt(idx: number): { x: number; y: number } {
-    return { x: this.cur[idx * 2], y: this.cur[idx * 2 + 1] };
-  }
-
   destroy(): void {
     cancelAnimationFrame(this.raf);
     this.raf = 0;
@@ -289,8 +285,12 @@ export class MapEngine {
     this.raf = 0;
     const dt = Math.min(64, now - this.lastFrame);
     this.lastFrame = now;
+    const t0 = performance.now();
     const moving = this.step(now, dt);
     this.draw(now);
+    // Perf probe: set window.__rxCost = [] to collect per-frame engine cost (ms).
+    const w = window as unknown as { __rxCost?: number[] };
+    w.__rxCost?.push(performance.now() - t0);
     if (moving || now < this.busyUntil) this.raf = requestAnimationFrame(this.frame);
   };
 

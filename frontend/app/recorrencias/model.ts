@@ -219,14 +219,18 @@ export function verdictOf(g: RecGroup): Verdict {
 }
 
 /** One or two short sentences, built only from the group's own numbers. */
-export function reasonFor(g: RecGroup, totalWeeks: number): string {
+export function reasonFor(g: RecGroup, totalWeeks: number, problems = 0): string {
   const v = verdictOf(g);
   const span =
     totalWeeks > 0 ? `${g.size} casos em ${g.activeWeeks} das ${totalWeeks} semanas` : `${g.size} casos`;
   if (v === "problem") {
     const top = g.services[0];
     const all = top.count === g.size;
-    return `${span}, ${all ? "todos" : `${Math.round(g.topShare * 100)}%`} no ${top.name}. O mesmo defeito voltando tantas vezes pede uma investigação de causa: um problema.`;
+    return `${span}, ${all ? "todos" : `${Math.round(g.topShare * 100)}%`} no ${top.name}. ${
+      problems > 0
+        ? "O mesmo defeito voltando tantas vezes já virou investigação de causa:"
+        : "O mesmo defeito voltando tantas vezes pede uma investigação de causa: um problema."
+    }`;
   }
   if (v === "mixed") {
     return `${span}, espalhados por ${g.services.length} serviços. Pode ser sobra juntada pela semelhança do texto. Confira os casos antes de abrir um problema.`;
@@ -272,7 +276,9 @@ const GOLDEN = Math.PI * (3 - Math.sqrt(5));
  *   middle and each keeps roughly its real direction.
  * - outliers keep their real projected position, pushed out of any group.
  */
-export function computeLayout(data: RecData, w: number, h: number): Layout {
+export function computeLayout(data: RecData, w: number, fullH: number, top = 0): Layout {
+  // `top` keeps a strip clear at the top of the box (the tally chip).
+  const h = Math.max(1, fullH - top);
   const n = data.incidents.length;
   const scatter = new Float32Array(n * 2);
   const grouped = new Float32Array(n * 2);
@@ -317,7 +323,7 @@ export function computeLayout(data: RecData, w: number, h: number): Layout {
 
   // Disk sizes: area proportional to members, about a third of the box.
   const total = Math.max(1, data.groups.reduce((s, g) => s + g.size, 0));
-  const scale = Math.sqrt((0.26 * w * h) / (Math.PI * total));
+  const scale = Math.sqrt((0.22 * w * h) / (Math.PI * total));
   const radii = data.groups.map((g) => scale * Math.sqrt(g.size));
   const maxR = radii.length ? Math.max(...radii) : 0;
   const inset = pad + maxR * 0.85;
@@ -331,7 +337,7 @@ export function computeLayout(data: RecData, w: number, h: number): Layout {
     };
   });
   const anchors = disks.map((d) => ({ x: d.cx, y: d.cy }));
-  const gap = Math.max(14, Math.min(w, h) * 0.035);
+  const gap = Math.max(14, Math.min(w, h) * 0.06);
   for (let iter = 0; iter < 300; iter++) {
     for (let a = 0; a < disks.length; a++) {
       for (let b = a + 1; b < disks.length; b++) {
@@ -426,7 +432,14 @@ export function computeLayout(data: RecData, w: number, h: number): Layout {
   }
 
   const pointR = Math.min(5.5, Math.max(2.2, spacing * 0.36));
-  return { w, h, scatter, grouped, disks, pointR };
+  if (top > 0) {
+    for (let i = 1; i < n * 2; i += 2) {
+      scatter[i] += top;
+      grouped[i] += top;
+    }
+    for (const d of disks) d.cy += top;
+  }
+  return { w, h: fullH, scatter, grouped, disks, pointR };
 }
 
 /** Convex hull (monotone chain) of interleaved points picked by `idx`. */
@@ -467,11 +480,11 @@ function overlaps(a: { x: number; y: number; w: number; h: number }, b: typeof a
   return a.x < b.x + b.w + m && b.x < a.x + a.w + m && a.y < b.y + b.h + m && b.y < a.y + a.h + m;
 }
 
-function hitsDisk(a: { x: number; y: number; w: number; h: number }, d: Disk): boolean {
+function hitsDisk(a: { x: number; y: number; w: number; h: number }, d: Disk, k = 0.62): boolean {
   const nx = Math.max(a.x, Math.min(d.cx, a.x + a.w));
   const ny = Math.max(a.y, Math.min(d.cy, a.y + a.h));
   // The rim of a group is sparse; a name may cover it, not the core.
-  return Math.hypot(nx - d.cx, ny - d.cy) < d.r * 0.62;
+  return Math.hypot(nx - d.cx, ny - d.cy) < d.r * k;
 }
 
 /**
@@ -481,45 +494,70 @@ function hitsDisk(a: { x: number; y: number; w: number; h: number }, d: Disk): b
  */
 export function placeLabels(
   disks: Disk[],
-  sizes: Map<number, { w: number; h: number; cw: number }>,
+  sizes: Map<number, { w: number; h: number; cw: number; ch?: number }>,
   w: number,
   h: number,
+  opts: { compactAll?: boolean; full?: number | null; onDisk?: boolean } = {},
 ): LabelBox[] {
   const placed: LabelBox[] = [];
-  const order = [...disks].sort((a, b) => b.r - a.r);
+  const compactBox = (d: Disk, s: { h: number; cw: number; ch?: number }): LabelBox => {
+    const ch = s.ch ?? s.h;
+    return { id: d.id, x: d.cx - s.cw / 2, y: d.cy - ch / 2, w: s.cw, h: ch, compact: true };
+  };
+  // Narrow maps: every group shows its count on itself; only `full` gets a name.
+  const wantsFull = (d: Disk) => !opts.compactAll || opts.full === d.id;
+  for (const d of disks) {
+    const s = sizes.get(d.id);
+    if (s && !wantsFull(d)) placed.push(compactBox(d, s));
+  }
+  const order = [...disks].filter(wantsFull).sort((a, b) => b.r - a.r);
   for (const d of order) {
     const s = sizes.get(d.id);
     if (!s) continue;
     const g = 4;
-    const cands: { x: number; y: number }[] = [];
-    for (const dx of [0, -0.3, 0.3]) {
+    const cands: { x: number; y: number }[] = [
+      { x: d.cx - s.w / 2, y: d.cy - d.r - g - s.h },
+      { x: d.cx - s.w / 2, y: d.cy + d.r + g },
+      { x: d.cx - s.w / 2, y: d.cy - d.r * 0.62 - s.h },
+      { x: d.cx - s.w / 2, y: d.cy + d.r * 0.62 },
+    ];
+    // Name on its own group reads best; the focused one moves off its points.
+    if (opts.onDisk && opts.full !== d.id) {
+      // Slid inward when the group touches the edge of the map.
+      cands.unshift({
+        x: Math.min(w - 4 - s.w, Math.max(4, d.cx - s.w / 2)),
+        y: Math.min(h - 4 - s.h, Math.max(4, d.cy - s.h / 2)),
+      });
+    }
+    for (const dx of [-0.3, 0.3]) {
       cands.push({ x: d.cx - s.w / 2 + dx * s.w, y: d.cy - d.r - g - s.h });
       cands.push({ x: d.cx - s.w / 2 + dx * s.w, y: d.cy + d.r + g });
     }
     cands.push({ x: d.cx + d.r + g, y: d.cy - s.h / 2 });
     cands.push({ x: d.cx - d.r - g - s.w, y: d.cy - s.h / 2 });
-    // Over its own rim, still clear of the core.
-    cands.push({ x: d.cx - s.w / 2, y: d.cy - d.r * 0.62 - s.h });
-    cands.push({ x: d.cx - s.w / 2, y: d.cy + d.r * 0.62 });
     let chosen: LabelBox | null = null;
-    for (const c of cands) {
+    let bestCost = Infinity;
+    const others = disks.filter((o) => o.id !== d.id);
+    for (let k = 0; k < cands.length; k++) {
+      const c = cands[k];
       const box = { id: d.id, x: c.x, y: c.y, w: s.w, h: s.h, compact: false };
       if (box.x < 4 || box.y < 4 || box.x + box.w > w - 4 || box.y + box.h > h - 4) continue;
       if (placed.some((p) => overlaps(p, box))) continue;
-      if (disks.some((o) => o.id !== d.id && hitsDisk(box, o))) continue;
-      chosen = box;
-      break;
+      // Centered on its own group it cannot be mistaken; only another core blocks it.
+      const centered = opts.onDisk && opts.full !== d.id && k === 0;
+      if (others.some((o) => hitsDisk(box, o, centered ? 0.4 : 0.62))) continue;
+      if (centered) {
+        chosen = box;
+        break;
+      }
+      // A name over another group's rim reads as that group's: avoid it.
+      const cost = k + others.filter((o) => hitsDisk(box, o, 1.1)).length * 20;
+      if (cost < bestCost) {
+        bestCost = cost;
+        chosen = box;
+      }
     }
-    placed.push(
-      chosen ?? {
-        id: d.id,
-        x: d.cx - s.cw / 2,
-        y: d.cy - s.h / 2,
-        w: s.cw,
-        h: s.h,
-        compact: true,
-      },
-    );
+    placed.push(chosen ?? compactBox(d, s));
   }
   return placed;
 }

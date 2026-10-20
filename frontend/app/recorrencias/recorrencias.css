@@ -259,16 +259,30 @@
   text-wrap: balance;
 }
 .rx-label-n {
+  margin-left: auto;
+  padding-left: 2px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 .rx-label.compact .rx-label-name {
   display: none;
 }
+@media (max-width: 699.98px) {
+  .rx-label {
+    font-size: 11px;
+    max-width: 10.5em;
+    padding: 2px 6px 2px 5px;
+    gap: 4px;
+  }
+  .rx-label-dot {
+    width: 7px;
+    height: 7px;
+  }
+}
 @media (min-width: 1100px) {
   .rx-label {
     font-size: 13px;
-    max-width: 14em;
+    max-width: 13.5em;
   }
 }
 
@@ -639,8 +653,8 @@
   font-weight: 600;
 }
 .rx-verdict.ok {
-  background: var(--st-resolved-tint);
-  color: var(--st-resolved);
+  background: var(--c-prb-tint, var(--st-resolved-tint));
+  color: var(--c-prb-ink, var(--st-resolved));
 }
 .rx-verdict.mixed {
   background: var(--st-progress-tint);
@@ -832,4 +846,120 @@
 .rx-tl-axis span {
   grid-column: calc(var(--at) + 1) / span 3;
   grid-row: 1;
+}
+
+.rx-strip-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.rx-strip-h b {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+  min-width: 0;
+}
+.rx-strip-h span:last-child {
+  margin-left: auto;
+  flex: none;
+}
+@media (max-width: 420px) {
+  .rx-step {
+    font-size: 11px;
+    letter-spacing: -0.01em;
+  }
+}
+
+.rx-prb {
+  margin-top: 10px;
+}
+.rx-strip .rx-prb {
+  margin-top: 0;
+}
+
+.rx-tally {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  margin: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface) 92%, transparent);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
+}
+.rx-tally.on {
+  opacity: 1;
+}
+.rx-tally b {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+/* Phones: the map shows counts; the names line up right under it. */
+.rx-legend {
+  list-style: none;
+  margin: 0;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.rx-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px 4px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  text-align: left;
+  cursor: pointer;
+  animation: rx-in calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out) both;
+  animation-delay: calc(min(var(--i), 10) * var(--stagger));
+}
+.rx-legend button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.rx-legend-n {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Concept language (feat/design-bolder): AI steps are a dashed violet circle,
+   the Problem step is gold. Fallbacks keep today's tokens until it lands. */
+.rx-step.ai .rx-step-n {
+  border-style: dashed;
+  border-color: var(--c-ai, var(--primary));
+  color: var(--c-ai-ink, var(--primary-ink));
+}
+.rx-step.ai.on .rx-step-n,
+.rx-step.ai.past .rx-step-n {
+  border-style: dashed;
+  background: var(--c-ai-tint, var(--primary-tint));
+  color: var(--c-ai-ink, var(--primary-ink));
+}
+.rx-step.ai.on .rx-step-n {
+  border-width: 2px;
+}
+.rx-step.prb.on .rx-step-n {
+  border-color: var(--c-prb-line, var(--primary));
+  background: var(--c-prb, var(--primary));
+  color: var(--c-prb-on, var(--on-primary));
 }

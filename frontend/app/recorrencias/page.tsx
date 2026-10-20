@@ -21,6 +21,8 @@ import "../problemas/problemas.css";
 import "./recorrencias.css";
 
 const LAST = 4;
+/** Concept of each step: the AI compares and names; the last one is a Problem. */
+const STEP_KIND = ["", "ai", "", "ai", "prb"];
 
 export default function RecurrencesPage() {
   const { openIncident } = useShell();
@@ -290,7 +292,10 @@ export default function RecurrencesPage() {
               <li key={s.title}>
                 <button
                   type="button"
-                  className={`rx-step${i === step ? " on" : ""}${i < step ? " past" : ""}`}
+                  className={`rx-step${i === step ? " on" : ""}${i < step ? " past" : ""}${
+                    STEP_KIND[i] ? ` ${STEP_KIND[i]}` : ""
+                  }`}
+                  title={STEP_KIND[i] === "ai" ? `${s.title}: etapa feita pela IA` : s.title}
                   aria-current={i === step ? "step" : undefined}
                   disabled={!data}
                   onClick={() => {
@@ -308,13 +313,35 @@ export default function RecurrencesPage() {
             {showCaption ? current.caption : " "}
           </p>
 
+          {data && !focusGroup && effectiveStage >= 3 ? (
+            <ul className="rx-legend rx-mobile-only" aria-label="Nomes dos grupos">
+              {data.groups.map((g, k) => (
+                <li key={g.id} style={{ "--hue": g.hue, "--i": k } as CSSProperties}>
+                  <button type="button" onClick={() => choose(g.id)}>
+                    <span className="rx-dot" aria-hidden="true" />
+                    <span className="rx-legend-t">{g.label}</span>
+                    <span className="rx-legend-n">{matched.get(g.id) ?? g.size}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {focusGroup ? (
             <div
               className="rx-strip rx-mobile-only"
               style={{ "--hue": focusGroup.hue } as CSSProperties}
             >
+              <div className="rx-strip-h">
+                <span className="rx-dot" aria-hidden="true" />
+                <b>{focusGroup.label}</b>
+                <span>{focusGroup.size} casos</span>
+              </div>
               <GroupTimeline key={focusGroup.id} group={focusGroup} weeks={data!.weeks} month={filter.month} compact />
-              <p className="rx-reason">{reasonFor(focusGroup, data!.weeks.length)}</p>
+              <p className="rx-reason">{reasonFor(
+                  focusGroup,
+                  data!.weeks.length,
+                  (problemsByGroup.get(focusGroup.id) ?? []).length,
+                )}</p>
               <PromoteAction
                 verdict={verdictOf(focusGroup)}
                 problems={problemsByGroup.get(focusGroup.id) ?? []}

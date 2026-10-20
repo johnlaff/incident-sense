@@ -54,7 +54,7 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
   const [pinned, setPinned] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
 
-  const layout = useMemo(() => (size ? computeLayout(data, size.w, size.h) : null), [data, size]);
+  const layout = useMemo(() => (size ? computeLayout(data, size.w, size.h, 34) : null), [data, size]);
 
   // Engine lifetime.
   useEffect(() => {
@@ -126,16 +126,34 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
   // Labels: measure, then place clear of each other.
   useLayoutEffect(() => {
     if (!layout) return;
-    const sizes = new Map<number, { w: number; h: number; cw: number }>();
+    const sizes = new Map<number, { w: number; h: number; cw: number; ch: number }>();
     // Measure every label at full size, before the compact class comes back.
-    labelRefs.current.forEach((el) => el.classList.remove("compact"));
+    // React only rewrites className when it changes, so put it back after.
+    const had = new Set<HTMLElement>();
+    labelRefs.current.forEach((el) => {
+      if (el.classList.contains("compact")) had.add(el);
+      el.classList.remove("compact");
+    });
     labelRefs.current.forEach((el, id) => {
       const name = el.querySelector<HTMLElement>(".rx-label-name");
       const w = el.offsetWidth;
-      sizes.set(id, { w, h: el.offsetHeight, cw: w - (name?.offsetWidth ?? 0) - 4 });
+      const n = el.querySelector<HTMLElement>(".rx-label-n");
+      sizes.set(id, {
+        w,
+        h: el.offsetHeight,
+        cw: w - (name?.offsetWidth ?? 0) - 4,
+        ch: (n?.offsetHeight ?? 16) + 8,
+      });
     });
-    setLabels(placeLabels(layout.disks, sizes, layout.w, layout.h));
-  }, [layout, data]);
+    had.forEach((el) => el.classList.add("compact"));
+    setLabels(
+      placeLabels(layout.disks, sizes, layout.w, layout.h, {
+        compactAll: layout.w < 560,
+        onDisk: true,
+        full: typeof focus === "number" ? focus : null,
+      }),
+    );
+  }, [layout, data, focus]);
 
   const labelById = useMemo(() => new Map(labels.map((l) => [l.id, l])), [labels]);
 
@@ -195,6 +213,10 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
         onPointerLeave={() => setHover(null)}
         onPointerUp={onTap}
       />
+      <p className={`rx-tally${stage >= 2 ? " on" : ""}`} aria-hidden={stage >= 2 ? undefined : true}>
+        <b>{data.groups.length}</b> grupos densos · <b>{data.outliers.length}</b>{" "}
+        {data.outliers.length === 1 ? "caso isolado" : "casos isolados"}
+      </p>
       <div className={`rx-labels${stage >= 3 ? " on" : ""}`}>
         {data.groups.map((g, k) => {
           const box = labelById.get(g.id);

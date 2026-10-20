@@ -173,7 +173,7 @@ export function GroupDetail({
             </div>
           ) : null}
           <div className="rx-desk-only">
-            <p className="rx-reason">{reasonFor(group, data.weeks.length)}</p>
+            <p className="rx-reason">{reasonFor(group, data.weeks.length, problems.length)}</p>
             <PromoteAction
               verdict={verdict}
               problems={problems}
