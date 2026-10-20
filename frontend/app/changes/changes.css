@@ -173,14 +173,20 @@ a.chg-row:focus-visible {
   overflow-wrap: break-word;
   font-variant-numeric: tabular-nums;
 }
-/* Phones: two short facts side by side, the long ones (group, window) on a
-   row of their own, so a name like Sustentacao-Pagamentos stays whole. */
+/* Phones: the short facts share a row only when both fit whole (each is as
+   wide as its value, so Internet-Banking-Web never breaks inside); the long
+   ones (group, window) take a row of their own. */
 @media (max-width: 559.98px) {
   .chg-facts {
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
   }
-  .chg-facts .wide {
-    grid-column: 1 / -1;
+  .chg-facts > div {
+    flex: 1 0 auto;
+    min-width: auto;
+  }
+  .chg-facts > .wide {
+    flex-basis: 100%;
     order: 1;
   }
 }

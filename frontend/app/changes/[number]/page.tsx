@@ -558,7 +558,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               {change.tasks.map((t) => (
                 <li key={t.number}>
                   <span className="mono">{t.number}</span>
-                  <span>{t.short_description}</span>
+                  <span>{keepWhole(t.short_description)}</span>
                 </li>
               ))}
             </ol>

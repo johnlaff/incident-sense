@@ -647,7 +647,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                         <RecordTag number={r.number} size="sm" />
                       </span>
                       <span className="rdesc">{r.short}</span>
-                      <span className="svc mono">{r.service}</span>
+                      <span className="svc mono">{keepWhole(r.service)}</span>
                       <StateBadge state={r.state} />
                     </div>
                   ))}

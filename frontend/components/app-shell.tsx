@@ -30,6 +30,7 @@ import { useAllIncidents, useIncident } from "@/lib/incidents";
 import { absDate, mapDetail } from "@/lib/model";
 import { isProblemNumber } from "@/lib/problems";
 import type { IncidentSummary } from "@/lib/types";
+import { keepWhole } from "@/lib/text";
 
 type Theme = "light" | "dark";
 
@@ -796,7 +797,9 @@ function PeekDrawer({
               </div>
               <div className="peek-title">
                 <h2>{inc.title}</h2>
-                <p>{`${inc.service} · ${inc.group} · aberto em ${inc.opened}`}</p>
+                <p>
+                  {keepWhole(`${inc.service} · ${inc.group} · aberto em ${inc.opened}`)}
+                </p>
               </div>
 
               {inc.resolutionNotes ? (

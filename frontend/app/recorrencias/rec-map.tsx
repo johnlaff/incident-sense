@@ -13,6 +13,7 @@ import {
 import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { PRIORITY_LABEL, pCode } from "@/lib/model";
+import { keepWhole } from "@/lib/text";
 
 import { MapEngine, type Focus, type Scene } from "./map-engine";
 import {
@@ -321,7 +322,7 @@ export function RecMap({
           </div>
           <p className="rx-peek-d">{preview.short}</p>
           <div className="rx-peek-meta">
-            {preview.service ? <span>{preview.service}</span> : null}
+            {preview.service ? <span>{keepWhole(preview.service)}</span> : null}
             {preview.openedAt ? <span>{shortDate(preview.openedAt)}</span> : null}
             <span className="rx-peek-g">{group ? group.label : "Caso isolado"}</span>
           </div>

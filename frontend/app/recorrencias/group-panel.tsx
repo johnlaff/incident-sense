@@ -6,6 +6,7 @@ import { useState, type CSSProperties } from "react";
 import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import type { ProblemSummary } from "@/lib/problems";
+import { keepWhole } from "@/lib/text";
 
 import type { Focus } from "./map-engine";
 import { GroupTimeline } from "./timeline";
@@ -268,7 +269,7 @@ export function PromoteAction({
                 transitionTypes={["nav-forward"]}
               >
                 <RecordTag number={p.number} size="sm" />
-                <span className="rec-prb-title">{p.short_description}</span>
+                <span className="rec-prb-title">{keepWhole(p.short_description)}</span>
                 <Icons.chevronRight className="prb-go" />
               </Link>
             </li>
