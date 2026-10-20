@@ -254,10 +254,10 @@
   opacity: 0.45;
 }
 .rx-label:hover {
-  border-color: oklch(var(--rx-l) 0.14 var(--hue));
+  border-color: oklch(var(--rx-l) var(--rx-c, 0.14) var(--hue));
 }
 .rx-label.sel {
-  border-color: oklch(var(--rx-l) 0.14 var(--hue));
+  border-color: oklch(var(--rx-l) var(--rx-c, 0.14) var(--hue));
   background: oklch(var(--rx-tint-l) var(--rx-tint-c) var(--hue));
 }
 .rx-label:focus-visible {
@@ -270,7 +270,7 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: oklch(var(--rx-l) 0.14 var(--hue));
+  background: oklch(var(--rx-l) var(--rx-c, 0.14) var(--hue));
 }
 .rx-label-name {
   min-width: 0;
@@ -383,7 +383,7 @@
   font-size: var(--fs-xs, 13px);
 }
 .rx-peek-g {
-  color: oklch(var(--rx-ink-l) 0.12 var(--hue));
+  color: oklch(var(--rx-ink-l) var(--rx-ink-c, 0.12) var(--hue));
   font-weight: 600;
 }
 .rx-peek-open {
@@ -596,14 +596,14 @@
     var(--spring-calm, ease-out);
 }
 .rx-row-all {
-  background: oklch(var(--rx-l) 0.14 var(--hue) / 0.28);
+  background: oklch(var(--rx-l) var(--rx-c, 0.14) var(--hue) / 0.28);
   transform: scaleX(var(--v));
   animation: rx-bar calc(var(--dur-explain) * var(--motion-scale))
     var(--spring-calm, ease-out) both;
   animation-delay: calc(min(var(--i, 0), 10) * var(--stagger));
 }
 .rx-row-m {
-  background: oklch(var(--rx-l) 0.14 var(--hue));
+  background: oklch(var(--rx-l) var(--rx-c, 0.14) var(--hue));
   transform: scaleX(var(--m));
   animation: rx-bar calc(var(--dur-explain) * var(--motion-scale))
     var(--spring-calm, ease-out) both;
@@ -614,11 +614,13 @@
     transform: scaleX(0);
   }
 }
-.rx-row.iso {
-  --hue: 285;
-}
-.rx-row.iso .rx-row-all {
-  background: oklch(var(--rx-l) 0.012 285);
+/* Isolated cases are no group: grey, never a group hue or the AI violet. */
+.rx-row.iso,
+.rx-iso {
+  --hue: 265;
+  --rx-c: 0.012;
+  --rx-ink-c: 0.012;
+  --rx-tint-c: 0.006;
 }
 .rx-row.empty .rx-row-name {
   color: var(--muted);
@@ -736,7 +738,7 @@
 }
 .rx-svc-bar::after {
   content: "";
-  background: oklch(var(--rx-l) 0.14 var(--hue));
+  background: oklch(var(--rx-l) var(--rx-c, 0.14) var(--hue));
   transform: scaleX(var(--v));
   animation: rx-bar calc(var(--dur-explain) * var(--motion-scale))
     var(--spring-calm, ease-out) both;
@@ -818,7 +820,7 @@
 .rx-tl-bar {
   height: max(3px, calc(var(--v) * 100%));
   border-radius: 3px 3px 0 0;
-  background: oklch(var(--rx-l) 0.14 var(--hue));
+  background: oklch(var(--rx-l) var(--rx-c, 0.14) var(--hue));
   animation: rx-rise calc(var(--dur-explain) * var(--motion-scale))
     var(--spring-calm, ease-out) both;
   animation-delay: calc(min(var(--i), 14) * 35ms * var(--motion-scale));

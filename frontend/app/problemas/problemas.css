@@ -3,15 +3,8 @@
  *  moves its classification into a side column at 1101px, like incidents.
  * ===================================================================== */
 
-/* ----- State badge: resolved, or a known error still waiting for the fix ----- */
-.prb-badge.is-resolved {
-  color: var(--st-resolved);
-  background: var(--st-resolved-tint);
-}
-.prb-badge.is-known {
-  color: var(--p2);
-  background: var(--p2-tint);
-}
+/* State badge: resolved, or a known error still waiting for the fix. It is a
+   plain fact like any badge (shell.css): neutral mark plus a word. */
 
 /* The one-sentence definition every Problem screen carries. */
 .prb-def {

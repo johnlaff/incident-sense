@@ -132,8 +132,8 @@ export function GroupDetail({
 
   return (
     <section
-      className="rx-detail"
-      style={{ "--hue": isGroup ? group.hue : 285 } as CSSProperties}
+      className={`rx-detail${isGroup ? "" : " rx-iso"}`}
+      style={isGroup ? ({ "--hue": group.hue } as CSSProperties) : undefined}
       aria-label={isGroup ? group.label : "Casos isolados"}
     >
       <div className="rx-detail-top">

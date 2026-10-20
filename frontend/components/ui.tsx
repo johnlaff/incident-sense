@@ -32,7 +32,8 @@ export function PriorityBadge({
   return (
     <span className={`badge ${priority}`} title={`Prioridade ${label}`}>
       <span className="dot" />
-      {withWord ? `Prioridade · ${label}` : label}
+      {withWord && <span className="badge-word">Prioridade · </span>}
+      {label}
     </span>
   );
 }

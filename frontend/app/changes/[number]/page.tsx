@@ -247,11 +247,18 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           <RecordTag number={change.number} size="lg" />
         </div>
         <div className="chg-tags">
-          <span className="badge chg-type">{TYPE_LABEL[change.type] ?? change.type}</span>
+          <span className="badge chg-type">
+            <span className="dot" />
+            {TYPE_LABEL[change.type] ?? change.type}
+          </span>
           <span className="badge chg-state">
+            <span className="dot" />
             {STATE_LABEL[change.state] ?? change.state}
           </span>
-          <span className="badge chg-risk">Risco {change.risk.toLowerCase()}</span>
+          <span className="badge chg-risk">
+            <span className="dot" />
+            Risco {change.risk.toLowerCase()}
+          </span>
         </div>
         <h1>{keepWhole(change.short_description)}</h1>
         <dl className="chg-facts">

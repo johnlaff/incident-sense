@@ -240,8 +240,12 @@ export function mapDetail(d: IncidentDetail): IncidentRecord {
 
 // ----- Cluster colors --------------------------------------------------------
 
-// Categorical hues (not status) — one per cluster id, cycled. Outliers are grey.
-const CLUSTER_HUES = [285, 230, 195, 160, 330, 20, 110, 60, 255, 95, 45, 300, 175, 15];
+// Categorical hues (not status), one per cluster id, cycled. Outliers are grey.
+// They stay away from the concept hues: Incidente 255, Problema ~70,
+// Mudança 178 and the AI violet 290, so a group never reads as one of them.
+export const CLUSTER_HUES = [
+  345, 140, 215, 20, 320, 120, 5, 205, 150, 335, 35, 225, 130, 10,
+];
 
 export function clusterColor(clusterId: number, isOutlier = false): string {
   if (isOutlier || clusterId < 0) return "oklch(0.62 0.012 285)";

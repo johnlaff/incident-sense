@@ -374,13 +374,37 @@
   color: var(--ink);
 }
 
-/* ----- Badges: subtle pills with a dot or icon ----- */
-.badge {
+/* ----- Badges: state, priority, type and risk are facts, not concepts.
+   A neutral dot (or check) and a word: no tinted pill, no concept hue, so
+   blue stays Incidente, amber Problema, teal Mudança and violet the AI. ----- */
+.badge,
+.badge:is(.p1, .p2, .p3, .p4, .s-open, .s-progress, .s-hold, .s-resolved) {
   height: 22px;
   font-size: var(--fs-xs);
   font-weight: 500;
-  padding: 0 8px;
-  gap: 5px;
+  padding: 0;
+  gap: 6px;
+  color: var(--ink-body);
+  background: transparent;
+}
+.badge .dot {
+  background: var(--muted);
+}
+.badge svg {
+  color: var(--muted);
+}
+/* On a phone the record head keeps its marks on one line: "Crítica" alone
+   (the badge keeps "Prioridade Crítica" as its title). */
+@media (max-width: 479px) {
+  .badge-word {
+    /* visually hidden, still read by screen readers */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 /* ----- Page head: one title, one short line ----- */

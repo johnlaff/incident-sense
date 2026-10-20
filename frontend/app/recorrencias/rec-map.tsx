@@ -292,8 +292,8 @@ export function RecMap({
 
       {preview && cardStyle ? (
         <div
-          className={`rx-peek${pinned != null ? " pinned" : ""}`}
-          style={{ ...cardStyle, "--hue": group?.hue ?? 285 } as CSSProperties}
+          className={`rx-peek${pinned != null ? " pinned" : ""}${group ? "" : " rx-iso"}`}
+          style={{ ...cardStyle, "--hue": group?.hue ?? 265 } as CSSProperties}
           role={pinned != null ? "dialog" : "tooltip"}
           aria-label={`${preview.id}: ${preview.short}`}
         >

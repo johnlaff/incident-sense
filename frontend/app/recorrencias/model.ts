@@ -4,14 +4,13 @@
 // group rule, the week buckets).
 
 import type { ClusterPoint, ClustersResponse, IncidentSummary } from "@/lib/types";
+import { CLUSTER_HUES } from "@/lib/model";
 import { keepWhole } from "@/lib/text";
 
 export { keepWhole };
 
-/** Hues shared with lib/model.ts clusterColor, so a group keeps its color. */
-export const GROUP_HUES = [
-  285, 230, 195, 160, 330, 20, 110, 60, 255, 95, 45, 300, 175, 15,
-];
+/** The same hues as lib/model.ts clusterColor, so a group keeps its color. */
+export const GROUP_HUES = CLUSTER_HUES;
 
 export function groupHue(clusterId: number): number {
   return GROUP_HUES[

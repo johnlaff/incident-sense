@@ -99,22 +99,10 @@ a.chg-row:focus-visible {
   flex-wrap: wrap;
   gap: 6px;
 }
-.chg-type {
-  color: var(--c-chg-ink);
-  background: var(--c-chg-tint);
-}
-.chg-state {
-  color: var(--st-open);
-  background: var(--st-open-tint);
-}
-.chg-risk {
-  color: var(--p2);
-  background: var(--p2-tint);
-}
+/* Type, state and risk are plain facts: a neutral dot and a word, no tint
+   (the badge rule in shell.css). */
 .chg-out {
   color: var(--muted);
-  background: var(--surface-2);
-  border: 1px dashed var(--border-strong);
 }
 .chg-go {
   grid-area: go;
