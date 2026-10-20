@@ -639,10 +639,6 @@ a {
   }
   .main {
     margin: 0 8px 8px 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: var(--shadow-xs);
     padding: 32px 32px 48px;
   }
 }

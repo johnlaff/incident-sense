@@ -1079,66 +1079,8 @@ a.chg-row:focus-visible {
  * ===================================================================== */
 .chg-page {
   --chg-out: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
-  --chg-calm: var(
-    --spring-calm,
-    linear(
-      0,
-      0.025,
-      0.087,
-      0.171,
-      0.264,
-      0.358,
-      0.45,
-      0.535,
-      0.612,
-      0.68,
-      0.739,
-      0.79,
-      0.833,
-      0.868,
-      0.897,
-      0.921,
-      0.94,
-      0.955,
-      0.967,
-      0.976,
-      0.984,
-      0.989,
-      0.993,
-      0.996,
-      1
-    )
-  );
-  --chg-land: var(
-    --spring-land,
-    linear(
-      0,
-      0.047,
-      0.155,
-      0.291,
-      0.432,
-      0.563,
-      0.677,
-      0.771,
-      0.846,
-      0.903,
-      0.945,
-      0.974,
-      0.994,
-      1.005,
-      1.012,
-      1.015,
-      1.015,
-      1.014,
-      1.012,
-      1.01,
-      1.008,
-      1.006,
-      1.004,
-      1.003,
-      1
-    )
-  );
+  --chg-calm: var(--spring-calm);
+  --chg-land: var(--spring-land);
   --chg-state: var(--dur-state, 200ms);
   --chg-explain: calc(var(--dur-explain, 560ms) * var(--motion-scale, 1));
   --chg-count: calc(var(--dur-count, 600ms) * var(--motion-scale, 1));
@@ -1410,7 +1352,8 @@ a.chg-row:focus-visible {
 }
 .chg-run h2,
 .chg-semantic h2 {
-  font-size: var(--fs-xl);
+  /* 19px on phones keeps a clear step under the 24px title. */
+  font-size: clamp(1.1875rem, 1rem + 0.8vw, var(--fs-xl));
 }
 .chg-ledger h3,
 .chg-avg h3 {

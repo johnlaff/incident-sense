@@ -1409,9 +1409,8 @@
   gap: 8px;
   align-items: flex-start;
   margin: 14px 0 0;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm, 6px);
-  border: 1px solid color-mix(in oklab, var(--cf-fail) 35%, var(--border));
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
   color: var(--ink);
 }
 .cf-problem svg {
@@ -1488,8 +1487,9 @@
   font-size: 0.875rem;
   transition: opacity var(--cf-d) var(--ease-out);
 }
+/* Once the summary exists, the original text steps back (still AA). */
 .cf-row:not([data-s="ahead"]) .cf-sum-raw {
-  opacity: 0.62;
+  color: var(--muted);
 }
 .cf-sum-arrow {
   width: 18px;
@@ -1613,11 +1613,7 @@
   bottom: 22px;
   left: var(--lab);
   width: calc((100% - var(--lab)) * var(--floor));
-  background: repeating-linear-gradient(
-    135deg,
-    transparent 0 6px,
-    color-mix(in oklab, var(--muted) 12%, transparent) 6px 7px
-  );
+  background: color-mix(in oklab, var(--muted) 9%, transparent);
   border-radius: 4px;
 }
 .cf-ruler-floor {
@@ -1682,6 +1678,10 @@
   bottom: 50%;
   left: 16px;
   translate: 0 50%;
+  /* A label can cross a neighbor dot: give it its own ground. */
+  padding: 0 3px;
+  border-radius: 3px;
+  background: var(--surface);
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--ink);
@@ -1747,7 +1747,10 @@
   color: var(--cf-fail);
 }
 .cf-pf-list .is-drop {
-  opacity: 0.62;
+  color: var(--muted);
+}
+.cf-pf-list .is-drop .cf-pf-reason {
+  color: var(--muted);
 }
 .cf-pf-list .is-drop .cf-rec {
   text-decoration: line-through;
@@ -1924,12 +1927,12 @@
   align-items: center;
   gap: 6px;
   max-width: 46%;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--ink);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.3;
   box-shadow: var(--shadow-sm);
@@ -1942,7 +1945,8 @@
   opacity: 1;
 }
 .cf-map.is-promoted .cf-map-label:not(.is-first) {
-  opacity: 0.45;
+  color: var(--muted);
+  box-shadow: none;
 }
 .cf-map.is-promoted .cf-map-label.is-first {
   border-color: var(--cf-prb);

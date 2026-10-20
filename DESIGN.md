@@ -10,9 +10,9 @@ classes in `frontend/app/concepts.css`; concept components in
 ## Direction: "Claro"
 
 A light, calm workspace in the line of the products known for clean interfaces
-(Vercel/Geist, Linear, Stripe, Resend docs, Cal.com): a near-white frame, a
-white sheet for the content, 1px hairlines instead of shadows, ink text, one
-accent color used sparingly.
+(Vercel/Geist, Linear, Stripe, Resend docs, Cal.com): a near-white frame,
+white cards for grouped content, 1px hairlines instead of shadows, ink text,
+one accent color used sparingly.
 
 Mode: **Operate**. Ambition shows as precision and restraint: clear hierarchy,
 big tabular numbers, short copy, and one signature move.
@@ -35,9 +35,10 @@ tint, with the text staying dark.
 
 ## Theme
 
-- **Light (default).** Frame `--bg` near white; on desktop the content sits on a
-  white sheet (`.main`: white, 1px border, radius 14px, `--shadow-xs`). On a
-  phone the body is white and the bottom tab bar is white with a hairline.
+- **Light (default).** Frame `--bg` near white; on desktop the content sits
+  straight on the frame and only grouped content gets a white card (no sheet
+  under the cards, so a card never sits inside another card). On a phone the
+  body is white and the bottom tab bar is white with a hairline.
 - **Dark** (`[data-theme="dark"]` and `prefers-color-scheme`): near-black neutral
   frame, surfaces a few steps lighter, hairline borders, concept colors lighter
   at similar chroma.
@@ -47,7 +48,7 @@ tint, with the text staying dark.
 ```
 /* Neutrals (light) */
 --bg:            oklch(0.982 0.002 265)   /* frame */
---surface:       oklch(1 0 0)             /* sheet, cards */
+--surface:       oklch(1 0 0)             /* cards, phone body */
 --surface-2:     oklch(0.968 0.003 265)   /* wells, active nav */
 --border:        oklch(0.92 0.004 265)
 --border-strong: oklch(0.855 0.006 265)
@@ -94,8 +95,11 @@ alone: every concept has its icon and shape, every score its band word.
 ## Layout
 
 App shell: light top bar and sidebar on the frame color; labelled sidebar from
-921px, icon rail 768 to 920, bottom tab bar below 768. Desktop content lives on
-the white sheet with 32px padding (48px from 1280). Phone gutter 16px.
+921px, icon rail 768 to 920, bottom tab bar below 768. Desktop content sits on
+the frame with 32px padding (48px from 1280). Phone gutter 16px. Touch screens
+get 44px targets (buttons, selects, tabs; small pills get an invisible 44px
+hit area). Labels never end in "...": shorten the word or let it wrap; names
+like PIX-Core stay whole (`keepWhole` in `lib/text.ts`).
 `--page-max` 1360px; `/aula` up to 1480px.
 
 Copy rule: **one short headline per block, at most one short sentence, then
@@ -132,8 +136,9 @@ Token based (`app/globals.css`):
 
 - Durations `--dur-press` 100ms, `--dur-state` 200ms, `--dur-move` 320ms,
   `--dur-explain` 560ms, `--dur-count` 600ms.
-- Curves `--ease-out`, `--ease-in-out`, `--ease-exit`, springs `--spring-calm`
-  and `--spring-land` (CSS `linear()`).
+- Curves `--ease-out`, `--ease-in-out`, `--ease-exit`, `--spring-calm` and
+  `--spring-land` (cubic-bezier curves that never pass the target; the names
+  are kept from the earlier `linear()` springs).
 - Entrances: opacity plus a small rise. The "wow" is kept to the fio drawing
   itself and the numbers that count.
 - `--motion-scale` is 1, and 1.6 in modo aula (`[data-aula]`).
