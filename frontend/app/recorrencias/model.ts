@@ -239,6 +239,11 @@ export function verdictOf(g: RecGroup): Verdict {
 }
 
 /** One or two short sentences, built only from the group's own numbers. */
+/** A name like "PIX-Core" never breaks at its hyphen inside a sentence. */
+export function keepWhole(name: string): string {
+  return name.replace(/-/g, "\u2011");
+}
+
 export function reasonFor(g: RecGroup, totalWeeks: number, problems = 0): string {
   const v = verdictOf(g);
   const span =
@@ -248,11 +253,9 @@ export function reasonFor(g: RecGroup, totalWeeks: number, problems = 0): string
   if (v === "problem") {
     const top = g.services[0];
     const all = top.count === g.size;
-    return `${span}, ${all ? "todos" : `${Math.round(g.topShare * 100)}%`} no ${top.name}. ${
-      problems > 0
-        ? "Já virou investigação de causa:"
-        : "Pede uma investigação de causa: um problema."
-    }`;
+    const where = `${span}, ${all ? "todos" : `${Math.round(g.topShare * 100)}%`} no ${keepWhole(top.name)}.`;
+    // With Problems already open, the list right below says the rest.
+    return problems > 0 ? where : `${where} Pede uma investigação de causa.`;
   }
   if (v === "mixed") {
     return `${span}, espalhados por ${g.services.length} serviços. Confira os casos antes de abrir um problema.`;

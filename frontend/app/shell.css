@@ -641,3 +641,27 @@ a {
     width: 24px;
   }
 }
+
+/* Touch: 44px targets. Repeated here (and one step more specific) because the
+   sizes above and the page styles load after the globals.css touch block. */
+@media (pointer: coarse) {
+  html .btn,
+  html .btn-sm,
+  html .select,
+  html .input {
+    height: 44px;
+  }
+  html .btn-sm {
+    padding: 0 14px;
+  }
+  html .segmented {
+    padding: 2px;
+  }
+  html .segmented button {
+    min-height: 44px;
+  }
+  html .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAulaLesson, type AulaLessonStep } from "@/components/aula";
 import { useShell } from "@/components/app-shell";
@@ -12,18 +12,16 @@ import { useAllIncidents, useClusters } from "@/lib/incidents";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { problemsForGroup, useProblems, type ProblemSummary } from "@/lib/problems";
 
-import { GroupDetail, GroupList, PromoteAction } from "./group-panel";
+import { GroupDetail, GroupList } from "./group-panel";
 import type { Focus } from "./map-engine";
 import {
   buildRecData,
+  keepWhole,
   matchesFilter,
   monthLabel,
-  reasonFor,
-  verdictOf,
   type RecFilter,
 } from "./model";
 import { RecMap } from "./rec-map";
-import { GroupTimeline } from "./timeline";
 
 import "../problemas/problemas.css";
 import "./recorrencias.css";
@@ -77,8 +75,8 @@ export default function RecurrencesPage() {
       const top = featured.services[0];
       const where = top
         ? top.count === featured.size
-          ? `, todos no ${top.name}`
-          : `, ${Math.round(featured.topShare * 100)}% no ${top.name}`
+          ? `, todos no ${keepWhole(top.name)}`
+          : `, ${Math.round(featured.topShare * 100)}% no ${keepWhole(top.name)}`
         : "";
       last = `${featured.label}: ${featured.size} casos${where}. Vale abrir um problema.`;
       if (featuredProblems.length > 0) {
@@ -93,18 +91,17 @@ export default function RecurrencesPage() {
         durationMs: 700,
       },
       {
-        title: "Parecidos",
+        title: "Comparar",
         caption: "A IA compara o texto de cada caso. Os parecidos se aproximam.",
         durationMs: 1500,
       },
       {
-        title: "Densidade",
-        caption:
-          "Muitos casos parecidos juntos viram um grupo; quem fica sozinho é caso isolado.",
+        title: "Agrupar",
+        caption: "Onde há muitos parecidos, nasce um grupo. Quem sobra é caso isolado.",
         durationMs: 900,
       },
       {
-        title: "Nomes",
+        title: "Nomear",
         caption:
           "A IA dá um nome curto a cada grupo. O número diz quantos casos ele tem.",
         durationMs: 900,
@@ -347,54 +344,6 @@ export default function RecurrencesPage() {
           <p className="rx-caption" aria-live="polite">
             {showCaption ? current.caption : " "}
           </p>
-
-          {data && !focusGroup && effectiveStage >= 3 ? (
-            <ul className="rx-legend rx-mobile-only" aria-label="Nomes dos grupos">
-              {data.groups.map((g, k) => (
-                <li key={g.id} style={{ "--hue": g.hue, "--i": k } as CSSProperties}>
-                  <button type="button" onClick={() => choose(g.id)}>
-                    <span className="rx-dot" aria-hidden="true" />
-                    <span className="rx-legend-t">{g.label}</span>
-                    <span className="rx-legend-n">{matched.get(g.id) ?? g.size}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {focusGroup ? (
-            <div
-              className="rx-strip rx-mobile-only"
-              style={{ "--hue": focusGroup.hue } as CSSProperties}
-            >
-              <div className="rx-strip-h">
-                <span className="rx-dot" aria-hidden="true" />
-                <b>{focusGroup.label}</b>
-                <span>{focusGroup.size} casos</span>
-              </div>
-              <GroupTimeline
-                key={focusGroup.id}
-                group={focusGroup}
-                weeks={data!.weeks}
-                month={filter.month}
-                compact
-              />
-              <p className="rx-reason">
-                {reasonFor(
-                  focusGroup,
-                  data!.weeks.length,
-                  (problemsByGroup.get(focusGroup.id) ?? []).length,
-                )}
-              </p>
-              <PromoteAction
-                verdict={verdictOf(focusGroup)}
-                problems={problemsByGroup.get(focusGroup.id) ?? []}
-                promoted={Boolean(promoted[String(focusGroup.id)])}
-                onPromote={() =>
-                  setPromoted((m) => ({ ...m, [String(focusGroup.id)]: true }))
-                }
-              />
-            </div>
-          ) : null}
 
           <div className="rx-foot">
             <TechDetails summary="Como o mapa foi feito">

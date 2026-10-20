@@ -37,7 +37,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/recorrencias",
     icon: Icons.recurrences,
     label: "Recorrências",
-    short: "Recorrências",
+    // "Recorrências" does not fit a ~72px tab on a 360px phone.
+    short: "Grupos",
     sub: "Incidentes que se repetem, em grupos",
     match: ["/recorrencias"],
     tone: "k-rec",

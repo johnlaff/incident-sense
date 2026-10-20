@@ -153,14 +153,7 @@ export function GroupDetail({
 
       {isGroup ? (
         <>
-          {problems.length > 0 ? (
-            <span className="rx-verdict ok">
-              <Icons.problems size={14} />
-              {problems.length === 1
-                ? "Já virou um problema"
-                : `Já virou ${problems.length} problemas`}
-            </span>
-          ) : verdict === "problem" ? (
+          {problems.length > 0 ? null : verdict === "problem" ? (
             <span className="rx-verdict ok">
               <Icons.promote size={14} />
               Candidato a problema
@@ -171,9 +164,7 @@ export function GroupDetail({
               Grupo misturado
             </span>
           ) : null}
-          <div className="rx-desk-only">
-            <GroupTimeline group={group} weeks={data.weeks} month={filter.month} />
-          </div>
+          <GroupTimeline group={group} weeks={data.weeks} month={filter.month} />
           {group.services.length > 0 ? (
             <div className="rx-svc">
               <span className="rx-svc-t">Serviços</span>
@@ -191,7 +182,7 @@ export function GroupDetail({
               </ul>
             </div>
           ) : null}
-          <div className="rx-desk-only">
+          <div>
             <p className="rx-reason">
               {reasonFor(group, data.weeks.length, problems.length)}
             </p>
