@@ -415,7 +415,7 @@ export const SUGGESTION: { text: string; cite?: string; removed?: boolean }[] = 
 // ---------------------------------------------------------------------------
 
 /** DEMO: backend/data/precomputed/clusters.json. */
-export const CLUSTERS_DEMO = { incidents: 431, groups: 9, isolated: 0 };
+export const CLUSTERS_DEMO = { incidents: 431, groups: 9, isolated: 78 };
 
 export interface MiniGroup {
   /** DEMO cluster id and label, for the color and the name. */
@@ -427,9 +427,9 @@ export interface MiniGroup {
 }
 
 export const MINI_GROUPS: MiniGroup[] = [
-  { id: 5, label: "Problemas de login no app", cx: 0.26, cy: 0.4, n: 13 },
-  { id: 1, label: "Falhas de timeout em pagamentos", cx: 0.72, cy: 0.4, n: 11 },
-  { id: 6, label: "Falha na geração de boletos", cx: 0.6, cy: 0.8, n: 9 },
+  { id: 2, label: "Falha de login no app após atualização", cx: 0.26, cy: 0.4, n: 13 },
+  { id: 0, label: "Timeout em pagamentos Pix com débito", cx: 0.72, cy: 0.4, n: 11 },
+  { id: 4, label: "Falha na geração de boletos", cx: 0.6, cy: 0.8, n: 9 },
 ];
 export const MINI_ISOLATED = 7;
 

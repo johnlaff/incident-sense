@@ -20,6 +20,12 @@ Usar **BERTopic**, que encadeia embedding → UMAP → HDBSCAN → representaç�
   (`cluster_id = -1`).
 - **Representação OpenAI** do BERTopic para gerar rótulos curtos em português.
 
+**Revisão (out/2026):** o HDBSCAN passou a rodar sobre os próprios embeddings
+(normalizados, `min_cluster_size=8`, `min_samples=7`) e o UMAP 2D ficou só para
+o mapa. Sobre o 2D, o UMAP apertava os chamados de ruído numa ilha densa e o
+HDBSCAN os juntava num grupo, com zero outliers; nos embeddings, 59 dos 70 ficam
+de fora. Ver [clustering-flow](../clustering-flow.md).
+
 Os embeddings são pré-computados (OpenAI `text-embedding-3-large`) e passados ao
 BERTopic, então o clustering não recalcula embeddings.
 
