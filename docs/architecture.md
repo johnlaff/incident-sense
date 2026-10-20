@@ -37,7 +37,7 @@ flowchart LR
 | RAG         | LlamaIndex, `openai/text-embedding-3-large` via OpenRouter (3072d) |
 | Chat/LLM    | OpenRouter (compatível com OpenAI), modelo configurável           |
 | Vetorial    | Qdrant (cosseno, 3072d)                                           |
-| Clustering  | BERTopic (UMAP cosseno 2D + HDBSCAN + rótulos por LLM)            |
+| Clustering  | BERTopic (HDBSCAN cosseno + rótulos por LLM; UMAP 2D no mapa)     |
 | Frontend    | Next.js, TypeScript, Tailwind, shadcn/ui, regl-scatterplot, Motion |
 | Qualidade   | ruff, mypy, pytest · eslint, tsc, vitest                          |
 

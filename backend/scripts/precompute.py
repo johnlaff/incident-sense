@@ -4,21 +4,27 @@ Pipeline (run once, output committed):
     1. Load the committed dataset.
     2. Embed every incident's text with OpenAI (text-embedding-3-large, 3072d).
     3. Save the embeddings (so Qdrant can be seeded with zero API calls).
-    4. Cluster with BERTopic: a *2D* UMAP (cosine, fixed random_state) feeds
-       HDBSCAN, and an LLM representation model names each cluster.
-    5. Save the 2D coordinates + cluster id + label + outlier flag per incident
+    4. Cluster with BERTopic: HDBSCAN runs on the full (L2-normalized)
+       embeddings, and an LLM representation model names each cluster.
+    5. Project the embeddings to 2D with UMAP (cosine, fixed random_state) for
+       the map only.
+    6. Save the 2D coordinates + cluster id + label + outlier flag per incident
        to clusters.json, which GET /api/clusters serves verbatim.
 
-Why 2D UMAP for clustering: BERTopic clusters on the UMAP-reduced space, and
-reducing straight to 2D gives coordinates we can plot directly while keeping the
-clusters legible for this demo-sized dataset.
+Why HDBSCAN on the full embeddings and UMAP only for the map: UMAP with
+min_dist=0 packs loosely related incidents into a tight island, so HDBSCAN on
+the 2D space read the noise incidents (internal support: projectors, air
+conditioning, phone extensions) as one dense group and left zero outliers. In
+the original space those incidents are sparse, so HDBSCAN leaves them out as
+isolated cases (cluster -1), which is the behaviour the recurrence view explains.
 
 Why cosine: embeddings encode meaning by direction, so angular (cosine) distance
-groups semantically similar incidents better than raw Euclidean distance.
+groups semantically similar incidents better than raw Euclidean distance. On
+L2-normalized vectors Euclidean distance ranks pairs exactly like cosine.
 
 Usage:
-    uv run python scripts/precompute.py
-    uv run python scripts/precompute.py --min-cluster-size 18
+    uv run python scripts/precompute.py --reuse-embeddings
+    uv run python scripts/precompute.py --reuse-embeddings --min-samples 8
 """
 
 from __future__ import annotations
@@ -152,33 +158,40 @@ def _clean_label(raw: str, fallback: str) -> str:
     return label[:60] if label else fallback
 
 
-def _build_topic_model(min_cluster_size: int, min_samples: int | None) -> object:
-    """Assemble a BERTopic model with 2D cosine UMAP + HDBSCAN + LLM labels.
-
-    Heavy ML imports happen here (lazily) so importing this script is cheap and
-    the API runtime never needs them.
-    """
-    from bertopic import BERTopic
-    from bertopic.representation import OpenAI as BERTopicOpenAI
-    from hdbscan import HDBSCAN
-    from sklearn.feature_extraction.text import CountVectorizer
+def _map_coordinates(embeddings: np.ndarray) -> np.ndarray:
+    """Project the embeddings to 2D for the recurrence map (display only)."""
     from umap import UMAP
 
-    settings = get_settings()
-
     umap_model = UMAP(
-        n_components=2,  # reduce straight to 2D so coords are directly plottable
+        n_components=2,  # 2D so coords are directly plottable
         n_neighbors=15,
         min_dist=0.0,
         metric="cosine",  # embeddings are directional; cosine groups by meaning
         random_state=42,  # fixed seed -> identical layout every run
     )
+    return np.asarray(umap_model.fit_transform(embeddings), dtype=float)
+
+
+def _build_topic_model(min_cluster_size: int, min_samples: int | None) -> object:
+    """Assemble a BERTopic model with HDBSCAN on the embeddings + LLM labels.
+
+    Heavy ML imports happen here (lazily) so importing this script is cheap and
+    the API runtime never needs them.
+    """
+    from bertopic import BERTopic
+    from bertopic.dimensionality import BaseDimensionalityReduction
+    from bertopic.representation import OpenAI as BERTopicOpenAI
+    from hdbscan import HDBSCAN
+    from sklearn.feature_extraction.text import CountVectorizer
+
+    settings = get_settings()
+
     hdbscan_model = HDBSCAN(
         min_cluster_size=min_cluster_size,
         # Higher min_samples is more conservative, so the diverse noise
         # incidents are left as outliers (cluster -1) instead of absorbed.
         min_samples=min_samples,
-        metric="euclidean",  # operates on the UMAP-reduced space
+        metric="euclidean",  # on L2-normalized embeddings, same ranking as cosine
         cluster_selection_method="eom",
         prediction_data=True,
     )
@@ -196,7 +209,8 @@ def _build_topic_model(min_cluster_size: int, min_samples: int | None) -> object
         exponential_backoff=True,
     )
     return BERTopic(
-        umap_model=umap_model,
+        # No reduction before HDBSCAN: it clusters the embeddings themselves.
+        umap_model=BaseDimensionalityReduction(),
         hdbscan_model=hdbscan_model,
         vectorizer_model=vectorizer_model,
         representation_model=representation_model,
@@ -207,11 +221,11 @@ def _build_topic_model(min_cluster_size: int, min_samples: int | None) -> object
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Precompute embeddings + clustering.")
-    parser.add_argument("--min-cluster-size", type=int, default=15)
+    parser.add_argument("--min-cluster-size", type=int, default=8)
     parser.add_argument(
         "--min-samples",
         type=int,
-        default=None,
+        default=7,
         help="HDBSCAN min_samples; higher leaves more diverse incidents as outliers.",
     )
     parser.add_argument(
@@ -240,10 +254,11 @@ def main() -> None:
         print(f"Saved embeddings -> {settings.embeddings_path}", file=sys.stderr)
 
     # --- 2) Clustering -------------------------------------------------------
-    print("Clustering with BERTopic (UMAP 2D + HDBSCAN + LLM labels)...", file=sys.stderr)
+    print("Clustering with BERTopic (HDBSCAN + LLM labels)...", file=sys.stderr)
+    normalized = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
     topic_model = _build_topic_model(args.min_cluster_size, args.min_samples)
-    topics, _ = topic_model.fit_transform(texts, embeddings=embeddings)  # type: ignore[attr-defined]
-    coords = np.asarray(topic_model.umap_model.embedding_, dtype=float)  # type: ignore[attr-defined]
+    topics, _ = topic_model.fit_transform(texts, embeddings=normalized)  # type: ignore[attr-defined]
+    coords = _map_coordinates(embeddings)
 
     # Map each topic id to a clean label (topic -1 == HDBSCAN noise/outliers).
     info = topic_model.get_topic_info()  # type: ignore[attr-defined]
