@@ -133,7 +133,7 @@ describe("mergeNotes", () => {
   const note: WorkNote = {
     id: "n1",
     incident_number: "INC1",
-    author: "Aurora",
+    author: "Assistente da IA",
     text: "x",
     sources: [],
     model: null,

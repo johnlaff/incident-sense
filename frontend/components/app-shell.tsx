@@ -470,7 +470,7 @@ function NotificationsMenu({
     {
       icon: Icons.aiSpark,
       kind: "ai",
-      title: "A Aurora preparou uma sugestão para você revisar",
+      title: "A IA preparou uma sugestão para você revisar",
       time: "há 3 h",
     },
   ];
@@ -574,7 +574,7 @@ function CommandPalette({
         group: "Ações",
         icon: Icons.sparkle,
         title: "Sugerir resolução",
-        sub: "Abre a Aurora no incidente",
+        sub: "Abre o assistente da IA no incidente",
         hint: "↵",
         run: onSuggest,
       },

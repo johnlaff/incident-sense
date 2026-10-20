@@ -123,6 +123,6 @@ def test_detail_includes_work_notes_published_by_the_platform(client: TestClient
     body = client.get("/api/incidents/INC1").json()
     assert body["empresa"] == "Banco Meridiano"
     (note,) = body["published_notes"]
-    assert note["author"] == "Aurora"
+    assert note["author"] == "Assistente da IA"
     assert note["text"] == "Ajuste o timeout [INC0000001]."
     assert note["sources"] == ["INC0000001"]

@@ -541,8 +541,8 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-1",
     n: 1,
     part: "antes",
-    title: "A nota da Change",
-    why: "Antes de subir, a Change ganha uma nota. Ninguém revisa mil Changes por dia à mão.",
+    title: "A nota da Mudança",
+    why: "Antes de subir, a Mudança ganha uma nota. Ninguém revisa mil Mudanças por dia à mão.",
     app: { href: "/changes/CHG0031001", label: "Ver no app: CHG0031001" },
     steps: [
       {
@@ -750,7 +750,7 @@ export const CHAPTERS: Chapter[] = [
     n: 7,
     part: "ciclo",
     title: "O Problema fecha o ciclo",
-    why: "A correção vira Change, e a resposta vira fonte.",
+    why: "A correção vira Mudança, e a resposta vira fonte.",
     app: { href: "/problemas/PRB0004105", label: "Ver no app: PRB0004105" },
     steps: [
       {
@@ -760,9 +760,9 @@ export const CHAPTERS: Chapter[] = [
         ms: 1400,
       },
       {
-        title: "A correção definitiva vira uma Change",
+        title: "A correção definitiva vira uma Mudança",
         line: "Ela passa pelo mesmo juiz do capítulo 1.",
-        caption: "A correção vira uma nova Change, que passa pelo mesmo juiz do começo.",
+        caption: "A correção vira uma nova Mudança, que passa pelo mesmo juiz do começo.",
         ms: 1600,
       },
       {

@@ -91,7 +91,7 @@ const CONTENT: Record<
     ],
     source: (
       <>
-        Pico de 1.084 Changes em um dia, segundo o <Cite who="solange" />.
+        Pico de 1.084 Mudanças em um dia, segundo o <Cite who="solange" />.
       </>
     ),
     details: (
@@ -121,15 +121,15 @@ const CONTENT: Record<
           ],
           [
             "Trava de conteúdo",
-            "Chave = versão da grade + modelo + Change + campo + hash SHA-256 do texto normalizado. Mesma chave, mesma nota, zero chamada.",
+            "Chave = versão da grade + modelo + Mudança + campo + hash SHA-256 do texto normalizado. Mesma chave, mesma nota, zero chamada.",
           ],
           [
             "Escopo",
-            "Só Change Normal, estado Novo, empresa Banco Meridiano. Fora disso aparece como não avaliada, nunca como zero.",
+            "Só Mudança Normal, estado Novo, empresa Banco Meridiano. Fora disso aparece como não avaliada, nunca como zero.",
           ],
           [
             "Fora do demo",
-            "No banco a avaliação dispara sozinha por um evento de mensageria quando a Change é submetida. No demo, você clica em avaliar.",
+            "No banco a avaliação dispara sozinha por um evento de mensageria quando a Mudança é submetida. No demo, você clica em avaliar.",
           ],
         ]}
       />
@@ -249,7 +249,10 @@ const CONTENT: Record<
             "Citações",
             "Citação entre colchetes de um id que não veio da busca é removida. Um id solto no texto é sinalizado.",
           ],
-          ["Publicar", "Vira nota de trabalho do incidente, assinada pela Aurora."],
+          [
+            "Publicar",
+            "Vira nota de trabalho do incidente, assinada pelo assistente da IA.",
+          ],
           ["Quem decide", "A pessoa analista. A IA sugere e mostra as fontes."],
         ]}
       />
@@ -310,7 +313,7 @@ const CONTENT: Record<
           ],
           [
             "Fora do demo",
-            "Abrir a Change da correção e ligar a Change ao Problema. No demo, a avaliação de Changes e os Problemas não se conversam.",
+            "Abrir a Mudança da correção e ligar a Mudança ao Problema. No demo, a avaliação de Mudanças e os Problemas não se conversam.",
           ],
         ]}
       />

@@ -34,7 +34,7 @@ class WorkNotesStore:
         text: str,
         *,
         sources: list[str],
-        author: str = "Aurora",
+        author: str = "Assistente da IA",
         model: str | None = None,
     ) -> WorkNote:
         """Append a note to an incident's work notes and return it."""

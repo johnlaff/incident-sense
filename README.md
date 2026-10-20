@@ -37,7 +37,7 @@ mas com um copiloto que **mostra o trabalho** em vez de pedir confiança cega.
 
 | | |
 |---|---|
-| 🤖 **Sugestão de resolução (RAG)** | Para um incidente novo, o copiloto **Aurora** recupera chamados **resolvidos** semelhantes e redige uma resolução fundamentada. |
+| 🤖 **Sugestão de resolução (RAG)** | Para um incidente novo, o **assistente da IA** recupera chamados **resolvidos** semelhantes e redige uma resolução fundamentada. |
 | 🔎 **Rastreabilidade real** | Cada sugestão **cita** os incidentes em que se baseou — e você **abre cada citação ali mesmo** para conferir se a solução veio de fato deles. Sem caixa-preta. |
 | 🗺️ **Detecção de recorrência (clustering)** | Agrupa os incidentes por causa raiz num **mapa animado**, com nomes de grupo gerados por IA, e permite **promover um grupo a problema**. |
 | ⌨️ **Workspace de verdade** | Navegue por todos os 431 incidentes, filtre, ordene, abra um registro — tema claro/escuro, **⌘K** para tudo, navegação por teclado. |
@@ -48,9 +48,9 @@ mas com um copiloto que **mostra o trabalho** em vez de pedir confiança cega.
 
 <div align="center"><img src="docs/assets/recurrences.webp" alt="Mapa de recorrências animado: os pontos se agrupam por causa raiz e um cluster é selecionado para inspeção" width="720"></div>
 
-**Copiloto Aurora** — resume, busca, classifica e sugere uma resolução, **citando** as fontes (clicáveis):
+**Assistente da IA** — resume, busca, classifica e sugere uma resolução, **citando** as fontes (clicáveis):
 
-<div align="center"><img src="docs/assets/aurora.webp" alt="Copiloto Aurora gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="440"></div>
+<div align="center"><img src="docs/assets/aurora.webp" alt="Assistente da IA gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="440"></div>
 
 ## 🚀 Comece em um comando
 
@@ -109,7 +109,7 @@ O passo **6** é o que evita ruído: o critério é se o chamado é **um inciden
 verdade**. Um pedido como _"esqueci minha senha"_ vira **improcedente**
 (autoatendimento, não uma falha de sistema), em vez de receber uma resolução
 técnica forçada. A sugestão sai em linguagem **didática** (siglas explicadas) e o
-modelo de IA é **trocável** no seletor da Aurora. Detalhes em
+modelo de IA é **trocável** no seletor do assistente da IA. Detalhes em
 [docs/rag-flow.md](docs/rag-flow.md).
 
 ### Detecção de recorrência — clustering
@@ -144,7 +144,7 @@ incident-sense/
 ├── backend/      # FastAPI: RAG, clustering servido, browse de incidentes
 │   ├── src/incident_sense/   # api, rag, data, models
 │   └── data/                 # dataset + embeddings + clusters (commitados)
-├── frontend/     # Next.js: workspace, copiloto Aurora, mapa de recorrências
+├── frontend/     # Next.js: workspace, assistente da IA, mapa de recorrências
 │   ├── app/                  # rotas (incidentes, detalhe, recorrências, …)
 │   ├── components/           # shell, ícones, primitivas de UI
 │   └── lib/                  # cliente de API tipado + camada de mapeamento

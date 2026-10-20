@@ -734,7 +734,7 @@ export function Suggest() {
       <figcaption className="cf-card-head">
         <span className="cf-head-k">
           <ConceptLabel concept="ai-out" />
-          Aurora · sugestão de resolução
+          Assistente da IA · sugestão de resolução
         </span>
         <Origin kind="ilustrativo">texto de exemplo</Origin>
       </figcaption>
@@ -776,7 +776,9 @@ export function Publish() {
       <ol className="cf-feed">
         <li className="cf-note is-new">
           <span className="cf-note-who">
-            <ConceptLabel concept="ai-out">Aurora · nota de trabalho</ConceptLabel>
+            <ConceptLabel concept="ai-out">
+              Assistente da IA · nota de trabalho
+            </ConceptLabel>
           </span>
           <span className="cf-note-t">
             Sugestão de resolução, com 3 fontes citadas: PRB0004105, PRB0004104 e
@@ -897,7 +899,7 @@ export function ProblemCard() {
 }
 
 const LOOP = [
-  { k: "chg", t: "Change" },
+  { k: "chg", t: "Mudança" },
   { k: "dep", t: "Deploy" },
   { k: "inc", t: "Incidente" },
   { k: "rec", t: "Recorrência" },
@@ -908,7 +910,7 @@ export function Loop() {
   return (
     <figure className="cf-card cf-loop">
       <figcaption className="cf-card-head">
-        <span>Da correção para uma nova Change</span>
+        <span>Da correção para uma nova Mudança</span>
         <Origin kind="fora" />
       </figcaption>
       <p className="cf-quote">
@@ -917,7 +919,7 @@ export function Loop() {
       </p>
       <ol
         className="cf-ring"
-        aria-label="O ciclo: Change, deploy, incidente, recorrência, problema e de volta à Change"
+        aria-label="O ciclo: Mudança, deploy, incidente, recorrência, problema e de volta à Mudança"
       >
         {LOOP.map((n, i) => (
           <li key={n.k} className={`cf-ring-n is-${n.k}`} style={{ "--i": i } as Style}>
@@ -926,10 +928,10 @@ export function Loop() {
         ))}
         <li className="cf-ring-back" style={{ "--i": 5 } as Style}>
           <Icons.replay size={14} />
-          <span>nova Change, mesmo juiz</span>
+          <span>nova Mudança, mesmo juiz</span>
         </li>
       </ol>
-      <p className="cf-card-foot">A Change da correção fica fora do demo.</p>
+      <p className="cf-card-foot">A Mudança da correção fica fora do demo.</p>
     </figure>
   );
 }

@@ -37,7 +37,7 @@ with a copilot that **shows its work** instead of asking for blind trust.
 
 | | |
 |---|---|
-| 🤖 **Resolution suggestion (RAG)** | For a new incident, the **Aurora** copilot retrieves similar **resolved** tickets and drafts a grounded resolution. |
+| 🤖 **Resolution suggestion (RAG)** | For a new incident, the **AI assistant** retrieves similar **resolved** tickets and drafts a grounded resolution. |
 | 🔎 **Real traceability** | Every suggestion **cites** the incidents it relied on — and you **open each citation right there** to verify the fix actually came from them. No black box. |
 | 🗺️ **Recurrence detection (clustering)** | Groups incidents by root cause on an **animated map**, with AI-generated cluster names, and lets you **promote a group to a problem**. |
 | ⌨️ **A real workspace** | Browse all 431 incidents, filter, sort, open a record — light/dark theme, **⌘K** for everything, keyboard navigation. |
@@ -48,9 +48,9 @@ with a copilot that **shows its work** instead of asking for blind trust.
 
 <div align="center"><img src="docs/assets/recurrences.webp" alt="Animated recurrence map: points group by root cause and a cluster is selected for inspection" width="720"></div>
 
-**Aurora copilot** — summarizes, retrieves, classifies and suggests a resolution, **citing** its sources (clickable):
+**AI assistant** — summarizes, retrieves, classifies and suggests a resolution, **citing** its sources (clickable):
 
-<div align="center"><img src="docs/assets/aurora.webp" alt="Aurora copilot producing a grounded suggestion with clickable [INC] citations and the list of sources it consulted" width="440"></div>
+<div align="center"><img src="docs/assets/aurora.webp" alt="AI assistant producing a grounded suggestion with clickable [INC] citations and the list of sources it consulted" width="440"></div>
 
 ## 🚀 Get started in one command
 
@@ -88,7 +88,7 @@ Step **6** is what avoids noise: the criterion is whether the ticket is **a real
 incident**. A request like _"I forgot my password"_ becomes **improcedente**
 (self-service, not a system failure) instead of being forced a technical
 resolution. The suggestion is written in **plain, didactic** language (acronyms
-spelled out) and the AI model is **switchable** in Aurora's picker. Details in
+spelled out) and the AI model is **switchable** in the AI assistant's picker. Details in
 [docs/rag-flow.md](docs/rag-flow.md).
 
 ### Recurrence detection — clustering
@@ -123,7 +123,7 @@ incident-sense/
 ├── backend/      # FastAPI: RAG, served clustering, incident browse
 │   ├── src/incident_sense/   # api, rag, data, models
 │   └── data/                 # dataset + embeddings + clusters (committed)
-├── frontend/     # Next.js: workspace, Aurora copilot, recurrence map
+├── frontend/     # Next.js: workspace, AI assistant, recurrence map
 │   ├── app/                  # routes (incidents, detail, recurrences, …)
 │   ├── components/           # shell, icons, UI primitives
 │   └── lib/                  # typed API client + mapping layer

@@ -110,7 +110,7 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
           ? e.status === 503
             ? "A IA não está configurada neste servidor."
             : e.detail
-          : "Não foi possível falar com a Aurora agora.",
+          : "Não foi possível falar com a IA agora.",
       );
       setPhase("error");
     } finally {
@@ -990,7 +990,7 @@ function CopilotFab({
         onClick={() => setSrcOpen((s) => !s)}
       >
         <Icons.list size={15} />
-        <span className="src-tt">Fontes que a Aurora consultou</span>
+        <span className="src-tt">Fontes que a IA consultou</span>
         <span className="src-count">{result.candidates.length}</span>
         <Icons.chevronDown size={14} />
       </button>
@@ -1145,8 +1145,8 @@ function CopilotFab({
       <button
         className={`cop-fab${open || entryInView ? " hidden" : ""}${quiet ? " quiet" : ""}`}
         onClick={() => setOpen(true)}
-        aria-label="Falar com a Aurora"
-        title="Aurora · assistente de resolução"
+        aria-label="Falar com o assistente da IA"
+        title="Assistente da IA · sugestão de resolução"
       >
         <Icons.aiSpark />
       </button>
@@ -1156,7 +1156,7 @@ function CopilotFab({
           className="cop-panel"
           role="dialog"
           aria-modal="true"
-          aria-label="Aurora, assistente de resolução"
+          aria-label="Assistente da IA"
           tabIndex={-1}
           ref={trapRef}
         >
@@ -1165,7 +1165,7 @@ function CopilotFab({
               <Icons.aiSpark />
             </span>
             <div className="cph-title">
-              <div className="t">Aurora</div>
+              <div className="t">Assistente da IA</div>
               <button
                 className="model-pick"
                 onClick={() => setModelOpen((o) => !o)}
@@ -1220,9 +1220,9 @@ function CopilotFab({
                 <Icons.aiSpark size={15} />
               </span>
               <div className="bubble-ai">
-                Oi, eu sou a Aurora. Posso sugerir uma resolução para o{" "}
-                <b className="mono">{record.number}</b>, com base em incidentes parecidos
-                que já foram resolvidos. Sempre mostro as fontes para você conferir.
+                Posso sugerir uma resolução para o <b className="mono">{record.number}</b>
+                , com base em incidentes parecidos que já foram resolvidos. Sempre mostro
+                as fontes para você conferir.
               </div>
             </div>
             {!started ? (
@@ -1253,8 +1253,8 @@ function CopilotFab({
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Escreva uma mensagem para a Aurora…"
-              aria-label="Mensagem para a Aurora"
+              placeholder="Escreva uma mensagem para a IA…"
+              aria-label="Mensagem para a IA"
               onKeyDown={(e) => {
                 if (e.key === "Enter") submit();
               }}

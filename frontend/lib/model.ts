@@ -159,7 +159,7 @@ export interface ActivityItem {
 
 const OBSERVER: Actor = { name: "Monitoração", initials: "OBS" };
 const ANALYST: Actor = { name: "Analista", initials: "AN" };
-export const AURORA: Actor = { name: "Aurora", initials: "AU", ai: true };
+export const AURORA: Actor = { name: "Assistente da IA", initials: "IA", ai: true };
 
 /** A work note the platform published (the AI suggestion), as an activity item. */
 export function noteActivity(note: WorkNote): ActivityItem {
