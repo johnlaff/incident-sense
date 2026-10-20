@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 
 import { Icons } from "@/components/icons";
 import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
@@ -83,8 +83,8 @@ export default function ChangesPage() {
 
       {rows.length > 0 && (
         <ul className="chg-list">
-          {rows.map((c) => (
-            <li key={c.number}>
+          {rows.map((c, i) => (
+            <li key={c.number} style={{ "--i": i } as CSSProperties}>
               <Link href={`/changes/${c.number}`} className="chg-row">
                 <span className="chg-num">{c.number}</span>
                 <span className="chg-title">{c.short_description}</span>
