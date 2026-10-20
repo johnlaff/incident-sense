@@ -273,7 +273,9 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           <div className="wide">
             <dt>Janela de execução</dt>
             <dd>
-              {absDate(change.planned_start)} até {absDate(change.planned_end)}
+              {/* Each date stays whole; the line breaks only at "até". */}
+              <span className="meta-item">{absDate(change.planned_start)}</span> até{" "}
+              <span className="meta-item">{absDate(change.planned_end)}</span>
             </dd>
           </div>
           <div>

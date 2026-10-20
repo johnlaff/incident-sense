@@ -7,12 +7,11 @@
  * ===================================================================== */
 
 /* ----- Top bar: part of the light frame ----- */
+/* Opaque: text scrolling under a see-through bar read as a smear. */
 .topbar {
-  background: color-mix(in oklab, var(--surface) 86%, transparent);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   color: var(--ink);
-  -webkit-backdrop-filter: saturate(1.6) blur(12px);
-  backdrop-filter: saturate(1.6) blur(12px);
 }
 .brand {
   gap: 10px;
@@ -223,9 +222,7 @@
 
 /* ----- Phone tab bar: white, hairline, glyph lights up in its color ----- */
 .tabbar {
-  background: color-mix(in oklab, var(--surface) 90%, transparent);
-  -webkit-backdrop-filter: saturate(1.6) blur(14px);
-  backdrop-filter: saturate(1.6) blur(14px);
+  background: var(--surface);
   border-top: 1px solid var(--border);
   box-shadow: none;
 }
@@ -660,8 +657,6 @@ a {
   .topbar {
     background: var(--bg);
     border-bottom: 0;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
     padding: 0 16px 0 18px;
   }
   .main {

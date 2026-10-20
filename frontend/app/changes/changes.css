@@ -209,14 +209,9 @@ a.chg-row:focus-visible {
   .chg-aside {
     grid-column: 2;
     grid-row: 1;
-    /* The score panel stays in view while the fields scroll; when it is
-       taller than the window it scrolls on its own. */
-    position: sticky;
-    top: 0;
-    max-height: calc(100vh - 56px - 48px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    /* The score panel flows with the page: a scroller of its own clipped
+       the card's top (border and title) once the playback had moved it.
+       Each field card carries its own score on the left. */
   }
   .chg-fields {
     grid-column: 1;
