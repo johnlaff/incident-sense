@@ -333,6 +333,20 @@ export default function HowItWorksPage() {
   const [fromBelow, setFromBelow] = useState(false);
   const signals = useRef<Record<string, ChapterSignal>>({});
   const focusedRef = useRef(focused);
+  // The hero's line already lists the seven chapters: the sticky pager only
+  // shows once that line has left the screen, so the index is never doubled.
+  const lifeRef = useRef<HTMLOListElement>(null);
+  const [lifeShown, setLifeShown] = useState(true);
+  useEffect(() => {
+    const el = lifeRef.current;
+    if (!el) return;
+    const top = document.querySelector<HTMLElement>(".topbar")?.offsetHeight ?? 56;
+    const io = new IntersectionObserver(([e]) => setLifeShown(e.isIntersecting), {
+      rootMargin: `-${top}px 0px 0px 0px`,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const onSignal = useCallback((id: string, s: ChapterSignal) => {
     signals.current[id] = s;
@@ -423,7 +437,7 @@ export default function HowItWorksPage() {
         </p>
         {/* The line at the top: seven stops, one per chapter, same names as the
             index and the headings. */}
-        <ol className="cf-life" aria-label="Os sete capítulos">
+        <ol className="cf-life" aria-label="Os sete capítulos" ref={lifeRef}>
           {CHAPTERS.map((c, i) => (
             <li
               key={c.id}
@@ -461,7 +475,11 @@ export default function HowItWorksPage() {
         </p>
       </header>
 
-      <nav className="cf-index" aria-label="Capítulos">
+      <nav
+        className="cf-index"
+        aria-label="Capítulos"
+        data-hidden={lifeShown || undefined}
+      >
         <p className="cf-index-now" aria-live="polite">
           <span className="mono">{current.n}/7</span> {current.title}
         </p>
