@@ -1,6 +1,6 @@
 /* "Como funciona": the chaptered walkthrough. Scoped to .cf; uses the global
-   tokens (and the concept tokens from the bolder redesign when they land on
-   main) through local --cf-* names with fallbacks. Motion rules:
+   tokens and the shared concept tokens (--c-*, --score-*, --gate-*) through
+   local --cf-* aliases. Motion rules:
    - row states (data-s ahead / now / done) drive transitions: a step that
      comes back to "ahead" resets instantly, a step that arrives plays;
    - in the static view, the data-encoding motions (bars to their values,
@@ -9,24 +9,26 @@
    - reduced motion keeps every state, without movement. */
 
 .cf {
-  --cf-chg: var(--c-chg, oklch(0.5 0.1 185));
-  --cf-chg-tint: var(--c-chg-tint, oklch(0.955 0.03 185));
-  --cf-chg-ink: var(--c-chg-ink, oklch(0.42 0.09 185));
-  --cf-inc: var(--c-inc, oklch(0.5 0.15 255));
-  --cf-inc-tint: var(--c-inc-tint, oklch(0.955 0.03 255));
-  --cf-inc-ink: var(--c-inc-ink, oklch(0.42 0.14 255));
-  --cf-prb: var(--c-prb, oklch(0.72 0.14 82));
-  --cf-prb-tint: var(--c-prb-tint, oklch(0.96 0.045 85));
-  --cf-prb-ink: var(--c-prb-ink, oklch(0.45 0.1 80));
-  --cf-ai: var(--c-ai, var(--primary));
-  --cf-ai-tint: var(--c-ai-tint, var(--primary-tint));
-  --cf-ai-ink: var(--c-ai-ink, var(--primary-ink));
-  --cf-pass: var(--score-high, var(--success));
-  --cf-pass-tint: var(--score-high-tint, var(--st-resolved-tint));
-  --cf-mid: var(--score-mid, oklch(0.5 0.11 70));
-  --cf-mid-tint: var(--score-mid-tint, oklch(0.96 0.05 85));
-  --cf-fail: var(--score-low, var(--danger));
-  --cf-fail-tint: var(--score-low-tint, var(--p1-tint));
+  /* Aliases of the shared concept tokens (globals.css); light and dark come
+     from there, so nothing is hardcoded here. */
+  --cf-chg: var(--c-chg);
+  --cf-chg-tint: var(--c-chg-tint);
+  --cf-chg-ink: var(--c-chg-ink);
+  --cf-inc: var(--c-inc);
+  --cf-inc-tint: var(--c-inc-tint);
+  --cf-inc-ink: var(--c-inc-ink);
+  --cf-prb: var(--c-prb);
+  --cf-prb-tint: var(--c-prb-tint);
+  --cf-prb-ink: var(--c-prb-ink);
+  --cf-ai: var(--c-ai);
+  --cf-ai-tint: var(--c-ai-tint);
+  --cf-ai-ink: var(--c-ai-ink);
+  --cf-pass: var(--gate-pass);
+  --cf-pass-tint: var(--score-high-tint);
+  --cf-mid: var(--score-mid);
+  --cf-mid-tint: var(--score-mid-tint);
+  --cf-fail: var(--gate-fail);
+  --cf-fail-tint: var(--score-low-tint);
   --cf-radius: var(--radius-lg, 12px);
   --cf-d: calc(var(--dur-explain, 560ms) * var(--motion-scale, 1));
   --cf-st: var(--stagger-explain, 90ms);
@@ -39,21 +41,6 @@
   color: var(--ink-body);
   font-size: 1rem;
   line-height: 1.55;
-}
-[data-theme="dark"] .cf {
-  --cf-chg: var(--c-chg, oklch(0.74 0.1 185));
-  --cf-chg-tint: var(--c-chg-tint, oklch(0.3 0.04 185));
-  --cf-chg-ink: var(--c-chg-ink, oklch(0.82 0.08 185));
-  --cf-inc: var(--c-inc, oklch(0.72 0.13 255));
-  --cf-inc-tint: var(--c-inc-tint, oklch(0.3 0.06 255));
-  --cf-inc-ink: var(--c-inc-ink, oklch(0.82 0.1 255));
-  --cf-prb: var(--c-prb, oklch(0.84 0.13 85));
-  --cf-prb-tint: var(--c-prb-tint, oklch(0.32 0.05 85));
-  --cf-prb-ink: var(--c-prb-ink, oklch(0.86 0.1 85));
-  --cf-mid: var(--score-mid, oklch(0.82 0.12 80));
-  --cf-mid-tint: var(--score-mid-tint, oklch(0.31 0.05 80));
-  --cf-fail-tint: var(--score-low-tint, oklch(0.31 0.07 27));
-  --cf-pass-tint: var(--score-high-tint, oklch(0.3 0.06 150));
 }
 .cf ::selection {
   background: color-mix(in oklab, var(--cf-part) 28%, transparent);
@@ -261,12 +248,9 @@
   border-color: var(--border-strong);
 }
 .cf-index a[aria-current] {
-  background: var(--cf-p);
   border-color: var(--cf-p);
-  color: var(--surface);
-}
-[data-theme="dark"] .cf-index a[aria-current] {
-  color: var(--bg);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--cf-p);
 }
 .cf-index-n {
   font-size: 0.8125rem;
@@ -332,7 +316,8 @@
     background: color-mix(in oklab, var(--cf-p) 16%, transparent);
   }
   .cf-index a[aria-current] .cf-index-n {
-    background: color-mix(in oklab, var(--surface) 22%, transparent);
+    background: var(--cf-p);
+    color: var(--surface);
   }
 }
 @container cf-index (min-width: 1300px) {
@@ -376,15 +361,12 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--cf-part);
-  color: var(--surface);
-  font-weight: 700;
-  font-size: 1.125rem;
+  border: 1px solid color-mix(in oklab, var(--cf-part) 55%, var(--border));
+  color: var(--cf-part-ink);
+  font-weight: 600;
+  font-size: 1.0625rem;
   font-variant-numeric: tabular-nums;
   margin-top: 2px;
-}
-[data-theme="dark"] .cf-ch-n {
-  color: var(--bg);
 }
 .cf-ch-head h2 {
   font-size: 1.5rem;
@@ -621,6 +603,7 @@
   text-underline-offset: 3px;
 }
 .cf-cite-link svg {
+  display: inline-block;
   margin-left: 3px;
   vertical-align: -1px;
 }
@@ -633,36 +616,9 @@
 .cf-ch-foot .btn {
   min-height: 40px;
 }
-.cf-tech {
-  margin-top: 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius, 8px);
-  background: var(--surface);
-}
-.cf-tech summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 14px;
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--ink);
-  list-style: none;
-}
-.cf-tech summary::-webkit-details-marker {
-  display: none;
-}
-.cf-tech-chev {
-  width: 16px;
-  height: 16px;
-  transition: rotate var(--dur-state, 200ms) var(--ease-out);
-}
-.cf-tech[open] .cf-tech-chev {
-  rotate: 90deg;
-}
-.cf-tech-body {
-  padding: 0 14px 14px;
+/* The disclosure itself is the shared TechDetails (.tech in concepts.css). */
+.cf-ch > .tech {
+  margin-top: 16px;
 }
 .cf-tech-list {
   margin: 0;
@@ -761,7 +717,7 @@
 .cf-bar-track {
   position: relative;
   display: block;
-  height: 10px;
+  height: 6px;
   border-radius: 999px;
   background: var(--surface-2);
   overflow: hidden;
@@ -804,15 +760,23 @@
   font-size: 0.8125rem;
 }
 .cf-rec {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  display: inline-flex;
   white-space: nowrap;
 }
-.cf-rec.is-incidente {
-  color: var(--cf-inc-ink);
+.cf-head-k {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
 }
-.cf-rec.is-problema {
-  color: var(--cf-prb-ink);
+.cf-avg-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 .cf-quote {
   margin: 0;
@@ -1009,8 +973,8 @@
 }
 .cf-scale-track {
   position: relative;
-  height: 22px;
-  border-radius: 6px;
+  height: 12px;
+  border-radius: 999px;
   background: var(--surface-2);
 }
 .cf-seg {
@@ -1077,7 +1041,7 @@
   top: 24px;
   left: -1px;
   width: 2px;
-  height: 30px;
+  height: 22px;
   background: var(--ink);
 }
 .cf-row[data-s="ahead"] .cf-pointer {
@@ -1372,8 +1336,7 @@
   color: var(--cf-fail);
 }
 .cf-row:not([data-s="ahead"]) .cf-task-list .is-sem-volta {
-  background: var(--cf-fail-tint);
-  border-color: color-mix(in oklab, var(--cf-fail) 35%, var(--border));
+  border-color: color-mix(in oklab, var(--cf-fail) 45%, var(--border));
 }
 .cf-coh-rows {
   display: grid;
@@ -1391,7 +1354,7 @@
   font-size: 0.875rem;
 }
 .cf-coh-row .cf-bar-track {
-  height: 14px;
+  height: 8px;
 }
 .cf-coh-row.is-high .cf-bar {
   background: var(--cf-pass);
@@ -1411,7 +1374,7 @@
   margin: 14px 0 0;
   padding: 10px 12px;
   border-radius: var(--radius-sm, 6px);
-  background: var(--cf-fail-tint);
+  border: 1px solid color-mix(in oklab, var(--cf-fail) 35%, var(--border));
   color: var(--ink);
 }
 .cf-problem svg {
@@ -1770,12 +1733,9 @@
 }
 .cf-cls-rec {
   display: grid;
-  gap: 1px;
+  justify-items: start;
+  gap: 4px;
   color: var(--ink);
-}
-.cf-cls-rec b {
-  font-size: 0.8125rem;
-  color: var(--cf-inc-ink);
 }
 .cf-cls-v {
   display: inline-flex;
@@ -1949,7 +1909,7 @@
   padding: 0 6px;
   border-radius: 4px;
   background: var(--cf-prb);
-  color: oklch(0.22 0.035 265);
+  color: var(--c-prb-on);
   font-size: 0.6875rem;
 }
 .cf-map.is-promoted .cf-prb-chip {

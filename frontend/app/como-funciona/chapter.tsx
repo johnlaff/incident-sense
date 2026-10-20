@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { useAula, useAulaLesson } from "@/components/aula";
+import { TechDetails } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
@@ -131,7 +132,9 @@ export function ChapterView({
       if (stuck) {
         const main = el.closest<HTMLElement>(".main");
         const scroller =
-          main && main.scrollHeight > main.clientHeight ? main : document.scrollingElement;
+          main && main.scrollHeight > main.clientHeight
+            ? main
+            : document.scrollingElement;
         scroller?.scrollBy({ top: r.top - top, behavior: reduced ? "auto" : "smooth" });
       } else {
         el.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
@@ -222,13 +225,7 @@ export function ChapterView({
           </button>
         ) : null}
       </div>
-      <details className="cf-tech">
-        <summary>
-          <Icons.chevronRight className="cf-tech-chev" />
-          Ver detalhes técnicos
-        </summary>
-        <div className="cf-tech-body">{details}</div>
-      </details>
+      <TechDetails>{details}</TechDetails>
     </section>
   );
 }

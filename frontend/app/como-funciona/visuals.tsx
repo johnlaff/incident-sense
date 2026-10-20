@@ -5,6 +5,7 @@
 
 import type { CSSProperties } from "react";
 
+import { ConceptLabel, GateMark, RecordTag, ScoreNumber } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { clusterColor } from "@/lib/model";
 
@@ -89,7 +90,10 @@ export function Parallel() {
   return (
     <figure className="cf-card cf-par">
       <figcaption className="cf-card-head">
-        <span>Sete chamadas ao modelo</span>
+        <span className="cf-head-k">
+          <ConceptLabel concept="ai-step" />
+          Sete chamadas ao modelo
+        </span>
         <Origin kind="ilustrativo">tempos ilustrativos</Origin>
       </figcaption>
       <div className="cf-par-group">
@@ -201,6 +205,10 @@ export function Average() {
         ({segments.map((s) => br(s.product)).join(" + ")}) ÷ {br(TOTAL_WEIGHT)} ={" "}
         <b>{br(average, 2)}</b>
       </p>
+      <div className="cf-avg-result">
+        <ScoreNumber value={average} band="high" max={10} decimals={2} size="md" />
+        <GateMark rule={`Nota mínima ${br(GATE)}`} verdict="pass" />
+      </div>
     </figure>
   );
 }
@@ -285,7 +293,7 @@ export function Gate() {
             <li key={g.number} className={pass ? "is-pass" : "is-stop"}>
               {pass ? <Icons.checkCircle size={16} /> : <Icons.alert size={16} />}
               <span>
-                <b className="mono">{g.number}</b> {g.verdict}
+                <RecordTag number={g.number} size="sm" /> {g.verdict}
               </span>
             </li>
           );
@@ -445,7 +453,7 @@ export function Load() {
   return (
     <figure className="cf-card cf-inc">
       <figcaption className="cf-card-head">
-        <span className="mono">{INCIDENT.number}</span>
+        <RecordTag number={INCIDENT.number} size="sm" />
         <Origin kind="demo" />
       </figcaption>
       <p className="cf-inc-title">{INCIDENT.title}</p>
@@ -476,7 +484,10 @@ export function Summarize() {
   return (
     <figure className="cf-card cf-sum">
       <figcaption className="cf-card-head">
-        <span>Do texto para o resumo</span>
+        <span className="cf-head-k">
+          <ConceptLabel concept="ai-step" />
+          Do texto para o resumo
+        </span>
         <Origin kind="ilustrativo">resumo de exemplo</Origin>
       </figcaption>
       <div className="cf-sum-from">
@@ -610,7 +621,9 @@ export function Ruler() {
                 className={`${pass ? "is-pass" : "is-out"}${rulerPos(c.sim) > 0.78 || !pass ? " is-edge" : ""}`}
                 style={{ "--i": i, "--x": fix(rulerPos(c.sim)) } as Style}
               >
-                <span className={`cf-rec mono is-${c.kind}`}>{c.number}</span>
+                <span className="cf-rec">
+                  <RecordTag number={c.number} size="sm" ghost />
+                </span>
                 <span className="cf-ruler-lane">
                   <span className="cf-ruler-dot">
                     <span className="mono">{br(c.sim, 2)}</span>
@@ -640,7 +653,10 @@ export function PostFilter() {
   return (
     <figure className="cf-card cf-pf">
       <figcaption className="cf-card-head">
-        <span>Camada 3 · a IA confere</span>
+        <span className="cf-head-k">
+          <ConceptLabel concept="ai-step" />
+          Camada 3 · a IA confere
+        </span>
         <Origin kind="ilustrativo">vereditos ilustrativos</Origin>
       </figcaption>
       <ul className="cf-pf-list">
@@ -652,7 +668,9 @@ export function PostFilter() {
               className={keep ? "is-keep" : "is-drop"}
               style={{ "--i": i } as Style}
             >
-              <span className={`cf-rec mono is-${c.kind}`}>{c.number}</span>
+              <span className="cf-rec">
+                <RecordTag number={c.number} size="sm" ghost />
+              </span>
               <span className="cf-pf-reason">{c.reason}</span>
               <span className="cf-pf-v">
                 {keep ? (
@@ -683,13 +701,16 @@ export function Classify() {
   return (
     <figure className="cf-card cf-cls">
       <figcaption className="cf-card-head">
-        <span>Procedente ou improcedente?</span>
+        <span className="cf-head-k">
+          <ConceptLabel concept="ai-step" />
+          Procedente ou improcedente?
+        </span>
         <Origin kind="demo">registros do demo</Origin>
       </figcaption>
       <ul className="cf-cls-list">
         <li className="is-yes" style={{ "--i": 0 } as Style}>
           <span className="cf-cls-rec">
-            <b className="mono">{INCIDENT.number}</b>
+            <RecordTag number={INCIDENT.number} size="sm" />
             <span>{INCIDENT.title}</span>
           </span>
           <span className="cf-cls-v">
@@ -699,7 +720,7 @@ export function Classify() {
         </li>
         <li className="is-no" style={{ "--i": 1 } as Style}>
           <span className="cf-cls-rec">
-            <b className="mono">{IMPROCEDENTE.number}</b>
+            <RecordTag number={IMPROCEDENTE.number} size="sm" />
             <span>{IMPROCEDENTE.title}</span>
           </span>
           <span className="cf-cls-v">
@@ -716,8 +737,9 @@ export function Suggest() {
   return (
     <figure className="cf-card cf-sug">
       <figcaption className="cf-card-head">
-        <span>
-          <Icons.aiSpark size={14} /> Aurora · sugestão de resolução
+        <span className="cf-head-k">
+          <ConceptLabel concept="ai-out" />
+          Aurora · sugestão de resolução
         </span>
         <Origin kind="ilustrativo">texto de exemplo</Origin>
       </figcaption>
@@ -752,13 +774,15 @@ export function Publish() {
   return (
     <figure className="cf-card cf-pub">
       <figcaption className="cf-card-head">
-        <span>{INCIDENT.number} · Atividade</span>
+        <span className="cf-head-k">
+          <RecordTag number={INCIDENT.number} size="sm" /> Atividade
+        </span>
         <Origin kind="ilustrativo">nota nova de exemplo</Origin>
       </figcaption>
       <ol className="cf-feed">
         <li className="cf-note is-new">
           <span className="cf-note-who">
-            <Icons.aiSpark size={14} /> Aurora · nota de trabalho
+            <ConceptLabel concept="ai-out">Aurora · nota de trabalho</ConceptLabel>
           </span>
           <span className="cf-note-t">
             Sugestão de resolução, com 3 fontes citadas: PRB0004105, PRB0004104 e
@@ -856,7 +880,7 @@ export function ProblemCard() {
   return (
     <figure className="cf-card cf-prb">
       <figcaption className="cf-card-head">
-        <span className="mono">{PROBLEM.number}</span>
+        <RecordTag number={PROBLEM.number} size="sm" />
         <Origin kind="demo" />
       </figcaption>
       <p className="cf-inc-title">{PROBLEM.title}</p>
@@ -938,7 +962,7 @@ export function BackToSearch() {
         <li style={{ "--i": 1 } as Style}>
           <span className="cf-back-k">Encontra</span>
           <span>
-            <b className="cf-rec mono is-problema">{c.number}</b> com{" "}
+            <RecordTag number={c.number} size="sm" ghost /> com{" "}
             <b className="mono">{br(c.sim, 2)}</b>, mantido pela conferência.
           </span>
         </li>
