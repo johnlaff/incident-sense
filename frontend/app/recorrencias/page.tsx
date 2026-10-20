@@ -87,7 +87,7 @@ export default function RecurrencesPage() {
     return [
       {
         title: "Pontos",
-        caption: `Cada ponto é um incidente real. Sem análise, são ${n} casos soltos.`,
+        caption: `Cada ponto é um incidente do conjunto de dados. Sem análise, são ${n} casos soltos.`,
         durationMs: 700,
       },
       {

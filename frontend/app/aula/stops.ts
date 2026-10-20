@@ -44,7 +44,7 @@ export const STOPS: Stop[] = [
     n: 2,
     concept: "inc",
     tone: "k-inc",
-    title: "Um incidente real, resolvido com IA",
+    title: "Um incidente do conjunto de dados, resolvido com IA",
     line: "A IA acha casos parecidos e sugere, citando cada um.",
     href: "/incidentes/INC0052233?aula=1",
     cta: "Abrir o incidente",
