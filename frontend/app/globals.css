@@ -1002,14 +1002,14 @@ table.list {
   gap: 10px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(var(--primary-tint), var(--surface));
+  background: linear-gradient(var(--c-ai-tint), var(--surface));
 }
 .cop-head .mark {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
 }
@@ -1029,8 +1029,8 @@ table.list {
 }
 .bubble-user {
   align-self: flex-end;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   padding: 8px 12px;
   border-radius: 12px 12px 3px 12px;
   font-size: 13px;
@@ -1069,8 +1069,8 @@ table.list {
   color: var(--st-resolved);
 }
 .trace .ico.run {
-  background: var(--primary-tint);
-  color: var(--primary-ink);
+  background: var(--c-ai-tint);
+  color: var(--c-ai-ink);
 }
 .trace .ico svg {
   width: 12px;
@@ -1104,14 +1104,14 @@ table.list {
   cursor: pointer;
 }
 .cand:hover {
-  border-color: var(--primary);
-  background: var(--primary-tint);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
 }
 .cand .num {
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .cand .cdesc {
   flex: 1;
@@ -1163,8 +1163,8 @@ table.list {
 }
 
 .suggestion {
-  border: 1px solid var(--primary);
-  background: var(--primary-tint);
+  border: 1px solid var(--c-ai);
+  background: var(--c-ai-tint);
   border-radius: var(--radius-sm);
   padding: 12px 13px;
   font-size: 13px;
@@ -1175,7 +1175,7 @@ table.list {
   margin: 0 0 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 /* Markdown rendered by <SuggestionMarkdown> (react-markdown). */
 .suggestion .md > :first-child {
@@ -1210,24 +1210,24 @@ table.list {
   margin: 0;
 }
 .suggestion .md li::marker {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   font-weight: 700;
 }
 .suggestion .md strong {
   font-weight: 700;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .suggestion .md a:not(.cite) {
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
   text-decoration: underline;
 }
 .cite {
   font-family: var(--mono);
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
   background: oklch(1 0 0 / 0.7);
-  border: 1px solid var(--primary);
+  border: 1px solid var(--c-inc);
   border-radius: 5px;
   padding: 0 5px;
   cursor: pointer;
@@ -1493,8 +1493,8 @@ body {
   color: var(--primary-ink);
 }
 .nm-ico.ai {
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
 }
 .nm-main {
   flex: 1;
@@ -1845,8 +1845,8 @@ body {
   color: var(--st-progress);
 }
 .act .av.ai {
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
 }
 .act .act-body {
   display: flex;
@@ -1897,7 +1897,7 @@ body {
   font-family: var(--mono);
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .rel-row .rdesc {
   flex: 1;
@@ -1934,7 +1934,7 @@ body {
   gap: 8px;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
-  background: var(--primary-tint);
+  background: var(--c-ai-tint);
   animation: insert-flash calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
 }
 .draft-label {
@@ -1944,7 +1944,7 @@ body {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .resnotes-draft .btn-ghost {
   margin-left: -8px;
@@ -2024,10 +2024,10 @@ body {
 }
 @keyframes insert-flash {
   0% {
-    background: color-mix(in oklab, var(--primary) 30%, var(--surface));
+    background: color-mix(in oklab, var(--c-ai) 30%, var(--surface));
   }
   100% {
-    background: var(--primary-tint);
+    background: var(--c-ai-tint);
   }
 }
 
@@ -2127,14 +2127,14 @@ body {
     box-shadow var(--dur-press);
 }
 .cite:hover {
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  box-shadow: 0 0 0 3px var(--c-inc-tint);
 }
 .cite.flash {
   animation: cite-flash calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
 }
 @keyframes cite-flash {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 60%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--c-inc) 60%, transparent);
   }
   100% {
     box-shadow: 0 0 0 6px transparent;
@@ -2152,7 +2152,7 @@ body {
 .why-toggle {
   background: none;
   border: 0;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   font: inherit;
   font-size: 12.5px;
   font-weight: 550;
@@ -2189,11 +2189,11 @@ body {
     background var(--dur-press);
 }
 .prompt-suggest:hover {
-  border-color: var(--primary);
-  background: var(--primary-tint);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
 }
 .prompt-suggest .ps-ico {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   display: grid;
   place-items: center;
 }
@@ -2232,8 +2232,8 @@ body {
   height: 30px;
   border-radius: 6px;
   border: 0;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -2271,7 +2271,7 @@ body {
   font-family: var(--mono);
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .cand-preview .cp-res {
   font-size: 12px;
@@ -2304,8 +2304,8 @@ body {
   height: 58px;
   border-radius: 50%;
   border: 0;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -2319,7 +2319,7 @@ body {
     opacity var(--dur-state) var(--ease-out);
 }
 .cop-fab:hover {
-  background: var(--primary-hover);
+  background: var(--c-ai);
   transform: translateY(-2px);
   box-shadow:
     0 3px 6px oklch(0.255 0.05 285 / 0.18),
@@ -2368,15 +2368,15 @@ body {
   gap: 10px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(var(--primary-tint), var(--surface));
+  background: linear-gradient(var(--c-ai-tint), var(--surface));
   position: relative;
 }
 .cph-mark {
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
 }
@@ -2434,7 +2434,7 @@ body {
     color var(--dur-press);
 }
 .model-pick:hover {
-  border-color: var(--primary);
+  border-color: var(--c-ai);
   color: var(--ink);
 }
 .model-pick .mp-dot {
@@ -2485,7 +2485,7 @@ body {
   background: var(--surface-2);
 }
 .mm-item.sel {
-  background: var(--primary-tint);
+  background: var(--c-ai-tint);
 }
 .mm-main {
   flex: 1;
@@ -2497,7 +2497,7 @@ body {
   color: var(--ink);
 }
 .mm-item.sel .mm-name {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .mm-desc {
   font-size: 11.5px;
@@ -2506,7 +2506,7 @@ body {
   margin-top: 1px;
 }
 .mm-check {
-  color: var(--primary);
+  color: var(--c-ai);
   flex-shrink: 0;
 }
 .mm-foot {
@@ -2536,7 +2536,7 @@ body {
   gap: 7px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   margin-bottom: 9px;
 }
 .think-toggle {
@@ -2631,8 +2631,8 @@ body {
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 700;
-  color: var(--primary-ink);
-  background: var(--primary-tint);
+  color: var(--c-ai-ink);
+  background: var(--c-ai-tint);
   border-radius: 999px;
   padding: 1px 7px;
 }
@@ -2673,8 +2673,8 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -2703,9 +2703,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--primary-tint);
-  border: 1px solid color-mix(in oklab, var(--primary) 35%, transparent);
-  color: var(--primary-ink);
+  background: var(--c-ai-tint);
+  border: 1px solid color-mix(in oklab, var(--c-ai) 35%, transparent);
+  color: var(--c-ai-ink);
   border-radius: 999px;
   padding: 8px 13px;
   font: inherit;
@@ -2715,7 +2715,7 @@ body {
   transition: background var(--dur-press);
 }
 .cop-quick:hover {
-  background: color-mix(in oklab, var(--primary) 16%, var(--surface));
+  background: color-mix(in oklab, var(--c-ai) 16%, var(--surface));
 }
 .cop-input {
   display: flex;
@@ -2741,24 +2741,24 @@ body {
   opacity: 1;
 }
 .cop-input input:focus-visible {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  border-color: var(--c-ai);
+  box-shadow: 0 0 0 3px var(--c-ai-tint);
+  box-shadow: 0 0 0 3px var(--c-ai-tint);
 }
 .cop-input .send {
   width: 36px;
   height: 36px;
   border-radius: 9px;
   border: 0;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
   cursor: pointer;
   flex-shrink: 0;
 }
 .cop-input .send:hover {
-  background: var(--primary-hover);
+  background: var(--c-ai);
 }
 .cop-input .send svg {
   width: 17px;
@@ -2882,8 +2882,8 @@ body {
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 700;
-  color: var(--primary-ink);
-  background: var(--primary-tint);
+  color: var(--c-inc-ink);
+  background: var(--c-inc-tint);
 }
 .pal-item .pal-main {
   flex: 1;
@@ -2981,15 +2981,15 @@ body {
 .drawer-head .peek-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
-  background: var(--primary-tint);
+  color: var(--c-inc-ink);
+  background: var(--c-inc-tint);
   padding: 3px 9px;
   border-radius: 999px;
 }
 .peek-num {
   font-size: 13px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .peek-error {
   color: var(--danger);
@@ -3379,7 +3379,7 @@ body {
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .cd-inc .cdd {
   flex: 1;
@@ -3450,7 +3450,7 @@ body {
   top: 0;
   width: 100%;
   height: 100%;
-  background: var(--primary);
+  background: var(--c-ai);
   border-radius: 3px;
   transform-origin: left center;
   scale: var(--p, 0) 1;
@@ -3475,7 +3475,7 @@ body {
   border-radius: 50%;
   background: var(--surface);
   box-shadow:
-    0 0 0 3px var(--primary),
+    0 0 0 3px var(--c-ai),
     0 3px 8px oklch(0.255 0.05 285 / 0.3);
 }
 .rag-stages {
@@ -3513,15 +3513,15 @@ body {
   height: 18px;
 }
 .rag-stage.active .rag-dot {
-  border-color: var(--primary);
-  background: var(--primary-tint);
-  color: var(--primary-ink);
-  box-shadow: 0 0 0 5px var(--primary-tint);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
+  color: var(--c-ai-ink);
+  box-shadow: 0 0 0 5px var(--c-ai-tint);
 }
 .rag-stage.done .rag-dot {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--on-primary);
+  border-color: var(--c-ai);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
 }
 .rag-label {
   font-weight: 600;
@@ -3567,8 +3567,8 @@ body {
   line-height: 1.5;
 }
 .rag-io-card.out {
-  border-color: var(--primary);
-  background: var(--primary-tint);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
 }
 .rag-io-k {
   display: block;
@@ -3578,7 +3578,7 @@ body {
   margin-bottom: 3px;
 }
 .rag-io-card.out .rag-io-k {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .rag-io-arrow {
   width: 20px;
@@ -3686,8 +3686,8 @@ body {
   border-style: solid;
 }
 .cstep.active {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  border-color: var(--c-ai);
+  box-shadow: 0 0 0 3px var(--c-ai-tint);
 }
 .cstep-dot {
   width: 28px;
@@ -3704,8 +3704,8 @@ body {
 }
 .cstep.active .cstep-dot,
 .cstep.done .cstep-dot {
-  background: var(--primary-tint);
-  color: var(--primary-ink);
+  background: var(--c-ai-tint);
+  color: var(--c-ai-ink);
 }
 .cstep-dot svg {
   width: 15px;
@@ -3978,11 +3978,11 @@ body {
 }
 .verdict-card.ok .vc-ico {
   background: var(--st-resolved);
-  color: var(--on-primary);
+  color: var(--c-ai-on);
 }
 .verdict-card.bad .vc-ico {
   background: var(--muted);
-  color: var(--on-primary);
+  color: var(--c-ai-on);
 }
 .vc-ico svg {
   width: 18px;
@@ -4436,7 +4436,7 @@ body {
   transition: background var(--dur-move) var(--ease-out);
 }
 .rag-stage.done:not(:last-child)::before {
-  background: var(--primary);
+  background: var(--c-ai);
 }
 .rag-stage:last-child {
   padding-bottom: 0;

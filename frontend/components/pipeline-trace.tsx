@@ -13,6 +13,13 @@
 import { useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from "react";
 
 import { useAulaLesson } from "./aula";
+import {
+  ConceptIcon,
+  ConceptLabel,
+  GateMark as Gate,
+  RecordTag,
+  TechDetails,
+} from "./concepts";
 import { Icons, type IconComponent } from "./icons";
 import { SuggestionMarkdown } from "./markdown";
 import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
@@ -117,14 +124,20 @@ export function PipelineTrace({
     <div className="section pipe-section">
       <div className="pipe-head">
         <div className="pipe-head-text">
-          <h2>Pipeline de sugestão</h2>
+          <h2>Como a IA chegou na sugestão</h2>
           <p className="pipe-lede">
-            As sete etapas da análise e o que cada uma decidiu, com as fontes para você
-            conferir.
+            Sete passos. A máquina faz cada um sozinha e mostra o que decidiu. No fim,
+            quem decide é você.
           </p>
+          <div className="pipe-legend" aria-label="Legenda">
+            <ConceptLabel concept="ai-step">Passo da IA</ConceptLabel>
+            <ConceptLabel concept="gate">Portão de sim ou não</ConceptLabel>
+            <ConceptLabel concept="ai-out" />
+            <ConceptLabel concept="human">Você decide</ConceptLabel>
+          </div>
         </div>
         <button
-          className={`btn btn-sm ${result ? "btn-outline" : "btn-primary"}`}
+          className={`btn ${result ? "btn-outline" : "btn-ai"}`}
           onClick={onRun}
           disabled={running}
         >
@@ -135,7 +148,7 @@ export function PipelineTrace({
           ) : (
             <Icons.aiSpark />
           )}
-          {running ? "Analisando" : result ? "Analisar de novo" : "Analisar incidente"}
+          {running ? "Analisando" : result ? "Analisar de novo" : "Analisar com a IA"}
         </button>
       </div>
 
@@ -231,7 +244,7 @@ export function RunStatus({
     return (
       <div className={`run-status is-running${compact ? " is-compact" : ""}`}>
         <Icons.loader className="spin" size={15} />
-        <span role="status">A Aurora está analisando no servidor</span>
+        <span role="status">A IA está analisando no servidor</span>
         <span className="run-clock mono" aria-hidden="true">
           {seconds} s
         </span>
@@ -261,6 +274,9 @@ export function RunStatus({
     </div>
   );
 }
+
+// Steps that already carry their own "Ver detalhes técnicos".
+const OWN_DETAILS = new Set<LessonStepKey>(["numeros", "buscar", "classificar"]);
 
 function StepItem({
   def,
@@ -306,16 +322,15 @@ function StepItem({
             </span>
           ) : null}
         </div>
-        {view ? (
-          view.decisions.map((d, i) => (
-            <p className="pipe-decision" key={i}>
-              {d}
-            </p>
-          ))
-        ) : (
-          <p className="pipe-decision is-hint">{def.hint}</p>
-        )}
+        <p className={`pipe-decision${view ? "" : " is-hint"}`}>{def.hint}</p>
         {children}
+        {view && view.decisions.length && !OWN_DETAILS.has(def.key) ? (
+          <TechDetails summary="O que o servidor registrou">
+            {view.decisions.map((d, i) => (
+              <p key={i}>{d}</p>
+            ))}
+          </TechDetails>
+        ) : null}
       </div>
     </li>
   );
@@ -365,24 +380,31 @@ function StepDetail({
       return <Layers result={result} beat={beat} onCite={onCite} />;
     case "classificar":
       return (
-        <div
-          className={`pipe-verdict ${result.classification === "PROCEDENTE" ? "ok" : "bad"}`}
-        >
-          {result.classification === "PROCEDENTE" ? (
-            <Icons.checkCircle />
-          ) : (
-            <Icons.alert />
-          )}
-          {result.classification === "PROCEDENTE" ? "Procedente" : "Improcedente"}
-          <span className="pipe-verdict-sub">
-            {result.decision.generates_suggestion ? "gera sugestão" : "não gera sugestão"}
-          </span>
+        <div className="pipe-gate">
+          <Gate
+            rule="É falha técnica?"
+            verdict={result.classification === "PROCEDENTE" ? "pass" : "fail"}
+          />
+          <p className="pipe-gate-why">
+            {result.classification === "PROCEDENTE"
+              ? "Procedente: é um incidente de verdade, então a IA segue para a sugestão."
+              : "Improcedente: não é falha do sistema, então a IA para aqui e não sugere nada."}
+          </p>
+          {result.decision.justification ? (
+            <TechDetails summary="Por que a IA decidiu assim">
+              <p>{result.decision.justification}</p>
+            </TechDetails>
+          ) : null}
         </div>
       );
     case "sugerir":
       return result.suggestion ? (
         <>
           <div className="suggestion pipe-suggestion">
+            <div className="ai-out-head">
+              <ConceptLabel concept="ai-out" />
+              <span>Uma sugestão para revisar, não uma ordem.</span>
+            </div>
             <SuggestionMarkdown
               source={buildSuggestionMarkdown(result.suggestion, result.context_ids)}
               onCite={onCite}
@@ -397,12 +419,27 @@ function StepDetail({
         </>
       ) : null;
     case "publicar":
-      return result.publication.published ? (
-        <button className="btn btn-outline btn-sm pipe-notes-btn" onClick={onShowNotes}>
-          <Icons.list />
-          Ver nas notas de trabalho
-        </button>
-      ) : null;
+      return (
+        <div className="pipe-human">
+          <ConceptIcon concept="human" />
+          <div>
+            <b>Agora é com você.</b>
+            <p>
+              Confira as fontes, ajuste o texto e decida. A IA não resolve o incidente
+              sozinha.
+            </p>
+            {result.publication.published ? (
+              <button
+                className="btn btn-primary btn-sm pipe-notes-btn"
+                onClick={onShowNotes}
+              >
+                <Icons.list />
+                Ver a nota no incidente
+              </button>
+            ) : null}
+          </div>
+        </div>
+      );
   }
 }
 
@@ -415,7 +452,7 @@ function LoadedFields({ source }: { source: PipelineSource }) {
   ];
   return (
     <div className="pipe-block">
-      <div className="pipe-label">Lido do registro</div>
+      <div className="pipe-label">O que a IA leu</div>
       <div className="pipe-chips loaded">
         {fields.map(([k, v], i) => (
           <span className="loaded-chip" key={k} style={{ "--i": i } as Style}>
@@ -440,14 +477,14 @@ function Summary({ original, summary }: { original: string; summary: string }) {
     <div className="pipe-block summary">
       <div className="summary-col summary-orig">
         <div className="pipe-label">
-          Texto do chamado <span className="mono">{before} palavras</span>
+          Escrito pelo cliente <span className="mono">{before} palavras</span>
         </div>
         <p>{original}</p>
       </div>
       <Icons.arrowRight className="summary-arrow" />
       <div className="summary-col summary-new">
         <div className="pipe-label">
-          Resumo usado na busca <span className="mono">{after} palavras</span>
+          Resumo da IA <span className="mono">{after} palavras</span>
         </div>
         <p>{summary}</p>
       </div>
@@ -455,7 +492,7 @@ function Summary({ original, summary }: { original: string; summary: string }) {
   );
 }
 
-/** Step 3: what was embedded, and the first real values of the vector. */
+/** Step 3: the summary becomes numbers; the raw text and values sit behind a tap. */
 function Numbers({ result }: { result: SuggestResponse }) {
   const preview = result.embedding_preview ?? [];
   const dims = result.dims ?? 0;
@@ -464,14 +501,18 @@ function Numbers({ result }: { result: SuggestResponse }) {
     v.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
   return (
     <div className="pipe-block">
-      <div className="pipe-label">Texto vetorizado</div>
-      <pre className="pipe-query">{result.query_text}</pre>
-      {preview.length ? (
-        <div className="vec">
-          <div className="pipe-label">
-            Vira {dims ? <b className="mono">{dims.toLocaleString("pt-BR")}</b> : null}{" "}
-            números. Os {preview.length} primeiros, de verdade:
-          </div>
+      <div className="vec">
+        <p className="vec-big">
+          {dims ? (
+            <>
+              <b className="mono">{dims.toLocaleString("pt-BR")}</b> números
+            </>
+          ) : (
+            <b>Uma lista longa de números</b>
+          )}
+          <span>que representam o sentido do resumo</span>
+        </p>
+        {preview.length ? (
           <div className="vec-bars" aria-hidden="true">
             {preview.map((v, i) => (
               <span
@@ -481,16 +522,20 @@ function Numbers({ result }: { result: SuggestResponse }) {
               />
             ))}
           </div>
+        ) : null}
+      </div>
+      <TechDetails>
+        <p>Texto que virou vetor (embedding):</p>
+        <pre className="pipe-query">{result.query_text}</pre>
+        {preview.length ? (
           <p className="vec-nums mono">
             [{preview.map(fmt).join("  ")}
             {dims > preview.length ? "  …" : ""}]
           </p>
-        </div>
-      ) : (
-        <p className="vec-missing">
-          Este servidor não devolve os valores do vetor; só o texto acima é real aqui.
-        </p>
-      )}
+        ) : (
+          <p>Este servidor não devolve os valores do vetor; só o texto acima é real.</p>
+        )}
+      </TechDetails>
     </div>
   );
 }
@@ -526,11 +571,14 @@ function Layers({
       <ol className="layers" aria-label="Camadas da busca">
         <li className="layer layer-in">
           <div className="layer-head">
-            <Icons.filter size={15} />
-            <span className="layer-name">Camada 1: tags</span>
-            <span className="layer-what">decidem onde procurar</span>
+            <span className="layer-n mono">1</span>
+            <span className="layer-name">Onde procurar</span>
           </div>
-          <p className="layer-decision">{tags.decision}</p>
+          <p className="layer-line">
+            {tags.filter_applied
+              ? "As tags limitam a busca à parte certa do histórico."
+              : "Sem tags reconhecidas: a busca olha o histórico inteiro."}
+          </p>
           {tags.tags.length ? (
             <div className="pipe-chips">
               {tags.tags.map((t) => (
@@ -538,42 +586,39 @@ function Layers({
                   {t}
                 </span>
               ))}
-              <span className="layer-note">{TAG_SOURCE_LABEL[tags.source]}</span>
             </div>
           ) : null}
-          <p className="layer-note layer-scope">
-            {tags.filter_applied
-              ? "A busca só olha a parte do histórico com estas tags."
-              : "Sem filtro de tags: a busca olha o histórico inteiro."}
-          </p>
+          <TechDetails>
+            <p>Camada 1, filtro por tags. As tags {TAG_SOURCE_LABEL[tags.source]}.</p>
+            <p>{tags.decision}</p>
+          </TechDetails>
         </li>
 
         {showVector ? (
           <li className="layer layer-in">
             <div className="layer-head">
-              <Icons.vectorSearch size={15} />
-              <span className="layer-name">Camada 2: vetor</span>
-              <span className="layer-what">mede o que parece</span>
+              <span className="layer-n mono">2</span>
+              <span className="layer-name">O quanto se parece</span>
             </div>
-            <p className="layer-decision">{vector.decision}</p>
-            <div className="layer-params">
-              <span>
-                limiar <b className="mono">{formatSim(vector.min_similarity)}</b>
-              </span>
-              <span>
-                até <b className="mono">{vector.incident_top_k}</b> incidentes e{" "}
-                <b className="mono">{vector.problem_top_k}</b> problemas
-              </span>
-            </div>
+            <p className="layer-line">
+              Cada caso ganha uma nota de 0 a 1. Quanto mais perto de 1, mais parecido.
+              Abaixo de {formatSim(vector.min_similarity)} fica de fora.
+            </p>
             <SimilarityRuler
               incidents={incidents}
               problems={problems}
               floor={vector.min_similarity}
               onOpen={onCite}
             />
-            {best ? <CosineAngle sim={best.sim} floor={vector.min_similarity} /> : null}
-            <details className="layer-list">
-              <summary>Ver a lista completa da camada 2</summary>
+            <TechDetails>
+              <p>
+                Camada 2, busca vetorial por similaridade de cosseno. Limiar{" "}
+                <b className="mono">{formatSim(vector.min_similarity)}</b>; até{" "}
+                <b className="mono">{vector.incident_top_k}</b> incidentes e{" "}
+                <b className="mono">{vector.problem_top_k}</b> problemas (top-K).
+              </p>
+              <p>{vector.decision}</p>
+              {best ? <CosineAngle sim={best.sim} floor={vector.min_similarity} /> : null}
               <RowGroup
                 title="Incidentes resolvidos"
                 rows={incidents}
@@ -586,18 +631,20 @@ function Layers({
                 stage="vector"
                 onCite={onCite}
               />
-            </details>
+            </TechDetails>
           </li>
         ) : null}
 
         {showCheck ? (
           <li className="layer layer-in">
             <div className="layer-head">
-              <Icons.funnel size={15} />
-              <span className="layer-name">Camada 3: conferência por IA</span>
-              <span className="layer-what">decide o que serve</span>
+              <span className="layer-n mono">3</span>
+              <span className="layer-name">Serve mesmo?</span>
             </div>
-            <p className="layer-decision">{postfilter.decision}</p>
+            <p className="layer-line">
+              Parecer não basta. Uma IA lê cada caso e descarta o que não ajuda neste
+              incidente.
+            </p>
             {postfilter.status === "fallback" ? (
               <div className="pipe-alert is-warn">
                 <Icons.alert />
@@ -624,7 +671,7 @@ function Layers({
               <div className="layer-empty">Nenhum candidato chegou a esta camada.</div>
             )}
             <div className="pipe-block">
-              <div className="pipe-label">Contexto entregue à sugestão</div>
+              <div className="pipe-label">Casos que a IA vai usar para sugerir</div>
               {result.context_ids.length ? (
                 <div className="pipe-chips">
                   {result.context_ids.map((id) => (
@@ -632,11 +679,12 @@ function Layers({
                   ))}
                 </div>
               ) : (
-                <p className="layer-note">
-                  Vazio: nenhum caso passou pelas três camadas.
-                </p>
+                <p className="layer-note">Nenhum caso passou pelas três camadas.</p>
               )}
             </div>
+            <TechDetails>
+              <p>Camada 3, pós-filtro por LLM. {postfilter.decision}</p>
+            </TechDetails>
           </li>
         ) : null}
       </ol>
@@ -659,9 +707,9 @@ function Funnel({
   floor: number;
 }) {
   const stages: { n: number | null; label: string }[] = [
-    { n: candidates, label: `candidatos (até ${topK})` },
-    { n: passed, label: `com ${formatSim(floor)} ou mais` },
-    { n: kept, label: "mantidos pela IA" },
+    { n: candidates, label: `achados (até ${topK})` },
+    { n: passed, label: `parecidos de verdade (${formatSim(floor)} ou mais)` },
+    { n: kept, label: "aprovados pela IA" },
   ];
   return (
     <div className="funnel" aria-label="Funil das camadas">
@@ -700,7 +748,7 @@ function RowGroup({
           const pill =
             stage === "vector"
               ? r.outcome === "abaixo"
-                ? { cls: "drop", label: "abaixo do limiar" }
+                ? { cls: "drop", label: "pouco parecido" }
                 : { cls: "keep", label: "passou" }
               : r.outcome === "descartado"
                 ? { cls: "drop", label: OUTCOME_LABEL.descartado }
@@ -718,17 +766,19 @@ function RowGroup({
               {openable ? (
                 <button
                   type="button"
-                  className="row-num mono row-open"
+                  className="row-num row-open"
                   onClick={(e) => onCite(r.number, e.currentTarget)}
                   aria-label={`Abrir ${r.number}: ${r.desc}`}
                 >
-                  {r.number}
+                  <RecordTag number={r.number} ghost size="sm" />
                 </button>
               ) : (
-                <span className="row-num mono">{r.number}</span>
+                <span className="row-num">
+                  <RecordTag number={r.number} size="sm" />
+                </span>
               )}
               <span className="row-desc">{r.desc}</span>
-              <span className="row-sim mono" title="Similaridade de cosseno">
+              <span className="row-sim mono" title="Semelhança, de 0 a 1">
                 {formatSim(r.sim)}
               </span>
               <span className={`row-pill ${pill.cls}`}>
@@ -778,7 +828,7 @@ function CitedSources({
   }
   return (
     <div className="cited">
-      <div className="pipe-label">De onde vem cada citação</div>
+      <div className="pipe-label">De onde veio cada citação</div>
       <ul className="cited-list">
         {cited.map((id) => {
           const { row, inContext } = citationSource(id, result);
@@ -787,10 +837,10 @@ function CitedSources({
               <IdChip id={id} onCite={onCite} />
               <span className="cited-what">
                 {row
-                  ? `similaridade ${formatSim(row.sim)}, ${OUTCOME_LABEL[row.outcome]} na conferência`
+                  ? `semelhança ${formatSim(row.sim)}, ${OUTCOME_LABEL[row.outcome]} na conferência`
                   : inContext
-                    ? "no contexto recuperado"
-                    : "fora do contexto"}
+                    ? "entre os casos encontrados"
+                    : "fora dos casos encontrados"}
               </span>
               {row ? (
                 <button
@@ -811,6 +861,15 @@ function CitedSources({
 
 function Citations({ result }: { result: SuggestResponse }) {
   const { flagged } = result.citations;
+  if (!flagged.length) {
+    return (
+      <TechDetails summary="Conferência das citações">
+        <p>
+          {citationSummary(flagged)} Citação que não veio da busca é removida ou marcada.
+        </p>
+      </TechDetails>
+    );
+  }
   return (
     <div className={`pipe-cites${flagged.length ? " has-flags" : ""}`}>
       <div className="pipe-cites-head">
@@ -848,17 +907,17 @@ export function IdChip({ id, onCite }: { id: string; onCite: CiteHandler }) {
     return (
       <button
         type="button"
-        className="cite"
+        className="tag-btn"
         onClick={(e) => onCite(id, e.currentTarget)}
         aria-label={`Abrir incidente ${id}`}
       >
-        {id}
+        <RecordTag number={id} ghost size="sm" />
       </button>
     );
   }
   return (
-    <span className="cite cite-prb" title={`Problema ${id}`}>
-      {id}
+    <span title={`Problema ${id}`}>
+      <RecordTag number={id} size="sm" />
     </span>
   );
 }

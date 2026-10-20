@@ -57,7 +57,7 @@
 .pipe-step::after {
   width: 2px;
   left: 13px;
-  background: var(--primary);
+  background: var(--c-ai);
   transform-origin: top;
   scale: 1 0;
   transition: scale calc(var(--dur-move) * var(--motion-scale)) var(--ease-in-out);
@@ -108,14 +108,14 @@
   place-items: center;
 }
 .pipe-step.is-current .pipe-marker {
-  color: var(--primary-ink);
-  background: var(--primary-tint);
-  border: 1px solid var(--primary);
+  color: var(--c-ai-ink);
+  background: var(--c-ai-tint);
+  border: 1px solid var(--c-ai);
 }
 .pipe-step.is-done .pipe-marker {
-  color: var(--on-primary);
-  background: var(--primary);
-  border: 1px solid var(--primary);
+  color: var(--c-ai-on);
+  background: var(--c-ai);
+  border: 1px solid var(--c-ai);
 }
 .pipe-step.is-done.st-pulada .pipe-marker,
 .pipe-step.is-current.st-pulada .pipe-marker {
@@ -154,8 +154,8 @@
     stroke var(--dur-state) var(--ease-out);
 }
 .pipe-step.is-gate:not(.is-hidden) .gate path {
-  fill: var(--primary-tint);
-  stroke: var(--primary);
+  fill: var(--c-ai-tint);
+  stroke: var(--c-ai);
   stroke-dasharray: none;
 }
 .gate.is-open .gate-l {
@@ -165,10 +165,10 @@
   translate: 3px 0;
 }
 .pipe-step.is-gate.is-done:not(.is-stopped) .gate path {
-  fill: var(--primary);
+  fill: var(--c-ai);
 }
 .pipe-step.is-gate.is-done:not(.is-stopped) .pipe-marker-n {
-  color: var(--on-primary);
+  color: var(--c-ai-on);
 }
 .pipe-step.is-gate.is-stopped .gate path {
   fill: var(--p1-tint);
@@ -399,7 +399,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 4px 8px;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .layer-name {
   font-weight: 700;
@@ -470,14 +470,14 @@
   background: var(--surface-2);
 }
 .row:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--c-ai);
   outline-offset: -2px;
 }
 .row-num {
   grid-area: num;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .row:not(.is-openable) .row-num {
   color: var(--ink);
@@ -549,7 +549,7 @@
   color: var(--muted);
 }
 .worknote-head b {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -587,7 +587,7 @@
   margin-inline: -8px;
   padding-inline: 8px;
   border-radius: var(--radius-sm);
-  background: var(--primary-tint);
+  background: var(--c-ai-tint);
 }
 .worknotes-empty {
   margin: 0;
@@ -642,7 +642,7 @@
   color: var(--ink-body);
 }
 .run-status.is-running {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   font-weight: 600;
 }
 .run-status .spin {
@@ -654,14 +654,14 @@
   color: var(--ink);
   padding: 1px 8px;
   border-radius: 999px;
-  background: var(--primary-tint);
+  background: var(--c-ai-tint);
 }
 .run-replay {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .run-took {
   color: var(--muted);
@@ -799,7 +799,7 @@
 .vec-bar.pos {
   grid-row: 1;
   transform-origin: bottom;
-  background: var(--primary);
+  background: var(--c-ai);
 }
 .vec-bar.neg {
   grid-row: 2;
@@ -937,7 +937,7 @@
 }
 .ruler-simline {
   translate: calc(var(--sx) * 100cqi) 0;
-  border-left: 2px dashed var(--primary);
+  border-left: 2px dashed var(--c-ai);
   top: -4px;
   bottom: 0;
 }
@@ -947,7 +947,7 @@
   bottom: 26px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   background: var(--surface);
   padding: 0 3px;
   border-radius: 4px;
@@ -1035,7 +1035,7 @@
   scale: 1.3;
 }
 .ruler-dot.is-picked {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--c-ai);
   outline-offset: 2px;
 }
 .ruler.is-sim .ruler-dot {
@@ -1074,12 +1074,12 @@
 .ruler-range::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: var(--primary-tint);
+  background: var(--c-ai-tint);
 }
 .ruler-range::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: var(--primary-tint);
+  background: var(--c-ai-tint);
 }
 .ruler-range::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -1088,7 +1088,7 @@
   height: var(--thumb);
   margin-top: calc(2px - var(--thumb) / 2);
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--c-ai);
   border: 3px solid var(--surface);
   box-shadow: var(--shadow-sm);
 }
@@ -1096,14 +1096,14 @@
   width: var(--thumb);
   height: var(--thumb);
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--c-ai);
   border: 3px solid var(--surface);
 }
 .ruler-range:focus-visible {
   outline: none;
 }
 .ruler-range:focus-visible::-webkit-slider-thumb {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--c-ai);
   outline-offset: 2px;
 }
 .ruler-legend {
@@ -1142,7 +1142,7 @@
 }
 .ruler-pick-num {
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .ruler-pick-desc {
   color: var(--ink);
@@ -1163,9 +1163,9 @@
   margin-top: 12px;
 }
 .ruler-sim .btn.is-on {
-  color: var(--primary-ink);
-  border-color: var(--primary);
-  background: var(--primary-tint);
+  color: var(--c-ai-ink);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
 }
 .ruler-sim-note {
   margin: 0;
@@ -1175,7 +1175,7 @@
   color: var(--ink-body);
 }
 .ruler-sim-note b {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .ruler-empty {
   margin: 10px 0 0;
@@ -1244,7 +1244,7 @@
 }
 .cosine-arm line,
 .cosine-arm path {
-  stroke: var(--primary);
+  stroke: var(--c-ai);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1256,7 +1256,7 @@
   fill: var(--muted);
 }
 .cosine-fig text.cosine-a {
-  fill: var(--primary-ink);
+  fill: var(--c-ai-ink);
   font-weight: 700;
   font-size: 12px;
 }
@@ -1275,7 +1275,7 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   padding: 6px 0;
   width: fit-content;
 }
@@ -1286,14 +1286,14 @@
   font-family: var(--mono);
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   background: none;
   border: 0;
   padding: 0;
   cursor: pointer;
   text-align: left;
   text-decoration: underline;
-  text-decoration-color: color-mix(in oklab, var(--primary) 35%, transparent);
+  text-decoration-color: color-mix(in oklab, var(--c-ai) 35%, transparent);
   text-underline-offset: 3px;
   justify-self: start;
 }
@@ -1340,7 +1340,7 @@
   justify-self: start;
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .row.is-flash {
   animation: row-flash calc(var(--dur-explain) * 1.6 * var(--motion-scale))
@@ -1348,8 +1348,8 @@
 }
 @keyframes row-flash {
   from {
-    background: var(--primary-tint);
-    box-shadow: inset 2px 0 0 var(--primary);
+    background: var(--c-ai-tint);
+    box-shadow: inset 2px 0 0 var(--c-ai);
   }
 }
 
@@ -1412,7 +1412,7 @@
 .mini-step::after {
   left: 9px;
   width: 2px;
-  background: var(--primary);
+  background: var(--c-ai);
   transform-origin: top;
   scale: 1 0;
   transition: scale calc(var(--dur-move) * var(--motion-scale)) var(--ease-in-out);
@@ -1455,14 +1455,14 @@
   rotate: -45deg;
 }
 .mini-step.is-current .mini-marker {
-  color: var(--primary-ink);
-  background: var(--primary-tint);
-  border: 1px solid var(--primary);
+  color: var(--c-ai-ink);
+  background: var(--c-ai-tint);
+  border: 1px solid var(--c-ai);
 }
 .mini-step.is-done .mini-marker {
-  color: var(--on-primary);
-  background: var(--primary);
-  border: 1px solid var(--primary);
+  color: var(--c-ai-on);
+  background: var(--c-ai);
+  border: 1px solid var(--c-ai);
 }
 .mini-step.st-pulada:not(.is-hidden) .mini-marker {
   color: var(--muted);
@@ -1556,4 +1556,214 @@
   .funnel-arrow {
     display: block;
   }
+}
+
+/* ===================================================================== *
+   Pulseira: record head, the AI call to action and the teaching pieces
+ * ===================================================================== */
+.record-head h1 {
+  font-size: var(--fs-2xl);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.record-head .meta {
+  font-size: var(--fs-sm);
+}
+.record-num {
+  font-size: inherit;
+}
+.rec-prose {
+  font-size: var(--fs-lg);
+  line-height: 1.6;
+}
+.rec-body .section :is(h2, h3) {
+  font-size: var(--fs-lg);
+}
+.resnotes-empty.k-ai-step-box {
+  padding: 16px;
+  gap: 10px;
+}
+.resnotes-empty.k-ai-step-box p {
+  color: var(--ink-body);
+  font-size: var(--fs-md);
+}
+.resnotes-empty .btn-ai {
+  height: 48px;
+  padding: 0 20px;
+}
+
+/* Pipeline head */
+.pipe-head h2 {
+  font-size: var(--fs-xl);
+}
+.pipe-lede {
+  font-size: var(--fs-md);
+}
+.pipe-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 10px;
+}
+.pipe-head .btn {
+  height: 48px;
+  padding: 0 20px;
+}
+.pipe-title {
+  font-size: var(--fs-lg);
+}
+.pipe-decision {
+  font-size: var(--fs-md);
+  color: var(--ink-body);
+}
+
+/* Markers: AI steps are dashed violet circles; done ones fill. */
+.pipe-marker {
+  border: 2px dashed var(--c-ai-line);
+  color: var(--c-ai-ink);
+}
+
+/* Layers: a small number, a plain name, one line */
+.layer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.layer-n {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--c-ai-tint);
+  color: var(--c-ai-ink);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  flex: none;
+}
+.layer-name {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--ink);
+}
+.layer-line {
+  margin: 6px 0 10px;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: var(--ink-body);
+  max-width: 62ch;
+}
+.tag-btn {
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  line-height: 0;
+}
+.tag-btn:hover .rtag-ghost {
+  background: var(--c-inc-tint);
+}
+.row-num.row-open {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 0;
+}
+.row-num .rtag {
+  pointer-events: none;
+}
+.row-sim {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* Step 3: the number of numbers, big */
+.vec-big {
+  margin: 0 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.vec-big b {
+  font-size: var(--fs-2xl);
+  color: var(--c-ai-ink);
+  letter-spacing: -0.02em;
+}
+.vec-big span {
+  color: var(--muted);
+}
+
+/* Step 5: the gate */
+.pipe-gate {
+  margin-top: 8px;
+}
+.pipe-gate .gatemark {
+  font-size: var(--fs-lg);
+}
+.pipe-gate .gatemark-diamond {
+  width: 44px;
+  height: 44px;
+}
+.pipe-gate-why {
+  margin: 8px 0 0;
+  font-size: var(--fs-md);
+  color: var(--ink-body);
+  max-width: 62ch;
+}
+
+/* Step 6: the AI's answer */
+.pipe-suggestion.suggestion,
+.cop-panel .suggestion {
+  background: var(--c-ai-tint);
+  border: 1px solid var(--c-ai-line);
+  border-top: 4px solid var(--c-ai);
+  border-radius: var(--radius);
+}
+.ai-out-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-bottom: 8px;
+}
+.ai-out-head > span:last-child {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+/* Step 7: the human decides */
+.pipe-human {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--c-human-tint);
+  border: 1px solid var(--border-strong);
+}
+.pipe-human b {
+  font-size: var(--fs-lg);
+  color: var(--ink);
+}
+.pipe-human p {
+  margin: 4px 0 10px;
+  font-size: var(--fs-md);
+}
+.pipe-human p:last-child {
+  margin-bottom: 0;
+}
+
+/* Funnel: three big numbers */
+.funnel-n {
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  color: var(--ink);
+}
+.funnel-l {
+  font-size: var(--fs-sm);
 }

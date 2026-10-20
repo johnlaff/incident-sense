@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, ViewTransition } from "react";
 
+import { ConceptLabel, RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
 import {
@@ -246,8 +247,8 @@ function WorkNotes({
   if (!notes.length) {
     return (
       <p className="worknotes-empty">
-        Nenhuma nota publicada ainda. Quando a análise da IA gera uma sugestão, ela é
-        publicada aqui, com as fontes.
+        Nenhuma nota ainda. Quando a IA sugerir uma solução, ela aparece aqui com as
+        fontes.
       </p>
     );
   }
@@ -439,7 +440,9 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                   share="morph"
                   default="none"
                 >
-                  <span className="record-num mono">{record.number}</span>
+                  <span className="record-num">
+                    <RecordTag number={record.number} size="lg" />
+                  </span>
                 </ViewTransition>
                 <StateBadge state={localState} />
                 <PriorityBadge priority={record.priority} withWord />
@@ -461,7 +464,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 {assignee ? "Atribuído" : "Atribuir"}
               </button>
               <button className="btn btn-primary btn-sm" onClick={doResolve}>
-                {localState === "resolved" ? <Icons.replay /> : <Icons.checkCircle />}
+                {localState === "resolved" ? <Icons.replay /> : <Icons.human />}
                 {localState === "resolved" ? "Reabrir" : "Resolver"}
               </button>
             </div>
@@ -489,7 +492,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                   <div className="resnotes-draft">
                     <p className="draft-label">
                       <Icons.aiSpark size={14} />
-                      Rascunho da Aurora: revise antes de salvar
+                      Rascunho da IA: revise antes de salvar
                     </p>
                     <p className="rec-prose">{inserted}</p>
                     <button className="btn btn-ghost btn-sm" onClick={doDiscard}>
@@ -500,17 +503,21 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 ) : record.resolutionNotes ? (
                   <p className="rec-prose">{record.resolutionNotes}</p>
                 ) : (
-                  <div className="resnotes-empty">
+                  <div className="resnotes-empty k-ai-step-box">
+                    <ConceptLabel concept="ai-step">Ainda sem solução</ConceptLabel>
                     <p>
-                      Ainda sem notas de resolução. A Aurora sugere uma resolução com base
-                      em casos parecidos já resolvidos, e você revisa antes de salvar.
+                      A IA pode procurar incidentes parecidos que já foram resolvidos e
+                      sugerir uma solução. Você revisa antes de usar.
                     </p>
                     <button
-                      className="btn btn-outline btn-sm"
-                      onClick={() => setCopilotOpen(true)}
+                      className="btn btn-ai"
+                      onClick={() => {
+                        setTab("analise");
+                        if (suggest.phase !== "running") void suggest.run();
+                      }}
                     >
                       <Icons.aiSpark />
-                      Pedir sugestão à Aurora
+                      Analisar com a IA
                     </button>
                   </div>
                 )}
@@ -617,7 +624,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
             </section>
           ) : (
             <section className="section" aria-labelledby="h-rel">
-              <h2 id="h-rel">Do mesmo serviço ou da mesma recorrência</h2>
+              <h2 id="h-rel">Incidentes do mesmo serviço ou do mesmo grupo</h2>
               {related.length ? (
                 <div className="related">
                   {related.map((r) => (
@@ -626,7 +633,9 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                       key={r.number}
                       {...activate(() => peek(r.number), `${r.number} · ${r.short}`)}
                     >
-                      <span className="num">{r.number}</span>
+                      <span className="num">
+                        <RecordTag number={r.number} size="sm" />
+                      </span>
                       <span className="rdesc">{r.short}</span>
                       <span className="svc mono">{r.service}</span>
                       <StateBadge state={r.state} />
