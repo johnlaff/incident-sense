@@ -12,6 +12,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from .incident_list import IncidentSummary
+
 
 class Problem(BaseModel):
     """A synthetic Problem record linked to a cluster of incidents."""
@@ -34,3 +36,40 @@ class Problem(BaseModel):
     linked_incidents: list[str] = Field(
         default_factory=list, description="Numbers of the incidents this Problem explains."
     )
+
+
+class ProblemSummary(BaseModel):
+    """The subset of Problem fields a list row needs."""
+
+    number: str
+    short_description: str
+    root_cause: str
+    state: str
+    category: str
+    subcategory: str
+    cmdb_ci: str
+    assignment_group: str
+    opened_at: datetime
+    resolved_at: datetime | None = None
+    tags: list[str] = Field(default_factory=list)
+    linked_incidents: list[str] = Field(
+        default_factory=list, description="Numbers of the incidents this Problem explains."
+    )
+
+    @classmethod
+    def from_problem(cls, problem: Problem) -> ProblemSummary:
+        """Project a full Problem down to a list summary."""
+        return cls.model_validate(problem.model_dump())
+
+
+class ProblemDetail(Problem):
+    """A full Problem plus the linked incidents found in the repertoire.
+
+    ``related`` keeps the order of ``linked_incidents``, newest first, and skips
+    numbers the incident base does not know. ``cluster_label`` names the
+    recurrence group most of the linked incidents fall in, or is ``null``.
+    """
+
+    related: list[IncidentSummary] = Field(default_factory=list)
+    cluster_id: int | None = None
+    cluster_label: str | None = None

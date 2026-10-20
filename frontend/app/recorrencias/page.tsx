@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { useAulaLesson, type AulaLessonStep } from "@/components/aula";
@@ -8,6 +9,7 @@ import { Icons } from "@/components/icons";
 import { LoadError, WakeNotice } from "@/components/ui";
 import { useAllIncidents, useClusters } from "@/lib/incidents";
 import { usePrefersReducedMotion } from "@/lib/motion";
+import { problemsForGroup, useProblems, type ProblemSummary } from "@/lib/problems";
 
 import { GroupDetail, GroupList, PromoteAction } from "./group-panel";
 import type { Focus } from "./map-engine";
@@ -15,6 +17,7 @@ import { buildRecData, matchesFilter, monthLabel, reasonFor, verdictOf, type Rec
 import { RecMap } from "./rec-map";
 import { GroupTimeline } from "./timeline";
 
+import "../problemas/problemas.css";
 import "./recorrencias.css";
 
 const LAST = 4;
@@ -36,6 +39,24 @@ export default function RecurrencesPage() {
 
   const featured = data?.groups.find((g) => g.id === data.featuredId) ?? null;
 
+  // Problems already registered per group (their linked incidents fall in it).
+  const { data: problemList } = useProblems();
+  const problemsByGroup = useMemo(() => {
+    const out = new Map<number, ProblemSummary[]>();
+    if (!data || !problemList) return out;
+    for (const g of data.groups) {
+      out.set(
+        g.id,
+        problemsForGroup(
+          problemList,
+          g.members.map((i) => data.incidents[i].id),
+        ),
+      );
+    }
+    return out;
+  }, [data, problemList]);
+  const featuredProblems = featured ? (problemsByGroup.get(featured.id) ?? []) : [];
+
   const steps = useMemo<AulaLessonStep[]>(() => {
     const n = data?.incidents.length ?? 0;
     let last = "O grupo que mais se repete num serviço só vira um problema para investigar a causa.";
@@ -47,6 +68,10 @@ export default function RecurrencesPage() {
           : `, ${Math.round(featured.topShare * 100)}% no ${top.name}`
         : "";
       last = `${featured.label}: ${featured.size} casos${where}. Vale abrir um problema.`;
+      if (featuredProblems.length > 0) {
+        const n = featuredProblems.length;
+        last = `${featured.label}: ${featured.size} casos${where}. Já ${n === 1 ? "virou um problema" : `virou ${n} problemas`}.`;
+      }
     }
     return [
       {
@@ -71,7 +96,7 @@ export default function RecurrencesPage() {
       },
       { title: "Problema", caption: last, durationMs: 600 },
     ];
-  }, [data, featured]);
+  }, [data, featured, featuredProblems.length]);
 
   const lesson = useAulaLesson({
     id: "recorrencias",
@@ -158,8 +183,12 @@ export default function RecurrencesPage() {
         </span>
       </div>
       <p className="page-lede">
-        Cada ponto é um incidente. Os parecidos se juntam e formam grupos; um grupo grande é um
-        problema que se repete.
+        Cada ponto é um incidente. Os parecidos se juntam e formam grupos; um grupo grande
+        pede um{" "}
+        <Link className="prb-inline-link" href="/problemas">
+          problema
+        </Link>
+        : a investigação da causa.
       </p>
       <WakeNotice show={clusters.slow || list.slow} />
 
@@ -288,6 +317,7 @@ export default function RecurrencesPage() {
               <p className="rx-reason">{reasonFor(focusGroup, data!.weeks.length)}</p>
               <PromoteAction
                 verdict={verdictOf(focusGroup)}
+                problems={problemsByGroup.get(focusGroup.id) ?? []}
                 promoted={Boolean(promoted[String(focusGroup.id)])}
                 onPromote={() => setPromoted((m) => ({ ...m, [String(focusGroup.id)]: true }))}
               />
@@ -307,6 +337,7 @@ export default function RecurrencesPage() {
               data={data}
               group={focusGroup ?? "outlier"}
               filter={filter}
+              problems={focusGroup ? (problemsByGroup.get(focusGroup.id) ?? []) : []}
               promoted={Boolean(promoted[String(focus)])}
               onPromote={() => setPromoted((m) => ({ ...m, [String(focus)]: true }))}
               onOpenIncident={openIncident}

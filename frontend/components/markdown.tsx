@@ -5,8 +5,8 @@
 // feature: the [INC…] citations stay first-class, clickable buttons that peek the
 // cited incident. A tiny remark plugin rewrites bare/bracketed INC numbers into
 // internal "#INC…" links, which the `a` renderer turns into citation buttons.
-// Problem ids ([PRB…]) become citation chips too; they are listed in the
-// pipeline view, so they are labelled rather than opened in the peek drawer.
+// Problem ids ([PRB…]) become citation buttons too: they open the cited
+// Problem (root cause and known fix) in the same side preview.
 
 import type { Root, RootContent } from "mdast";
 import ReactMarkdown, { type Components } from "react-markdown";
@@ -63,23 +63,18 @@ export function SuggestionMarkdown({
 }) {
   const components: Components = {
     a({ href, children }) {
-      const problem = /^#(PRB\d{4,})$/.exec(href ?? "");
-      if (problem) {
-        return (
-          <span className="cite cite-prb" title={`Problema ${problem[1]}`}>
-            {problem[1]}
-          </span>
-        );
-      }
-      const cite = /^#(INC\d{4,})$/.exec(href ?? "");
+      const cite = /^#((INC|PRB)\d{4,})$/.exec(href ?? "");
       if (cite) {
         const n = cite[1];
+        const problem = cite[2] === "PRB";
         return (
           <button
             type="button"
-            className={`cite${flashCite === n ? " flash" : ""}`}
+            className={`cite${problem ? " cite-prb" : ""}${flashCite === n ? " flash" : ""}`}
             onClick={(e) => onCite(n, e.currentTarget)}
-            aria-label={`Abrir incidente citado ${n}`}
+            aria-label={
+              problem ? `Abrir problema citado ${n}` : `Abrir incidente citado ${n}`
+            }
           >
             {n}
           </button>

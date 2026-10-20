@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 
 import { Icons } from "@/components/icons";
+import type { ProblemSummary } from "@/lib/problems";
 
 import type { Focus } from "./map-engine";
 import { GroupTimeline } from "./timeline";
@@ -89,6 +91,7 @@ export function GroupDetail({
   data,
   group,
   filter,
+  problems,
   promoted,
   onPromote,
   onOpenIncident,
@@ -97,6 +100,7 @@ export function GroupDetail({
   data: RecData;
   group: RecGroup | "outlier";
   filter: RecFilter;
+  problems: ProblemSummary[];
   promoted: boolean;
   onPromote: () => void;
   onOpenIncident: (id: string) => void;
@@ -132,7 +136,12 @@ export function GroupDetail({
 
       {isGroup ? (
         <>
-          {verdict === "problem" ? (
+          {problems.length > 0 ? (
+            <span className="rx-verdict ok">
+              <Icons.problems size={14} />
+              {problems.length === 1 ? "Já virou um problema" : `Já virou ${problems.length} problemas`}
+            </span>
+          ) : verdict === "problem" ? (
             <span className="rx-verdict ok">
               <Icons.promote size={14} />
               Candidato a problema
@@ -165,7 +174,12 @@ export function GroupDetail({
           ) : null}
           <div className="rx-desk-only">
             <p className="rx-reason">{reasonFor(group, data.weeks.length)}</p>
-            <PromoteAction verdict={verdict} promoted={promoted} onPromote={onPromote} />
+            <PromoteAction
+              verdict={verdict}
+              problems={problems}
+              promoted={promoted}
+              onPromote={onPromote}
+            />
           </div>
         </>
       ) : (
@@ -197,22 +211,53 @@ export function GroupDetail({
   );
 }
 
-// When the /problemas route lands on main, "Abrir problema" becomes a link to
-// the group's Problem page. Until then the action is a local simulation.
+/**
+ * A group whose incidents already have Problems links to them; a group with
+ * none keeps the simulated "Abrir problema" (nothing is saved).
+ */
 export function PromoteAction({
   verdict,
+  problems,
   promoted,
   onPromote,
 }: {
   verdict: ReturnType<typeof verdictOf> | null;
+  problems: ProblemSummary[];
   promoted: boolean;
   onPromote: () => void;
 }) {
+  if (problems.length > 0) {
+    return (
+      <div className="rec-prb rx-prb">
+        <p className="rec-prb-head">
+          <Icons.problems size={15} />
+          {problems.length === 1
+            ? "Este grupo já tem um problema"
+            : `Este grupo já tem ${problems.length} problemas`}
+        </p>
+        <ul className="rec-prb-list">
+          {problems.map((p) => (
+            <li key={p.number}>
+              <Link
+                className="rec-prb-row"
+                href={`/problemas/${p.number}`}
+                transitionTypes={["nav-forward"]}
+              >
+                <span className="prb-num">{p.number}</span>
+                <span className="rec-prb-title">{p.short_description}</span>
+                <Icons.chevronRight className="prb-go" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
   if (promoted) {
     return (
       <p className="rx-done" role="status">
         <Icons.checkCircle size={16} />
-        Problema aberto para este grupo. Simulação: nada foi gravado.
+        Problema aberto para este grupo. Na demonstração, nada é gravado.
       </p>
     );
   }

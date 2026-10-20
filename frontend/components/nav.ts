@@ -3,7 +3,7 @@
 // top-level section only needs an entry here.
 import { Icons, type IconComponent } from "./icons";
 
-export type NavKey = "incidents" | "recurrences" | "changes" | "how";
+export type NavKey = "incidents" | "recurrences" | "problems" | "changes" | "how";
 
 export interface NavItem {
   key: NavKey;
@@ -39,6 +39,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     match: ["/recorrencias"],
   },
   {
+    key: "problems",
+    href: "/problemas",
+    icon: Icons.problems,
+    label: "Problemas",
+    short: "Problemas",
+    sub: "Causa raiz dos incidentes que se repetem",
+    match: ["/problemas"],
+  },
+  {
     key: "changes",
     href: "/changes",
     icon: Icons.changes,
@@ -52,7 +61,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/como-funciona",
     icon: Icons.how,
     label: "Como funciona",
-    short: "Como funciona",
+    // Five tabs leave ~78px each on a phone; the full label would be cut.
+    short: "Sobre a IA",
     sub: "Como a IA sugere e agrupa",
     match: ["/como-funciona"],
   },
