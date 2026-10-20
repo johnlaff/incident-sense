@@ -1360,8 +1360,17 @@ a.chg-row:focus-visible {
 }
 .chg-run h2,
 .chg-semantic h2 {
-  /* 19px on phones keeps a clear step under the 24px title. */
   font-size: clamp(1.1875rem, 1rem + 0.8vw, var(--fs-xl));
+}
+/* Phones: the page title is 20px (long Change titles stay short), so card
+   and section titles sit at 16px semibold, one clear step under it. */
+@media (max-width: 767.98px) {
+  section.chg-run h2,
+  section.chg-semantic h2,
+  .chg-field .chg-field-title h3 {
+    font-size: var(--fs-md, 1rem);
+    font-weight: 600;
+  }
 }
 .chg-ledger h3,
 .chg-avg h3 {
@@ -1432,6 +1441,11 @@ a.chg-row:focus-visible {
   text-decoration: underline;
   text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
   text-underline-offset: 3px;
+}
+@media (pointer: coarse) {
+  .chg-text-wrap[data-long="true"] .chg-more {
+    min-height: 44px;
+  }
 }
 .chg-text-wrap[data-long="true"] .chg-more:hover {
   background: none;
