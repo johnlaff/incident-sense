@@ -601,8 +601,9 @@ function Layers({
               <span className="layer-name">O quanto se parece</span>
             </div>
             <p className="layer-line">
-              Cada caso ganha uma nota de 0 a 1. Quanto mais perto de 1, mais parecido.
-              Abaixo de {formatSim(vector.min_similarity)} fica de fora.
+              Compara com incidentes resolvidos e com Problemas (a causa de erros que se
+              repetem). Cada um ganha uma nota de 0 a 1: perto de 1 é muito parecido,
+              abaixo de {formatSim(vector.min_similarity)} fica de fora.
             </p>
             <SimilarityRuler
               incidents={incidents}
@@ -753,7 +754,6 @@ function RowGroup({
               : r.outcome === "descartado"
                 ? { cls: "drop", label: OUTCOME_LABEL.descartado }
                 : { cls: "keep", label: OUTCOME_LABEL[r.outcome] };
-          const openable = r.kind === "incidente";
           return (
             <li
               key={`${stage}-${r.number}`}
@@ -763,20 +763,14 @@ function RowGroup({
               }`}
               style={{ "--i": i } as Style}
             >
-              {openable ? (
-                <button
-                  type="button"
-                  className="row-num row-open"
-                  onClick={(e) => onCite(r.number, e.currentTarget)}
-                  aria-label={`Abrir ${r.number}: ${r.desc}`}
-                >
-                  <RecordTag number={r.number} ghost size="sm" />
-                </button>
-              ) : (
-                <span className="row-num">
-                  <RecordTag number={r.number} size="sm" />
-                </span>
-              )}
+              <button
+                type="button"
+                className="row-num row-open"
+                onClick={(e) => onCite(r.number, e.currentTarget)}
+                aria-label={`Abrir ${r.number}: ${r.desc}`}
+              >
+                <RecordTag number={r.number} ghost={r.kind === "incidente"} size="sm" />
+              </button>
               <span className="row-desc">{r.desc}</span>
               <span className="row-sim mono" title="Semelhança, de 0 a 1">
                 {formatSim(r.sim)}
@@ -903,21 +897,15 @@ function count(n: number, one: string, many: string): string {
 }
 
 export function IdChip({ id, onCite }: { id: string; onCite: CiteHandler }) {
-  if (id.startsWith("INC")) {
-    return (
-      <button
-        type="button"
-        className="tag-btn"
-        onClick={(e) => onCite(id, e.currentTarget)}
-        aria-label={`Abrir incidente ${id}`}
-      >
-        <RecordTag number={id} ghost size="sm" />
-      </button>
-    );
-  }
+  const problem = id.startsWith("PRB");
   return (
-    <span title={`Problema ${id}`}>
-      <RecordTag number={id} size="sm" />
-    </span>
+    <button
+      type="button"
+      className="tag-btn"
+      onClick={(e) => onCite(id, e.currentTarget)}
+      aria-label={problem ? `Abrir problema ${id}` : `Abrir incidente ${id}`}
+    >
+      <RecordTag number={id} ghost={!problem} size="sm" />
+    </button>
   );
 }

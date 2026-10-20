@@ -22,10 +22,12 @@ import {
 import { AulaProvider, AulaToggle } from "./aula";
 import { Icons, type IconComponent } from "./icons";
 import { NAV_ITEMS, activeNav } from "./nav";
+import { ProblemPeekDrawer } from "./problem";
 import { StateBadge, PriorityBadge } from "./ui";
 import { useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { useAllIncidents, useIncident } from "@/lib/incidents";
 import { absDate, mapDetail } from "@/lib/model";
+import { isProblemNumber } from "@/lib/problems";
 import type { IncidentSummary } from "@/lib/types";
 
 type Theme = "light" | "dark";
@@ -403,7 +405,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             />
           ) : null}
 
-          {peekId ? (
+          {peekId && isProblemNumber(peekId) ? (
+            <ProblemPeekDrawer
+              number={peekId}
+              onClose={() => setPeekId(null)}
+              onPeekIncident={peek}
+            />
+          ) : peekId ? (
             <PeekDrawer
               number={peekId}
               onClose={() => setPeekId(null)}

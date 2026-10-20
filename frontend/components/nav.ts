@@ -3,7 +3,7 @@
 // top-level section only needs an entry here.
 import { Icons, type IconComponent } from "./icons";
 
-export type NavKey = "incidents" | "recurrences" | "changes" | "how";
+export type NavKey = "incidents" | "recurrences" | "problems" | "changes" | "how";
 
 export interface NavItem {
   key: NavKey;
@@ -18,7 +18,7 @@ export interface NavItem {
   /** Pathname prefixes that mark this section as active. */
   match: readonly string[];
   /** Concept color class (concepts.css) for the section's chip. */
-  tone: "k-inc" | "k-prb" | "k-chg" | "k-ai" | "k-human";
+  tone: "k-inc" | "k-rec" | "k-prb" | "k-chg" | "k-ai" | "k-human";
 }
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -40,6 +40,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
     short: "Recorrências",
     sub: "Incidentes que se repetem, em grupos",
     match: ["/recorrencias"],
+    tone: "k-rec",
+  },
+  {
+    key: "problems",
+    href: "/problemas",
+    icon: Icons.problems,
+    label: "Problemas",
+    short: "Problemas",
+    sub: "Causa raiz dos incidentes que se repetem",
+    match: ["/problemas"],
     tone: "k-prb",
   },
   {
@@ -57,7 +67,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: "/como-funciona",
     icon: Icons.how,
     label: "Como funciona",
-    short: "Como funciona",
+    // Five tabs leave ~78px each on a phone; the full label would be cut.
+    short: "Sobre a IA",
     sub: "O caminho todo, passo a passo",
     match: ["/como-funciona"],
     tone: "k-ai",

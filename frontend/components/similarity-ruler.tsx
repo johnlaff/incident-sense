@@ -172,7 +172,7 @@ export function SimilarityRuler({
               ? "abaixo do limiar"
               : `passou; na camada 3: ${OUTCOME_LABEL[pickedRow.outcome]}`}
           </span>
-          {pickedRow.kind === "incidente" && onOpen ? (
+          {onOpen ? (
             <button
               type="button"
               className="btn btn-ghost btn-sm"

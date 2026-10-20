@@ -259,8 +259,8 @@
 .pipe-chips .tag {
   margin-right: 0;
 }
+/* A cited Problem: same chip, dashed, so it reads apart from an incident. */
 .cite-prb {
-  cursor: default;
   border-style: dashed;
 }
 
@@ -419,6 +419,23 @@
 .layer-note {
   font-size: 12px;
   color: var(--muted);
+}
+/* First mention of a Problem in the trace: say what it is, in place. */
+.prb-term {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+.prb-term svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--primary-ink);
+}
+.prb-term b {
+  color: var(--ink-body);
+  font-weight: 600;
 }
 .layer-params {
   display: flex;
