@@ -1266,9 +1266,9 @@
   gap: 4px;
   font-size: 0.875rem;
 }
+/* Lines of a Change are prose: Inter, like the rest of the text. */
 .cf-doc-t {
-  font-family: var(--mono);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--ink);
   overflow-wrap: anywhere;
 }
@@ -1527,8 +1527,10 @@
     rotate: 0deg;
   }
 }
+/* The text sent to the embedding model is prose: Inter, line breaks kept. */
 .cf-query {
   margin: 0;
+  font-family: var(--font);
   padding: 10px 12px;
   border-radius: var(--radius-sm, 6px);
   background: var(--surface-2);

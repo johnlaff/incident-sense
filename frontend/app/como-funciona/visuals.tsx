@@ -511,7 +511,7 @@ export function Vectorize() {
         <span>A consulta vira um vetor</span>
         <Origin kind="ilustrativo">números ilustrativos</Origin>
       </figcaption>
-      <pre className="cf-query mono">{queryText(EXAMPLE_SUMMARY)}</pre>
+      <pre className="cf-query">{queryText(EXAMPLE_SUMMARY)}</pre>
       <div
         className="cf-fp"
         role="img"

@@ -1,8 +1,9 @@
 /* ===================================================================== *
    Claro: the shell and the shared atoms.
    Loaded after globals.css and concepts.css. The frame (top bar, rail, phone
-   tab bar) sits on the near-white ground; on desktop the screen lives on one
-   white sheet with a hairline edge. Buttons, inputs, badges, page heads,
+   tab bar) sits on the near-white ground; on desktop the content sits right
+   on it and grouped content gets white cards (no sheet under them, see
+   DESIGN.md). Buttons, inputs, badges, page heads,
    tables and tabs are restyled here; screens keep their own files.
  * ===================================================================== */
 
@@ -649,7 +650,7 @@ a {
   }
 }
 
-/* ----- Desktop: frame + one white sheet ----- */
+/* ----- Desktop: content on the frame, white cards (no sheet) ----- */
 @media (min-width: 768px) {
   .app {
     grid-template-rows: 56px minmax(0, 1fr);

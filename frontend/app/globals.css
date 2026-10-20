@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Incident Sense: "Claro" (see DESIGN.md).
-   A calm, light workspace: near-white frame, white sheets, 1px hairlines,
+   A calm, light workspace: near-white frame, white cards, 1px hairlines,
    ink text. Color is information, never decoration: one accent (violet, only
    for the machine), ink for the person, and quiet concept colors used as
    icons, dots and faint tints (concepts.css). Fonts come from next/font
@@ -9,7 +9,7 @@
 
 :root {
   color-scheme: light;
-  /* Surfaces: a near-white frame around white sheets */
+  /* Surfaces: a near-white frame around white cards */
   --bg: oklch(0.982 0.002 265);
   --surface: oklch(1 0 0);
   --surface-2: oklch(0.968 0.003 265);
@@ -922,9 +922,6 @@ table.list {
 .field .val {
   color: var(--ink);
   font-weight: 500;
-}
-.field .val-id {
-  font-size: 13px;
 }
 .field .val.long {
   font-weight: 400;

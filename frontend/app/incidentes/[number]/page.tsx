@@ -410,6 +410,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     flashToast("Sugestão copiada", 1800);
   }
 
+  // id: a system name (service, group); Inter like the rest, kept whole.
   const fields: { label: string; value: string; id?: boolean }[] = [
     { label: "Categoria", value: record.category },
     { label: "Subcategoria", value: record.subcategory },
@@ -542,7 +543,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                   {fields.map((f) => (
                     <div className="field" key={f.label}>
                       <dt>{f.label}</dt>
-                      <dd className={`val${f.id ? " mono val-id" : ""}`}>{f.value}</dd>
+                      <dd className="val">{f.id ? keepWhole(f.value) : f.value}</dd>
                     </div>
                   ))}
                   {record.clusterLabel ? (
