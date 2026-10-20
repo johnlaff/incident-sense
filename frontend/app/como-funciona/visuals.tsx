@@ -613,17 +613,18 @@ export function Ruler() {
             return (
               <li
                 key={c.number}
-                className={`${pass ? "is-pass" : "is-out"}${rulerPos(c.sim) > 0.78 || !pass ? " is-edge" : ""}`}
+                className={pass ? "is-pass" : "is-out"}
                 style={{ "--i": i, "--x": fix(rulerPos(c.sim)) } as Style}
               >
                 <span className="cf-rec">
                   <RecordTag number={c.number} size="sm" ghost />
                 </span>
                 <span className="cf-ruler-lane">
-                  <span className="cf-ruler-dot">
-                    <span className="mono">{br(c.sim, 2)}</span>
-                  </span>
+                  <span className="cf-ruler-dot" />
                 </span>
+                {/* The value sits in its own column: inside the plot it ran
+                    into the 0,80 line and its neighbors on a phone. */}
+                <span className="cf-ruler-v mono">{br(c.sim, 2)}</span>
                 <span className="cf-sr">{pass ? "passou" : "abaixo do limiar"}</span>
               </li>
             );

@@ -181,6 +181,10 @@
 @media (min-width: 600px) {
   .cf-life {
     grid-template-columns: repeat(7, minmax(0, 1fr));
+    /* A gutter between stations, so "1 A nota da Mudança" never runs into
+       "2 Completo..." at 1280. */
+    --life-gap: 14px;
+    column-gap: var(--life-gap);
     max-width: 980px;
     container-type: inline-size;
   }
@@ -196,7 +200,7 @@
     left: 10px;
     top: 3px;
     height: 2px;
-    width: calc(100cqi / 7 - 12px);
+    width: calc((100cqi - 6 * var(--life-gap)) / 7 + var(--life-gap) - 12px);
   }
 }
 @media (min-width: 1101px) {
@@ -1631,6 +1635,8 @@
 
 .cf-ruler-plot {
   --lab: 106px;
+  /* Right column for the values. */
+  --val: 46px;
   position: relative;
 }
 .cf-ruler-out {
@@ -1638,7 +1644,7 @@
   top: 0;
   bottom: 22px;
   left: var(--lab);
-  width: calc((100% - var(--lab)) * var(--floor));
+  width: calc((100% - var(--lab) - var(--val)) * var(--floor));
   background: color-mix(in oklab, var(--muted) 9%, transparent);
   border-radius: 4px;
 }
@@ -1646,7 +1652,7 @@
   position: absolute;
   top: -4px;
   bottom: 18px;
-  left: calc(var(--lab) + (100% - var(--lab)) * var(--floor));
+  left: calc(var(--lab) + (100% - var(--lab) - var(--val)) * var(--floor));
   width: 2px;
   background: var(--ink);
 }
@@ -1666,7 +1672,7 @@
 }
 .cf-ruler-rows li {
   display: grid;
-  grid-template-columns: var(--lab) minmax(0, 1fr);
+  grid-template-columns: var(--lab) minmax(0, 1fr) var(--val);
   align-items: center;
   height: 28px;
 }
@@ -1699,15 +1705,8 @@
     background var(--dur-state, 200ms) var(--ease-out)
       calc(min(var(--i), 10) * var(--cf-st) + var(--cf-d));
 }
-.cf-ruler-dot span {
-  position: absolute;
-  bottom: 50%;
-  left: 16px;
-  translate: 0 50%;
-  /* A label can cross a neighbor dot: give it its own ground. */
-  padding: 0 3px;
-  border-radius: 3px;
-  background: var(--surface);
+.cf-ruler-v {
+  justify-self: end;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--ink);
@@ -1716,13 +1715,8 @@
 .cf-ruler-rows li.is-pass .cf-ruler-dot {
   background: var(--cf-inc);
 }
-.cf-ruler-rows li.is-out .cf-ruler-dot span {
+.cf-ruler-rows li.is-out .cf-ruler-v {
   color: var(--muted);
-}
-/* Labels of dots near the right edge go to the left of the dot. */
-.cf-ruler-rows li.is-edge .cf-ruler-dot span {
-  left: auto;
-  right: 16px;
 }
 .cf-row[data-s="ahead"] .cf-ruler-dot {
   translate: 0 0;
@@ -1733,7 +1727,7 @@
 .cf-ruler-ticks {
   display: flex;
   justify-content: space-between;
-  margin: 6px 0 0 var(--lab);
+  margin: 6px var(--val) 0 var(--lab);
   font-size: 0.75rem;
   color: var(--muted);
 }
