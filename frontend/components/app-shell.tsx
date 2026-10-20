@@ -15,6 +15,7 @@ import {
   useMemo,
   useRef,
   useState,
+  ViewTransition,
   type ReactNode,
 } from "react";
 
@@ -170,7 +171,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     (number: string) => {
       setPeekId(null);
       setPaletteOpen(false);
-      router.push(`/incidentes/${number}`);
+      router.push(`/incidentes/${number}`, { transitionTypes: ["nav-forward"] });
     },
     [router],
   );
@@ -190,7 +191,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       }
       setAutoSuggestFor(target);
       setPaletteOpen(false);
-      if (currentDetail !== target) router.push(`/incidentes/${target}`);
+      if (currentDetail !== target)
+        router.push(`/incidentes/${target}`, { transitionTypes: ["nav-forward"] });
     },
     [currentDetail, firstOpen, router],
   );
@@ -337,9 +339,21 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           <main className="main">
-            <div className="screen-enter" key={pathname}>
-              {children}
-            </div>
+            {/* Route change: going deeper enters from the right, going back
+                from the left; anything else crossfades. Only the content
+                moves: the top bar and the navigation stay put. */}
+            <ViewTransition
+              key={pathname}
+              enter={{
+                "nav-forward": "from-right",
+                "nav-back": "from-left",
+                default: "fade",
+              }}
+              exit={{ "nav-forward": "to-left", "nav-back": "to-right", default: "fade" }}
+              default="none"
+            >
+              <div className="screen-enter">{children}</div>
+            </ViewTransition>
           </main>
 
           {/* Phone navigation: thumb-reachable tabs, shown instead of the rail. */}

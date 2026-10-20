@@ -4981,10 +4981,66 @@ body {
  *  View transitions: routes (React <ViewTransition>) and the peek drawer
  *  Unsupported browsers simply swap the content; nothing waits on these.
  * ===================================================================== */
+/* The chrome stays still; only named groups animate. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-new(.from-right) {
+  animation: vt-in-right var(--dur-move) var(--spring-calm) both;
+}
+::view-transition-new(.from-left) {
+  animation: vt-in-left var(--dur-move) var(--spring-calm) both;
+}
+::view-transition-old(.to-left),
+::view-transition-old(.to-right),
+::view-transition-old(.fade) {
+  animation: vt-out calc(var(--dur-move) * var(--exit-factor)) var(--ease-exit) both;
+}
+::view-transition-new(.fade) {
+  animation: vt-fade-in var(--dur-state) var(--ease-out) both;
+}
+::view-transition-group(.morph),
 ::view-transition-group(peek-num) {
   animation-duration: var(--dur-move);
   animation-timing-function: var(--spring-calm);
 }
 .peek-num {
   view-transition-name: peek-num;
+}
+@keyframes vt-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+}
+@keyframes vt-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(*) {
+    animation: vt-fade-in 160ms var(--ease-out) both !important;
+  }
+  ::view-transition-old(*) {
+    animation: vt-out 120ms var(--ease-exit) both !important;
+  }
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+  }
 }

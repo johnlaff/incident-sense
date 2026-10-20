@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, ViewTransition } from "react";
 
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
@@ -411,8 +411,18 @@ export default function IncidentesPage() {
                   visible.map((x, i) => (
                     <tr key={x.number} className={kbd === i ? "kbd" : ""}>
                       <td className="num" data-label="Número">
-                        <Link className="row-link" href={`/incidentes/${x.number}`}>
-                          {x.number}
+                        <Link
+                          className="row-link"
+                          href={`/incidentes/${x.number}`}
+                          transitionTypes={["nav-forward"]}
+                        >
+                          <ViewTransition
+                            name={`inc-${x.number}`}
+                            share="morph"
+                            default="none"
+                          >
+                            <span>{x.number}</span>
+                          </ViewTransition>
                           <span className="sr-only">{`: ${x.short}`}</span>
                         </Link>
                       </td>

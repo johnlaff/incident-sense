@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, ViewTransition } from "react";
 
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
@@ -150,7 +150,10 @@ export default function DetailPage() {
         <WakeNotice show={slow} />
         <div className="card record-card">
           <div className="record-head record-skel">
-            <span className="sk sk-num" />
+            {/* The number is known from the URL: it lands here from the list. */}
+            <ViewTransition name={`inc-${number}`} share="morph" default="none">
+              <span className="record-num mono">{number}</span>
+            </ViewTransition>
             <span className="sk sk-title" />
             <span className="sk sk-meta" />
           </div>
@@ -219,7 +222,9 @@ export default function DetailPage() {
 function Crumbs({ number }: { number: string }) {
   return (
     <nav className="crumbs" aria-label="Você está em">
-      <Link href="/incidentes">Incidentes</Link>
+      <Link href="/incidentes" transitionTypes={["nav-back"]}>
+        Incidentes
+      </Link>
       <span aria-hidden="true">/</span>
       <span className="mono" aria-current="page">
         {number}
@@ -429,7 +434,13 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
           <div className="top-row">
             <div className="record-title">
               <div className="row">
-                <span className="record-num mono">{record.number}</span>
+                <ViewTransition
+                  name={`inc-${record.number}`}
+                  share="morph"
+                  default="none"
+                >
+                  <span className="record-num mono">{record.number}</span>
+                </ViewTransition>
                 <StateBadge state={localState} />
                 <PriorityBadge priority={record.priority} withWord />
               </div>
