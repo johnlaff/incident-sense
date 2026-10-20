@@ -142,13 +142,13 @@ const CONTENT: Record<
       <Tasks key="t" />,
       <Coherence key="c" />,
     ],
-    source: <>As notas 9,04 e 4 saíram no ensaio e podem mudar com o modelo.</>,
+    source: <>As notas 9,04 e 4,0 saíram no ensaio e podem mudar com o modelo.</>,
     details: (
       <Tech
         rows={[
           [
             "Quando roda",
-            `Só se a média do preenchimento for ${br(GATE)} ou mais (trava de elegibilidade).`,
+            `Só se a média ponderada for ${br(GATE)} ou mais (trava de elegibilidade).`,
           ],
           [
             "Entrada",
@@ -156,7 +156,7 @@ const CONTENT: Record<
           ],
           [
             "Saída",
-            "Nota de coerência de 0 a 10, lista de problemas, raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
+            "Nota de coerência de 0 a 10, lista de incoerências, raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
           ],
           [
             "Cache",
