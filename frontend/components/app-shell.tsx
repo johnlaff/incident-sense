@@ -31,7 +31,7 @@ import type { IncidentSummary } from "@/lib/types";
 type Theme = "light" | "dark";
 
 // Mobile browser chrome (status bar, URL bar) follows the topbar surface.
-const THEME_COLOR: Record<Theme, string> = { light: "#ffffff", dark: "#202027" };
+const THEME_COLOR: Record<Theme, string> = { light: "#131a2b", dark: "#04070f" };
 
 function syncThemeColor(theme: Theme) {
   document
@@ -316,6 +316,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           </header>
 
           <nav className="sidenav" aria-label="Navegação principal">
+            <Link
+              href="/aula"
+              className={`nav-lesson${pathname === "/aula" ? " active" : ""}`}
+              aria-current={pathname === "/aula" ? "page" : undefined}
+              title="Roteiro da aula"
+            >
+              <Icons.bookOpen />
+              <span>
+                Roteiro da aula
+                <small>Por onde começar</small>
+              </span>
+            </Link>
             <div className="nav-label">Operações</div>
             {NAV_ITEMS.map((n) => (
               <Link
@@ -325,7 +337,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-current={active === n.key ? "page" : undefined}
                 title={n.label}
               >
-                <n.icon />
+                <span className={`nav-ico ${n.tone}`}>
+                  <n.icon />
+                </span>
                 <span>{n.label}</span>
                 {n.key === "incidents" && openCount != null ? (
                   <span className="nav-count">{openCount}</span>
@@ -362,7 +376,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link
                 key={n.key}
                 href={n.href}
-                className={`tab-item${active === n.key ? " active" : ""}`}
+                className={`tab-item ${n.tone}${active === n.key ? " active" : ""}`}
                 aria-current={active === n.key ? "page" : undefined}
               >
                 <span className="tab-ico">

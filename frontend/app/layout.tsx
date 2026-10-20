@@ -3,6 +3,7 @@ import { Atkinson_Hyperlegible_Mono, Atkinson_Hyperlegible_Next } from "next/fon
 
 import "./globals.css";
 import "./concepts.css";
+import "./shell.css";
 import { AppShell } from "@/components/app-shell";
 import { AULA_BOOT_SCRIPT } from "@/lib/aula-machine";
 
@@ -33,7 +34,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: "#131a2b",
 };
 
 // Set the theme before paint so there is no light→dark flash on reload.

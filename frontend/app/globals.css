@@ -4678,7 +4678,8 @@ body {
     justify-content: center;
     padding: 10px 0;
   }
-  .nav-item span:not(.nav-count),
+  .nav-item > span:not(.nav-count, .nav-ico),
+  .nav-lesson > span,
   .nav-label,
   .nav-foot,
   .nav-item .nav-count,

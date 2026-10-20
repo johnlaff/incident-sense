@@ -1,0 +1,287 @@
+/* Lesson start: the demo path as one line with four stops. */
+.lesson {
+  max-width: 1480px;
+  margin-inline: auto;
+  padding-bottom: 24px;
+}
+.lesson-hero {
+  display: grid;
+  gap: 14px;
+  padding: 8px 0 26px;
+  max-width: 980px;
+}
+.lesson-hero h1 {
+  font-size: var(--fs-3xl);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+.lesson-lede {
+  margin: 0;
+  font-size: var(--fs-lg);
+  line-height: 1.5;
+  max-width: 62ch;
+  color: var(--ink-body);
+}
+.lesson-mode {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  max-width: 760px;
+}
+.lesson-mode > svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--muted);
+}
+.lesson-mode p {
+  margin: 0;
+  flex: 1 1 260px;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+.lesson-mode b {
+  color: var(--ink);
+}
+.lesson-mode.on {
+  background: var(--primary-tint);
+  border-color: var(--border-strong);
+}
+.lesson-mode.on > svg {
+  color: var(--ink);
+}
+
+/* ----- The route: a thick line, four numbered stops ----- */
+.lesson-route {
+  --track: 6px;
+  --dot: 52px;
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+/* Phone: the line runs down the left, through the numbers. */
+.lesson-route::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--dot) / 2 - var(--track) / 2);
+  top: calc(var(--dot) / 2);
+  bottom: 40px;
+  width: var(--track);
+  border-radius: 3px;
+  background: linear-gradient(
+    to bottom,
+    var(--c-ai) 0 25%,
+    var(--c-inc) 25% 50%,
+    var(--c-prb) 50% 75%,
+    var(--c-chg) 75% 100%
+  );
+  transform-origin: top;
+  animation: route-draw calc(900ms * var(--motion-scale)) var(--ease-out) both;
+}
+@keyframes route-draw {
+  from {
+    scale: 1 0;
+  }
+}
+.lesson-stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--dot) minmax(0, 1fr);
+  gap: 14px;
+  animation: stop-in calc(var(--dur-move) * var(--motion-scale)) var(--ease-out) both;
+  animation-delay: calc(var(--i) * 110ms * var(--motion-scale));
+}
+@keyframes stop-in {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+.stop-n {
+  position: relative;
+  z-index: 1;
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--k);
+  color: var(--k-on);
+  font-family: var(--mono);
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  box-shadow: 0 0 0 5px var(--bg);
+}
+.stop-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  border-top: 5px solid var(--k);
+  min-width: 0;
+}
+.stop-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stop-head h2 {
+  font-size: var(--fs-xl);
+  line-height: 1.2;
+}
+.stop-body > p {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: var(--ink-body);
+}
+.stop-picks {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.stop-pick {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 56px;
+  padding-right: 34px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: var(--k-tint);
+  border: 1px solid var(--k-line);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background var(--dur-press) var(--ease-out);
+}
+.stop-pick:hover {
+  background: color-mix(in oklab, var(--k-tint) 70%, var(--k-line));
+}
+.stop-pick > svg {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 18px;
+  height: 18px;
+  color: var(--k-ink);
+}
+.pick-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+.pick-text b {
+  font-size: var(--fs-sm);
+}
+.pick-text small {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.stop-cta {
+  margin-top: auto;
+  align-self: flex-start;
+  height: 48px;
+  padding: 0 18px;
+  text-decoration: none;
+}
+
+/* ----- Legend ----- */
+.lesson-legend {
+  margin-top: 36px;
+  display: grid;
+  gap: 14px;
+}
+.legend-head h2 {
+  font-size: var(--fs-xl);
+}
+.legend-head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+/* Phones: full-width tap targets */
+@media (max-width: 559px) {
+  .lesson-route {
+    --dot: 40px;
+  }
+  .stop-n {
+    font-size: var(--fs-lg);
+  }
+  .lesson-hero h1 {
+    font-size: var(--fs-2xl);
+  }
+  .stop-body {
+    padding: 14px;
+  }
+  .stop-head .cicon {
+    display: none;
+  }
+  .stop-cta {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
+
+/* Wide screens: the line runs across, four stops side by side. */
+@media (min-width: 1100px) {
+  .lesson-route {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .lesson-route::before {
+    left: calc(var(--dot) / 2);
+    right: calc(25% - var(--dot));
+    top: calc(var(--dot) / 2 - var(--track) / 2);
+    bottom: auto;
+    width: auto;
+    height: var(--track);
+    background: linear-gradient(
+      to right,
+      var(--c-ai) 0 33%,
+      var(--c-inc) 33% 66%,
+      var(--c-prb) 66% 100%
+    );
+    transform-origin: left;
+    animation-name: route-draw-x;
+  }
+  @keyframes route-draw-x {
+    from {
+      scale: 0 1;
+    }
+  }
+  .lesson-stop {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+  .stop-body {
+    height: 100%;
+  }
+  .lesson-hero h1 {
+    font-size: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson-route::before,
+  .lesson-stop {
+    animation: none;
+  }
+}

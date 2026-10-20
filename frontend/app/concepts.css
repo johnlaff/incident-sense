@@ -118,12 +118,12 @@
 /* The snap: a small punched dot at the band's end, like a wristband. */
 .rtag::after {
   content: "";
-  width: 5px;
-  height: 5px;
-  margin-left: 2px;
+  width: 4px;
+  height: 4px;
+  margin-left: 1px;
   border-radius: 50%;
   background: currentColor;
-  opacity: 0.55;
+  opacity: 0.45;
 }
 .rtag-sm {
   height: 22px;
