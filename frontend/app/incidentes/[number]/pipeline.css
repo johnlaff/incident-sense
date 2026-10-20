@@ -1670,17 +1670,6 @@
   color: var(--ink-body);
   max-width: 62ch;
 }
-.tag-btn {
-  border: 0;
-  padding: 0;
-  background: none;
-  cursor: pointer;
-  border-radius: 8px;
-  line-height: 0;
-}
-.tag-btn:hover .rtag-ghost {
-  background: var(--c-inc-tint);
-}
 .row-num.row-open {
   border: 0;
   background: none;

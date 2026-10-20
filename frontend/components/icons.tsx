@@ -215,14 +215,6 @@ export const Icons = {
   // ----- Concept icons (one per idea of the lesson; see concepts.tsx) -----
   // Incidente: a lightning bolt, something broke now.
   incident: icon(<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H13L13 2Z" />),
-  // Problema: a loop with a fixed point, the cause that keeps coming back.
-  problem: icon(
-    <>
-      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
-      <path d="M20 4v7h-7" />
-      <circle cx={12} cy={12} r={2.2} fill="currentColor" stroke="none" />
-    </>,
-  ),
   // Caso parecido: two stacked records, one behind the other.
   similar: icon(
     <>

@@ -241,7 +241,7 @@
   line-height: 1;
 }
 .score-num {
-  font-family: var(--mono);
+  font-family: var(--font);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--score-c);
@@ -430,4 +430,17 @@
   font-size: var(--fs-sm);
   color: var(--muted);
   line-height: 1.45;
+}
+
+/* A band that opens its record */
+.tag-btn {
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  line-height: 0;
+}
+.tag-btn:hover .rtag-ghost {
+  background: var(--c-inc-tint);
 }

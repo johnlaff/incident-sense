@@ -30,10 +30,10 @@ export const CONCEPTS: Record<ConceptKey, ConceptMeta> = {
   },
   prb: {
     key: "prb",
-    icon: Icons.problem,
+    icon: Icons.problems,
     name: "Problema",
     gloss: "A causa por trás de incidentes que se repetem.",
-    look: "Pulseira dourada com raízes e número PRB",
+    look: "Pulseira dourada com linhas que convergem e número PRB",
   },
   chg: {
     key: "chg",

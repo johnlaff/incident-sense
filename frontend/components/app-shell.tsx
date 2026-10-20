@@ -23,6 +23,7 @@ import { AulaProvider, AulaToggle } from "./aula";
 import { Icons, type IconComponent } from "./icons";
 import { NAV_ITEMS, activeNav } from "./nav";
 import { ProblemPeekDrawer } from "./problem";
+import { RecordTag } from "./concepts";
 import { StateBadge, PriorityBadge } from "./ui";
 import { useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { useAllIncidents, useIncident } from "@/lib/incidents";
@@ -776,7 +777,9 @@ function PeekDrawer({
       >
         <div className="drawer-head">
           <span className="peek-label">Fonte citada</span>
-          <span className="mono peek-num">{number}</span>
+          <span className="peek-num">
+            <RecordTag number={number} />
+          </span>
           <button className="drawer-back" onClick={onClose}>
             <Icons.arrowLeft />
             Voltar<span className="drawer-back-long"> ao incidente</span>

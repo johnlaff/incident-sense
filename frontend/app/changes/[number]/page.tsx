@@ -4,6 +4,7 @@ import Link from "next/link";
 import { use, useMemo, useState, type CSSProperties } from "react";
 
 import { useAulaLesson } from "@/components/aula";
+import { RecordTag, TechDetails } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { StateBlock, WakeNotice } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -240,6 +241,9 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       </nav>
 
       <header className="chg-record-head">
+        <div className="chg-band">
+          <RecordTag number={change.number} size="lg" />
+        </div>
         <div className="chg-tags">
           <span className="badge chg-type">{TYPE_LABEL[change.type] ?? change.type}</span>
           <span className="badge chg-state">
@@ -273,7 +277,11 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       <div className="chg-grid" data-skip={playback.skipped}>
         <aside className="chg-aside">
           <section className="card chg-run" aria-labelledby="run-h">
-            <h2 id="run-h">Avaliação do preenchimento</h2>
+            <h2 id="run-h">Nota da IA para este pedido</h2>
+            <p className="chg-run-lede">
+              Uma IA juíza lê cada campo e dá nota de 0 a 10, sempre com os mesmos
+              critérios. Quem aprova a mudança continua sendo uma pessoa.
+            </p>
             {!inScope ? (
               <p className="chg-out-note">
                 <Icons.alert />
@@ -300,7 +308,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   </select>
                 </label>
                 <button
-                  className="btn btn-primary chg-go-btn"
+                  className="btn btn-ai chg-go-btn"
                   onClick={evaluate}
                   disabled={phase === "running"}
                 >
@@ -312,7 +320,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   ) : (
                     <>
                       <Icons.aiSpark />
-                      {result ? "Reavaliar" : "Avaliar preenchimento"}
+                      {result ? "Reavaliar" : "Avaliar com a IA"}
                     </>
                   )}
                 </button>
@@ -377,21 +385,23 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             )}
 
             {showResult && result.overall !== null && (
-              <p className="chg-cost" data-on={at("portao")}>
-                {result.model_calls === 0
-                  ? "Nenhuma chamada à IA"
-                  : `${result.model_calls} ${result.model_calls === 1 ? "chamada" : "chamadas"} à IA`}
-                {reusedCount(result) > 0 &&
-                  ` · ${reusedCount(result)} ${reusedCount(result) === 1 ? "nota reaproveitada" : "notas reaproveitadas"}`}
-                {" · "}
-                {(result.duration_ms / 1000).toLocaleString("pt-BR", {
-                  maximumFractionDigits: 1,
-                })}{" "}
-                s{" · "}
-                {modelNameFromRoute(result.model)}
-                <br />
-                Critérios versão {result.rubric_version}
-              </p>
+              <TechDetails summary="Custo e versão dos critérios">
+                <p className="chg-cost" data-on={at("portao")}>
+                  {result.model_calls === 0
+                    ? "Nenhuma chamada à IA"
+                    : `${result.model_calls} ${result.model_calls === 1 ? "chamada" : "chamadas"} à IA`}
+                  {reusedCount(result) > 0 &&
+                    ` · ${reusedCount(result)} ${reusedCount(result) === 1 ? "nota reaproveitada" : "notas reaproveitadas"}`}
+                  {" · "}
+                  {(result.duration_ms / 1000).toLocaleString("pt-BR", {
+                    maximumFractionDigits: 1,
+                  })}{" "}
+                  s{" · "}
+                  {modelNameFromRoute(result.model)}
+                  <br />
+                  Critérios versão {result.rubric_version}
+                </p>
+              </TechDetails>
             )}
           </section>
 
