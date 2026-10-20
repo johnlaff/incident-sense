@@ -733,14 +733,16 @@ a {
   }
 }
 
+/* The analysis tab shows the same run as Aurora: the button steps aside
+   there, at every width. */
+.cop-fab.quiet {
+  display: none;
+}
 /* Phones: the Aurora button floats over the text; give the record room at
-   the end, and drop the button on the analysis tab (it shows the same run). */
+   the end. */
 @media (max-width: 767px) {
   .detail-single {
     padding-bottom: 72px;
-  }
-  .cop-fab.quiet {
-    display: none;
   }
 }
 

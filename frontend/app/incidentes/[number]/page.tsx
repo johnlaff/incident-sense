@@ -422,7 +422,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: "detalhes", label: "Detalhes" },
-    { id: "analise", label: "Análise da IA", count: suggest.response?.steps.length },
+    { id: "analise", label: "Análise da IA" },
     { id: "atividade", label: "Atividade", count: activity.length },
     { id: "relacionados", label: "Vínculos", count: related.length },
   ];
@@ -791,7 +791,7 @@ function CopilotFab({
   onInsert: (text: string) => void;
   onCopy: (text: string) => void;
   onOpenAnalysis: () => void;
-  /** The analysis tab already shows the run: the phone button steps aside. */
+  /** The analysis tab already shows the run: the button steps aside. */
   quiet?: boolean;
 }) {
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();

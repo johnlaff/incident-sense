@@ -140,13 +140,9 @@ export function PipelineTrace({
             <ConceptLabel concept="human">Você decide</ConceptLabel>
           </div>
         </div>
-        <button
-          className={`btn ${result ? "btn-outline" : "btn-ai"}`}
-          onClick={onRun}
-          disabled={running}
-        >
-          {/* A new run is an AI action (spark); replaying the last run is the
-              one "Repassar" button below, the only replay icon on the page. */}
+        <button className="btn btn-ai" onClick={onRun} disabled={running}>
+          {/* The one control to run it again: a new run, in AI violet. The
+              replay of the last run plays by itself and has no button here. */}
           {running ? <Icons.loader className="spin" /> : <Icons.aiSpark />}
           {running ? "Analisando" : result ? "Analisar de novo" : "Analisar com a IA"}
         </button>
@@ -168,7 +164,6 @@ export function PipelineTrace({
         replaying={Boolean(shown) && !lesson.done}
         aula={lesson.aula}
         onSkip={lesson.skip}
-        onReplay={lesson.play}
       />
 
       <ol
@@ -236,7 +231,8 @@ export function RunStatus({
   replaying: boolean;
   aula: boolean;
   onSkip: () => void;
-  onReplay: () => void;
+  /** Aurora's panel offers "Repassar"; the analysis tab has "Analisar de novo". */
+  onReplay?: () => void;
   compact?: boolean;
 }) {
   const seconds = useElapsedSeconds(running ? startedAt : null);
@@ -264,7 +260,7 @@ export function RunStatus({
         <button type="button" className="btn btn-ghost btn-sm run-btn" onClick={onSkip}>
           Pular
         </button>
-      ) : !replaying ? (
+      ) : !replaying && onReplay ? (
         <button type="button" className="btn btn-ghost btn-sm run-btn" onClick={onReplay}>
           <Icons.replay />
           Repassar
@@ -369,7 +365,7 @@ function StepItem({
   );
 }
 
-/** The procedência gate: a diamond whose halves part when it lets the run on. */
+/** The procedência gate: one whole diamond (no seam through the number). */
 function GateMark({ open }: { open: boolean }) {
   return (
     <svg
@@ -377,8 +373,7 @@ function GateMark({ open }: { open: boolean }) {
       viewBox="0 0 32 32"
       aria-hidden="true"
     >
-      <path className="gate-l" d="M16 2 L2 16 L16 30 Z" />
-      <path className="gate-r" d="M16 2 L30 16 L16 30 Z" />
+      <path d="M16 2 L30 16 L16 30 L2 16 Z" />
     </svg>
   );
 }
@@ -800,16 +795,19 @@ function RowGroup({
           <RecordTag number={r.number} ghost={r.kind === "incidente"} size="sm" />
         </button>
         <span className="row-desc">{r.desc}</span>
-        <span className="row-sim mono" title="Semelhança, de 0 a 1">
-          {formatSim(r.sim)}
-        </span>
-        <span className={`row-pill ${pill.cls}`}>
-          {pill.cls === "keep" ? (
-            <Icons.check size={11} sw={3} />
-          ) : (
-            <Icons.close size={11} sw={3} />
-          )}
-          {pill.label}
+        {/* The score and its verdict read as one: they never part. */}
+        <span className="row-score">
+          <span className="row-sim mono" title="Semelhança, de 0 a 1">
+            {formatSim(r.sim)}
+          </span>
+          <span className={`row-pill ${pill.cls}`}>
+            {pill.cls === "keep" ? (
+              <Icons.check size={11} sw={3} />
+            ) : (
+              <Icons.close size={11} sw={3} />
+            )}
+            {pill.label}
+          </span>
         </span>
         {stage === "postfilter" && r.reason ? (
           <span className="row-reason">{r.reason}</span>

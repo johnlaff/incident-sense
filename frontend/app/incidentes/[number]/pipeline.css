@@ -129,8 +129,8 @@
   border: 1px solid oklch(from var(--p2) l c h / 0.4);
 }
 
-/* Step 5, the procedência gate: a diamond in two halves. They part with the
-   landing spring when the run may go on; they stay shut when it stops. */
+/* Step 5, the procedência gate: a diamond, the one shape on the spine that
+   is not a circle. */
 .pipe-step.is-gate .pipe-marker {
   border: 0;
   background: none;
@@ -158,12 +158,8 @@
   stroke: var(--c-ai);
   stroke-dasharray: none;
 }
-.gate.is-open .gate-l {
-  translate: -3px 0;
-}
-.gate.is-open .gate-r {
-  translate: 3px 0;
-}
+/* The halves meet again once the run goes on: a whole diamond, so the
+   spine never shows through the number. */
 .pipe-step.is-gate.is-done:not(.is-stopped) .gate path {
   fill: var(--c-ai);
 }
@@ -469,9 +465,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
-    "num sim"
-    "desc desc"
-    "pill pill";
+    "num score"
+    "desc desc";
   gap: 4px 10px;
   padding: 9px 11px;
   font-size: 13px;
@@ -505,16 +500,20 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.row-score {
+  grid-area: score;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
 .row-sim {
-  grid-area: sim;
   font-size: 12.5px;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  justify-self: end;
 }
 .row-pill {
-  grid-area: pill;
-  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -633,12 +632,17 @@
     padding: 14px 16px;
   }
   .rows-list .row {
-    grid-template-columns: 104px minmax(0, 1fr) 46px auto;
-    grid-template-areas: "num desc sim pill";
+    grid-template-columns: 104px minmax(0, 1fr) auto;
+    grid-template-areas: "num desc score";
     align-items: center;
   }
+  /* A fixed slot for the verdict, so the scores line up in a column. */
+  .row-score {
+    display: grid;
+    grid-template-columns: auto 7.5rem;
+  }
   .row-pill {
-    justify-self: end;
+    justify-self: start;
   }
   .row-reason {
     grid-column: 2 / -1;
@@ -1441,6 +1445,8 @@
   min-width: 0;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
+  /* "0,89 · mantido" is one fact: it never breaks. */
+  white-space: nowrap;
 }
 .cited-list .btn {
   margin-left: auto;
