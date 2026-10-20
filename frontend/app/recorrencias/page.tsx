@@ -207,7 +207,14 @@ export default function RecurrencesPage() {
     <div
       className="rx-page"
       data-fit={fitH != null ? "" : undefined}
-      style={fitH != null ? ({ "--rx-fit-h": `${fitH}px` } as CSSProperties) : undefined}
+      style={
+        fitH != null
+          ? ({
+              "--rx-fit-h": `${fitH.map}px`,
+              "--rx-side-h": `${fitH.side}px`,
+            } as CSSProperties)
+          : undefined
+      }
     >
       <div className="page-head">
         <h1>Recorrências</h1>
@@ -399,9 +406,13 @@ export default function RecurrencesPage() {
   );
 }
 
-/** Map height (CSS px) that ends the map and its steps above the aula bar. */
-function useAulaMapFit(active: boolean): number | null {
-  const [h, setH] = useState<number | null>(null);
+/**
+ * Modo aula sizes (CSS px): the map height that ends the map and its steps
+ * above the aula bar, and the side panel height that ends there too, so the
+ * group's histogram is not cut on a short screen.
+ */
+function useAulaMapFit(active: boolean): { map: number; side: number } | null {
+  const [h, setH] = useState<{ map: number; side: number } | null>(null);
   useEffect(() => {
     if (!active) {
       setH(null);
@@ -424,7 +435,12 @@ function useAulaMapFit(active: boolean): number | null {
         ? top.getBoundingClientRect().bottom + 8
         : r.top + window.scrollY;
       const avail = (barTop - 12 - stepsH - mapTop) / zoom;
-      setH(Math.max(phone.matches ? 260 : 180, Math.floor(avail)));
+      const side = document.querySelector<HTMLElement>(".rx-side-scroll");
+      const sideTop = side ? side.getBoundingClientRect().top : mapTop;
+      setH({
+        map: Math.max(phone.matches ? 260 : 180, Math.floor(avail)),
+        side: Math.max(240, Math.floor((barTop - 12 - sideTop) / zoom)),
+      });
       if (phone.matches && !scrolled) {
         scrolled = true;
         const y = r.top + window.scrollY - top.getBoundingClientRect().bottom - 8;
