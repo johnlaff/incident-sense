@@ -14,6 +14,7 @@ import { mapSummary } from "@/lib/model";
 import { useProblem, type ProblemDetail } from "@/lib/problems";
 
 import "../problemas.css";
+import { keepWhole } from "@/lib/text";
 
 // The linked list starts short so a phone does not scroll through 38 rows.
 const LINKED_FIRST = 8;
@@ -145,7 +146,7 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
               </ViewTransition>
               <ProblemStateBadge state={problem.state} />
             </div>
-            <h1>{problem.short_description}</h1>
+            <h1>{keepWhole(problem.short_description)}</h1>
             <div className="meta">
               {`${problem.cmdb_ci} · ${problem.assignment_group} · ${
                 linked.length === 1 ? "1 incidente" : `${linked.length} incidentes`

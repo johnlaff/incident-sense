@@ -53,6 +53,7 @@ import type { SuggestResponse, WorkNote } from "@/lib/types";
 import { SuggestionMarkdown } from "@/components/markdown";
 
 import "./pipeline.css";
+import { keepWhole } from "@/lib/text";
 
 type Tab = "detalhes" | "analise" | "atividade" | "relacionados";
 
@@ -422,7 +423,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     { id: "detalhes", label: "Detalhes" },
     { id: "analise", label: "Análise da IA", count: suggest.response?.steps.length },
     { id: "atividade", label: "Atividade", count: activity.length },
-    { id: "relacionados", label: "Relacionados", count: related.length },
+    { id: "relacionados", label: "Vínculos", count: related.length },
   ];
 
   return (
@@ -446,7 +447,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 <StateBadge state={localState} />
                 <PriorityBadge priority={record.priority} withWord />
               </div>
-              <h1>{record.title}</h1>
+              <h1>{keepWhole(record.title)}</h1>
               <div className="meta">
                 {`${record.service} · ${record.group} · ${
                   localState === "resolved" ? "resolvido" : `aberto ${record.rel}`
@@ -659,6 +660,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
         onInsert={doInsert}
         onCopy={doCopy}
         onOpenAnalysis={() => setTab("analise")}
+        quiet={tab === "analise"}
       />
 
       <div className="toast-slot" role="status" aria-live="polite">
@@ -773,6 +775,7 @@ function CopilotFab({
   onInsert,
   onCopy,
   onOpenAnalysis,
+  quiet = false,
 }: {
   record: IncidentRecord;
   suggest: SuggestionRun;
@@ -781,6 +784,8 @@ function CopilotFab({
   onInsert: (text: string) => void;
   onCopy: (text: string) => void;
   onOpenAnalysis: () => void;
+  /** The analysis tab already shows the run: the phone button steps aside. */
+  quiet?: boolean;
 }) {
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();
 
@@ -1094,7 +1099,7 @@ function CopilotFab({
   return (
     <>
       <button
-        className={`cop-fab${open ? " hidden" : ""}`}
+        className={`cop-fab${open ? " hidden" : ""}${quiet ? " quiet" : ""}`}
         onClick={() => setOpen(true)}
         aria-label="Falar com a Aurora"
         title="Aurora · assistente de resolução"

@@ -732,61 +732,79 @@ function RowGroup({
   if (!rows.length) {
     return <div className="layer-empty">{title}: nenhum resultado.</div>;
   }
+  const renderRow = (r: RetrievalRow, i: number) => {
+    const pill =
+      stage === "vector"
+        ? r.outcome === "abaixo"
+          ? { cls: "drop", label: "pouco parecido" }
+          : { cls: "keep", label: "passou" }
+        : r.outcome === "descartado"
+          ? { cls: "drop", label: OUTCOME_LABEL.descartado }
+          : { cls: "keep", label: OUTCOME_LABEL[r.outcome] };
+    return (
+      <li
+        key={`${stage}-${r.number}`}
+        id={stage === "postfilter" ? `src-${r.number}` : undefined}
+        className={`row${pill.cls === "drop" ? " is-dropped" : ""}${
+          stage === "postfilter" ? " is-stamped" : ""
+        }`}
+        style={{ "--i": i } as Style}
+      >
+        <button
+          type="button"
+          className="row-num row-open"
+          onClick={(e) => onCite(r.number, e.currentTarget)}
+          aria-label={`Abrir ${r.number}: ${r.desc}`}
+        >
+          <RecordTag number={r.number} ghost={r.kind === "incidente"} size="sm" />
+        </button>
+        <span className="row-desc">{r.desc}</span>
+        <span className="row-sim mono" title="Semelhança, de 0 a 1">
+          {formatSim(r.sim)}
+        </span>
+        <span className={`row-pill ${pill.cls}`}>
+          {pill.cls === "keep" ? (
+            <Icons.check size={11} sw={3} />
+          ) : (
+            <Icons.close size={11} sw={3} />
+          )}
+          {pill.label}
+        </span>
+        {stage === "postfilter" && r.reason ? (
+          <span className="row-reason">{r.reason}</span>
+        ) : null}
+        {cited?.has(r.number) ? (
+          <span className="row-cited">
+            <Icons.lightbulb size={12} />
+            citado na sugestão
+          </span>
+        ) : null}
+      </li>
+    );
+  };
+
+  // After the check, the kept rows lead; the dropped ones (each with its
+  // reason) fold away so a phone does not read as a wall of struck text.
+  const fold = stage === "postfilter";
+  const kept = fold ? rows.filter((r) => r.outcome !== "descartado") : rows;
+  const dropped = fold ? rows.filter((r) => r.outcome === "descartado") : [];
   return (
     <div className="rows">
       <div className="rows-title">{title}</div>
-      <ul className="rows-list">
-        {rows.map((r, i) => {
-          const pill =
-            stage === "vector"
-              ? r.outcome === "abaixo"
-                ? { cls: "drop", label: "pouco parecido" }
-                : { cls: "keep", label: "passou" }
-              : r.outcome === "descartado"
-                ? { cls: "drop", label: OUTCOME_LABEL.descartado }
-                : { cls: "keep", label: OUTCOME_LABEL[r.outcome] };
-          return (
-            <li
-              key={`${stage}-${r.number}`}
-              id={stage === "postfilter" ? `src-${r.number}` : undefined}
-              className={`row${pill.cls === "drop" ? " is-dropped" : ""}${
-                stage === "postfilter" ? " is-stamped" : ""
-              }`}
-              style={{ "--i": i } as Style}
-            >
-              <button
-                type="button"
-                className="row-num row-open"
-                onClick={(e) => onCite(r.number, e.currentTarget)}
-                aria-label={`Abrir ${r.number}: ${r.desc}`}
-              >
-                <RecordTag number={r.number} ghost={r.kind === "incidente"} size="sm" />
-              </button>
-              <span className="row-desc">{r.desc}</span>
-              <span className="row-sim mono" title="Semelhança, de 0 a 1">
-                {formatSim(r.sim)}
-              </span>
-              <span className={`row-pill ${pill.cls}`}>
-                {pill.cls === "keep" ? (
-                  <Icons.check size={11} sw={3} />
-                ) : (
-                  <Icons.close size={11} sw={3} />
-                )}
-                {pill.label}
-              </span>
-              {stage === "postfilter" && r.reason ? (
-                <span className="row-reason">{r.reason}</span>
-              ) : null}
-              {cited?.has(r.number) ? (
-                <span className="row-cited">
-                  <Icons.lightbulb size={12} />
-                  citado na sugestão
-                </span>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
+      {kept.length ? <ul className="rows-list">{kept.map(renderRow)}</ul> : null}
+      {dropped.length ? (
+        <details className="rows-more">
+          <summary>
+            <Icons.chevronRight size={14} className="rows-more-chev" />
+            {dropped.length === 1
+              ? "Ver o descartado e o motivo"
+              : `Ver os ${dropped.length} descartados e o motivo`}
+          </summary>
+          <ul className="rows-list">
+            {dropped.map((r, i) => renderRow(r, kept.length + i))}
+          </ul>
+        </details>
+      ) : null}
     </div>
   );
 }
@@ -804,6 +822,9 @@ function CitedSources({
   function show(id: string) {
     const row = document.getElementById(`src-${id}`);
     if (!row) return;
+    // A folded (dropped) source opens before it scrolls into view.
+    const fold = row.closest("details");
+    if (fold) fold.open = true;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     row.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
     row.classList.remove("is-flash");

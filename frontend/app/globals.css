@@ -132,62 +132,11 @@
     1
   ); /* entre duas posições na tela (trilho) */
   --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* só saídas curtas */
-  /* mola calma: M3 Standard, amortecimento 0,9, sem ultrapassar o alvo */
-  --spring-calm: linear(
-    0,
-    0.025,
-    0.087,
-    0.171,
-    0.264,
-    0.358,
-    0.45,
-    0.535,
-    0.612,
-    0.68,
-    0.739,
-    0.79,
-    0.833,
-    0.868,
-    0.897,
-    0.921,
-    0.94,
-    0.955,
-    0.967,
-    0.976,
-    0.984,
-    0.989,
-    0.993,
-    0.996,
-    1
-  );
-  /* pouso: M3 Expressive spatial default, amortecimento 0,8, passa 1,5% e volta */
-  --spring-land: linear(
-    0,
-    0.047,
-    0.155,
-    0.291,
-    0.432,
-    0.563,
-    0.677,
-    0.771,
-    0.846,
-    0.903,
-    0.945,
-    0.974,
-    0.994,
-    1.005,
-    1.012,
-    1.015,
-    1.015,
-    1.014,
-    1.012,
-    1.01,
-    1.008,
-    1.006,
-    1.004,
-    1.003,
-    1
-  );
+  /* mola calma: chega sem ultrapassar o alvo (antes um linear() de mola M3
+     com amortecimento 0,9; a bezier tem a mesma forma, sem pontos soltos) */
+  --spring-calm: cubic-bezier(0.25, 0.8, 0.3, 1);
+  /* pouso: um pouco mais decidido no início, também sem ultrapassar */
+  --spring-land: cubic-bezier(0.2, 0.9, 0.25, 1);
   /* Legacy alias kept so older rules (and changes.css) resolve to the token. */
   --ease: var(--ease-out);
   /* Depth only for things that float (menus, drawers, the AI button). */
@@ -1545,7 +1494,7 @@ body {
   margin: 0;
 }
 .shortcut-hint .sh-sep {
-  opacity: 0.5;
+  color: var(--muted);
   margin: 0 3px;
 }
 
@@ -1688,8 +1637,8 @@ body {
   color: var(--ink);
 }
 .list thead th .sort-ico {
-  display: inline-block;
-  width: 10px;
+  display: inline-flex;
+  vertical-align: -2px;
   margin-left: 4px;
   opacity: 0.7;
 }
@@ -1929,7 +1878,8 @@ body {
 }
 .rec-prose {
   margin: 0;
-  max-width: 62ch;
+  /* Inter's "0" is wide: 54ch holds about 75 characters of prose. */
+  max-width: 54ch;
   font-size: 15px;
   line-height: 1.65;
   color: var(--ink-body);
@@ -4170,7 +4120,7 @@ body {
   .list .when {
     grid-area: when;
     justify-self: end;
-    font-size: 12.5px;
+    font-size: var(--fs-xs);
   }
   .list .desc {
     grid-area: desc;

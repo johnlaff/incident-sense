@@ -53,14 +53,6 @@
     scrollbar-width: thin;
     scrollbar-color: var(--border-strong) transparent;
   }
-  .rx-mobile-only {
-    display: none !important;
-  }
-}
-@media (max-width: 1099.98px) {
-  .rx-desk-only {
-    display: none !important;
-  }
 }
 
 .rx-card {
@@ -108,6 +100,12 @@
   }
   .rx-select {
     flex: 1 1 140px;
+  }
+  .rx-period {
+    flex: 1 1 100%;
+  }
+  .rx-period button {
+    flex: 1 1 0;
   }
 }
 
@@ -208,9 +206,11 @@
   gap: 6px;
   max-width: 12.5em;
   padding: 3px 9px 3px 8px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
-  background: color-mix(in oklch, var(--surface) 94%, transparent);
+  /* Solid, so the text never sits on the tinted dots underneath. */
+  background: var(--surface);
+  box-shadow: 0 1px 2px oklch(0.2 0.01 265 / 0.06);
   color: var(--ink);
   font: inherit;
   font-size: var(--fs-xs, 13px);
@@ -226,7 +226,14 @@
     scale calc(var(--dur-explain) * var(--motion-scale)) var(--spring-calm, ease-out),
     visibility 0s linear calc(var(--dur-explain) * var(--motion-scale)),
     border-color var(--dur-state) var(--ease-out),
-    background-color var(--dur-state) var(--ease-out);
+    background-color var(--dur-state) var(--ease-out),
+    color var(--dur-state) var(--ease-out);
+}
+/* A taller invisible hit area for fingers (the pill itself stays small). */
+.rx-label::after {
+  content: "";
+  position: absolute;
+  inset: -11px -4px;
 }
 .rx-labels.on .rx-label {
   pointer-events: auto;
@@ -235,10 +242,16 @@
   scale: 1;
   transition-delay:
     calc(min(var(--i), 10) * var(--stagger-explain)),
-    calc(min(var(--i), 10) * var(--stagger-explain)), 0s, 0s, 0s;
+    calc(min(var(--i), 10) * var(--stagger-explain)), 0s, 0s, 0s, 0s;
 }
+/* Another group is in focus: the pill steps back, the text stays readable. */
 .rx-labels.on .rx-label.dim {
-  opacity: 0.38;
+  border-color: var(--border);
+  box-shadow: none;
+  color: var(--muted);
+}
+.rx-label.dim .rx-label-dot {
+  opacity: 0.45;
 }
 .rx-label:hover {
   border-color: oklch(var(--rx-l) 0.14 var(--hue));
@@ -248,7 +261,7 @@
   background: oklch(var(--rx-tint-l) var(--rx-tint-c) var(--hue));
 }
 .rx-label:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--focus, var(--primary));
   outline-offset: 2px;
 }
 .rx-label-dot,
@@ -269,19 +282,24 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+/* Count only: the number is the whole label, so it takes the ink. */
 .rx-label.compact .rx-label-name {
   display: none;
+}
+.rx-label.compact .rx-label-n {
+  padding-left: 0;
+  color: inherit;
 }
 @media (max-width: 699.98px) {
   .rx-label {
     font-size: var(--fs-xs, 13px);
     max-width: 17em;
-    padding: 2px 6px 2px 5px;
-    gap: 4px;
+    padding: 3px 7px 3px 6px;
+    gap: 5px;
   }
   .rx-label-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
   }
 }
 @media (min-width: 1100px) {
@@ -424,10 +442,8 @@
     border-color var(--dur-state) var(--ease-out),
     color var(--dur-state) var(--ease-out);
 }
+/* Step names are short words picked to fit five across a 360px phone. */
 .rx-step-t {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .rx-step.past .rx-step-n {
@@ -474,14 +490,6 @@
 }
 :root[data-aula] .rx-caption {
   display: none;
-}
-
-/* Mobile: the focused group's timeline sits right under the map. */
-.rx-strip {
-  padding: 12px 14px 14px;
-  border-top: 1px solid var(--border);
-  display: grid;
-  gap: 10px;
 }
 
 .rx-foot {
@@ -558,9 +566,9 @@
   cursor: default;
 }
 .rx-row-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  line-height: 1.35;
+  text-wrap: pretty;
   color: var(--ink);
   font-weight: 550;
 }
@@ -682,10 +690,6 @@
 .rx-promote {
   margin-top: 10px;
 }
-.rx-strip .rx-promote {
-  margin-top: 0;
-  justify-self: start;
-}
 .rx-done {
   display: flex;
   align-items: flex-start;
@@ -698,9 +702,6 @@
 .rx-done svg {
   flex: none;
   margin-top: 2px;
-}
-.rx-strip .rx-done {
-  margin-top: 0;
 }
 
 .rx-svc-t {
@@ -718,9 +719,8 @@
   font-size: 13.5px;
 }
 .rx-svc-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .rx-svc-n {
   color: var(--muted);
@@ -777,9 +777,8 @@
   color: var(--muted);
 }
 .rx-inc-d {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  text-wrap: pretty;
 }
 
 /* ----- Timeline ----- */
@@ -863,36 +862,19 @@
   grid-row: 1;
 }
 
-.rx-strip-h {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-}
-.rx-strip-h b {
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 650;
-  min-width: 0;
-}
-.rx-strip-h span:last-child {
-  margin-left: auto;
-  flex: none;
-}
 @media (max-width: 420px) {
+  .rx-steps {
+    --gap: 0px;
+    padding-inline: 6px;
+  }
   .rx-step {
-    font-size: var(--fs-xs, 13px);
+    padding-inline: 0;
     letter-spacing: -0.01em;
   }
 }
 
 .rx-prb {
   margin-top: 10px;
-}
-.rx-strip .rx-prb {
-  margin-top: 0;
 }
 
 .rx-tally {
@@ -918,43 +900,6 @@
 .rx-tally b {
   color: var(--ink);
   font-weight: 650;
-}
-
-/* Phones: the map shows counts; the names line up right under it. */
-.rx-legend {
-  list-style: none;
-  margin: 0;
-  padding: 10px 12px 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.rx-legend button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 4px 10px 4px 8px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 550;
-  text-align: left;
-  cursor: pointer;
-  animation: rx-in calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out) both;
-  animation-delay: calc(min(var(--i), 10) * var(--stagger));
-}
-.rx-legend button:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-.rx-legend-n {
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
 }
 
 /* Concept language (feat/design-bolder): AI steps are a dashed violet circle,

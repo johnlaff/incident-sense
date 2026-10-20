@@ -465,7 +465,7 @@
   padding: 0;
   border-block: 1px solid var(--border);
 }
-.row {
+.rows-list .row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
@@ -477,16 +477,16 @@
   font-size: 13px;
   background: var(--surface);
 }
-.row + .row {
+.rows-list .row + .row {
   border-top: 1px solid var(--border);
 }
-.row.is-openable {
+.rows-list .row.is-openable {
   cursor: pointer;
 }
-.row.is-openable:hover {
+.rows-list .row.is-openable:hover {
   background: var(--surface-2);
 }
-.row:focus-visible {
+.rows-list .row:focus-visible {
   outline: 2px solid var(--c-ai);
   outline-offset: -2px;
 }
@@ -496,7 +496,7 @@
   font-weight: 600;
   color: var(--c-ai-ink);
 }
-.row:not(.is-openable) .row-num {
+.rows-list .row:not(.is-openable) .row-num {
   color: var(--ink);
 }
 .row-desc {
@@ -531,8 +531,8 @@
   color: var(--p1);
   background: var(--p1-tint);
 }
-.row.is-dropped .row-desc,
-.row.is-dropped .row-num {
+.rows-list .row.is-dropped .row-desc,
+.rows-list .row.is-dropped .row-num {
   color: var(--muted);
 }
 .row-reason {
@@ -632,7 +632,7 @@
   .layer {
     padding: 14px 16px;
   }
-  .row {
+  .rows-list .row {
     grid-template-columns: 104px minmax(0, 1fr) 46px auto;
     grid-template-areas: "num desc sim pill";
     align-items: center;
@@ -1331,7 +1331,7 @@
 .row-open:hover {
   text-decoration-color: currentColor;
 }
-.row.is-stamped .row-pill {
+.rows-list .row.is-stamped .row-pill {
   transition:
     opacity var(--dur-state) var(--ease-out)
       calc(min(var(--i, 0), 10) * var(--stagger-explain) + var(--dur-state)),
@@ -1339,7 +1339,7 @@
       calc(min(var(--i, 0), 10) * var(--stagger-explain) + var(--dur-state));
 }
 @starting-style {
-  .row.is-stamped .row-pill {
+  .rows-list .row.is-stamped .row-pill {
     opacity: 0;
     scale: 1.35;
   }
@@ -1348,7 +1348,7 @@
   position: relative;
   justify-self: start;
 }
-.row.is-stamped.is-dropped .row-desc {
+.rows-list .row.is-stamped.is-dropped .row-desc {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
   text-decoration-color: var(--muted);
@@ -1356,12 +1356,9 @@
     var(--ease-out) calc(min(var(--i, 0), 10) * var(--stagger-explain) + var(--dur-move));
 }
 @starting-style {
-  .row.is-stamped.is-dropped .row-desc {
+  .rows-list .row.is-stamped.is-dropped .row-desc {
     text-decoration-color: transparent;
   }
-}
-.row.is-stamped.is-dropped {
-  opacity: 0.7;
 }
 .row-cited {
   grid-column: 1 / -1;
@@ -1373,7 +1370,7 @@
   font-weight: 600;
   color: var(--c-ai-ink);
 }
-.row.is-flash {
+.rows-list .row.is-flash {
   animation: row-flash calc(var(--dur-explain) * 1.6 * var(--motion-scale))
     var(--ease-out);
 }
@@ -1604,7 +1601,7 @@
   font-size: var(--fs-md);
   line-height: 1.65;
   color: var(--ink-body);
-  max-width: 68ch;
+  max-width: 54ch;
 }
 .rec-body .section :is(h2, h3) {
   font-size: var(--fs-md);
@@ -1863,4 +1860,49 @@
 .funnel-l {
   font-size: var(--fs-sm);
   color: var(--muted);
+}
+
+/* Dropped candidates fold under the kept ones, one tap away. */
+.rows-more {
+  margin-top: 6px;
+}
+.rows-more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 4px 8px 4px 4px;
+  margin-left: -4px;
+  border-radius: 7px;
+  color: var(--ink-body);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+.rows-more > summary::-webkit-details-marker {
+  display: none;
+}
+.rows-more > summary:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.rows-more > summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.rows-more-chev {
+  transition: rotate var(--dur-state) var(--ease-out);
+}
+.rows-more[open] > summary .rows-more-chev {
+  rotate: 90deg;
+}
+.rows-more[open] > .rows-list {
+  margin-top: 6px;
+  animation: tech-in var(--dur-state) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rows-more[open] > .rows-list {
+    animation: none;
+  }
 }

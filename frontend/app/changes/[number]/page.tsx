@@ -47,6 +47,7 @@ import {
   weightedSegments,
   type StepId,
 } from "../sequence";
+import { keepWhole } from "@/lib/text";
 
 type Phase = "idle" | "running" | "done" | "error";
 
@@ -251,7 +252,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           </span>
           <span className="badge chg-risk">Risco {change.risk.toLowerCase()}</span>
         </div>
-        <h1>{change.short_description}</h1>
+        <h1>{keepWhole(change.short_description)}</h1>
         <dl className="chg-facts">
           <div>
             <dt>Serviço</dt>

@@ -447,9 +447,17 @@ table.list {
   font-size: var(--fs-sm);
   font-weight: 500;
 }
+/* Titles and services wrap to a second line instead of ending in "...". */
 .list .desc {
   font-weight: 500;
   color: var(--ink);
+  white-space: normal;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.list td.svc {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .list .svc,
 .list .desc-svc {
@@ -484,7 +492,8 @@ table.list {
   border-bottom: 0;
 }
 .record-head h1 {
-  font-size: var(--fs-2xl);
+  /* 24px on a 360px phone, 30px from a tablet up. */
+  font-size: clamp(1.5rem, 1.1rem + 1.6vw, var(--fs-2xl));
   font-weight: 600;
   line-height: 1.18;
   letter-spacing: -0.028em;
@@ -502,6 +511,18 @@ table.list {
 }
 .record-card .tab {
   padding: 10px 10px;
+}
+/* Narrow phones: the four tabs fit without scrolling; counts step aside. */
+@media (max-width: 420px) {
+  .record-card .tabs {
+    gap: 0;
+  }
+  .record-card .tab {
+    padding: 10px 6px;
+  }
+  .record-card .tab .tab-n {
+    display: none;
+  }
 }
 .record-card .section {
   padding: 24px 0;
@@ -618,10 +639,6 @@ a {
   }
   .main {
     margin: 0 8px 8px 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: var(--shadow-xs);
     padding: 32px 32px 48px;
   }
 }
@@ -639,5 +656,101 @@ a {
   }
   .nav-item .nav-ico {
     width: 24px;
+  }
+}
+
+/* Touch: 44px targets. Repeated here (and one step more specific) because the
+   sizes above and the page styles load after the globals.css touch block. */
+@media (pointer: coarse) {
+  html .btn,
+  html .btn-sm,
+  html .select,
+  html .input {
+    height: 44px;
+  }
+  html .btn-sm {
+    padding: 0 14px;
+  }
+  html .segmented {
+    padding: 2px;
+  }
+  html .tech > summary,
+  html .rows-more > summary {
+    min-height: 44px;
+  }
+  html .segmented button {
+    min-height: 44px;
+  }
+  /* Top bar icons keep their 34px look; the hit area grows to 44px. */
+  html .icon-btn {
+    position: relative;
+  }
+  html .icon-btn::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+  }
+  html .pipe-head .btn {
+    height: 44px;
+  }
+  /* Row ids and tag chips stay small; the hit area grows to 44px. */
+  html .row-open,
+  html .tag-btn {
+    position: relative;
+  }
+  html .row-open::after,
+  html .tag-btn::after {
+    content: "";
+    position: absolute;
+    inset: -12px -2px;
+  }
+}
+
+/* Phones: the Aurora button floats over the text; give the record room at
+   the end, and drop the button on the analysis tab (it shows the same run). */
+@media (max-width: 767px) {
+  .detail-single {
+    padding-bottom: 72px;
+  }
+  .cop-fab.quiet {
+    display: none;
+  }
+}
+
+/* Phones: each incident row wraps like text. The service sits at the right
+   of the badges and drops to its own line when it does not fit, whole. */
+@media (max-width: 767px) {
+  .list tbody tr:not(.sk-row) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 6px;
+  }
+  .list tbody td.num {
+    order: 1;
+    flex: 1 1 auto;
+  }
+  .list tbody td.when {
+    order: 2;
+  }
+  .list tbody td.desc {
+    order: 3;
+    flex: 1 1 100%;
+  }
+  .list tbody td.st {
+    order: 4;
+  }
+  .list tbody td.pr {
+    order: 5;
+  }
+  .list tbody td.svc {
+    order: 6;
+    margin-left: auto;
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+  .list tbody td[colspan] {
+    flex: 1 1 100%;
   }
 }

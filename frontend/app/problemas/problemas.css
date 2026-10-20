@@ -389,8 +389,13 @@ a.prb-row:focus-visible {
   vertical-align: middle;
 }
 .prb-title {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   font-weight: 600;
+}
+@media (min-width: 768px) {
+  .prb-title {
+    font-size: var(--fs-lg);
+  }
 }
 .prb-def svg {
   color: var(--c-prb-ink);
