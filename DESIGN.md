@@ -106,9 +106,11 @@ like PIX-Core stay whole (`keepWhole` in `lib/text.ts`).
 
 Group colors (`/recorrencias`, `CLUSTER_TONES` in `lib/model.ts`): nine
 categorical tones in a fixed order, told apart by hue and lightness, each with
-its own light and dark step. None is purple near the AI violet (no hue from
-262 to 335), and every dot reads at 3:1 or more on the card and on its group
-tint. A group out of focus steps back to a pale tone of its own hue, still at
+its own light and dark step. None sits on a concept hue: no purple near the AI
+violet (no hue from 262 to 335) and every hue at least 26 degrees from the
+Incidente blue (255), the Problema amber (68) and the Change teal (178), so a
+group never reads as a record type. Every dot reads at 3:1 or more on the card
+and on its group tint. A group out of focus steps back to a pale tone of its own hue, still at
 3:1. `tests/cluster-tones.test.ts` pins these rules.
 `--page-max` 1360px; `/aula` up to 1480px.
 

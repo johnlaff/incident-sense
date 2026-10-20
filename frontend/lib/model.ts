@@ -256,8 +256,9 @@ export function mapDetail(d: IncidentDetail): IncidentRecord {
 
 // Categorical colors (not status), one per cluster id, in this fixed order.
 // Nine tones for the nine groups, told apart by hue and lightness: no purple
-// near the AI violet (no hue between 262 and 335), no two reds or two
-// blue-greens at the same lightness, and every dot at 3:1 or more against the
+// near the AI violet (no hue between 262 and 335), every hue 26 degrees or more
+// from the concept hues (Incidente 255, Problema 68, Change 178), so a group
+// never reads as a record type, and every dot at 3:1 or more against the
 // card and the group tint in both themes. l/c is the light theme, dl/dc the
 // dark one. Outliers are grey.
 export interface ClusterTone {
@@ -269,15 +270,15 @@ export interface ClusterTone {
 }
 
 export const CLUSTER_TONES: readonly ClusterTone[] = [
-  { h: 350, l: 0.64, c: 0.2, dl: 0.72, dc: 0.2 }, // pink
-  { h: 140, l: 0.4, c: 0.132, dl: 0.84, dc: 0.2 }, // deep green / lime
-  { h: 235, l: 0.62, c: 0.136, dl: 0.62, dc: 0.136 }, // sky blue
-  { h: 25, l: 0.52, c: 0.2, dl: 0.65, dc: 0.2 }, // red
-  { h: 55, l: 0.64, c: 0.165, dl: 0.73, dc: 0.186 }, // orange
-  { h: 100, l: 0.54, c: 0.112, dl: 0.69, dc: 0.143 }, // olive
-  { h: 55, l: 0.42, c: 0.111, dl: 0.83, dc: 0.11 }, // brown / peach
-  { h: 200, l: 0.5, c: 0.085, dl: 0.75, dc: 0.128 }, // dark teal / cyan
-  { h: 160, l: 0.61, c: 0.141, dl: 0.66, dc: 0.152 }, // green
+  { h: 350, l: 0.66, c: 0.21, dl: 0.61, dc: 0.2 }, // pink
+  { h: 145, l: 0.36, c: 0.1, dl: 0.61, dc: 0.19 }, // deep green
+  { h: 100, l: 0.6, c: 0.12, dl: 0.67, dc: 0.11 }, // olive
+  { h: 25, l: 0.58, c: 0.21, dl: 0.73, dc: 0.16 }, // red
+  { h: 220, l: 0.48, c: 0.07, dl: 0.57, dc: 0.09 }, // slate
+  { h: 140, l: 0.5, c: 0.16, dl: 0.87, dc: 0.11 }, // green / pale green
+  { h: 350, l: 0.56, c: 0.08, dl: 0.83, dc: 0.08 }, // dusty rose
+  { h: 340, l: 0.46, c: 0.19, dl: 0.75, dc: 0.2 }, // magenta
+  { h: 40, l: 0.36, c: 0.1, dl: 0.59, dc: 0.16 }, // brown
 ];
 
 export const CLUSTER_HUES = CLUSTER_TONES.map((t) => t.h);
