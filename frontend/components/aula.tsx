@@ -53,6 +53,8 @@ export interface AulaLessonStep {
 interface LessonSnapshot {
   id: string;
   order: number;
+  /** Bumps each time the lesson starts again; a restarted lesson takes the bar. */
+  run: number;
   step: number;
   total: number;
   playing: boolean;
@@ -125,7 +127,8 @@ export function AulaProvider({ children }: { children: ReactNode }) {
   const publish = useCallback((snap: Omit<LessonSnapshot, "order">) => {
     setLessons((list) => {
       const prev = list.find((l) => l.id === snap.id);
-      const entry = { ...snap, order: prev?.order ?? ++order.current };
+      const restarted = !prev || prev.run !== snap.run;
+      const entry = { ...snap, order: restarted ? ++order.current : prev.order };
       return prev ? list.map((l) => (l.id === snap.id ? entry : l)) : [...list, entry];
     });
   }, []);
@@ -238,6 +241,7 @@ export function useAulaLesson({
   // Start (or clear) on a new run. Toggling modo aula mid-run keeps the step.
   const aulaRef = useRef(aula);
   const reducedRef = useRef(reduced);
+  const runRef = useRef(0);
   useEffect(() => {
     aulaRef.current = aula;
     reducedRef.current = reduced;
@@ -247,6 +251,7 @@ export function useAulaLesson({
       dispatch({ type: "clear" });
       return;
     }
+    runRef.current += 1;
     dispatch({ type: "start", total, playing: !aulaRef.current });
     if (!aulaRef.current && reducedRef.current) dispatch({ type: "finish" });
   }, [runKey, total]);
@@ -273,6 +278,7 @@ export function useAulaLesson({
   useEffect(() => {
     publish({
       id,
+      run: runRef.current,
       step: state.step,
       total: state.total,
       playing: state.playing,
