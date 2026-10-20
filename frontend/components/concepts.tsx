@@ -209,8 +209,8 @@ export function GateMark({
   verdict?: "pass" | "fail" | null;
 }) {
   return (
-    <span className={`gate${verdict ? ` gate-${verdict}` : ""}`}>
-      <span className="gate-diamond" aria-hidden="true">
+    <span className={`gatemark${verdict ? ` gatemark-${verdict}` : ""}`}>
+      <span className="gatemark-diamond" aria-hidden="true">
         {verdict === "pass" ? (
           <Icons.check sw={3} />
         ) : verdict === "fail" ? (
@@ -219,9 +219,9 @@ export function GateMark({
           <Icons.gate />
         )}
       </span>
-      <span className="gate-rule">{rule}</span>
+      <span className="gatemark-rule">{rule}</span>
       {verdict ? (
-        <span className="gate-verdict">
+        <span className="gatemark-verdict">
           {verdict === "pass" ? "Sim, passa" : "Não, barrado"}
         </span>
       ) : null}

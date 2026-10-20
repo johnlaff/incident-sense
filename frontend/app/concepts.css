@@ -291,14 +291,14 @@
 }
 
 /* ----- Gate: diamond + rule + verdict ----- */
-.gate {
+.gatemark {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   font-weight: 700;
   color: var(--ink);
 }
-.gate-diamond {
+.gatemark-diamond {
   position: relative;
   width: 34px;
   height: 34px;
@@ -307,7 +307,7 @@
   place-items: center;
   color: var(--ink);
 }
-.gate-diamond::before {
+.gatemark-diamond::before {
   content: "";
   position: absolute;
   inset: 5px;
@@ -316,33 +316,33 @@
   border-radius: 4px;
   background: var(--surface);
 }
-.gate-diamond svg {
+.gatemark-diamond svg {
   position: relative;
   width: 15px;
   height: 15px;
 }
-.gate-pass .gate-diamond {
+.gatemark-pass .gatemark-diamond {
   color: var(--gate-pass);
 }
-.gate-pass .gate-diamond::before {
+.gatemark-pass .gatemark-diamond::before {
   background: var(--score-high-tint);
 }
-.gate-fail .gate-diamond {
+.gatemark-fail .gatemark-diamond {
   color: var(--gate-fail);
 }
-.gate-fail .gate-diamond::before {
+.gatemark-fail .gatemark-diamond::before {
   background: var(--score-low-tint);
 }
-.gate-verdict {
+.gatemark-verdict {
   font-size: var(--fs-sm);
   padding: 3px 9px;
   border-radius: 999px;
 }
-.gate-pass .gate-verdict {
+.gatemark-pass .gatemark-verdict {
   background: var(--score-high-tint);
   color: var(--score-high);
 }
-.gate-fail .gate-verdict {
+.gatemark-fail .gatemark-verdict {
   background: var(--score-low-tint);
   color: var(--score-low);
 }
