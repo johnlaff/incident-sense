@@ -228,8 +228,7 @@
 }
 .k-ai-out-box {
   background: var(--c-ai-tint);
-  border: 1px solid var(--c-ai-line);
-  border-top: 4px solid var(--c-ai);
+  border: 2px solid var(--c-ai-line);
   border-radius: var(--radius);
 }
 

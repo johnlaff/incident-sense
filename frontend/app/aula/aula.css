@@ -127,9 +127,8 @@
   padding: 16px;
   border-radius: var(--radius-lg);
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 2px solid var(--k-line);
   box-shadow: var(--shadow-sm);
-  border-top: 5px solid var(--k);
   min-width: 0;
 }
 .stop-head {
