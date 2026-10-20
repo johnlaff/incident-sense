@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { useAulaLesson, type AulaLessonStep } from "@/components/aula";
 import { useShell } from "@/components/app-shell";
@@ -117,6 +117,12 @@ export default function RecurrencesPage() {
     reducedMotion: "finish",
   });
 
+  // Modo aula: the narrator bar floats over the bottom of the screen. The map
+  // takes the height left between its top and the bar (minus the steps), so
+  // the whole map sits above the narrator at any window size. On a phone the
+  // page first scrolls the toolbar away, so the map gets the screen.
+  const fitH = useAulaMapFit(lesson.aula && data != null);
+
   // Focus: the lesson's last step focuses the featured group; a tap wins.
   const [picked, setPicked] = useState<{ focus: Focus } | null>(null);
   const [filter, setFilter] = useState<RecFilter>({ service: null, month: null });
@@ -198,7 +204,11 @@ export default function RecurrencesPage() {
     !(step === LAST && picked && picked.focus !== data?.featuredId);
 
   return (
-    <div className="rx-page">
+    <div
+      className="rx-page"
+      data-fit={fitH != null ? "" : undefined}
+      style={fitH != null ? ({ "--rx-fit-h": `${fitH}px` } as CSSProperties) : undefined}
+    >
       <div className="page-head">
         <h1>Recorrências</h1>
         <span className="count">
@@ -387,4 +397,52 @@ export default function RecurrencesPage() {
       </div>
     </div>
   );
+}
+
+/** Map height (CSS px) that ends the map and its steps above the aula bar. */
+function useAulaMapFit(active: boolean): number | null {
+  const [h, setH] = useState<number | null>(null);
+  useEffect(() => {
+    if (!active) {
+      setH(null);
+      return;
+    }
+    const phone = window.matchMedia("(max-width: 699.98px)");
+    let scrolled = false;
+    const fit = () => {
+      const map = document.querySelector<HTMLElement>(".rx-map");
+      const steps = document.querySelector<HTMLElement>(".rx-steps");
+      const bar = document.querySelector<HTMLElement>(".aula-bar");
+      const top = document.querySelector<HTMLElement>(".topbar");
+      if (!map || !steps || !bar || !top || map.offsetHeight === 0) return;
+      const r = map.getBoundingClientRect();
+      // Modo aula zooms the app: rects are in screen px, heights in CSS px.
+      const zoom = r.height / map.offsetHeight || 1;
+      const barTop = bar.getBoundingClientRect().top;
+      const stepsH = steps.getBoundingClientRect().height;
+      const mapTop = phone.matches
+        ? top.getBoundingClientRect().bottom + 8
+        : r.top + window.scrollY;
+      const avail = (barTop - 12 - stepsH - mapTop) / zoom;
+      setH(Math.max(phone.matches ? 260 : 180, Math.floor(avail)));
+      if (phone.matches && !scrolled) {
+        scrolled = true;
+        const y = r.top + window.scrollY - top.getBoundingClientRect().bottom - 8;
+        window.scrollTo({ top: Math.max(0, y), behavior: "instant" });
+      }
+    };
+    const raf = requestAnimationFrame(fit);
+    const late = window.setTimeout(fit, 400);
+    const bar = document.querySelector<HTMLElement>(".aula-bar");
+    const ro = new ResizeObserver(() => requestAnimationFrame(fit));
+    if (bar) ro.observe(bar);
+    window.addEventListener("resize", fit);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(late);
+      ro.disconnect();
+      window.removeEventListener("resize", fit);
+    };
+  }, [active]);
+  return h;
 }

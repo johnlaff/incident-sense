@@ -69,6 +69,7 @@
   padding: 0;
   overflow: hidden;
   min-width: 0;
+  container: rx-card / inline-size;
 }
 
 /* ----- Toolbar ----- */
@@ -138,18 +139,27 @@
     aspect-ratio: 16 / 10;
     max-height: min(72vh, 760px);
   }
-  /* Modo aula: the narrator bar floats at the bottom. The map shrinks so the
-     steps and "Como o mapa foi feito" end above it, on the first screen. */
-  /* 560px is what sits above and below the map on the first screen (top
-     bar, title, toolbar, steps, "Como o mapa foi feito"), with room for the
-     aula zoom. */
-  :root[data-aula-bar] .rx-map {
-    aspect-ratio: auto;
-    min-height: 0;
-    height: max(240px, calc(100dvh - var(--aula-bar-h, 0px) - 560px));
-  }
   :root[data-aula-bar] .rx-side-scroll {
     max-height: max(240px, calc(100dvh - var(--aula-bar-h, 0px) - 340px));
+  }
+}
+/* Modo aula: page.tsx useAulaMapFit measures the room between the map's top
+   and the narrator bar; the map takes exactly that, at any window size. */
+:root[data-aula-bar] .rx-page[data-fit] .rx-map {
+  aspect-ratio: auto;
+  min-height: 0;
+  max-height: none;
+  height: var(--rx-fit-h);
+}
+/* The narrator tells the story in aula, so the lede steps aside on short
+   screens and the map moves up. */
+@media (min-width: 700px) and (max-height: 860px) {
+  :root[data-aula-bar] .rx-page .page-lede {
+    display: none;
+  }
+  /* Filters flow beside "Reproduzir" instead of as one block: one row less. */
+  :root[data-aula-bar] .rx-filters {
+    display: contents;
   }
 }
 .rx-canvas {
@@ -482,7 +492,9 @@
   background: var(--primary);
   color: var(--on-primary);
 }
-@media (min-width: 700px) {
+/* Number beside the name only when the map card is wide enough for five
+   (a narrow card next to the group panel keeps them stacked). */
+@container rx-card (min-width: 600px) {
   .rx-steps {
     padding: 10px 14px 0;
   }
@@ -528,6 +540,33 @@
 }
 
 /* ----- Side: group list ----- */
+/* When the list scrolls (sticky side, modo aula), the last rows fade into the
+   card so it reads as "more below"; the fade clears at the end of the list. */
+@media (min-width: 1100px) {
+  .rx-side-scroll::after {
+    content: "";
+    position: sticky;
+    bottom: 0;
+    display: block;
+    height: 44px;
+    margin: -44px -16px 0;
+    background: linear-gradient(transparent, var(--surface) 85%);
+    pointer-events: none;
+    /* Hidden unless the list really scrolls (an inactive timeline leaves it at 0). */
+    opacity: 0;
+    animation: rx-more linear both;
+    animation-timeline: scroll(nearest block);
+  }
+}
+@keyframes rx-more {
+  0%,
+  94% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 .rx-side {
   min-width: 0;
 }
