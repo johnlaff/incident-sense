@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useState, ViewTransition } from "react";
 
 import { useShell } from "@/components/app-shell";
+import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { ProblemChain, ProblemDefinition, ProblemStateBadge } from "@/components/problem";
 import { StateBadge, StateBlock, WakeNotice } from "@/components/ui";
@@ -138,7 +139,9 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
           <div className="record-title">
             <div className="row">
               <ViewTransition name={`prb-${problem.number}`} share="morph" default="none">
-                <span className="record-num mono">{problem.number}</span>
+                <span className="record-num">
+                  <RecordTag number={problem.number} size="lg" />
+                </span>
               </ViewTransition>
               <ProblemStateBadge state={problem.state} />
             </div>
@@ -226,7 +229,9 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
                       key={r.number}
                       {...activate(() => peek(r.number), `${r.number} · ${r.short}`)}
                     >
-                      <span className="num">{r.number}</span>
+                      <span className="num">
+                        <RecordTag number={r.number} size="sm" />
+                      </span>
                       <span className="rdesc">{r.short}</span>
                       <span className="svc">{r.rel}</span>
                       <StateBadge state={r.state} />

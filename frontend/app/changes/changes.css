@@ -49,7 +49,7 @@ a.chg-row:hover {
   background: var(--surface-2);
 }
 a.chg-row:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 3px solid var(--focus);
   outline-offset: -2px;
 }
 .chg-row.skeleton {
@@ -71,7 +71,7 @@ a.chg-row:focus-visible {
   font-family: var(--mono);
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-chg-ink);
 }
 .chg-title {
   grid-area: title;
@@ -100,8 +100,8 @@ a.chg-row:focus-visible {
   gap: 6px;
 }
 .chg-type {
-  color: var(--primary-ink);
-  background: var(--primary-tint);
+  color: var(--c-chg-ink);
+  background: var(--c-chg-tint);
 }
 .chg-state {
   color: var(--st-open);
@@ -340,16 +340,16 @@ a.chg-row:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 .chg-score.good {
-  color: var(--st-resolved);
-  background: var(--st-resolved-tint);
+  color: var(--score-high);
+  background: var(--score-high-tint);
 }
 .chg-score.mid {
-  color: var(--p2);
-  background: var(--p2-tint);
+  color: var(--score-mid);
+  background: var(--score-mid-tint);
 }
 .chg-score.low {
-  color: var(--p1);
-  background: var(--p1-tint);
+  color: var(--score-low);
+  background: var(--score-low-tint);
 }
 .chg-score.pending {
   color: var(--muted);
@@ -386,8 +386,8 @@ a.chg-row:focus-visible {
 }
 .chg-edit textarea:focus-visible {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  border-color: var(--c-chg);
+  box-shadow: 0 0 0 3px var(--c-chg-tint);
 }
 .chg-edit-actions {
   display: flex;
@@ -412,7 +412,7 @@ a.chg-row:focus-visible {
 .chg-guidance {
   display: flex;
   gap: 8px;
-  color: var(--primary-ink) !important;
+  color: var(--c-chg-ink) !important;
 }
 .chg-guidance svg {
   flex: none;
@@ -500,7 +500,7 @@ a.chg-row:focus-visible {
   width: 16px;
   height: 16px;
   margin-top: 2px;
-  color: var(--primary-ink);
+  color: var(--c-chg-ink);
 }
 .chg-elapsed {
   font-family: var(--mono);
@@ -586,7 +586,7 @@ a.chg-row:focus-visible {
   background: var(--surface-2);
 }
 .chg-led-link:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 3px solid var(--focus);
   outline-offset: -2px;
 }
 .chg-led-label {
@@ -685,7 +685,9 @@ a.chg-row:focus-visible {
   gap: 8px 12px;
 }
 .chg-overall-num {
-  font-size: 40px;
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: var(--fs-score-xl);
   line-height: 1;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -693,13 +695,13 @@ a.chg-row:focus-visible {
   color: var(--ink);
 }
 .chg-overall-num.good {
-  color: var(--success);
+  color: var(--score-high);
 }
 .chg-overall-num.mid {
-  color: var(--p2);
+  color: var(--score-mid);
 }
 .chg-overall-num.low {
-  color: var(--danger);
+  color: var(--score-low);
 }
 .chg-overall-label {
   color: var(--muted);
@@ -733,11 +735,11 @@ a.chg-row:focus-visible {
 .chg-segment {
   position: absolute;
   inset: 0;
-  background: var(--primary);
+  background: var(--c-chg);
   clip-path: inset(0 calc(100% - var(--e) * 10% + 1px) 0 calc(var(--s) * 10%));
 }
 .chg-segment.alt {
-  background: color-mix(in oklch, var(--primary) 58%, var(--surface));
+  background: color-mix(in oklch, var(--c-chg) 58%, var(--surface));
 }
 .chg-pointer {
   position: absolute;
@@ -856,13 +858,13 @@ a.chg-row:focus-visible {
   bottom: -1px;
   height: 2px;
   border-radius: 1px;
-  background: var(--primary);
+  background: var(--c-chg);
   transform-origin: left;
   scale: 0 1;
   opacity: 0;
 }
 .chg-term .t.alt::after {
-  background: color-mix(in oklch, var(--primary) 58%, var(--surface));
+  background: color-mix(in oklch, var(--c-chg) 58%, var(--surface));
 }
 .chg-formula-result b {
   color: var(--ink);
@@ -1366,4 +1368,68 @@ a.chg-row:focus-visible {
     align-items: baseline;
     gap: 8px;
   }
+}
+
+/* ===================================================================== *
+   Pulseira: the CHG band, bigger type, the AI judge in violet
+ * ===================================================================== */
+.chg-num .rtag {
+  vertical-align: middle;
+}
+.chg-record-head h1 {
+  font-size: var(--fs-2xl);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.chg-record-head .chg-band {
+  margin-bottom: 8px;
+}
+.chg-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.chg-run h2,
+.chg-semantic h2 {
+  font-size: var(--fs-xl);
+}
+.chg-ledger h3,
+.chg-avg h3 {
+  font-size: var(--fs-lg);
+}
+.chg-caption {
+  font-size: var(--fs-md);
+}
+.chg-field-title h3 {
+  font-size: var(--fs-lg);
+}
+.chg-text {
+  font-size: var(--fs-md);
+}
+.chg-score {
+  font-family: var(--mono);
+  font-size: var(--fs-lg);
+  height: 36px;
+  min-width: 56px;
+}
+.chg-verdict {
+  background: var(--c-ai-tint);
+  border: 1px solid var(--c-ai-line);
+  border-radius: var(--radius-sm);
+}
+.chg-verdict::before {
+  content: "Leitura da IA";
+  display: block;
+  margin-bottom: 4px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-ai-ink);
+}
+.chg-go-btn.btn-ai {
+  height: 52px;
+  font-size: var(--fs-lg);
+}
+.chg-run-lede {
+  margin: 0 0 12px;
+  font-size: var(--fs-md);
+  color: var(--ink-body);
 }
