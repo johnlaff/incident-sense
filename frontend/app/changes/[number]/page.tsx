@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { use, useMemo, useState } from "react";
+import { use, useMemo, useState, type CSSProperties } from "react";
 
 import { Icons } from "@/components/icons";
 import { StateBlock, WakeNotice } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import {
-  ADHERENCE_LABEL,
   EVALUATED_FIELDS,
   STATE_LABEL,
   TYPE_LABEL,
-  band,
   nota,
   useChange,
   useRubric,
@@ -25,6 +23,28 @@ import { absDate } from "@/lib/model";
 import { DEFAULT_MODEL, MODELS, modelNameFromRoute } from "@/lib/models";
 
 import "../changes.css";
+import {
+  Average,
+  Coherence,
+  DeltaChip,
+  FieldScoreChip,
+  Ledger,
+  PlaybackBar,
+  RunningNote,
+  STILL,
+  readMotion,
+  useElapsed,
+  useFollowStep,
+  usePlayback,
+  type Motion,
+} from "../evaluation";
+import {
+  buildSteps,
+  gatePassed,
+  reached,
+  weightedSegments,
+  type StepId,
+} from "../sequence";
 
 type Phase = "idle" | "running" | "done" | "error";
 
@@ -89,16 +109,52 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [phase, setPhase] = useState<Phase>("idle");
   const [result, setResult] = useState<Evaluation | null>(null);
+  // The evaluation before the current one, for score deltas on re-evaluation.
+  const [previous, setPrevious] = useState<Evaluation | null>(null);
+  const [runKey, setRunKey] = useState(0);
+  const [motion, setMotion] = useState<Motion>(STILL);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   // Fields edited since the last evaluation: these are the ones the content
   // lock will send back to the model.
   const [dirty, setDirty] = useState<Set<FieldKey>>(new Set());
+  const elapsed = useElapsed(phase === "running");
 
   const scores = useMemo(() => {
     const map = new Map<FieldKey, FieldScore>();
     result?.fields.forEach((f) => map.set(f.key, f));
     return map;
   }, [result]);
+  // While a re-evaluation runs, the ledger shows the current scores greyed out;
+  // once it lands, the counters start from the scores before it.
+  const currentScores = useMemo(
+    () => new Map<FieldKey, number>(result?.fields.map((f) => [f.key, f.score]) ?? []),
+    [result],
+  );
+  const previousScores = useMemo(
+    () => new Map<FieldKey, number>(previous?.fields.map((f) => [f.key, f.score]) ?? []),
+    [previous],
+  );
+
+  const steps = useMemo(
+    () => (result ? buildSteps(result, previous) : []),
+    [result, previous],
+  );
+  const avg = useMemo(
+    () =>
+      result && result.fields.length > 0
+        ? weightedSegments(result.fields, previous?.fields)
+        : null,
+    [result, previous],
+  );
+  const previousAvg = useMemo(
+    () =>
+      previous && previous.fields.length > 0 ? weightedSegments(previous.fields) : null,
+    [previous],
+  );
+  const playback = usePlayback(steps, runKey, motion.scale);
+  const showResult = phase !== "running" && result !== null && avg !== null;
+  const at = (id: StepId) => showResult && reached(steps, playback.index, id);
+  const gateClosed = at("portao") && result !== null && !gatePassed(result);
 
   const inScope = result ? result.scope.in_scope : isInScope(change);
   const valueOf = (key: FieldKey) => edits[key] ?? change[key];
@@ -108,7 +164,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
     setErrMsg(null);
     try {
       const res = await api.evaluateChange(change.number, { fields: edits, model });
+      setPrevious(result);
       setResult(res);
+      setMotion(readMotion());
+      setRunKey((k) => k + 1);
       setDirty(new Set());
       setPhase("done");
     } catch (error) {
@@ -137,6 +196,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const orderedFields = rubric.fields.filter((f) =>
     (EVALUATED_FIELDS as readonly string[]).includes(f.key),
   );
+  const order = new Map(orderedFields.map((f, i) => [f.key, i]));
+  const epoch = `${runKey}-${playback.epoch}`;
+  useFollowStep(steps, playback.index, epoch, motion.reduced);
+  const notasStep = steps.find((s) => s.id === "notas");
 
   return (
     <div className="chg-page">
@@ -177,7 +240,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
         </dl>
       </header>
 
-      <div className="chg-grid">
+      <div className="chg-grid" data-skip={playback.skipped}>
         <aside className="chg-aside">
           <section className="card chg-run" aria-labelledby="run-h">
             <h2 id="run-h">Avaliação do preenchimento</h2>
@@ -214,7 +277,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   {phase === "running" ? (
                     <>
                       <Icons.loader className="spin" />
-                      Avaliando 7 campos em paralelo
+                      Avaliando
                     </>
                   ) : (
                     <>
@@ -223,11 +286,17 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     </>
                   )}
                 </button>
+                {phase === "running" && (
+                  <RunningNote
+                    seconds={elapsed}
+                    fields={dirty.size > 0 && result ? dirty.size : orderedFields.length}
+                  />
+                )}
                 {result && dirty.size > 0 && phase !== "running" && (
                   <p className="chg-hint">
                     {dirty.size === 1 ? "1 campo mudou" : `${dirty.size} campos mudaram`}.
                     Só {dirty.size === 1 ? "ele volta" : "eles voltam"} para a IA; os
-                    outros mantêm a nota, porque o texto não mudou.
+                    outros são reaproveitados, porque o texto não mudou.
                   </p>
                 )}
                 {phase === "error" && errMsg && (
@@ -239,36 +308,115 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               </>
             )}
 
-            {result && result.overall !== null && <Overall result={result} />}
+            {showResult && result.overall !== null && (
+              <PlaybackBar
+                steps={steps}
+                playback={playback}
+                seconds={result.duration_ms / 1000}
+              />
+            )}
+
+            {inScope &&
+              (phase === "running" || (showResult && result.overall !== null)) && (
+                <Ledger
+                  key={`led-${epoch}`}
+                  rows={orderedFields}
+                  avg={showResult ? avg : null}
+                  previous={phase === "running" ? currentScores : previousScores}
+                  run={at("notas")}
+                  skipped={playback.skipped}
+                  motion={motion}
+                  flagBelow={gateClosed}
+                  threshold={result?.threshold ?? rubric.eligibility_threshold}
+                  caption={showResult ? (notasStep?.caption ?? null) : null}
+                />
+              )}
+
+            {showResult && result.overall !== null && at("notas") && (
+              <Average
+                key={`avg-${epoch}`}
+                result={result}
+                avg={avg}
+                previousAvg={previousAvg}
+                previousOverall={previous?.overall ?? null}
+                index={playback.index}
+                steps={steps}
+                skipped={playback.skipped}
+                motion={motion}
+              />
+            )}
+
+            {showResult && result.overall !== null && (
+              <p className="chg-cost" data-on={at("portao")}>
+                {result.model_calls === 0
+                  ? "Nenhuma chamada à IA"
+                  : `${result.model_calls} ${result.model_calls === 1 ? "chamada" : "chamadas"} à IA`}
+                {reusedCount(result) > 0 &&
+                  ` · ${reusedCount(result)} ${reusedCount(result) === 1 ? "nota reaproveitada" : "notas reaproveitadas"}`}
+                {" · "}
+                {(result.duration_ms / 1000).toLocaleString("pt-BR", {
+                  maximumFractionDigits: 1,
+                })}{" "}
+                s{" · "}
+                {modelNameFromRoute(result.model)}
+                <br />
+                Critérios versão {result.rubric_version}
+              </p>
+            )}
           </section>
 
-          {result && result.scope.in_scope && <Semantic result={result} />}
+          {showResult && result.scope.in_scope && at("portao") && (
+            <Coherence
+              key={`sem-${epoch}`}
+              result={result}
+              index={playback.index}
+              steps={steps}
+              skipped={playback.skipped}
+              motion={motion}
+            />
+          )}
         </aside>
 
         <section className="chg-fields" aria-label="Campos avaliados">
           {orderedFields.map((f) => {
-            const score = scores.get(f.key);
+            const score = showResult ? scores.get(f.key) : undefined;
             const isDirty = dirty.has(f.key);
             const edited = edits[f.key] !== undefined;
+            const i = order.get(f.key) ?? 0;
+            const seg = avg?.segments.find((s) => s.key === f.key);
+            const below =
+              gateClosed && score !== undefined && score.score < result!.threshold;
             return (
-              <article key={f.key} className="card chg-field">
+              <article
+                key={f.key}
+                id={`campo-${f.key}`}
+                className={`card chg-field${below ? " flag" : ""}`}
+                style={{ "--i": i } as CSSProperties}
+              >
                 <header>
                   <div className="chg-field-title">
                     <h3>{f.label}</h3>
                     <span className="chg-weight">
                       peso {nota(f.weight).replace(",0", "")}
+                      {below && <span className="chg-below">abaixo do corte</span>}
                     </span>
                   </div>
                   {phase === "running" && inScope ? (
-                    <span className="chg-score pending" aria-label="Avaliando">
-                      <Icons.loader className="spin" />
-                    </span>
+                    <span className="chg-score pending">Em avaliação</span>
                   ) : score && !isDirty ? (
-                    <span
-                      className={`chg-score ${band(score.score)}`}
-                      aria-label={`Nota ${nota(score.score)} de 10`}
-                    >
-                      {nota(score.score)}
+                    <span className="chg-field-score" key={`sc-${epoch}`}>
+                      {at("notas") && !score.reused && (
+                        <DeltaChip delta={seg?.delta ?? null} />
+                      )}
+                      <FieldScoreChip
+                        score={score.score}
+                        from={previous?.fields.find((p) => p.key === f.key)?.score}
+                        reused={score.reused}
+                        run={at("notas")}
+                        order={i}
+                        skipped={playback.skipped}
+                        motion={motion}
+                      />
                     </span>
                   ) : null}
                 </header>
@@ -302,7 +450,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 )}
 
                 {score && !isDirty && editing !== f.key && (
-                  <div className="chg-verdict">
+                  <div className="chg-verdict" key={`v-${epoch}`} data-on={at("notas")}>
                     <p>{score.diagnosis}</p>
                     {score.guidance && (
                       <p className="chg-guidance">
@@ -317,16 +465,16 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   {score && !isDirty && score.reused && (
                     <span
                       className="chg-lock"
-                      title="O texto não mudou, então a nota foi mantida"
+                      title="O texto não mudou, então a nota foi reaproveitada sem chamar a IA"
                     >
                       <Icons.check sw={3} />
-                      Nota mantida, texto sem mudança
+                      Reaproveitado: o texto não mudou
                     </span>
                   )}
                   {isDirty && (
                     <span className="chg-lock dirty">Editado: será reavaliado</span>
                   )}
-                  {!isDirty && edited && !score && (
+                  {!isDirty && edited && !score && phase !== "running" && (
                     <span className="chg-lock dirty">Editado</span>
                   )}
                   {inScope && editing !== f.key && phase !== "running" && (
@@ -366,102 +514,8 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   );
 }
 
-function Overall({ result }: { result: Evaluation }) {
-  const overall = result.overall ?? 0;
-  const passed = overall >= result.threshold;
-  const reused = result.fields.filter((f) => f.reused).length;
-  return (
-    <div className="chg-overall">
-      <div className="chg-overall-row">
-        <span className={`chg-overall-num ${band(overall)}`}>{nota(overall)}</span>
-        <span className="chg-overall-label">
-          média ponderada
-          <br />
-          dos 7 campos
-        </span>
-      </div>
-      <div
-        className="chg-meter"
-        role="img"
-        aria-label={`Nota ${nota(overall)} de 10; a coerência só é conferida a partir de ${nota(result.threshold)}`}
-      >
-        <span className={`fill ${band(overall)}`} style={{ width: `${overall * 10}%` }} />
-        <span className="cut" style={{ left: `${result.threshold * 10}%` }}>
-          <span>{nota(result.threshold)}</span>
-        </span>
-      </div>
-      <p className={`chg-gate ${passed ? "open" : "closed"}`}>
-        {passed ? <Icons.checkCircle /> : <Icons.alert />}
-        {passed
-          ? `Chegou a ${nota(result.threshold)}: a IA conferiu a coerência entre os campos.`
-          : `Abaixo de ${nota(result.threshold)}: a coerência entre os campos não é conferida.`}
-      </p>
-      <p className="chg-cost">
-        {result.model_calls === 0
-          ? "Nenhuma chamada à IA"
-          : `${result.model_calls} ${result.model_calls === 1 ? "chamada" : "chamadas"} à IA`}
-        {reused > 0 && ` · ${reused} ${reused === 1 ? "nota mantida" : "notas mantidas"}`}
-        {" · "}
-        {(result.duration_ms / 1000).toLocaleString("pt-BR", {
-          maximumFractionDigits: 1,
-        })}{" "}
-        s{" · "}
-        {modelNameFromRoute(result.model)}
-        <br />
-        Critérios versão {result.rubric_version}
-      </p>
-    </div>
-  );
-}
-
-function Semantic({ result }: { result: Evaluation }) {
-  const s = result.semantic;
-  return (
-    <section className="card chg-semantic" aria-labelledby="sem-h">
-      <h2 id="sem-h">Coerência entre os campos</h2>
-      {!s ? (
-        <p className="chg-muted">{result.semantic_skipped_reason}</p>
-      ) : (
-        <>
-          <p className="chg-sub">Os campos contam a mesma história?</p>
-          <div className="chg-sem-scores">
-            <div>
-              <span className={`chg-score ${band(s.consistency_score)}`}>
-                {nota(s.consistency_score)}
-              </span>
-              <span>consistência</span>
-            </div>
-            <div>
-              <span className={`chg-adh ${s.backout_adherence}`}>
-                {s.backout_adherence_percent}%
-              </span>
-              <span>
-                plano de retorno x tarefas:{" "}
-                {ADHERENCE_LABEL[s.backout_adherence].toLowerCase()}
-              </span>
-            </div>
-          </div>
-          {s.problems.length > 0 && (
-            <>
-              <h3>Incoerências</h3>
-              <ul className="chg-problems">
-                {s.problems.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            </>
-          )}
-          <h3>Raciocínio</h3>
-          <p>{s.reasoning}</p>
-          <h3>Orientação ao autor</h3>
-          <p>{s.guidance}</p>
-          {s.reused && (
-            <p className="chg-muted">Conferência mantida: nenhum campo mudou.</p>
-          )}
-        </>
-      )}
-    </section>
-  );
+function reusedCount(result: Evaluation): number {
+  return result.fields.filter((f) => f.reused).length;
 }
 
 function isInScope(change: Change): boolean {

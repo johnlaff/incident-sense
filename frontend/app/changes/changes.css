@@ -297,177 +297,6 @@ a.chg-row:focus-visible {
   margin-top: 2px;
 }
 
-/* ----- Overall score and the 8.0 gate ----- */
-.chg-overall {
-  display: grid;
-  gap: 12px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-.chg-overall-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.chg-overall-num {
-  font-size: 40px;
-  line-height: 1;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-.chg-overall-num.good {
-  color: var(--success);
-}
-.chg-overall-num.mid {
-  color: var(--p2);
-}
-.chg-overall-num.low {
-  color: var(--danger);
-}
-.chg-overall-label {
-  color: var(--muted);
-  font-size: 12.5px;
-  line-height: 1.35;
-}
-.chg-meter {
-  position: relative;
-  height: 10px;
-  margin: 4px 0 18px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-}
-.chg-meter .fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: 999px;
-  transition: width 0.5s var(--ease-out);
-}
-.chg-meter .fill.good {
-  background: var(--success);
-}
-.chg-meter .fill.mid {
-  background: var(--p2);
-}
-.chg-meter .fill.low {
-  background: var(--danger);
-}
-.chg-meter .cut {
-  position: absolute;
-  top: -4px;
-  bottom: -4px;
-  width: 2px;
-  margin-left: -1px;
-  background: var(--ink);
-}
-.chg-meter .cut span {
-  position: absolute;
-  top: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ink-body);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.chg-gate {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  font-weight: 550;
-  line-height: 1.4;
-}
-.chg-gate svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
-}
-.chg-gate.open {
-  color: var(--st-resolved);
-  background: var(--st-resolved-tint);
-}
-.chg-gate.closed {
-  color: var(--p2);
-  background: var(--p2-tint);
-}
-.chg-cost {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.55;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ----- Semantic analysis ----- */
-.chg-semantic h3 {
-  font-size: 13px;
-  color: var(--muted);
-  margin: 4px 0 0;
-}
-.chg-semantic p {
-  margin: 0;
-  color: var(--ink-body);
-  line-height: 1.55;
-}
-.chg-sub {
-  color: var(--muted) !important;
-}
-.chg-sem-scores {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.chg-sem-scores > div {
-  display: grid;
-  gap: 6px;
-  justify-items: start;
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  font-size: 12.5px;
-  color: var(--ink-body);
-}
-.chg-adh {
-  display: inline-flex;
-  align-items: center;
-  height: 30px;
-  padding: 0 10px;
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.chg-adh.ADERENTE {
-  color: var(--st-resolved);
-  background: var(--st-resolved-tint);
-}
-.chg-adh.PARCIAL {
-  color: var(--p2);
-  background: var(--p2-tint);
-}
-.chg-adh.NAO_ADERENTE {
-  color: var(--p1);
-  background: var(--p1-tint);
-}
-.chg-problems {
-  margin: 0;
-  padding-left: 18px;
-  list-style: disc outside;
-  display: grid;
-  gap: 6px;
-  color: var(--ink-body);
-  line-height: 1.5;
-}
-.chg-muted {
-  color: var(--muted) !important;
-  font-size: 13px;
-}
-
 /* ----- Field cards ----- */
 .chg-fields {
   display: grid;
@@ -643,16 +472,898 @@ a.chg-row:focus-visible {
   color: var(--ink-body);
   line-height: 1.45;
 }
+.chg-tasks li > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .chg-tasks .mono {
   color: var(--muted);
   font-size: 12px;
   padding-top: 2px;
 }
 
+/* ----- Evaluation reveal: running state and playback ----- */
+.chg-running {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.chg-running > svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: var(--primary-ink);
+}
+.chg-elapsed {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.chg-playbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.chg-playbar p {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-body);
+}
+.chg-playbar-count {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.chg-playbar .btn {
+  flex: none;
+  min-height: 36px;
+}
+.chg-playbar .btn svg {
+  width: 14px;
+  height: 14px;
+}
+.chg-caption {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ----- Ledger: one row per field ----- */
+.chg-ledger,
+.chg-avg {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.chg-ledger h3,
+.chg-avg h3 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+.chg-ledger ol {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+}
+.chg-led-row + .chg-led-row {
+  border-top: 1px solid var(--border);
+}
+.chg-led-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 7px 4px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.chg-led-link:hover {
+  background: var(--surface-2);
+}
+.chg-led-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+.chg-led-label {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 550;
+  line-height: 1.35;
+}
+.chg-led-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.chg-reused {
+  color: var(--st-resolved);
+  font-size: 12px;
+  font-weight: 550;
+}
+.chg-below {
+  margin-left: 8px;
+  color: var(--p2);
+  font-size: 12px;
+  font-weight: 650;
+}
+.chg-led-meta .chg-below {
+  margin-left: 0;
+}
+.chg-led-score,
+.chg-field-score {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chg-score.counting {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.chg-score.empty {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+}
+.chg-score.stale {
+  color: var(--muted);
+  background: var(--surface-2);
+}
+.chg-score.pending {
+  font-size: 12px;
+  font-weight: 600;
+}
+.chg-delta {
+  display: inline-grid;
+  place-items: center;
+  min-width: 38px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.chg-delta.up {
+  color: var(--st-resolved);
+  background: var(--st-resolved-tint);
+}
+.chg-delta.down {
+  color: var(--p1);
+  background: var(--p1-tint);
+}
+.chg-delta.same {
+  color: var(--muted);
+  background: var(--surface-2);
+}
+.chg-led-row.flag .chg-led-label > span:first-child {
+  color: var(--p2);
+}
+.chg-field.flag {
+  border-color: var(--p2);
+}
+
+/* ----- Weighted average: bar, pointer, gate, formula ----- */
+.chg-avg {
+  gap: 10px;
+}
+.chg-avg-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.chg-overall-num {
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.chg-overall-num.good {
+  color: var(--success);
+}
+.chg-overall-num.mid {
+  color: var(--p2);
+}
+.chg-overall-num.low {
+  color: var(--danger);
+}
+.chg-overall-label {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.chg-avg-before {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.chg-scale {
+  position: relative;
+  container-type: inline-size;
+  padding: 12px 0 30px;
+}
+.chg-bar {
+  position: relative;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+  overflow: hidden;
+}
+/* Each field is one segment: score x weight / sum of weights, laid end to
+   end. Drawn with clip-path so the 1px seams stay crisp at any width. */
+.chg-segment {
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  clip-path: inset(0 calc(100% - var(--e) * 10% + 1px) 0 calc(var(--s) * 10%));
+}
+.chg-segment.alt {
+  background: color-mix(in oklch, var(--primary) 58%, var(--surface));
+}
+.chg-pointer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 12px;
+  height: 8px;
+  color: var(--ink);
+  translate: calc(var(--v) * 10cqi - 6px) 0;
+}
+.chg-pointer svg {
+  display: block;
+}
+/* The 8,0 gate: two halves of a line across the bar. Open = they part. */
+.chg-door {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  width: 3px;
+  height: 22px;
+  translate: calc(var(--cut) * 10cqi - 1.5px) 0;
+}
+.chg-door span {
+  background: var(--ink);
+}
+.chg-door .top {
+  border-radius: 2px 2px 0 0;
+}
+.chg-door .bot {
+  border-radius: 0 0 2px 2px;
+}
+.chg-scale[data-gate="open"] .chg-door span {
+  background: var(--success);
+}
+.chg-scale[data-gate="open"] .chg-door .top {
+  translate: 0 -9px;
+}
+.chg-scale[data-gate="open"] .chg-door .bot {
+  translate: 0 9px;
+}
+.chg-scale[data-gate="closed"] .chg-door span {
+  background: var(--p2);
+}
+.chg-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18px;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.chg-axis span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  translate: calc(var(--at) * 10cqi - 50%) 0;
+}
+.chg-axis span:first-child {
+  translate: 0 0;
+}
+.chg-axis span:last-child {
+  translate: calc(100cqi - 100%) 0;
+}
+.chg-axis .cut {
+  color: var(--ink);
+  font-weight: 600;
+}
+.chg-scale[data-gate="open"] .chg-axis .cut {
+  color: var(--st-resolved);
+}
+.chg-scale[data-gate="closed"] .chg-axis .cut {
+  color: var(--p2);
+}
+.chg-formula {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-body);
+  font-variant-numeric: tabular-nums;
+}
+.chg-formula-terms {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+}
+.chg-term {
+  display: inline-flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+.chg-term .op {
+  color: var(--muted);
+}
+.chg-term .t {
+  position: relative;
+}
+/* The term that just joined the bar is underlined in its segment's color. */
+.chg-term .t::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--primary);
+  transform-origin: left;
+  scale: 0 1;
+  opacity: 0;
+}
+.chg-term .t.alt::after {
+  background: color-mix(in oklch, var(--primary) 58%, var(--surface));
+}
+.chg-formula-result b {
+  color: var(--ink);
+}
+.chg-gate {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  line-height: 1.45;
+}
+.chg-gate b {
+  font-weight: 650;
+}
+.chg-gate.open {
+  color: var(--st-resolved);
+  background: var(--st-resolved-tint);
+}
+.chg-gate.closed {
+  color: var(--p2);
+  background: var(--p2-tint);
+}
+.chg-lock-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+.chg-cost {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----- Coherence analysis ----- */
+.chg-sem-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+.chg-semantic.open .chg-sem-head .chg-lock-icon {
+  color: var(--st-resolved);
+}
+.chg-semantic.locked .chg-sem-head .chg-lock-icon {
+  color: var(--p2);
+}
+.chg-semantic.locked {
+  border-style: dashed;
+}
+.chg-sem-head .chg-reused {
+  margin-left: auto;
+}
+.chg-semantic h3 {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+.chg-semantic p {
+  margin: 0;
+  color: var(--ink-body);
+  line-height: 1.55;
+}
+.chg-sem-stop {
+  color: var(--p2) !important;
+  font-weight: 600;
+}
+.chg-sem-scores {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 10px;
+}
+.chg-sem-tile {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  justify-items: start;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink-body);
+}
+.chg-adh-tile {
+  justify-items: stretch;
+}
+.chg-adh-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.chg-adh-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 650;
+}
+.chg-adh-label svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.chg-adh-label.ADERENTE {
+  color: var(--st-resolved);
+}
+.chg-adh-label.PARCIAL {
+  color: var(--p2);
+}
+.chg-adh-label.NAO_ADERENTE {
+  color: var(--p1);
+}
+.chg-adh-pct {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.chg-adh-meter {
+  position: relative;
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.chg-adh-meter .fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  clip-path: inset(0 calc(100% - var(--pct) * 1%) 0 0 round 999px);
+}
+.chg-adh-meter.ADERENTE .fill {
+  background: var(--success);
+}
+.chg-adh-meter.PARCIAL .fill {
+  background: var(--p2);
+}
+.chg-adh-meter.NAO_ADERENTE .fill {
+  background: var(--p1);
+}
+.chg-sem-body {
+  display: grid;
+  gap: 8px;
+}
+.chg-problems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.chg-problems li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  color: var(--ink-body);
+  line-height: 1.5;
+}
+.chg-problems .n {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--p1-tint);
+  color: var(--p1);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.chg-none {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--st-resolved) !important;
+  font-weight: 550;
+}
+.chg-none svg {
+  width: 16px;
+  height: 16px;
+}
+.chg-muted {
+  color: var(--muted) !important;
+  font-size: 13px;
+}
+
+/* ===================================================================== *
+ *  Motion. Tokens come from globals.css (section 4.1 of the motion plan);
+ *  the fallbacks keep this screen working before they land. The default
+ *  state of every element is its final state: the keyframes only play
+ *  the way there, in the order of the teaching steps.
+ * ===================================================================== */
+.chg-page {
+  --chg-out: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  --chg-calm: var(
+    --spring-calm,
+    linear(
+      0,
+      0.025,
+      0.087,
+      0.171,
+      0.264,
+      0.358,
+      0.45,
+      0.535,
+      0.612,
+      0.68,
+      0.739,
+      0.79,
+      0.833,
+      0.868,
+      0.897,
+      0.921,
+      0.94,
+      0.955,
+      0.967,
+      0.976,
+      0.984,
+      0.989,
+      0.993,
+      0.996,
+      1
+    )
+  );
+  --chg-land: var(
+    --spring-land,
+    linear(
+      0,
+      0.047,
+      0.155,
+      0.291,
+      0.432,
+      0.563,
+      0.677,
+      0.771,
+      0.846,
+      0.903,
+      0.945,
+      0.974,
+      0.994,
+      1.005,
+      1.012,
+      1.015,
+      1.015,
+      1.014,
+      1.012,
+      1.01,
+      1.008,
+      1.006,
+      1.004,
+      1.003,
+      1
+    )
+  );
+  --chg-state: var(--dur-state, 200ms);
+  --chg-explain: calc(var(--dur-explain, 560ms) * var(--motion-scale, 1));
+  --chg-count: calc(var(--dur-count, 600ms) * var(--motion-scale, 1));
+  --chg-stagger: calc(var(--stagger-explain, 90ms) * var(--motion-scale, 1));
+  /* Formula terms: three explain staggers each, slow enough to read. */
+  --chg-term: calc(var(--chg-stagger) * 3);
+  --chg-problem: calc(260ms * var(--motion-scale, 1));
+}
+
+@keyframes chg-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes chg-pop {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+@keyframes chg-unveil {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes chg-seg {
+  from {
+    clip-path: inset(0 calc(100% - var(--e0) * 10% + 1px) 0 calc(var(--s0) * 10%));
+  }
+}
+@keyframes chg-land {
+  from {
+    translate: calc(var(--v0) * 10cqi - 6px) 0;
+  }
+}
+@keyframes chg-door {
+  from {
+    translate: 0 0;
+  }
+}
+@keyframes chg-underline {
+  0% {
+    scale: 0 1;
+    opacity: 1;
+  }
+  45% {
+    scale: 1 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 1 1;
+    opacity: 0;
+  }
+}
+@keyframes chg-meter {
+  from {
+    clip-path: inset(0 100% 0 0 round 999px);
+  }
+}
+@keyframes chg-shackle {
+  from {
+    translate: 0 3px;
+  }
+}
+
+/* Steps not reached yet stay hidden but keep their space. */
+.chg-score[data-on="false"],
+.chg-overall-num[data-on="false"],
+.chg-verdict[data-on="false"],
+.chg-formula[data-on="false"] .chg-term,
+.chg-formula[data-on="false"] .chg-formula-result,
+.chg-scale[data-on="false"] .chg-pointer,
+.chg-cost[data-on="false"],
+.chg-sem-scores[data-on="false"],
+.chg-sem-body[data-on="false"] {
+  opacity: 0;
+}
+.chg-scale[data-on="false"] .chg-segment {
+  clip-path: inset(0 calc(100% - var(--e0) * 10% + 1px) 0 calc(var(--s0) * 10%));
+}
+
+/* 1. Field scores arrive top to bottom, each with its diagnosis. */
+.chg-score[data-on="true"] {
+  animation: chg-pop var(--chg-state) var(--chg-out) both;
+  animation-delay: calc(var(--i, 0) * var(--chg-stagger));
+}
+.chg-led-row[data-on="true"] .chg-delta,
+.chg-field-score .chg-delta,
+.chg-led-row[data-on="true"] .chg-reused {
+  animation: chg-fade var(--chg-state) var(--chg-out) both;
+  animation-delay: calc(var(--i, 0) * var(--chg-stagger) + var(--chg-count));
+}
+.chg-verdict[data-on="true"] {
+  animation:
+    chg-unveil var(--chg-explain) var(--chg-out) both,
+    chg-fade var(--chg-state) var(--chg-out) both;
+  animation-delay: calc(var(--i, 0) * var(--chg-stagger) + var(--chg-count) * 0.5);
+}
+
+/* 2. The weighted average assembles, term by term, then the pointer lands. */
+.chg-scale[data-on="true"] .chg-segment {
+  animation: chg-seg var(--chg-explain) var(--chg-calm) both;
+  animation-delay: calc(var(--i) * var(--chg-term));
+}
+.chg-formula[data-on="true"] .chg-term,
+.chg-formula[data-on="true"] .chg-formula-result {
+  animation: chg-fade var(--chg-state) var(--chg-out) both;
+  animation-delay: calc(var(--i) * var(--chg-term));
+}
+.chg-formula[data-on="true"] .chg-formula-result {
+  animation-delay: var(--land-delay);
+}
+.chg-formula[data-on="true"] .chg-term .t::after {
+  animation: chg-underline calc(var(--chg-term) * 2 + var(--chg-explain) * 0.5)
+    var(--chg-out) both;
+  animation-delay: calc(var(--i) * var(--chg-term));
+}
+.chg-scale[data-on="true"] .chg-pointer {
+  animation:
+    chg-land var(--chg-explain) var(--chg-land) both,
+    chg-fade var(--chg-state) var(--chg-out) both;
+  animation-delay: var(--land-delay);
+}
+.chg-avg-head .chg-overall-num[data-on="true"] {
+  animation: chg-fade var(--chg-state) var(--chg-out) both;
+  animation-delay: var(--land-delay);
+}
+.chg-avg-before {
+  animation: chg-fade var(--chg-state) var(--chg-out) both;
+  animation-delay: calc(var(--land-delay) + var(--chg-explain));
+}
+
+/* 3. The gate opens (or stays shut) and says why. */
+.chg-scale[data-gate="open"] .chg-door span {
+  animation: chg-door var(--chg-explain) var(--chg-land) both;
+}
+.chg-gate,
+.chg-cost[data-on="true"] {
+  animation: chg-pop var(--chg-state) var(--chg-out) both;
+}
+.chg-semantic.open {
+  animation: chg-unveil var(--chg-explain) var(--chg-out) both;
+}
+.chg-semantic.locked {
+  animation: chg-pop var(--chg-state) var(--chg-out) both;
+}
+.chg-lock-icon.open .shackle {
+  animation: chg-shackle var(--chg-explain) var(--chg-land) both;
+}
+
+/* 4. Coherence: consistency and the backout meter, then each problem. */
+.chg-sem-scores[data-on="true"] {
+  animation: chg-fade var(--chg-state) var(--chg-out) both;
+}
+.chg-sem-scores[data-on="true"] .chg-adh-meter .fill {
+  animation: chg-meter var(--chg-explain) var(--chg-calm) both;
+  animation-delay: var(--chg-stagger);
+}
+.chg-sem-body[data-on="true"] {
+  animation: chg-fade var(--chg-state) var(--chg-out) both;
+}
+.chg-sem-body[data-on="true"] .chg-problems li {
+  animation: chg-pop var(--chg-state) var(--chg-out) both;
+  animation-delay: calc(var(--i) * var(--chg-problem));
+}
+.chg-sem-body[data-on="true"] > :not(.chg-problems):not(h3:first-child) {
+  animation: chg-fade var(--chg-state) var(--chg-out) both;
+  animation-delay: calc(var(--n) * var(--chg-problem));
+}
+
+/* Pular para o fim: everything at its final state at once. */
+.chg-grid[data-skip="true"] *,
+.chg-grid[data-skip="true"] *::after {
+  animation: none !important;
+}
+
+/* List: a short, quiet cascade the first time rows appear. */
+.chg-list:not([aria-busy]) > li {
+  animation: chg-pop var(--chg-state) var(--chg-out) both;
+  animation-delay: calc(min(var(--i, 0), 8) * var(--stagger, 40ms));
+}
+
+/* Reduced motion keeps the step pacing; every move becomes a crossfade
+   and things appear at their final place. */
 @media (prefers-reduced-motion: reduce) {
-  .chg-meter .fill,
+  .chg-page {
+    --chg-state: 160ms;
+    --chg-explain: 160ms;
+    --chg-count: 0ms;
+    --chg-stagger: 0ms;
+    --chg-problem: 0ms;
+  }
+  .chg-score,
+  .chg-overall-num,
+  .chg-delta,
+  .chg-reused,
+  .chg-verdict,
+  .chg-segment,
+  .chg-term,
+  .chg-formula-result,
+  .chg-pointer,
+  .chg-avg-before,
+  .chg-door span,
+  .chg-gate,
+  .chg-cost,
+  .chg-semantic,
+  .chg-lock-icon .shackle,
+  .chg-sem-scores,
+  .chg-adh-meter .fill,
+  .chg-problems li,
+  .chg-sem-body > *,
+  .chg-list > li {
+    animation-name: chg-fade !important;
+    animation-duration: 160ms !important;
+    animation-timing-function: linear !important;
+  }
+  .chg-formula[data-on="true"] .chg-term .t::after,
+  .chg-row.skeleton {
+    animation: none !important;
+  }
   .chg-row.skeleton {
     transition: none;
-    animation: none;
+  }
+  .chg-list:not([aria-busy]) > li {
+    animation-delay: 0ms;
+  }
+}
+
+@media (min-width: 921px) and (pointer: fine) {
+  .chg-led-link {
+    min-height: 36px;
+    padding: 4px;
+  }
+  .chg-led-label {
+    grid-auto-flow: column;
+    justify-content: start;
+    align-items: baseline;
+    gap: 8px;
   }
 }
