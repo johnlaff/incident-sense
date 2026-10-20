@@ -428,9 +428,9 @@ export interface MiniGroup {
 }
 
 export const MINI_GROUPS: MiniGroup[] = [
-  { id: 5, label: "Problemas de login no app", cx: 0.26, cy: 0.32, n: 13 },
-  { id: 1, label: "Falhas de timeout em pagamentos", cx: 0.72, cy: 0.27, n: 11 },
-  { id: 6, label: "Falha na geração de boletos", cx: 0.62, cy: 0.74, n: 9 },
+  { id: 5, label: "Problemas de login no app", cx: 0.26, cy: 0.4, n: 13 },
+  { id: 1, label: "Falhas de timeout em pagamentos", cx: 0.72, cy: 0.4, n: 11 },
+  { id: 6, label: "Falha na geração de boletos", cx: 0.6, cy: 0.8, n: 9 },
 ];
 export const MINI_ISOLATED = 7;
 

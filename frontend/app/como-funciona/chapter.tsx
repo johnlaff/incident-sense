@@ -122,8 +122,20 @@ export function ChapterView({
     const bar = parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue("--aula-bar-h") || "0",
     );
-    if (r.top < 64 || r.bottom > vh - bar - 16) {
-      el.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
+    // On phones the shared visual (the map) sticks under the index: the
+    // step has to show below it, not behind it.
+    const stage = el.closest(".cf-ch")?.querySelector<HTMLElement>(".cf-stage");
+    const stuck = stage && getComputedStyle(stage).position === "sticky";
+    const top = stuck ? stage.getBoundingClientRect().bottom + 12 : 64;
+    if (r.top < top || r.bottom > vh - bar - 16) {
+      if (stuck) {
+        const main = el.closest<HTMLElement>(".main");
+        const scroller =
+          main && main.scrollHeight > main.clientHeight ? main : document.scrollingElement;
+        scroller?.scrollBy({ top: r.top - top, behavior: reduced ? "auto" : "smooth" });
+      } else {
+        el.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
+      }
     }
   }, [aula, started, idx, total, reduced]);
 
