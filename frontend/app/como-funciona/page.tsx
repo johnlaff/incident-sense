@@ -1,392 +1,549 @@
 "use client";
 
-import { useMemo, useState } from "react";
+// "Como funciona": the whole lifecycle after the deploy, as the talk "Depois
+// do Deploy" tells it and as the demo does it. Seven chapters: the Change
+// graded before it ships, the incident after it breaks (seven steps), the
+// recurrences that become a Problem, and the Problem that closes the loop.
 
-import { useAula, useAulaLesson, type AulaLessonStep } from "@/components/aula";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
-import { Icons, type IconComponent } from "@/components/icons";
+import { useAula } from "@/components/aula";
+import { Icons } from "@/components/icons";
 import { Meridian } from "@/components/ui";
-import { BEATS, PIPELINE_STEPS } from "@/lib/pipeline";
+import { aulaKeyAction } from "@/lib/aula-machine";
+import { usePrefersReducedMotion } from "@/lib/motion";
 
-const STEPS: { t: string; d: string; icon: IconComponent }[] = [
-  {
-    t: "Carregar",
-    d: "Lê o incidente com categoria, subcategoria, empresa e tags.",
-    icon: Icons.inbox,
-  },
-  {
-    t: "Resumir",
-    d: "A IA resume o incidente; a busca usa o resumo, não o texto original.",
-    icon: Icons.summarize,
-  },
-  {
-    t: "Transformar em números",
-    d: "Resumo, categoria, subcategoria e empresa viram um vetor: números que representam o sentido.",
-    icon: Icons.embed,
-  },
-  {
-    t: "Buscar e conferir",
-    d: "As tags dizem onde procurar, o vetor acha os parecidos e a IA descarta os que só parecem iguais.",
-    icon: Icons.funnel,
-  },
-  {
-    t: "Classificar",
-    d: "Os casos aprovados viram contexto. Dúvida ou pedido (improcedente) não recebe sugestão.",
-    icon: Icons.classify,
-  },
-  {
-    t: "Sugerir",
-    d: "Escreve a resolução citando as fontes; citação que não veio da busca é removida.",
-    icon: Icons.lightbulb,
-  },
-  {
-    t: "Publicar",
-    d: "A sugestão entra nas notas de trabalho do incidente.",
-    icon: Icons.insert,
-  },
-];
-const N = STEPS.length;
-const INSET = 100 / (2 * N);
+import { ChapterView, Origin, type ChapterSignal } from "./chapter";
+import {
+  CHAPTERS,
+  CLUSTERS_DEMO,
+  EMBEDDING,
+  GATE,
+  PARTS,
+  RETRIEVAL,
+  RUBRIC_VERSION,
+  SOURCES,
+  TOTAL_WEIGHT,
+  br,
+  type PartKey,
+} from "./story";
+import {
+  Average,
+  BackToSearch,
+  Backout,
+  Classify,
+  ClusterStage,
+  Coherence,
+  ContentLock,
+  Gate,
+  Implementation,
+  Load,
+  Loop,
+  Parallel,
+  PostFilter,
+  ProblemCard,
+  Publish,
+  Ruler,
+  Suggest,
+  Summarize,
+  TagFilter,
+  Tasks,
+  Vectorize,
+  Weights,
+} from "./visuals";
 
-// Captions for modo aula: the same words as the incident pipeline.
-const RAG_LESSON: AulaLessonStep[] = PIPELINE_STEPS.map((step) => {
-  const beat =
-    BEATS.find((b) => b.step === step.key && b.layer === "vetor") ??
-    BEATS.find((b) => b.step === step.key)!;
-  return {
-    title: step.title,
-    caption: beat.caption,
-    counter: `Etapa ${step.order} de 7`,
-  };
-});
+import "./como-funciona.css";
 
-/**
- * A sequence that stands still (complete) until someone presses
- * "Reproduzir", and goes step by step in modo aula.
- */
-function useHowtoLesson(id: string, steps: AulaLessonStep[], fastMs: number) {
-  const { aula } = useAula();
-  // Static and complete until "Reproduzir"; then step by step in modo aula.
-  const [plays, setPlays] = useState(0);
-  const lesson = useAulaLesson({ id, steps, runKey: plays || null, fastMs });
-  return {
-    lesson,
-    /** -1 before the first step, steps.length when everything shows. */
-    idx:
-      lesson.step < 0 && !lesson.playing
-        ? steps.length
-        : lesson.done && !aula
-          ? steps.length
-          : lesson.step,
-    play: () => setPlays((n) => n + 1),
-  };
-}
-
-function Rag() {
-  const { idx, play } = useHowtoLesson("como-rag", RAG_LESSON, 760);
-
-  const finished = idx >= N;
-  const fillPct = (Math.max(0, Math.min(idx, N - 1)) / (N - 1)) * 100;
-  const showComet = idx >= 0 && !finished;
-
+function Tech({ rows }: { rows: [string, ReactNode][] }) {
   return (
-    <div className="howto-section">
-      <div className="howto-head">
-        <div>
-          <h2>Como a Aurora sugere uma resolução</h2>
-          <p className="hs-sub">
-            A técnica se chama RAG, geração aumentada por recuperação: em vez de responder
-            de memória, a IA primeiro busca casos reais já resolvidos e escreve a partir
-            deles. São sete etapas.
-          </p>
+    <dl className="cf-tech-list">
+      {rows.map(([k, v]) => (
+        <div key={k}>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
         </div>
-        <button className="btn btn-outline btn-sm howto-replay" onClick={play}>
-          <Icons.replay />
-          Reproduzir
-        </button>
-      </div>
-      <div className="rag">
-        <div className="rag-inner">
-          <div className="rag-track" style={{ left: `${INSET}%`, right: `${INSET}%` }}>
-            <div
-              className="rag-track-fill"
-              style={{ "--p": fillPct / 100 } as React.CSSProperties}
-            />
-            {showComet ? (
-              <div
-                className="rag-comet"
-                style={{ "--p": fillPct / 100 } as React.CSSProperties}
-              />
-            ) : null}
-          </div>
-          <div className="rag-stages">
-            {STEPS.map((s, i) => {
-              const done = i < idx || finished;
-              const active = i === idx;
-              return (
-                <div
-                  key={i}
-                  className={`rag-stage${active ? " active" : ""}${done ? " done" : ""}`}
-                >
-                  <div className="rag-dot">
-                    {done ? <Icons.check sw={3} /> : <s.icon />}
-                  </div>
-                  <div className="rag-label">
-                    <span className="rag-num">{`0${i + 1} `}</span>
-                    {s.t}
-                  </div>
-                  <div className="rag-desc">{s.d}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-      <div className="rag-io">
-        <div className="rag-io-card">
-          <span className="rag-io-k">Entrada</span>O incidente, descrito em linguagem
-          natural.
-        </div>
-        <Icons.arrowRight className="rag-io-arrow" />
-        <div className="rag-io-card out">
-          <span className="rag-io-k">Saída</span>Uma sugestão com citações{" "}
-          <span className="mono">[INC…]</span> que você pode abrir e conferir.
-        </div>
-      </div>
-    </div>
+      ))}
+    </dl>
   );
 }
 
-const CSTEPS: { t: string; d: string; icon: IconComponent }[] = [
-  {
-    t: "Cada incidente vira um ponto",
-    d: "O resumo de cada incidente vira um ponto no mapa. No começo, tudo está espalhado.",
-    icon: Icons.dot,
-  },
-  {
-    t: "Medimos a semelhança",
-    d: "Quanto mais parecidos dois incidentes, mais perto um do outro eles ficam.",
-    icon: Icons.vectorSearch,
-  },
-  {
-    t: "Agrupamos os mais próximos",
-    d: "Nuvens de pontos próximos viram um grupo. Cada grupo é uma recorrência: um padrão que se repete.",
-    icon: Icons.recurrences,
-  },
-  {
-    t: "Separamos os casos isolados",
-    d: "Pontos sem vizinhos suficientes ficam de fora, em cinza. São casos únicos, não um padrão.",
-    icon: Icons.funnel,
-  },
-];
-const CN = CSTEPS.length;
-
-function rand(seed: number): number {
-  const x = Math.sin(seed * 991.7) * 43758.5;
-  return x - Math.floor(x);
+function Cite({ who }: { who: keyof typeof SOURCES }) {
+  const s = SOURCES[who];
+  return (
+    <a className="cf-cite-link" href={s.href} target="_blank" rel="noreferrer">
+      {s.label}
+      <Icons.external size={12} />
+    </a>
+  );
 }
 
-// Round positions to a fixed precision so the SSR and client strings match
-// exactly (Math.sin can differ at the last ULP between the Node and browser
-// engines, which would otherwise trip a hydration mismatch).
-function pctOf(v: number): string {
-  return `${(v * 100).toFixed(2)}%`;
-}
-function fix(v: number): string {
-  return v.toFixed(4);
-}
-
-interface MiniPoint {
-  id: number;
-  color: string;
-  out?: boolean;
-  tx: number;
-  ty: number;
-  sx: number;
-  sy: number;
-}
-
-function buildMini(): {
-  pts: MiniPoint[];
-  cents: { x: number; y: number; color: string; label: string }[];
-} {
-  const cents = [
-    { x: 0.24, y: 0.42, color: "oklch(0.6 0.13 285)", label: "Timeout no Pix" },
-    { x: 0.55, y: 0.68, color: "oklch(0.62 0.12 160)", label: "Boleto" },
-    { x: 0.78, y: 0.34, color: "oklch(0.63 0.12 330)", label: "Cartão" },
-  ];
-  const pts: MiniPoint[] = [];
-  let id = 0;
-  cents.forEach((c) => {
-    for (let i = 0; i < 7; i++) {
-      const a = rand(id + 1) * Math.PI * 2;
-      const r = 0.03 + rand(id + 5) * 0.08;
-      pts.push({
-        id: id++,
-        color: c.color,
-        tx: c.x + Math.cos(a) * r,
-        ty: c.y + Math.sin(a) * r,
-        sx: 0.12 + rand(id + 3) * 0.76,
-        sy: 0.16 + rand(id + 9) * 0.68,
-      });
-    }
-  });
-  for (let i = 0; i < 4; i++) {
-    pts.push({
-      id: id++,
-      color: "oklch(0.62 0.01 285)",
-      out: true,
-      tx: 0.1 + rand(id + 7) * 0.8,
-      ty: 0.16 + rand(id + 11) * 0.68,
-      sx: 0.12 + rand(id + 13) * 0.76,
-      sy: 0.16 + rand(id + 17) * 0.68,
-    });
+const CONTENT: Record<
+  string,
+  {
+    visuals?: ReactNode[];
+    stage?: (idx: number, total: number) => ReactNode;
+    details: ReactNode;
+    source?: ReactNode;
   }
-  return { pts, cents };
-}
-
-const CLUSTER_LESSON: AulaLessonStep[] = [
-  {
-    title: "Pontos",
-    caption: "Cada incidente vira um ponto. No começo, tudo está espalhado.",
+> = {
+  "cap-1": {
+    visuals: [
+      <Weights key="w" />,
+      <Parallel key="p" />,
+      <Average key="a" />,
+      <ContentLock key="l" />,
+      <Gate key="g" />,
+    ],
+    source: (
+      <>
+        Mil Changes por dia não é exagero: foram 1.084 no dia de pico, segundo o{" "}
+        <Cite who="solange" />. O resto é do demo, com a CHG0031002 como exemplo.
+      </>
+    ),
+    details: (
+      <Tech
+        rows={[
+          [
+            "Padrão",
+            "LLM-as-judge: o modelo não escreve, ele avalia o texto de uma pessoa.",
+          ],
+          [
+            "Grade",
+            <>
+              <span className="mono">
+                backend/src/incident_sense/changes/rubrica.toml
+              </span>
+              , versão {RUBRIC_VERSION}, sete campos, soma {br(TOTAL_WEIGHT)}, corte{" "}
+              {br(GATE)}. Mudar o critério é um pull request, não um release.
+            </>,
+          ],
+          [
+            "Modelo",
+            "O escolhido na tela; o padrão é Claude Haiku 5.5 pela OpenRouter, com temperatura 0.",
+          ],
+          [
+            "Paralelo",
+            "No demo, uma thread por campo (ThreadPoolExecutor em Python). No banco, Virtual Threads do Java 21, segundo o artigo.",
+          ],
+          [
+            "Trava de conteúdo",
+            "Chave = versão da grade + modelo + Change + campo + hash SHA-256 do texto normalizado. Mesma chave, mesma nota, zero chamada.",
+          ],
+          [
+            "Escopo",
+            "Só Change Normal, estado Novo, empresa Banco Meridiano. Fora disso aparece como não avaliada, nunca como zero.",
+          ],
+          [
+            "Fora do demo",
+            "No banco a avaliação dispara sozinha por um evento de mensageria quando a Change é submetida. No demo, você clica em avaliar.",
+          ],
+        ]}
+      />
+    ),
   },
-  {
-    title: "Semelhança",
-    caption: "Quanto mais parecidos dois incidentes, mais perto eles ficam.",
+  "cap-2": {
+    visuals: [
+      <Implementation key="i" />,
+      <Backout key="b" />,
+      <Tasks key="t" />,
+      <Coherence key="c" />,
+    ],
+    source: (
+      <>
+        Os textos são da CHG0031002 do demo. As notas 9,04 e 4 saíram no ensaio da
+        palestra e podem mudar com o modelo.
+      </>
+    ),
+    details: (
+      <Tech
+        rows={[
+          [
+            "Quando roda",
+            `Só se a média do preenchimento for ${br(GATE)} ou mais (trava de elegibilidade).`,
+          ],
+          [
+            "Entrada",
+            "Um prompt só, com os sete campos, o plano de retorno e as tarefas cadastradas.",
+          ],
+          [
+            "Saída",
+            "Nota de coerência de 0 a 10, lista de problemas, raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
+          ],
+          [
+            "Cache",
+            "A análise também tem trava de conteúdo: muda só se algum campo ou o plano de retorno mudar.",
+          ],
+          [
+            "Limite",
+            "A nota julga o texto, não a mudança. Nota alta não é execução segura.",
+          ],
+        ]}
+      />
+    ),
   },
-  {
-    title: "Grupos",
-    caption: "Pontos próximos viram um grupo: uma recorrência, um padrão que se repete.",
+  "cap-3": {
+    visuals: [<Load key="l" />, <Summarize key="s" />, <Vectorize key="v" />],
+    source: (
+      <>O incidente e seus campos são do demo. O resumo e os números são de exemplo.</>
+    ),
+    details: (
+      <Tech
+        rows={[
+          [
+            "Gatilho",
+            "No demo, o botão de pedir sugestão. No banco, o incidente que chega.",
+          ],
+          ["Resumo", "Feito pelo modelo de chat escolhido (padrão Claude Haiku 5.5)."],
+          [
+            "Consulta",
+            "Resumo + Categoria + Subcategoria + Empresa, uma linha cada. Nunca o texto cru.",
+          ],
+          [
+            "Embedding",
+            <>
+              <span className="mono">{EMBEDDING.model}</span>,{" "}
+              {EMBEDDING.dims.toLocaleString("pt-BR")} dimensões. A tela do pipeline
+              mostra os 24 primeiros números que a API devolve.
+            </>,
+          ],
+          [
+            "Mesma chave",
+            "Uma chave da OpenRouter serve para o chat e para os embeddings.",
+          ],
+        ]}
+      />
+    ),
   },
-  {
-    title: "Isolados",
-    caption:
-      "Pontos sem vizinhos ficam de fora, em cinza. São casos únicos, não um padrão.",
+  "cap-4": {
+    visuals: [<TagFilter key="t" />, <Ruler key="r" />, <PostFilter key="p" />],
+    source: (
+      <>
+        As contagens de tags são do demo. As similaridades e os vereditos são de exemplo;
+        no app, saem da busca real. Corte e top-K são os do <Cite who="joao" />.
+      </>
+    ),
+    details: (
+      <Tech
+        rows={[
+          [
+            "Camada 1",
+            "Tags do próprio incidente; se não houver, as escolhidas pela IA no resumo; se não, as usuais da categoria. Fica quem divide pelo menos uma tag.",
+          ],
+          [
+            "Camada 2",
+            <>
+              Qdrant em memória, distância de cosseno, piso{" "}
+              <span className="mono">RETRIEVAL_MIN_SIMILARITY = {RETRIEVAL.floor}</span>,
+              top-K <span className="mono">{RETRIEVAL.incidentTopK}</span> incidentes e{" "}
+              <span className="mono">{RETRIEVAL.problemTopK}</span> problemas, em coleções
+              separadas.
+            </>,
+          ],
+          [
+            "Camada 3",
+            "Um LLM julga cada candidato e devolve mantido ou descartado, com o motivo.",
+          ],
+          [
+            "Se falhar",
+            "Timeout ou resposta inválida na camada 3: volta a lista da camada 2. Perde precisão, mas não fica sem resposta.",
+          ],
+        ]}
+      />
+    ),
   },
-];
+  "cap-5": {
+    visuals: [<Classify key="c" />, <Suggest key="s" />, <Publish key="p" />],
+    source: (
+      <>
+        Os registros são do demo. A sugestão e a nota publicada são exemplos de formato.
+      </>
+    ),
+    details: (
+      <Tech
+        rows={[
+          [
+            "Classificar",
+            "Pergunta se é incidente de verdade, independente da busca. Improcedente: pedido de autoatendimento, sem sugestão. Procedente sem caso parecido: também sem sugestão.",
+          ],
+          [
+            "Citações",
+            "Citação entre colchetes de um id que não veio da busca é removida. Um id solto no texto é sinalizado.",
+          ],
+          ["Publicar", "Vira nota de trabalho do incidente, assinada pela Aurora."],
+          ["Quem decide", "A pessoa analista. A IA sugere e mostra as fontes."],
+        ]}
+      />
+    ),
+  },
+  "cap-6": {
+    stage: (idx, total) => <ClusterStage idx={idx} total={total} />,
+    source: (
+      <>
+        No demo, o mapa real tem {CLUSTERS_DEMO.incidents} incidentes em{" "}
+        {CLUSTERS_DEMO.groups} grupos. O exemplo de 200 incidentes em 5 grupos é do{" "}
+        <Cite who="joao" />.
+      </>
+    ),
+    details: (
+      <Tech
+        rows={[
+          [
+            "Pipeline",
+            "BERTopic: embeddings dos incidentes, UMAP para 2 dimensões com cosseno (semente fixa), HDBSCAN e rótulo curto escrito por um LLM.",
+          ],
+          [
+            "Por que HDBSCAN",
+            "Não sabemos quantos grupos existem, os grupos não são redondos e boa parte dos incidentes é ruído.",
+          ],
+          [
+            "Densidade mínima",
+            "O artigo usa 4 no banco: é uma decisão de negócio. No demo, o tamanho mínimo é um parâmetro do script de pré-cálculo.",
+          ],
+          [
+            "Casos isolados",
+            `Com os dados sintéticos atuais, o demo não deixou nenhum caso isolado (${CLUSTERS_DEMO.isolated}). O mapa acima mostra o conceito.`,
+          ],
+          [
+            "Offline",
+            "O agrupamento é pré-calculado e servido de um JSON versionado: zero chamada à IA ao abrir o mapa.",
+          ],
+          [
+            "Problemas",
+            "Ao escolher um grupo, Recorrências mostra os Problemas que já explicam a causa. Um grupo sem Problema ganha o botão Abrir problema, que no demo só registra na tela.",
+          ],
+        ]}
+      />
+    ),
+  },
+  "cap-7": {
+    visuals: [<ProblemCard key="p" />, <Loop key="l" />, <BackToSearch key="b" />],
+    source: (
+      <>O Problema e sua causa são do demo. A Change da correção fica fora do demo.</>
+    ),
+    details: (
+      <Tech
+        rows={[
+          [
+            "Problemas na busca",
+            `Coleção própria no Qdrant, até ${RETRIEVAL.problemTopK} por busca, com as mesmas três camadas.`,
+          ],
+          [
+            "Vetor do Problema",
+            "Do próprio texto do Problema, ou, sem ele, a média dos vetores dos incidentes ligados.",
+          ],
+          [
+            "Fora do demo",
+            "Abrir a Change da correção e ligar a Change ao Problema. No demo, a avaliação de Changes e os Problemas não se conversam.",
+          ],
+        ]}
+      />
+    ),
+  },
+};
 
-function Clustering() {
-  const mini = useMemo(() => buildMini(), []);
-  const { idx: step, play } = useHowtoLesson("como-clusters", CLUSTER_LESSON, 1150);
+const PART_ORDER: PartKey[] = ["antes", "depois", "ciclo"];
 
-  const grouped = step >= 2;
-  const separated = step >= 3;
-  const done = step >= CN;
-  const statusText =
-    step < 0
-      ? ""
-      : step === 0
-        ? "Cada incidente é um ponto"
-        : step === 1
-          ? "Comparando a semelhança…"
-          : step === 2
-            ? "Formando os grupos…"
-            : "3 grupos e 4 casos isolados";
+/** The lifecycle line at the top: each stop links to its chapter. */
+const LIFE = [
+  { t: "Código" },
+  { t: "Change", to: "cap-1" },
+  { t: "Deploy", deploy: true },
+  { t: "Incidente", to: "cap-3" },
+  { t: "Recorrência", to: "cap-6" },
+  { t: "Problema", to: "cap-7" },
+] as const;
 
-  return (
-    <div className="howto-section">
-      <div className="howto-head">
-        <div>
-          <h2>Como encontramos as recorrências</h2>
-          <p className="hs-sub">
-            Os mesmos números que medem semelhança também revelam grupos. Veja, passo a
-            passo, como incidentes parecidos se juntam num padrão e como os casos isolados
-            ficam de fora.
-          </p>
-        </div>
-        <button className="btn btn-outline btn-sm howto-replay" onClick={play}>
-          <Icons.replay />
-          Reproduzir
-        </button>
-      </div>
-      <div className="cluster-explain">
-        <div className="mini-cluster">
-          {mini.pts.map((p) => {
-            const color = p.out
-              ? "oklch(0.6 0.012 285)"
-              : grouped
-                ? p.color
-                : "oklch(0.64 0.015 285)";
-            return (
-              <span
-                key={p.id}
-                className="mc-point"
-                style={
-                  {
-                    "--x": fix(grouped ? p.tx : p.sx),
-                    "--y": fix(grouped ? p.ty : p.sy),
-                    "--s": p.out ? 0.75 : 1,
-                    background: color,
-                    opacity: p.out && separated ? 0.4 : 1,
-                    transitionDelay: `${(p.id % 6) * 34}ms`,
-                  } as React.CSSProperties
-                }
-              />
-            );
-          })}
-          {mini.cents.map((c, i) => (
-            <div
-              key={`l${i}`}
-              className={`mc-label${separated ? "" : " hide"}`}
-              style={{ left: pctOf(c.x), top: `${(c.y * 100 - 14).toFixed(2)}%` }}
-            >
-              {c.label}
-            </div>
-          ))}
-          <div className="mc-status">{statusText}</div>
-        </div>
-        <div className="cluster-steps">
-          {CSTEPS.map((s, i) => {
-            const active = i === step;
-            const sdone = i < step || done;
-            return (
-              <div
-                key={i}
-                className={`cstep${active ? " active" : ""}${sdone ? " done" : ""}`}
-              >
-                <div className="cstep-dot">
-                  {sdone ? <Icons.check sw={3} /> : <s.icon />}
-                </div>
-                <div className="cstep-main">
-                  <div className="cstep-t">
-                    <span className="cstep-n">{`0${i + 1}`}</span>
-                    {s.t}
-                  </div>
-                  <div className="cstep-d">{s.d}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className="cluster-legend">
-        <span className="cl-it">
-          <span className="cl-sw" style={{ background: "oklch(0.6 0.13 285)" }} />
-          Cada cor é um grupo (uma recorrência)
-        </span>
-        <span className="cl-it">
-          <span className="cl-sw" style={{ background: "oklch(0.6 0.012 285)" }} />
-          Cinza: caso isolado, fica de fora
-        </span>
-      </div>
-    </div>
-  );
+function scrollToId(id: string, reduced: boolean) {
+  document
+    .getElementById(id)
+    ?.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
 }
 
 export default function HowItWorksPage() {
+  const { aula } = useAula();
+  const reduced = usePrefersReducedMotion();
+  const [focused, setFocused] = useState<string>(CHAPTERS[0].id);
+  const [fromBelow, setFromBelow] = useState(false);
+  const signals = useRef<Record<string, ChapterSignal>>({});
+  const focusedRef = useRef(focused);
+
+  const onSignal = useCallback((id: string, s: ChapterSignal) => {
+    signals.current[id] = s;
+  }, []);
+
+  // The chapter that crosses the band at 40% of the screen height is the
+  // current one: it drives the index and, in modo aula, the lesson.
+  useEffect(() => {
+    const els = CHAPTERS.map((c) => document.getElementById(c.id)).filter(
+      (el): el is HTMLElement => el !== null,
+    );
+    const io = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.find((e) => e.isIntersecting);
+        if (!hit) return;
+        const id = hit.target.id;
+        const prev = focusedRef.current;
+        if (id === prev) return;
+        const order = (x: string) => CHAPTERS.findIndex((c) => c.id === x);
+        setFromBelow(order(id) < order(prev));
+        focusedRef.current = id;
+        setFocused(id);
+      },
+      { rootMargin: "-40% 0px -55% 0px" },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  // Modo aula: once a chapter's last step is on screen, the next press of the
+  // clicker goes to the next chapter (and PageUp on step 1 to the previous).
+  useEffect(() => {
+    if (!aula) return;
+    function onKey(e: KeyboardEvent) {
+      const t = e.target instanceof Element ? e.target : null;
+      const move = aulaKeyAction(
+        e.key,
+        { alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey, shift: e.shiftKey },
+        {
+          editable: Boolean(t?.closest("input, textarea, select, [contenteditable]")),
+          pressable: Boolean(t?.closest("button, a[href], [role='button'], summary")),
+          arrowWidget: Boolean(
+            t?.closest(
+              "[role='tablist'], [role='slider'], [role='menu'], [role='listbox']",
+            ),
+          ),
+          modal: document.querySelector(".palette, .drawer") !== null,
+        },
+      );
+      if (!move) return;
+      const i = CHAPTERS.findIndex((c) => c.id === focusedRef.current);
+      const sig = signals.current[focusedRef.current];
+      if (!sig) return;
+      if (move === "next" && sig.done && i < CHAPTERS.length - 1) {
+        e.preventDefault();
+        scrollToId(CHAPTERS[i + 1].id, reduced);
+      } else if (move === "prev" && sig.idx <= 0 && i > 0) {
+        e.preventDefault();
+        scrollToId(CHAPTERS[i - 1].id, reduced);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [aula, reduced]);
+
+  const current = CHAPTERS.find((c) => c.id === focused) ?? CHAPTERS[0];
+
   return (
-    <div className="howto">
-      <div className="page-head">
-        <h1>Como funciona</h1>
-      </div>
-      <p className="page-lede howto-lead">
-        O Incident Sense procura incidentes parecidos que já foram resolvidos, descarta os
-        que não se encaixam e só então escreve uma sugestão. Toda sugestão cita as fontes,
-        para você conferir.
-      </p>
-      <Rag />
-      <Clustering />
-      <footer className="howto-foot">
+    <div className="cf">
+      <header className="cf-hero">
+        <h1>Depois do deploy, do começo ao fim</h1>
+        <p className="cf-lede">
+          O caminho de uma mudança até o incidente, e de volta. Em cada capítulo, o que a
+          IA faz, por que importa e onde ver isso funcionando no Incident Sense.
+        </p>
+        <ol className="cf-life" aria-label="O caminho de qualquer software">
+          {LIFE.map((s, i) => (
+            <li
+              key={s.t}
+              className={`cf-life-n${"deploy" in s ? " is-deploy" : ""}`}
+              style={{ "--i": i } as React.CSSProperties}
+            >
+              {"to" in s ? (
+                <a
+                  href={`#${s.to}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToId(s.to, reduced);
+                  }}
+                >
+                  <span className="cf-life-dot" aria-hidden="true" />
+                  {s.t}
+                </a>
+              ) : (
+                <span>
+                  <span className="cf-life-dot" aria-hidden="true" />
+                  {s.t}
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+        <p className="cf-hint">
+          {aula ? (
+            <>
+              <Icons.board size={16} />
+              Modo aula: cada capítulo começa quando chega ao meio da tela. Avance com a
+              seta, o espaço ou o passador de slides.
+            </>
+          ) : (
+            <>
+              <Icons.play size={16} />
+              Role para ler. Em cada capítulo, &quot;Reproduzir passo a passo&quot; anima
+              a sequência; o modo aula, na barra de cima, vai uma etapa por toque.
+            </>
+          )}
+        </p>
+      </header>
+
+      <nav className="cf-index" aria-label="Capítulos">
+        <p className="cf-index-now" aria-live="polite">
+          <span className="mono">{current.n}/7</span> {current.short}
+        </p>
+        <ol className="cf-index-list">
+          {PART_ORDER.map((p) => (
+            <li key={p} className="cf-index-part" data-part={p}>
+              <span className="cf-index-part-t">{PARTS[p].title}</span>
+              <ol>
+                {CHAPTERS.filter((c) => c.part === p).map((c) => (
+                  <li key={c.id}>
+                    <a
+                      href={`#${c.id}`}
+                      aria-current={c.id === focused ? "location" : undefined}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToId(c.id, reduced);
+                      }}
+                    >
+                      <span className="cf-index-n mono">{c.n}</span>
+                      <span className="cf-index-t">{c.short}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      {CHAPTERS.map((ch) => {
+        const c = CONTENT[ch.id];
+        return (
+          <ChapterView
+            key={ch.id}
+            chapter={ch}
+            focused={focused === ch.id}
+            cameFromBelow={fromBelow}
+            onSignal={onSignal}
+            visuals={c.visuals}
+            stage={c.stage}
+            details={c.details}
+            source={c.source}
+          />
+        );
+      })}
+
+      <aside className="cf-next">
+        <h2>Próximo passo nos dois lados: medir</h2>
+        <p>
+          Do lado da Change, um gabarito humano para calibrar a nota. Do lado do
+          incidente, uma bateria fixa de casos com resolução conhecida, rodada a cada
+          troca de prompt, modelo ou base. Isso se chama eval: a diferença entre achar que
+          melhorou e medir que melhorou.
+        </p>
+        <Origin kind="fora" />
+      </aside>
+
+      <footer className="howto-foot cf-foot">
         <Meridian ticks={28} />
         <p>
           O Banco Meridiano é fictício e os dados são sintéticos. A IA sugere e mostra as
