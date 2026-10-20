@@ -212,6 +212,23 @@
 }
 .pick-text .pick-status {
   color: var(--ink-body);
+  /* Facts wrap whole; the dot before a fact that starts a line is clipped,
+     so no line ends or starts with a loose "·". */
+  overflow: hidden;
+}
+.pick-facts {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -14px;
+}
+.pick-facts > .meta-item {
+  position: relative;
+  margin-left: 14px;
+}
+.pick-facts > .meta-item::before {
+  content: "·" / "";
+  position: absolute;
+  left: -9px;
 }
 .stop-cta {
   margin-top: 4px;
@@ -287,14 +304,34 @@
       scale: 0 1;
     }
   }
+  /* The four columns share their rows (subgrid): number, head, line, examples
+     and button. A two-line title in one column moves every line below it, so
+     the columns stay level. */
+  .lesson-route {
+    row-gap: 0;
+  }
   .lesson-stop {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    gap: 20px;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+    gap: 0;
+  }
+  .stop-n {
+    margin-bottom: 20px;
   }
   .stop-body {
-    height: 100%;
+    display: grid;
+    grid-row: 2 / span 4;
+    grid-template-rows: subgrid;
+    row-gap: 10px;
     padding-bottom: 0;
+  }
+  .stop-head {
+    align-self: start;
+  }
+  .stop-cta {
+    justify-self: start;
+    align-self: start;
   }
   /* Each button sits right under its own column's text, not at a shared
      bottom line far from what it opens. */
