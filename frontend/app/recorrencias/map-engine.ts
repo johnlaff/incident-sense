@@ -135,7 +135,7 @@ export class MapEngine {
       this.ramps.set(g.id, ramp);
       this.tints.set(
         g.id,
-        this.palette.dark ? `oklch(0.36 0.06 ${g.hue})` : `oklch(0.94 0.035 ${g.hue})`,
+        this.palette.dark ? `oklch(0.31 0.04 ${g.hue})` : `oklch(0.955 0.028 ${g.hue})`,
       );
     }
   }
@@ -198,7 +198,7 @@ export class MapEngine {
 
     // Focus emphasis per hull.
     for (const g of data.groups) {
-      const want = scene.focus == null ? 1 : scene.focus === g.id ? 1 : 0.28;
+      const want = scene.focus == null ? 1 : scene.focus === g.id ? 1 : 0.22;
       const tw = this.hullFocus.get(g.id);
       const curV = tw ? tweenValue(tw, now, springCalm) : 1;
       if (!tw || tw.to !== want) {
