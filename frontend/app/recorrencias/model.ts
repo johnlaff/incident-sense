@@ -470,6 +470,56 @@ export function computeLayout(data: RecData, w: number, fullH: number, top = 0):
   }
 
   const pointR = Math.min(5.5, Math.max(2.2, spacing * 0.36));
+
+  // Isolated cases often share a projected spot or land on the same group
+  // rim; drawn as is they melt into a smudge. A few separation passes keep
+  // each one a readable dot, still near its real place and outside groups.
+  const minD = pointR * 2.8;
+  const out = data.outliers;
+  for (let pass = 0; pass < 60; pass++) {
+    let moved = false;
+    for (let a = 0; a < out.length; a++) {
+      for (let b = a + 1; b < out.length; b++) {
+        const ia = out[a] * 2;
+        const ib = out[b] * 2;
+        let dx = grouped[ib] - grouped[ia];
+        let dy = grouped[ib + 1] - grouped[ia + 1];
+        let d = Math.hypot(dx, dy);
+        if (d >= minD) continue;
+        if (d < 1e-3) {
+          // Same spot: split along a fixed, per-pair direction.
+          const t = hash01(out[a] * 31 + out[b]) * Math.PI * 2;
+          dx = Math.cos(t);
+          dy = Math.sin(t);
+          d = 1;
+        }
+        const push = (minD - d) / 2;
+        const ux = dx / d;
+        const uy = dy / d;
+        grouped[ia] -= ux * push;
+        grouped[ia + 1] -= uy * push;
+        grouped[ib] += ux * push;
+        grouped[ib + 1] += uy * push;
+        moved = true;
+      }
+    }
+    for (const i of out) {
+      let x = grouped[i * 2];
+      let y = grouped[i * 2 + 1];
+      for (const D of disks) {
+        const ddx = x - D.cx;
+        const ddy = y - D.cy;
+        const dd = Math.hypot(ddx, ddy) || 1;
+        if (dd < D.r + gap * 0.6) {
+          x = D.cx + (ddx / dd) * (D.r + gap * 0.6);
+          y = D.cy + (ddy / dd) * (D.r + gap * 0.6);
+        }
+      }
+      grouped[i * 2] = Math.min(w - pad, Math.max(pad, x));
+      grouped[i * 2 + 1] = Math.min(h - pad, Math.max(pad, y));
+    }
+    if (!moved) break;
+  }
   if (top > 0) {
     for (let i = 1; i < n * 2; i += 2) {
       scatter[i] += top;

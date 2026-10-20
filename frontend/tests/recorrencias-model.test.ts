@@ -113,6 +113,21 @@ describe("buildRecData on the committed dataset", () => {
             a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y;
           expect(apart || a.compact || b.compact).toBe(true);
         }
+      // Isolated cases stay readable dots: no two melt into one smudge.
+      let closest = Infinity;
+      for (let a = 0; a < data.outliers.length; a++)
+        for (let b = a + 1; b < data.outliers.length; b++) {
+          const ia = data.outliers[a] * 2;
+          const ib = data.outliers[b] * 2;
+          closest = Math.min(
+            closest,
+            Math.hypot(
+              layout.grouped[ia] - layout.grouped[ib],
+              layout.grouped[ia + 1] - layout.grouped[ib + 1],
+            ),
+          );
+        }
+      expect(closest).toBeGreaterThanOrEqual(layout.pointR * 2);
     });
   }
 });

@@ -128,6 +128,19 @@
     aspect-ratio: 16 / 10;
     max-height: min(72vh, 760px);
   }
+  /* Modo aula: the narrator bar floats at the bottom. The map shrinks so the
+     steps and "Como o mapa foi feito" end above it, on the first screen. */
+  /* 560px is what sits above and below the map on the first screen (top
+     bar, title, toolbar, steps, "Como o mapa foi feito"), with room for the
+     aula zoom. */
+  :root[data-aula-bar] .rx-map {
+    aspect-ratio: auto;
+    min-height: 0;
+    height: max(240px, calc(100dvh - var(--aula-bar-h, 0px) - 560px));
+  }
+  :root[data-aula-bar] .rx-side-scroll {
+    max-height: max(240px, calc(100dvh - var(--aula-bar-h, 0px) - 340px));
+  }
 }
 .rx-canvas {
   position: absolute;
