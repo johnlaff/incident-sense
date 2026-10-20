@@ -117,8 +117,8 @@ a.prb-row:focus-visible {
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
 }
-.prb-meta .mono {
-  overflow-wrap: anywhere;
+.prb-meta > span {
+  white-space: nowrap;
 }
 .prb-go {
   grid-area: go;

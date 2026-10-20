@@ -77,7 +77,7 @@ export default function ProblemasPage() {
                   <b>Causa raiz:</b> {p.root_cause}
                 </span>
                 <span className="prb-meta">
-                  <span className="mono">{p.cmdb_ci}</span>
+                  <span>{keepWhole(p.cmdb_ci)}</span>
                   <span aria-hidden="true">·</span>
                   <span>
                     {p.linked_incidents.length === 1

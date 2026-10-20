@@ -264,11 +264,11 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
         <dl className="chg-facts">
           <div>
             <dt>Serviço</dt>
-            <dd className="mono">{change.cmdb_ci}</dd>
+            <dd>{keepWhole(change.cmdb_ci)}</dd>
           </div>
           <div>
             <dt>Grupo responsável</dt>
-            <dd>{change.assignment_group}</dd>
+            <dd>{keepWhole(change.assignment_group)}</dd>
           </div>
           <div>
             <dt>Janela de execução</dt>

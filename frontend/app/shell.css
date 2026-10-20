@@ -778,3 +778,9 @@ a {
     flex: 1 1 100%;
   }
 }
+
+/* Meta lines: each fact stays whole ("aberto há 7 meses", "17 incidentes");
+   the line breaks only at the separators. */
+.meta-item {
+  white-space: nowrap;
+}

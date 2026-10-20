@@ -17,6 +17,7 @@ import {
 import { SimilarityRuler } from "@/components/similarity-ruler";
 import {
   Avatar,
+  MetaLine,
   PriorityBadge,
   StateBadge,
   StateBlock,
@@ -449,9 +450,14 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
               </div>
               <h1>{keepWhole(record.title)}</h1>
               <div className="meta">
-                {`${record.service} · ${record.group} · ${
-                  localState === "resolved" ? "resolvido" : `aberto ${record.rel}`
-                }${assignee ? ` · ${assignee}` : ""}`}
+                <MetaLine
+                  items={[
+                    record.service,
+                    record.group,
+                    localState === "resolved" ? "resolvido" : `aberto ${record.rel}`,
+                    assignee,
+                  ]}
+                />
               </div>
             </div>
             <div className="record-actions">

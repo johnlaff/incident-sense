@@ -90,8 +90,8 @@ a.chg-row:focus-visible {
   font-variant-numeric: tabular-nums;
   min-width: 0;
 }
-.chg-meta .mono {
-  overflow-wrap: anywhere;
+.chg-meta > span {
+  white-space: nowrap;
 }
 .chg-tags {
   grid-area: tags;

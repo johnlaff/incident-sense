@@ -90,7 +90,7 @@ export default function ChangesPage() {
                 </span>
                 <span className="chg-title">{keepWhole(c.short_description)}</span>
                 <span className="chg-meta">
-                  <span className="mono">{c.cmdb_ci}</span>
+                  <span>{keepWhole(c.cmdb_ci)}</span>
                   <span>{absDate(c.planned_start)}</span>
                 </span>
                 {/* Only what varies: almost every Change is Normal and Nova,

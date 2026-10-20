@@ -428,8 +428,8 @@ export default function HowItWorksPage() {
       <header className="cf-hero">
         <h1>Depois do deploy, do começo ao fim</h1>
         <p className="cf-lede">
-          Da mudança ao incidente, e de volta. O caminho abaixo, contado em sete
-          capítulos curtos.
+          Da mudança ao incidente, e de volta. O caminho abaixo, contado em sete capítulos
+          curtos.
         </p>
         <ol className="cf-life" aria-label="O caminho de qualquer software">
           {LIFE.map((s, i) => (
