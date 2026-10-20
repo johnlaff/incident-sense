@@ -19,6 +19,7 @@ import {
   computeLayout,
   placeLabels,
   shortDate,
+  toneVars,
   type LabelBox,
   type RecData,
 } from "./model";
@@ -264,10 +265,10 @@ export function RecMap({
                 if (el) labelRefs.current.set(g.id, el);
                 else labelRefs.current.delete(g.id);
               }}
-              className={`rx-label${box?.compact ? " compact" : ""}${dim ? " dim" : ""}${focus === g.id ? " sel" : ""}`}
+              className={`rx-label rx-tone${box?.compact ? " compact" : ""}${dim ? " dim" : ""}${focus === g.id ? " sel" : ""}`}
               style={
                 {
-                  "--hue": g.hue,
+                  ...toneVars(g.tone),
                   "--i": k,
                   translate: box ? `${box.x}px ${box.y}px` : "-9999px 0",
                 } as CSSProperties
@@ -294,8 +295,13 @@ export function RecMap({
 
       {preview && cardStyle ? (
         <div
-          className={`rx-peek${pinned != null ? " pinned" : ""}${group ? "" : " rx-iso"}`}
-          style={{ ...cardStyle, "--hue": group?.hue ?? 265 } as CSSProperties}
+          className={`rx-peek${pinned != null ? " pinned" : ""}${group ? " rx-tone" : " rx-iso"}`}
+          style={
+            {
+              ...cardStyle,
+              ...(group ? toneVars(group.tone) : { "--hue": 265 }),
+            } as CSSProperties
+          }
           role={pinned != null ? "dialog" : "tooltip"}
           aria-label={`${preview.id}: ${preview.short}`}
         >

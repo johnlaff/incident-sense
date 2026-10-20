@@ -12,6 +12,7 @@ import { GroupTimeline } from "./timeline";
 import {
   matchesFilter,
   reasonFor,
+  toneVars,
   verdictOf,
   type RecData,
   type RecFilter,
@@ -46,10 +47,10 @@ export function GroupList({
             <li key={g.id}>
               <button
                 type="button"
-                className={`rx-row${focus === g.id ? " sel" : ""}${m === 0 ? " empty" : ""}`}
+                className={`rx-row rx-tone${focus === g.id ? " sel" : ""}${m === 0 ? " empty" : ""}`}
                 style={
                   {
-                    "--hue": g.hue,
+                    ...toneVars(g.tone),
                     "--v": g.size / max,
                     "--m": m / max,
                     "--i": k,
@@ -132,8 +133,8 @@ export function GroupDetail({
 
   return (
     <section
-      className={`rx-detail${isGroup ? "" : " rx-iso"}`}
-      style={isGroup ? ({ "--hue": group.hue } as CSSProperties) : undefined}
+      className={`rx-detail${isGroup ? " rx-tone" : " rx-iso"}`}
+      style={isGroup ? (toneVars(group.tone) as CSSProperties) : undefined}
       aria-label={isGroup ? group.label : "Casos isolados"}
     >
       <div className="rx-detail-top">

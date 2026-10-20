@@ -15,12 +15,15 @@ describe("evaluation fixture", () => {
     expect(overallOf(ev)).toBe(ev.overall);
   });
 
-  it.each(Object.keys(evaluations))("%s: one reading and one suggestion per field", (number) => {
-    const ev = evaluations[number];
-    const readings = new Set(ev.fields.map((f) => f.diagnosis));
-    expect(readings.size).toBe(ev.fields.length);
-    for (const f of ev.fields) expect(f.guidance.trim()).not.toBe("");
-  });
+  it.each(Object.keys(evaluations))(
+    "%s: one reading and one suggestion per field",
+    (number) => {
+      const ev = evaluations[number];
+      const readings = new Set(ev.fields.map((f) => f.diagnosis));
+      expect(readings.size).toBe(ev.fields.length);
+      for (const f of ev.fields) expect(f.guidance.trim()).not.toBe("");
+    },
+  );
 
   it("tells the story the app tells: 001 passes, 002 passes the fields, 003 stops", () => {
     expect(gatePassed(evaluations.CHG0031001)).toBe(true);

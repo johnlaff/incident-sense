@@ -1,7 +1,7 @@
 /* Recorrências: the clustering demo. Own file so globals.css stays untouched.
    Tokens come from globals.css; fallbacks keep the page legible if a token is
-   renamed. Group colors are one hue per group (lib/model.ts GROUP_HUES), drawn
-   at a lightness tuned per theme. */
+   renamed. Group colors are one tone per group (lib/model.ts CLUSTER_TONES), with
+   a lightness and chroma per theme. */
 
 .rx-page {
   --rx-l: 0.6;
@@ -14,6 +14,16 @@
   --rx-tint-l: 0.34;
   --rx-tint-c: 0.06;
   --rx-ink-l: 0.86;
+}
+/* Each group carries its own tone (lib/model.ts CLUSTER_TONES): hue plus a
+   lightness and chroma per theme, so nine groups stay apart. */
+.rx-tone {
+  --rx-l: var(--gl);
+  --rx-c: var(--gc);
+}
+[data-theme="dark"] .rx-tone {
+  --rx-l: var(--gdl);
+  --rx-c: var(--gdc);
 }
 :root[data-aula-bar] .rx-page {
   padding-bottom: calc(var(--aula-bar-h, 0px) + 12px);
