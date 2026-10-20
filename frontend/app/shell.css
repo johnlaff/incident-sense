@@ -182,17 +182,16 @@
   margin: 0 0 4px;
   padding: 10px 10px;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-xs);
+  /* At rest like a nav item; the white card is only the active state, the
+     same one the nav items use, so it never reads as "you are here". */
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--ink);
   text-decoration: none;
   font-weight: 600;
   font-size: var(--fs-sm);
   line-height: 1.25;
-  transition:
-    border-color var(--dur-press) var(--ease-out),
-    box-shadow var(--dur-press) var(--ease-out);
+  transition: background-color var(--dur-press) var(--ease-out);
 }
 .nav-lesson small {
   display: block;
@@ -207,11 +206,14 @@
   color: var(--c-ai);
 }
 .nav-lesson:hover {
-  border-color: var(--border-strong);
+  background: var(--shell-2);
 }
 .nav-lesson.active {
-  border-color: var(--ink);
-  box-shadow: 0 0 0 1px var(--ink);
+  background: var(--surface);
+  border-color: transparent;
+  box-shadow:
+    var(--shadow-xs),
+    0 0 0 1px var(--border);
 }
 .nav-foot {
   background: transparent;

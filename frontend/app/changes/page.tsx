@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
-import { STATE_LABEL, TYPE_LABEL, useChanges, type ChangeSummary } from "@/lib/changes";
+import {
+  STATE_LABEL,
+  TYPE_LABEL,
+  readEvalMarks,
+  useChanges,
+  type ChangeSummary,
+  type EvalMark,
+} from "@/lib/changes";
 import { absDate } from "@/lib/model";
 
 import "./changes.css";
@@ -17,6 +24,9 @@ type Tab = "scope" | "all";
 export default function ChangesPage() {
   const { data, loading, error, slow, retry } = useChanges();
   const [tab, setTab] = useState<Tab>("scope");
+  // Changes evaluated in this session (read after mount: sessionStorage).
+  const [marks, setMarks] = useState<Record<string, EvalMark>>({});
+  useEffect(() => setMarks(readEvalMarks()), []);
 
   const rows = useMemo<ChangeSummary[]>(
     () => (data ?? []).filter((c) => tab === "all" || c.in_scope),
@@ -96,6 +106,7 @@ export default function ChangesPage() {
                 {/* Only what varies: almost every Change is Normal and Nova,
                     so those words show up only on the one that is not. */}
                 <span className="chg-tags">
+                  {marks[c.number] ? <EvaluatedBadge mark={marks[c.number]} /> : null}
                   <span className="badge chg-risk">
                     <span className="dot" />
                     Risco {c.risk.toLowerCase()}
@@ -126,5 +137,20 @@ export default function ChangesPage() {
         </ul>
       )}
     </div>
+  );
+}
+
+/** "Avaliada · 8,62": the last evaluation of this session, ink, no hue. */
+function EvaluatedBadge({ mark }: { mark: EvalMark }) {
+  const score =
+    mark.overall === null ? "sem nota" : mark.overall.toFixed(2).replace(".", ",");
+  return (
+    <span
+      className="badge chg-evaluated"
+      title={mark.passed ? "Passou do corte de 8,0" : "Abaixo do corte de 8,0"}
+    >
+      <Icons.check />
+      Avaliada · {score}
+    </span>
   );
 }

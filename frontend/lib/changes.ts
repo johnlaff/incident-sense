@@ -151,3 +151,37 @@ export function useChange(number: string): AsyncState<Change> {
 export function useRubric(): AsyncState<Rubric> {
   return useAsync(() => api.getRubric(), []);
 }
+
+// ----- Evaluated in this session ------------------------------------------------
+
+/** What /changes shows for a Change evaluated in this browser session. */
+export interface EvalMark {
+  /** Weighted average as the page shows it, null when out of scope. */
+  overall: number | null;
+  passed: boolean;
+}
+
+const EVAL_KEY = "is-evaluated";
+
+/** Marks kept per tab (sessionStorage): a convenience, never the record. */
+export function readEvalMarks(): Record<string, EvalMark> {
+  try {
+    const raw = window.sessionStorage.getItem(EVAL_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object"
+      ? (parsed as Record<string, EvalMark>)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+export function markEvaluated(number: string, mark: EvalMark): void {
+  try {
+    const all = readEvalMarks();
+    all[number] = mark;
+    window.sessionStorage.setItem(EVAL_KEY, JSON.stringify(all));
+  } catch {
+    // Private mode or blocked storage: the list just shows no mark.
+  }
+}

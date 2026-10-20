@@ -12,6 +12,7 @@ import {
   EVALUATED_FIELDS,
   STATE_LABEL,
   TYPE_LABEL,
+  markEvaluated,
   useChange,
   useRubric,
   type Change,
@@ -199,6 +200,8 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       const res = await api.evaluateChange(change.number, { fields: edits, model });
       setPrevious(result);
       setResult(res);
+      // /changes marks the Changes evaluated in this session.
+      markEvaluated(change.number, { overall: overallOf(res), passed: gatePassed(res) });
       setMotion(readMotion());
       setRunKey((k) => k + 1);
       setDirty(new Set());

@@ -3,98 +3,15 @@ import Link from "next/link";
 
 import "./aula.css";
 import { LessonModeSwitch } from "./mode-switch";
-import {
-  ConceptIcon,
-  ConceptLegend,
-  RecordTag,
-  type ConceptKey,
-} from "@/components/concepts";
+import { ConceptIcon, ConceptLegend, RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { keepWhole } from "@/lib/text";
+
+import { STOPS } from "./stops";
 
 export const metadata: Metadata = {
   title: "Aula: como a IA ajuda depois do deploy · Incident Sense",
 };
-
-interface Pick {
-  number: string;
-  title: string;
-  note: string;
-  href: string;
-}
-
-interface Stop {
-  n: number;
-  concept: ConceptKey;
-  tone: string;
-  title: string;
-  line: string;
-  href: string;
-  cta: string;
-  picks?: Pick[];
-}
-
-// Every link keeps ?aula=1 so the screens open step by step, with captions.
-const STOPS: Stop[] = [
-  {
-    n: 1,
-    concept: "ai-step",
-    tone: "k-ai",
-    title: "Como funciona",
-    line: "Do chamado aberto à sugestão revisada.",
-    href: "/como-funciona?aula=1",
-    cta: "Ver o caminho",
-  },
-  {
-    n: 2,
-    concept: "inc",
-    tone: "k-inc",
-    title: "Um incidente real, resolvido com IA",
-    line: "A IA acha casos parecidos e sugere, citando cada um.",
-    href: "/incidentes/INC0052233?aula=1",
-    cta: "Abrir o incidente",
-    picks: [
-      {
-        number: "INC0052233",
-        title: "Login no app falha depois do deploy",
-        note: "Prioridade crítica, ainda aberto",
-        href: "/incidentes/INC0052233?aula=1",
-      },
-    ],
-  },
-  {
-    n: 3,
-    concept: "prb",
-    tone: "k-prb",
-    title: "Recorrências",
-    line: "Erro que se repete vira grupo. Grupo pede um Problema.",
-    href: "/recorrencias?aula=1",
-    cta: "Ver os grupos",
-  },
-  {
-    n: 4,
-    concept: "chg",
-    tone: "k-chg",
-    title: "Avaliação de uma Mudança",
-    line: "Antes do deploy, a IA dá nota ao pedido.",
-    href: "/changes/CHG0031001?aula=1",
-    cta: "Avaliar uma mudança",
-    picks: [
-      {
-        number: "CHG0031001",
-        title: "Pool de conexões do PIX-Core",
-        note: "Bem preenchida: deve passar",
-        href: "/changes/CHG0031001?aula=1",
-      },
-      {
-        number: "CHG0031002",
-        title: "Boleto híbrido com migração de dados",
-        note: "O retorno não desfaz a migração",
-        href: "/changes/CHG0031002?aula=1",
-      },
-    ],
-  },
-];
 
 export default function LessonPage() {
   return (
@@ -112,7 +29,7 @@ export default function LessonPage() {
         {STOPS.map((s) => (
           <li
             key={s.n}
-            className={`lesson-stop ${s.tone}`}
+            className={`lesson-stop${s.tone ? ` ${s.tone}` : ""}`}
             style={{ "--i": s.n - 1 } as React.CSSProperties}
           >
             <span className="stop-n" aria-hidden="true">
@@ -120,7 +37,13 @@ export default function LessonPage() {
             </span>
             <div className="stop-body">
               <div className="stop-head">
-                <ConceptIcon concept={s.concept} />
+                {s.icon ? (
+                  <span className="cicon k-rec" aria-hidden="true">
+                    <s.icon />
+                  </span>
+                ) : (
+                  <ConceptIcon concept={s.concept} />
+                )}
                 <h2>
                   <span className="sr-only">Passo {s.n}: </span>
                   {s.title}
@@ -135,6 +58,15 @@ export default function LessonPage() {
                         <RecordTag number={p.number} size="sm" />
                         <span className="pick-text">
                           <b>{keepWhole(p.title)}</b>
+                          <small className="pick-status">
+                            {/* Each fact stays whole; lines break at the dot. */}
+                            {p.status.split(" · ").map((part, k) => (
+                              <span key={part}>
+                                {k > 0 ? " · " : null}
+                                <span className="meta-item">{part}</span>
+                              </span>
+                            ))}
+                          </small>
                           <small>{p.note}</small>
                         </span>
                         <Icons.chevronRight />
