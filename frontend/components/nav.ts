@@ -17,6 +17,8 @@ export interface NavItem {
   sub: string;
   /** Pathname prefixes that mark this section as active. */
   match: readonly string[];
+  /** Concept color class (concepts.css) for the section's chip. */
+  tone: "k-inc" | "k-rec" | "k-prb" | "k-chg" | "k-ai" | "k-human";
 }
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -28,6 +30,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     short: "Incidentes",
     sub: "Todos os incidentes do banco",
     match: ["/incidentes"],
+    tone: "k-inc",
   },
   {
     key: "recurrences",
@@ -35,8 +38,9 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Icons.recurrences,
     label: "Recorrências",
     short: "Recorrências",
-    sub: "Mapa de padrões que se repetem",
+    sub: "Incidentes que se repetem, em grupos",
     match: ["/recorrencias"],
+    tone: "k-rec",
   },
   {
     key: "problems",
@@ -46,6 +50,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     short: "Problemas",
     sub: "Causa raiz dos incidentes que se repetem",
     match: ["/problemas"],
+    tone: "k-prb",
   },
   {
     key: "changes",
@@ -53,8 +58,9 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Icons.changes,
     label: "Mudanças",
     short: "Mudanças",
-    sub: "Nota de preenchimento das mudanças",
+    sub: "A IA dá nota ao pedido de mudança",
     match: ["/changes"],
+    tone: "k-chg",
   },
   {
     key: "how",
@@ -63,8 +69,9 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Como funciona",
     // Five tabs leave ~78px each on a phone; the full label would be cut.
     short: "Sobre a IA",
-    sub: "Como a IA sugere e agrupa",
+    sub: "O caminho todo, passo a passo",
     match: ["/como-funciona"],
+    tone: "k-ai",
   },
 ];
 

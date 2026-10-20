@@ -5,53 +5,111 @@
    chrome, ⌘K palette, peek drawer, animated recurrences map and how-it-works.
    Fonts are provided by next/font (Inter + JetBrains Mono) via CSS variables. */
 
+/* Incident Sense: "Pulseira de triagem" (see DESIGN.md).
+   Light content on a deep ink shell. Every concept of the lesson has one
+   color, one icon and one shape (concepts.css), so a student can tell an
+   Incident from a Problem, a Change, an AI step or a human decision at a
+   glance. Fonts come from next/font (Atkinson Hyperlegible Next + Mono). */
+
 :root {
-  /* Surfaces — cool, barely tinted toward the indigo brand */
-  --bg: oklch(0.985 0.003 285);
+  /* Surfaces: cool paper under white work areas */
+  --bg: oklch(0.975 0.006 265);
   --surface: oklch(1 0 0);
-  --surface-2: oklch(0.974 0.004 285);
-  --border: oklch(0.92 0.004 285);
-  --border-strong: oklch(0.86 0.005 285);
+  --surface-2: oklch(0.962 0.008 265);
+  --border: oklch(0.905 0.009 265);
+  --border-strong: oklch(0.8 0.014 265);
 
-  /* Ink — high contrast for projection */
-  --ink: oklch(0.255 0.012 285);
-  --ink-body: oklch(0.32 0.011 285);
-  --muted: oklch(0.5 0.01 285);
+  /* Ink: high contrast for projection */
+  --ink: oklch(0.22 0.035 265);
+  --ink-body: oklch(0.3 0.025 265);
+  --muted: oklch(0.47 0.02 265);
 
-  /* Brand / primary (indigo-violet) */
-  --primary: oklch(0.48 0.16 285);
-  --primary-hover: oklch(0.42 0.16 285);
-  --primary-tint: oklch(0.96 0.02 285);
-  --primary-ink: oklch(0.4 0.15 285);
-  /* Text and icons drawn on a solid --primary (or status) fill. */
+  /* Shell (top bar + rail): deep ink in both themes */
+  --shell: oklch(0.22 0.035 265);
+  --shell-2: oklch(0.28 0.035 265);
+  --shell-border: oklch(0.33 0.03 265);
+  --shell-ink: oklch(0.97 0.005 265);
+  --shell-muted: oklch(0.76 0.02 265);
+
+  /* Primary = the person's action (Resolver, Publicar, Avaliar): solid ink.
+     The machine never uses this color; AI owns --c-ai. */
+  --primary: oklch(0.22 0.035 265);
+  --primary-hover: oklch(0.32 0.04 265);
+  --primary-tint: oklch(0.945 0.012 265);
+  --primary-ink: oklch(0.22 0.035 265);
   --on-primary: oklch(1 0 0);
+  --focus: oklch(0.5 0.15 255);
+
+  /* ----- Concept colors (one per idea of the lesson) -----
+     fill: solid band / icon chip; on: text drawn on the fill;
+     tint: soft background; ink: text on tint or white; line: outlines. */
+  --c-inc: oklch(0.5 0.15 255); /* Incidente: azul */
+  --c-inc-on: oklch(1 0 0);
+  --c-inc-tint: oklch(0.955 0.03 255);
+  --c-inc-ink: oklch(0.42 0.14 255);
+  --c-inc-line: oklch(0.8 0.08 255);
+
+  --c-prb: oklch(0.82 0.14 82); /* Problema: ouro */
+  --c-prb-on: oklch(0.22 0.035 265);
+  --c-prb-tint: oklch(0.96 0.045 85);
+  --c-prb-ink: oklch(0.45 0.1 80);
+  --c-prb-line: oklch(0.78 0.12 82);
+
+  --c-chg: oklch(0.5 0.1 185); /* Mudança: verde-azulado */
+  --c-chg-on: oklch(1 0 0);
+  --c-chg-tint: oklch(0.955 0.03 185);
+  --c-chg-ink: oklch(0.42 0.09 185);
+  --c-chg-line: oklch(0.78 0.07 185);
+
+  --c-ai: oklch(0.5 0.19 295); /* IA: violeta (etapas e respostas) */
+  --c-ai-on: oklch(1 0 0);
+  --c-ai-tint: oklch(0.955 0.03 295);
+  --c-ai-ink: oklch(0.44 0.17 295);
+  --c-ai-line: oklch(0.8 0.09 295);
+
+  --c-human: oklch(0.22 0.035 265); /* Pessoa: tinta (quem decide) */
+  --c-human-on: oklch(1 0 0);
+  --c-human-tint: oklch(0.945 0.012 265);
+  --c-human-ink: oklch(0.22 0.035 265);
+  --c-human-line: oklch(0.7 0.02 265);
+
+  /* Nota (score) bands and the gate verdicts */
+  --score-high: oklch(0.5 0.13 150);
+  --score-high-tint: oklch(0.955 0.04 150);
+  --score-mid: oklch(0.5 0.11 70);
+  --score-mid-tint: oklch(0.96 0.05 85);
+  --score-low: oklch(0.53 0.2 27);
+  --score-low-tint: oklch(0.955 0.03 27);
+  --gate-pass: var(--score-high);
+  --gate-fail: var(--score-low);
 
   /* Priority */
-  --p1: oklch(0.545 0.205 27);
+  --p1: oklch(0.53 0.2 27);
   --p1-tint: oklch(0.955 0.03 27);
   --p2: oklch(0.52 0.15 48);
   --p2-tint: oklch(0.955 0.04 65);
-  --p3: oklch(0.52 0.09 90);
+  --p3: oklch(0.5 0.09 90);
   --p3-tint: oklch(0.96 0.05 95);
-  --p4: oklch(0.5 0.02 285);
-  --p4-tint: oklch(0.955 0.004 285);
+  --p4: oklch(0.47 0.02 265);
+  --p4-tint: oklch(0.955 0.006 265);
 
   /* State */
-  --st-open: oklch(0.5 0.13 240);
+  --st-open: oklch(0.47 0.13 240);
   --st-open-tint: oklch(0.96 0.03 240);
   --st-progress: oklch(0.5 0.12 55);
   --st-progress-tint: oklch(0.96 0.04 65);
-  --st-hold: oklch(0.5 0.02 285);
-  --st-hold-tint: oklch(0.955 0.004 285);
-  --st-resolved: oklch(0.5 0.12 150);
+  --st-hold: oklch(0.47 0.02 265);
+  --st-hold-tint: oklch(0.955 0.006 265);
+  --st-resolved: oklch(0.48 0.12 150);
   --st-resolved-tint: oklch(0.955 0.04 150);
-  --st-closed: oklch(0.45 0.01 285);
+  --st-closed: oklch(0.45 0.01 265);
 
-  --success: oklch(0.5 0.12 150);
-  --danger: oklch(0.545 0.205 27);
+  --success: oklch(0.5 0.13 150);
+  --danger: oklch(0.53 0.2 27);
 
-  --radius: 8px;
-  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 18px;
   /* ----- Motion tokens (motion/direcao.md, 4.1) -----
      Durations by consequence, curves by meaning. Use as
      `calc(var(--dur-explain) * var(--motion-scale))` for teaching visuals. */
@@ -133,10 +191,21 @@
   );
   /* Legacy alias kept so older rules (and changes.css) resolve to the token. */
   --ease: var(--ease-out);
-  --shadow-sm: 0 1px 2px oklch(0.255 0.03 285 / 0.06);
-  --shadow-md: 0 6px 20px oklch(0.255 0.05 285 / 0.1);
-  --font: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --shadow-sm: 0 1px 2px oklch(0.22 0.035 265 / 0.08);
+  --shadow-md: 0 8px 24px oklch(0.22 0.05 265 / 0.12);
+  --font: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --mono: var(--font-mono), ui-monospace, monospace;
+
+  /* Type scale (fixed rem, ~1.25): readable at arm's length */
+  --fs-xs: 0.8125rem; /* 13: metadata only */
+  --fs-sm: 0.875rem; /* 14: labels */
+  --fs-md: 1rem; /* 16: body */
+  --fs-lg: 1.125rem; /* 18: lead, card titles */
+  --fs-xl: 1.375rem; /* 22: section heads */
+  --fs-2xl: 1.75rem; /* 28: page titles */
+  --fs-3xl: 2.25rem; /* 36: hero titles */
+  --fs-score: 3rem; /* 48: scores */
+  --fs-score-xl: 4rem; /* 64: the one big number */
 
   /* Shell metrics. Phones get a compact sticky topbar and a bottom tab bar;
      the safe-area insets keep both clear of the notch and home indicator
@@ -184,12 +253,11 @@ html {
 }
 body {
   font-family: var(--font);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: var(--fs-md);
+  line-height: 1.55;
   color: var(--ink-body);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
-  font-feature-settings: "cv05", "ss01";
 }
 p {
   text-wrap: pretty;
@@ -198,8 +266,8 @@ h1,
 h2,
 h3 {
   color: var(--ink);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.012em;
   margin: 0;
   text-wrap: balance;
 }
@@ -215,7 +283,7 @@ h3 {
    links, and the role="button" rows/points/citations). Inputs and selects
    keep their own tinted-ring :focus-visible treatment below. */
 :where(a, button, [role="button"], [tabindex]):focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -934,14 +1002,14 @@ table.list {
   gap: 10px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(var(--primary-tint), var(--surface));
+  background: linear-gradient(var(--c-ai-tint), var(--surface));
 }
 .cop-head .mark {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
 }
@@ -961,8 +1029,8 @@ table.list {
 }
 .bubble-user {
   align-self: flex-end;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   padding: 8px 12px;
   border-radius: 12px 12px 3px 12px;
   font-size: 13px;
@@ -1001,8 +1069,8 @@ table.list {
   color: var(--st-resolved);
 }
 .trace .ico.run {
-  background: var(--primary-tint);
-  color: var(--primary-ink);
+  background: var(--c-ai-tint);
+  color: var(--c-ai-ink);
 }
 .trace .ico svg {
   width: 12px;
@@ -1036,14 +1104,14 @@ table.list {
   cursor: pointer;
 }
 .cand:hover {
-  border-color: var(--primary);
-  background: var(--primary-tint);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
 }
 .cand .num {
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .cand .cdesc {
   flex: 1;
@@ -1095,8 +1163,8 @@ table.list {
 }
 
 .suggestion {
-  border: 1px solid var(--primary);
-  background: var(--primary-tint);
+  border: 1px solid var(--c-ai);
+  background: var(--c-ai-tint);
   border-radius: var(--radius-sm);
   padding: 12px 13px;
   font-size: 13px;
@@ -1107,7 +1175,7 @@ table.list {
   margin: 0 0 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 /* Markdown rendered by <SuggestionMarkdown> (react-markdown). */
 .suggestion .md > :first-child {
@@ -1142,24 +1210,24 @@ table.list {
   margin: 0;
 }
 .suggestion .md li::marker {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   font-weight: 700;
 }
 .suggestion .md strong {
   font-weight: 700;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .suggestion .md a:not(.cite) {
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
   text-decoration: underline;
 }
 .cite {
   font-family: var(--mono);
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
   background: oklch(1 0 0 / 0.7);
-  border: 1px solid var(--primary);
+  border: 1px solid var(--c-inc);
   border-radius: 5px;
   padding: 0 5px;
   cursor: pointer;
@@ -1182,42 +1250,84 @@ table.list {
  *  Dark theme — deep blue-gray, not pure black
  * ===================================================================== */
 [data-theme="dark"] {
-  --bg: oklch(0.205 0.012 285);
-  --surface: oklch(0.245 0.014 285);
-  --surface-2: oklch(0.285 0.016 285);
-  --border: oklch(0.33 0.014 285);
-  --border-strong: oklch(0.42 0.016 285);
+  --bg: oklch(0.17 0.02 265);
+  --surface: oklch(0.215 0.022 265);
+  --surface-2: oklch(0.255 0.024 265);
+  --border: oklch(0.31 0.022 265);
+  --border-strong: oklch(0.42 0.024 265);
 
-  --ink: oklch(0.95 0.006 285);
-  --ink-body: oklch(0.86 0.008 285);
-  --muted: oklch(0.7 0.013 285);
+  --ink: oklch(0.96 0.006 265);
+  --ink-body: oklch(0.88 0.01 265);
+  --muted: oklch(0.73 0.018 265);
 
-  --primary: oklch(0.7 0.14 285);
-  --primary-hover: oklch(0.77 0.14 285);
-  --primary-tint: oklch(0.34 0.06 285);
-  --primary-ink: oklch(0.84 0.12 285);
-  --on-primary: oklch(0.18 0.03 285);
+  --shell: oklch(0.13 0.02 265);
+  --shell-2: oklch(0.2 0.025 265);
+  --shell-border: oklch(0.26 0.025 265);
 
-  --p1: oklch(0.72 0.17 27);
-  --p1-tint: oklch(0.33 0.08 27);
-  --p2: oklch(0.76 0.13 62);
-  --p2-tint: oklch(0.33 0.06 62);
-  --p3: oklch(0.8 0.1 95);
-  --p3-tint: oklch(0.34 0.05 95);
-  --p4: oklch(0.7 0.02 285);
-  --p4-tint: oklch(0.31 0.01 285);
+  --primary: oklch(0.96 0.006 265);
+  --primary-hover: oklch(0.86 0.01 265);
+  --primary-tint: oklch(0.3 0.025 265);
+  --primary-ink: oklch(0.96 0.006 265);
+  --on-primary: oklch(0.18 0.03 265);
+  --focus: oklch(0.75 0.13 255);
 
-  --st-open: oklch(0.74 0.13 240);
-  --st-open-tint: oklch(0.32 0.06 240);
-  --st-progress: oklch(0.78 0.12 65);
-  --st-progress-tint: oklch(0.33 0.06 65);
-  --st-hold: oklch(0.7 0.02 285);
-  --st-hold-tint: oklch(0.31 0.01 285);
-  --st-resolved: oklch(0.74 0.13 150);
-  --st-resolved-tint: oklch(0.32 0.06 150);
+  --c-inc: oklch(0.72 0.13 255);
+  --c-inc-on: oklch(0.18 0.03 265);
+  --c-inc-tint: oklch(0.28 0.06 255);
+  --c-inc-ink: oklch(0.8 0.1 255);
+  --c-inc-line: oklch(0.48 0.1 255);
 
-  --success: oklch(0.74 0.13 150);
-  --danger: oklch(0.72 0.17 27);
+  --c-prb: oklch(0.84 0.13 85);
+  --c-prb-on: oklch(0.18 0.03 265);
+  --c-prb-tint: oklch(0.3 0.05 85);
+  --c-prb-ink: oklch(0.86 0.1 85);
+  --c-prb-line: oklch(0.55 0.1 85);
+
+  --c-chg: oklch(0.74 0.1 185);
+  --c-chg-on: oklch(0.18 0.03 265);
+  --c-chg-tint: oklch(0.28 0.04 185);
+  --c-chg-ink: oklch(0.82 0.08 185);
+  --c-chg-line: oklch(0.5 0.07 185);
+
+  --c-ai: oklch(0.74 0.14 295);
+  --c-ai-on: oklch(0.18 0.03 265);
+  --c-ai-tint: oklch(0.3 0.07 295);
+  --c-ai-ink: oklch(0.84 0.11 295);
+  --c-ai-line: oklch(0.52 0.12 295);
+
+  --c-human: oklch(0.96 0.006 265);
+  --c-human-on: oklch(0.18 0.03 265);
+  --c-human-tint: oklch(0.3 0.025 265);
+  --c-human-ink: oklch(0.96 0.006 265);
+  --c-human-line: oklch(0.55 0.02 265);
+
+  --score-high: oklch(0.76 0.14 150);
+  --score-high-tint: oklch(0.3 0.06 150);
+  --score-mid: oklch(0.82 0.12 80);
+  --score-mid-tint: oklch(0.31 0.05 80);
+  --score-low: oklch(0.74 0.16 27);
+  --score-low-tint: oklch(0.31 0.07 27);
+
+  --p1: oklch(0.74 0.16 27);
+  --p1-tint: oklch(0.31 0.07 27);
+  --p2: oklch(0.78 0.13 62);
+  --p2-tint: oklch(0.31 0.06 62);
+  --p3: oklch(0.82 0.1 95);
+  --p3-tint: oklch(0.31 0.05 95);
+  --p4: oklch(0.73 0.018 265);
+  --p4-tint: oklch(0.29 0.015 265);
+
+  --st-open: oklch(0.76 0.12 240);
+  --st-open-tint: oklch(0.29 0.06 240);
+  --st-progress: oklch(0.8 0.12 65);
+  --st-progress-tint: oklch(0.31 0.06 65);
+  --st-hold: oklch(0.73 0.018 265);
+  --st-hold-tint: oklch(0.29 0.015 265);
+  --st-resolved: oklch(0.76 0.13 150);
+  --st-resolved-tint: oklch(0.3 0.06 150);
+
+  --success: oklch(0.76 0.13 150);
+  --danger: oklch(0.74 0.16 27);
 
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
   --shadow-md: 0 10px 30px oklch(0 0 0 / 0.5);
@@ -1383,8 +1493,8 @@ body {
   color: var(--primary-ink);
 }
 .nm-ico.ai {
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
 }
 .nm-main {
   flex: 1;
@@ -1735,8 +1845,8 @@ body {
   color: var(--st-progress);
 }
 .act .av.ai {
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
 }
 .act .act-body {
   display: flex;
@@ -1787,7 +1897,7 @@ body {
   font-family: var(--mono);
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .rel-row .rdesc {
   flex: 1;
@@ -1824,7 +1934,7 @@ body {
   gap: 8px;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
-  background: var(--primary-tint);
+  background: var(--c-ai-tint);
   animation: insert-flash calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
 }
 .draft-label {
@@ -1834,7 +1944,7 @@ body {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .resnotes-draft .btn-ghost {
   margin-left: -8px;
@@ -1914,10 +2024,10 @@ body {
 }
 @keyframes insert-flash {
   0% {
-    background: color-mix(in oklab, var(--primary) 30%, var(--surface));
+    background: color-mix(in oklab, var(--c-ai) 30%, var(--surface));
   }
   100% {
-    background: var(--primary-tint);
+    background: var(--c-ai-tint);
   }
 }
 
@@ -2017,14 +2127,14 @@ body {
     box-shadow var(--dur-press);
 }
 .cite:hover {
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  box-shadow: 0 0 0 3px var(--c-inc-tint);
 }
 .cite.flash {
   animation: cite-flash calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
 }
 @keyframes cite-flash {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 60%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--c-inc) 60%, transparent);
   }
   100% {
     box-shadow: 0 0 0 6px transparent;
@@ -2042,7 +2152,7 @@ body {
 .why-toggle {
   background: none;
   border: 0;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   font: inherit;
   font-size: 12.5px;
   font-weight: 550;
@@ -2079,11 +2189,11 @@ body {
     background var(--dur-press);
 }
 .prompt-suggest:hover {
-  border-color: var(--primary);
-  background: var(--primary-tint);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
 }
 .prompt-suggest .ps-ico {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   display: grid;
   place-items: center;
 }
@@ -2122,8 +2232,8 @@ body {
   height: 30px;
   border-radius: 6px;
   border: 0;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -2161,7 +2271,7 @@ body {
   font-family: var(--mono);
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .cand-preview .cp-res {
   font-size: 12px;
@@ -2194,8 +2304,8 @@ body {
   height: 58px;
   border-radius: 50%;
   border: 0;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -2209,7 +2319,7 @@ body {
     opacity var(--dur-state) var(--ease-out);
 }
 .cop-fab:hover {
-  background: var(--primary-hover);
+  background: var(--c-ai);
   transform: translateY(-2px);
   box-shadow:
     0 3px 6px oklch(0.255 0.05 285 / 0.18),
@@ -2258,15 +2368,15 @@ body {
   gap: 10px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(var(--primary-tint), var(--surface));
+  background: linear-gradient(var(--c-ai-tint), var(--surface));
   position: relative;
 }
 .cph-mark {
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
 }
@@ -2324,7 +2434,7 @@ body {
     color var(--dur-press);
 }
 .model-pick:hover {
-  border-color: var(--primary);
+  border-color: var(--c-ai);
   color: var(--ink);
 }
 .model-pick .mp-dot {
@@ -2375,7 +2485,7 @@ body {
   background: var(--surface-2);
 }
 .mm-item.sel {
-  background: var(--primary-tint);
+  background: var(--c-ai-tint);
 }
 .mm-main {
   flex: 1;
@@ -2387,7 +2497,7 @@ body {
   color: var(--ink);
 }
 .mm-item.sel .mm-name {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .mm-desc {
   font-size: 11.5px;
@@ -2396,7 +2506,7 @@ body {
   margin-top: 1px;
 }
 .mm-check {
-  color: var(--primary);
+  color: var(--c-ai);
   flex-shrink: 0;
 }
 .mm-foot {
@@ -2426,7 +2536,7 @@ body {
   gap: 7px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
   margin-bottom: 9px;
 }
 .think-toggle {
@@ -2521,8 +2631,8 @@ body {
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 700;
-  color: var(--primary-ink);
-  background: var(--primary-tint);
+  color: var(--c-ai-ink);
+  background: var(--c-ai-tint);
   border-radius: 999px;
   padding: 1px 7px;
 }
@@ -2563,8 +2673,8 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -2593,9 +2703,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--primary-tint);
-  border: 1px solid color-mix(in oklab, var(--primary) 35%, transparent);
-  color: var(--primary-ink);
+  background: var(--c-ai-tint);
+  border: 1px solid color-mix(in oklab, var(--c-ai) 35%, transparent);
+  color: var(--c-ai-ink);
   border-radius: 999px;
   padding: 8px 13px;
   font: inherit;
@@ -2605,7 +2715,7 @@ body {
   transition: background var(--dur-press);
 }
 .cop-quick:hover {
-  background: color-mix(in oklab, var(--primary) 16%, var(--surface));
+  background: color-mix(in oklab, var(--c-ai) 16%, var(--surface));
 }
 .cop-input {
   display: flex;
@@ -2631,24 +2741,24 @@ body {
   opacity: 1;
 }
 .cop-input input:focus-visible {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  border-color: var(--c-ai);
+  box-shadow: 0 0 0 3px var(--c-ai-tint);
+  box-shadow: 0 0 0 3px var(--c-ai-tint);
 }
 .cop-input .send {
   width: 36px;
   height: 36px;
   border-radius: 9px;
   border: 0;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
   display: grid;
   place-items: center;
   cursor: pointer;
   flex-shrink: 0;
 }
 .cop-input .send:hover {
-  background: var(--primary-hover);
+  background: var(--c-ai);
 }
 .cop-input .send svg {
   width: 17px;
@@ -2772,8 +2882,8 @@ body {
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 700;
-  color: var(--primary-ink);
-  background: var(--primary-tint);
+  color: var(--c-inc-ink);
+  background: var(--c-inc-tint);
 }
 .pal-item .pal-main {
   flex: 1;
@@ -2871,15 +2981,15 @@ body {
 .drawer-head .peek-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
-  background: var(--primary-tint);
+  color: var(--c-inc-ink);
+  background: var(--c-inc-tint);
   padding: 3px 9px;
   border-radius: 999px;
 }
 .peek-num {
   font-size: 13px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .peek-error {
   color: var(--danger);
@@ -3269,7 +3379,7 @@ body {
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 600;
-  color: var(--primary-ink);
+  color: var(--c-inc-ink);
 }
 .cd-inc .cdd {
   flex: 1;
@@ -3340,7 +3450,7 @@ body {
   top: 0;
   width: 100%;
   height: 100%;
-  background: var(--primary);
+  background: var(--c-ai);
   border-radius: 3px;
   transform-origin: left center;
   scale: var(--p, 0) 1;
@@ -3365,7 +3475,7 @@ body {
   border-radius: 50%;
   background: var(--surface);
   box-shadow:
-    0 0 0 3px var(--primary),
+    0 0 0 3px var(--c-ai),
     0 3px 8px oklch(0.255 0.05 285 / 0.3);
 }
 .rag-stages {
@@ -3403,15 +3513,15 @@ body {
   height: 18px;
 }
 .rag-stage.active .rag-dot {
-  border-color: var(--primary);
-  background: var(--primary-tint);
-  color: var(--primary-ink);
-  box-shadow: 0 0 0 5px var(--primary-tint);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
+  color: var(--c-ai-ink);
+  box-shadow: 0 0 0 5px var(--c-ai-tint);
 }
 .rag-stage.done .rag-dot {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--on-primary);
+  border-color: var(--c-ai);
+  background: var(--c-ai);
+  color: var(--c-ai-on);
 }
 .rag-label {
   font-weight: 600;
@@ -3457,8 +3567,8 @@ body {
   line-height: 1.5;
 }
 .rag-io-card.out {
-  border-color: var(--primary);
-  background: var(--primary-tint);
+  border-color: var(--c-ai);
+  background: var(--c-ai-tint);
 }
 .rag-io-k {
   display: block;
@@ -3468,7 +3578,7 @@ body {
   margin-bottom: 3px;
 }
 .rag-io-card.out .rag-io-k {
-  color: var(--primary-ink);
+  color: var(--c-ai-ink);
 }
 .rag-io-arrow {
   width: 20px;
@@ -3576,8 +3686,8 @@ body {
   border-style: solid;
 }
 .cstep.active {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  border-color: var(--c-ai);
+  box-shadow: 0 0 0 3px var(--c-ai-tint);
 }
 .cstep-dot {
   width: 28px;
@@ -3594,8 +3704,8 @@ body {
 }
 .cstep.active .cstep-dot,
 .cstep.done .cstep-dot {
-  background: var(--primary-tint);
-  color: var(--primary-ink);
+  background: var(--c-ai-tint);
+  color: var(--c-ai-ink);
 }
 .cstep-dot svg {
   width: 15px;
@@ -3868,11 +3978,11 @@ body {
 }
 .verdict-card.ok .vc-ico {
   background: var(--st-resolved);
-  color: var(--on-primary);
+  color: var(--c-ai-on);
 }
 .verdict-card.bad .vc-ico {
   background: var(--muted);
-  color: var(--on-primary);
+  color: var(--c-ai-on);
 }
 .vc-ico svg {
   width: 18px;
@@ -4326,7 +4436,7 @@ body {
   transition: background var(--dur-move) var(--ease-out);
 }
 .rag-stage.done:not(:last-child)::before {
-  background: var(--primary);
+  background: var(--c-ai);
 }
 .rag-stage:last-child {
   padding-bottom: 0;
@@ -4568,7 +4678,8 @@ body {
     justify-content: center;
     padding: 10px 0;
   }
-  .nav-item span:not(.nav-count),
+  .nav-item > span:not(.nav-count, .nav-ico),
+  .nav-lesson > span,
   .nav-label,
   .nav-foot,
   .nav-item .nav-count,

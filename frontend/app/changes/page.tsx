@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, type CSSProperties } from "react";
 
+import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
 import { STATE_LABEL, TYPE_LABEL, useChanges, type ChangeSummary } from "@/lib/changes";
@@ -33,10 +34,9 @@ export default function ChangesPage() {
         )}
       </div>
       <p className="page-lede">
-        Toda alteração em produção é registrada como uma mudança (a Change do ServiceNow).
-        Abra uma e peça a avaliação: a IA dá nota de 0 a 10 a cada campo, seguindo
-        critérios fixos, e só confere se os campos contam a mesma história quando a média
-        chega a 8,0.
+        Antes de mexer em produção, alguém preenche um pedido de mudança. Abra um: a IA dá
+        nota de 0 a 10 a cada campo e, se a média passar de 8,0, confere se o plano de
+        retorno desfaz o que foi feito.
       </p>
       <WakeNotice show={slow} />
 
@@ -86,7 +86,9 @@ export default function ChangesPage() {
           {rows.map((c, i) => (
             <li key={c.number} style={{ "--i": i } as CSSProperties}>
               <Link href={`/changes/${c.number}`} className="chg-row">
-                <span className="chg-num">{c.number}</span>
+                <span className="chg-num">
+                  <RecordTag number={c.number} size="sm" />
+                </span>
                 <span className="chg-title">{c.short_description}</span>
                 <span className="chg-meta">
                   <span className="mono">{c.cmdb_ci}</span>

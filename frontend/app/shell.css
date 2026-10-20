@@ -1,0 +1,389 @@
+/* ===================================================================== *
+   Pulseira: the shell and the shared atoms in the new visual world.
+   Loaded after globals.css and concepts.css; it restyles the frame (deep ink
+   top bar and rail), buttons, badges, page heads, tables and tabs. Screens
+   keep their own files for their content.
+ * ===================================================================== */
+
+/* ----- Top bar: deep ink, the frame of the workspace ----- */
+.topbar {
+  background: var(--shell);
+  border-bottom: 1px solid var(--shell-border);
+  color: var(--shell-ink);
+}
+.brand .mark {
+  background: var(--shell-ink);
+  color: var(--shell);
+  box-shadow: none;
+  border-radius: 8px;
+}
+.brand-name,
+.brand-prod {
+  color: var(--shell-ink);
+  font-weight: 700;
+  font-size: var(--fs-md);
+}
+.brand-prod {
+  color: var(--shell-muted);
+}
+.brand-accent,
+[data-theme="dark"] .brand-accent {
+  color: var(--shell-ink);
+}
+.brand-sep {
+  background: var(--shell-border);
+}
+.topbar .icon-btn {
+  color: var(--shell-muted);
+}
+.topbar .icon-btn:hover,
+.topbar .icon-btn.on {
+  background: var(--shell-2);
+  color: var(--shell-ink);
+}
+.topbar .search .input {
+  background: var(--shell-2);
+  border-color: var(--shell-border);
+  color: var(--shell-ink);
+}
+.topbar .search .input::placeholder {
+  color: var(--shell-muted);
+}
+.topbar .search svg {
+  color: var(--shell-muted);
+}
+.topbar button.search:hover .input {
+  border-color: var(--shell-muted);
+}
+.topbar button.search:focus-visible .input {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px oklch(0.75 0.13 255 / 0.35);
+}
+.topbar .kbd {
+  background: var(--shell);
+  border-color: var(--shell-border);
+  color: var(--shell-muted);
+}
+.topbar .avatar {
+  background: var(--shell-2);
+  color: var(--shell-ink);
+  font-weight: 700;
+}
+.topbar .notif-dot,
+[data-theme="dark"] .topbar .notif-dot {
+  border-color: var(--shell);
+}
+.topbar :where(a, button):focus-visible {
+  outline-color: oklch(0.8 0.1 255);
+}
+/* Modo aula switch: when on, it reads as a lit projector lamp. */
+.topbar .aula-toggle.on {
+  background: var(--shell-ink);
+  color: var(--shell);
+  border-color: transparent;
+}
+
+/* ----- Rail: deep ink with a concept chip per section ----- */
+.sidenav {
+  background: var(--shell);
+  border-right: 1px solid var(--shell-border);
+  padding: 16px 12px;
+  gap: 4px;
+}
+.nav-label {
+  color: var(--shell-muted);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.nav-item {
+  color: var(--shell-muted);
+  font-weight: 700;
+  font-size: var(--fs-md);
+  padding: 8px 10px 8px 8px;
+  border-radius: 10px;
+  gap: 12px;
+}
+.nav-item:hover {
+  background: var(--shell-2);
+  color: var(--shell-ink);
+}
+.nav-item.active {
+  background: var(--shell-ink);
+  color: var(--shell);
+}
+.nav-item .nav-ico {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--k, var(--shell-2));
+  color: var(--k-on, var(--shell-ink));
+}
+.nav-item .nav-ico svg {
+  width: 17px;
+  height: 17px;
+  opacity: 1;
+}
+.nav-item .nav-count,
+.nav-item.active .nav-count,
+[data-theme="dark"] .nav-item.active .nav-count {
+  background: var(--shell-2);
+  color: var(--shell-ink);
+  font-weight: 700;
+}
+.nav-item.active .nav-count {
+  background: var(--primary-tint);
+  color: var(--ink);
+}
+[data-theme="dark"] .nav-item.active .nav-count {
+  background: var(--shell-border);
+  color: var(--shell-ink);
+}
+.nav-lesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--shell-2);
+  border: 1px solid var(--shell-border);
+  color: var(--shell-ink);
+  text-decoration: none;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.nav-lesson small {
+  display: block;
+  font-weight: 400;
+  color: var(--shell-muted);
+  font-size: var(--fs-xs);
+}
+.nav-lesson svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.nav-lesson:hover,
+.nav-lesson.active {
+  background: var(--shell-ink);
+  color: var(--shell);
+}
+.nav-lesson:hover small,
+.nav-lesson.active small {
+  color: var(--shell);
+  opacity: 0.75;
+}
+.nav-foot {
+  background: var(--shell-2);
+  color: var(--shell-muted);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+}
+.sidenav :where(a, button):focus-visible {
+  outline-color: oklch(0.8 0.1 255);
+}
+
+/* ----- Phone tab bar: the same deep ink ----- */
+.tabbar {
+  background: var(--shell);
+  border-top: 1px solid var(--shell-border);
+  box-shadow: none;
+}
+.tab-item {
+  color: var(--shell-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.tab-item.active {
+  color: var(--shell-ink);
+}
+.tab-item .tab-ico {
+  width: 44px;
+  height: 30px;
+}
+.tab-item.active .tab-ico {
+  background: var(--k, var(--shell-ink));
+  color: var(--k-on, var(--shell));
+}
+.tab-item:active .tab-ico {
+  background: var(--shell-2);
+}
+
+/* ----- Buttons: ink for the person, violet for the machine ----- */
+.btn {
+  height: 40px;
+  padding: 0 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  font-size: var(--fs-md);
+}
+.btn-sm {
+  height: 34px;
+  padding: 0 12px;
+  font-size: var(--fs-sm);
+  border-radius: 8px;
+}
+.btn-primary:hover {
+  box-shadow: 0 4px 14px oklch(0.22 0.035 265 / 0.25);
+}
+.btn-ai {
+  background: var(--c-ai);
+  color: var(--c-ai-on);
+}
+.btn-ai:hover {
+  background: color-mix(in oklab, var(--c-ai) 86%, black);
+  box-shadow: 0 4px 14px oklch(0.5 0.19 295 / 0.3);
+}
+[data-theme="dark"] .btn-ai:hover {
+  background: color-mix(in oklab, var(--c-ai) 86%, white);
+}
+.btn-outline {
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+
+/* ----- Inputs ----- */
+.input,
+.select {
+  height: 40px;
+  border-radius: 10px;
+  font-size: var(--fs-md);
+}
+.input:focus-visible,
+.select:focus-visible {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus) 25%, transparent);
+}
+.field-search svg {
+  top: 12px;
+}
+.search .kbd {
+  top: 10px;
+}
+.segmented {
+  padding: 4px;
+  border-radius: 12px;
+}
+.segmented button {
+  padding: 6px 14px;
+  font-weight: 700;
+  border-radius: 8px;
+}
+.segmented button.on {
+  background: var(--ink);
+  color: var(--surface);
+  box-shadow: none;
+}
+[data-theme="dark"] .segmented button.on {
+  background: var(--ink);
+  color: var(--bg);
+}
+.select.has-value {
+  border-color: var(--ink);
+  background-color: var(--primary-tint);
+  color: var(--ink);
+}
+
+/* ----- Badges: small pills, never competing with the bands ----- */
+.badge {
+  height: 24px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  padding: 0 10px;
+}
+
+/* ----- Page head: one big title, one short line ----- */
+.page-head {
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 14px;
+}
+.page-head h1 {
+  font-size: var(--fs-2xl);
+  letter-spacing: -0.02em;
+}
+.page-head .count {
+  font-size: var(--fs-md);
+}
+.page-lede {
+  font-size: var(--fs-lg);
+  line-height: 1.5;
+  max-width: 60ch;
+  margin: -4px 0 20px;
+}
+
+/* ----- Cards and tables ----- */
+.card {
+  border-radius: var(--radius-lg);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+table.list {
+  font-size: var(--fs-md);
+}
+.list thead th {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--muted);
+  padding: 12px 16px;
+}
+.list tbody td {
+  padding: 12px 16px;
+}
+.list .num {
+  color: var(--c-inc-ink);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.list .desc {
+  font-weight: 700;
+}
+.list .svc {
+  font-size: var(--fs-sm);
+}
+.list tbody tr:has(.row-link:focus-visible) {
+  box-shadow: inset 0 0 0 3px var(--focus);
+}
+
+/* ----- Tabs on records ----- */
+.tab {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  border-bottom-width: 3px;
+}
+.tab.on {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.crumbs {
+  font-size: var(--fs-sm);
+}
+.crumbs a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+}
+
+/* ----- Browser surfaces in the palette ----- */
+::selection {
+  background: color-mix(in oklab, var(--c-inc) 28%, transparent);
+  color: var(--ink);
+}
+html {
+  accent-color: var(--ink);
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* Icon rail (768-920): the lesson link shrinks to its icon. */
+@media (min-width: 768px) and (max-width: 920px) {
+  .nav-lesson {
+    justify-content: center;
+    padding: 10px 0;
+  }
+}

@@ -212,4 +212,56 @@ export const Icons = {
       <path d="m13.5 3.5-2.5 2.5 2.5 2.5" />
     </>,
   ),
+  // ----- Concept icons (one per idea of the lesson; see concepts.tsx) -----
+  // Incidente: a lightning bolt, something broke now.
+  incident: icon(<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H13L13 2Z" />),
+  // Caso parecido: two stacked records, one behind the other.
+  similar: icon(
+    <>
+      <rect x={8} y={3} width={13} height={13} rx={2} />
+      <path d="M16 20H5a2 2 0 0 1-2-2V7" />
+      <path d="M12 8h5M12 11h3" />
+    </>,
+  ),
+  // Etapa da IA: a gear, the machine doing one step.
+  aiStep: icon(
+    <>
+      <circle cx={12} cy={12} r={3} />
+      <path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1" />
+    </>,
+  ),
+  // Pessoa: who decides.
+  human: icon(
+    <>
+      <circle cx={12} cy={7.5} r={3.5} />
+      <path d="M5 21v-1.5A5.5 5.5 0 0 1 10.5 14h3a5.5 5.5 0 0 1 5.5 5.5V21" />
+    </>,
+  ),
+  // Nota: a gauge needle.
+  score: icon(
+    <>
+      <path d="M4 17a8 8 0 1 1 16 0" />
+      <path d="m12 17 4-5" />
+      <circle cx={12} cy={17} r={1.2} />
+    </>,
+  ),
+  // Portão: a diamond decision, yes or no.
+  gate: icon(
+    <>
+      <path d="M12 2.5 21.5 12 12 21.5 2.5 12 12 2.5Z" />
+      <path d="M9 12h6" />
+    </>,
+  ),
+  bookOpen: icon(
+    <>
+      <path d="M2 5.5A1.5 1.5 0 0 1 3.5 4H9a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H3.5A1.5 1.5 0 0 1 2 16V5.5Z" />
+      <path d="M22 5.5A1.5 1.5 0 0 0 20.5 4H15a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5h6a1.5 1.5 0 0 0 1.5-1.5V5.5Z" />
+    </>,
+  ),
+  xCircle: icon(
+    <>
+      <circle cx={12} cy={12} r={9} />
+      <path d="m9 9 6 6M15 9l-6 6" />
+    </>,
+  ),
 } satisfies Record<string, IconComponent>;
