@@ -544,38 +544,38 @@ export const CHAPTERS: Chapter[] = [
     part: "antes",
     short: "A nota da Change",
     title: "Antes de subir, a Change ganha uma nota",
-    why: "Quem reverte às três da manhã depende do que está escrito. E ninguém revisa mil Changes por dia à mão.",
+    why: "Ninguém revisa mil Changes por dia à mão.",
     app: { href: "/changes/CHG0031001", label: "Ver no app: CHG0031001" },
     steps: [
       {
         title: "Sete campos, cada um com um peso",
-        line: "Implementação e validação pesam mais: são eles que salvam alguém na hora de executar ou reverter.",
+        line: "Implementação e validação pesam mais.",
         caption:
           "Sete campos, cada um com um peso. Implementação e validação pesam mais.",
         ms: 1300,
       },
       {
         title: "Um juiz para cada campo, todos ao mesmo tempo",
-        line: "Um campo bom não esconde outro vazio, e o tempo total é o do campo mais lento.",
+        line: "Um campo bom não esconde outro vazio.",
         caption: "Uma IA juíza dá nota de 0 a 10 a cada campo, em paralelo.",
         ms: 1700,
       },
       {
         title: "As notas viram uma média ponderada",
-        line: "Cada nota entra multiplicada pelo peso do campo. A soma dividida por 13,5 é a nota da Change.",
+        line: "Nota vezes peso, somadas, divididas por 13,5.",
         caption:
           "Campos mais importantes pesam mais. A média ponderada junta tudo numa nota só.",
         ms: 1700,
       },
       {
         title: "Campo que não mudou não volta ao juiz",
-        line: "Quem edita um campo e reavalia paga uma chamada ao modelo, não sete.",
+        line: "Editou um campo? Só ele volta ao modelo.",
         caption: "Trava de conteúdo: só o campo que mudou volta ao modelo.",
         ms: 1400,
       },
       {
         title: "Com 8,0 ou mais, abre a próxima análise",
-        line: "Abaixo disso o problema ainda é campo vazio. Primeiro preenche, depois discute coerência.",
+        line: "Abaixo disso, falta preencher campo.",
         caption: "Com 8,0 ou mais a porta abre e a IA confere se os campos combinam.",
         ms: 1500,
       },
@@ -587,30 +587,30 @@ export const CHAPTERS: Chapter[] = [
     part: "antes",
     short: "Completo não é coerente",
     title: "Nota alta não quer dizer que os campos combinam",
-    why: "Uma Change pode ir bem campo a campo e mesmo assim não ter volta segura.",
+    why: "Cada campo bom, e ainda assim sem volta segura.",
     app: { href: "/changes/CHG0031002", label: "Ver no app: CHG0031002" },
     steps: [
       {
         title: "A implementação mexe no banco de dados",
-        line: "A CHG0031002 cria colunas e migra 1,9 milhão de boletos. Cada campo, sozinho, está bem escrito.",
+        line: "A CHG0031002 cria colunas e migra 1,9 milhão de boletos.",
         caption: "A implementação muda a tabela e migra 1,9 milhão de boletos.",
         ms: 1500,
       },
       {
         title: "O plano de retorno só volta a imagem",
-        line: "Voltar o contêiner não apaga as colunas nem desfaz a migração dos dados.",
+        line: "Voltar o contêiner não desfaz a migração.",
         caption: "O retorno só volta a imagem do contêiner. O banco continua alterado.",
         ms: 1400,
       },
       {
         title: "A IA lê os campos juntos e confere as tarefas",
-        line: "A análise de coerência compara o plano de retorno com cada tarefa cadastrada na Change.",
+        line: "Compara o plano de retorno com cada tarefa.",
         caption: "A IA compara o plano de retorno com as tarefas cadastradas.",
         ms: 1600,
       },
       {
         title: "Coerência baixa, com o porquê",
-        line: "O autor recebe a nota, os problemas e o que ajustar antes de subir.",
+        line: "O autor vê o que ajustar antes de subir.",
         caption:
           "Completo não é coerente: a nota de coerência cai e o autor sabe o que ajustar.",
         ms: 1400,
@@ -623,26 +623,26 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     short: "Ler o incidente",
     title: "Quando quebra, a resposta quase sempre já está no histórico",
-    why: "O difícil é achar o caso certo. E a busca só é boa se a pergunta for boa.",
+    why: "O difícil é achar o caso certo.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
         title: "Carregar",
-        line: "O incidente chega com título, descrição, categoria, subcategoria, empresa e tags.",
+        line: "Título, descrição, categoria e tags.",
         caption:
           "Primeiro a IA lê o chamado: título, descrição, categoria, empresa e tags.",
         ms: 1300,
       },
       {
         title: "Resumir",
-        line: "O texto de quem abriu o chamado é bagunçado. A IA escreve um resumo curto, e é ele que vai para a busca.",
+        line: "Um resumo curto busca melhor que o texto original.",
         caption:
           "O texto do usuário é bagunçado. A IA resume, e é o resumo que vai para a busca.",
         ms: 1500,
       },
       {
         title: "Transformar em números",
-        line: "Resumo, categoria, subcategoria e empresa viram um vetor. Textos com sentido parecido caem perto.",
+        line: "Textos de sentido parecido viram números parecidos.",
         caption:
           "O resumo vira 3072 números. Textos com sentido parecido viram números parecidos.",
         ms: 1600,
@@ -655,25 +655,25 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     short: "Buscar e conferir",
     title: "Parecido não basta: buscar e depois conferir",
-    why: "O vetor responde se parece. A conferência responde se serve.",
+    why: "Parecer não é o mesmo que servir.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
         title: "Tags dizem onde procurar",
-        line: "Antes de comparar, a busca fica só com os registros que dividem uma tag com o incidente.",
+        line: "Só entra quem divide uma tag com o incidente.",
         caption: "Camada 1: as tags dizem em que parte do histórico procurar.",
         ms: 1500,
       },
       {
         title: "O vetor mede a semelhança",
-        line: "Só entra quem passa de 0,80. No máximo 5 incidentes e 10 problemas.",
+        line: "Só entra quem passa de 0,80.",
         caption:
           "Camada 2: quanto mais perto de 1, mais parecido. Abaixo de 0,80 fica de fora.",
         ms: 1700,
       },
       {
         title: "Uma IA confere cada candidato",
-        line: "Ela lê cada caso e descarta o que só parece igual. Se falhar, volta a lista do vetor.",
+        line: "Ela descarta o que só parece igual.",
         caption: "Camada 3: parecer não basta. A IA descarta o que não ajuda neste caso.",
         ms: 1600,
       },
@@ -685,25 +685,25 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     short: "Decidir e responder",
     title: "Decidir antes de escrever, e mostrar as fontes",
-    why: "Sugestão sem fonte é palpite. Com fonte, é evidência que a pessoa confere.",
+    why: "Sugestão sem fonte é palpite.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
         title: "Classificar",
-        line: "É falha técnica de verdade? Se for só um pedido, não há sugestão.",
+        line: "Se não é falha técnica, não há sugestão.",
         caption:
           "É falha técnica? Se não for, a IA não sugere nada. Saber não responder é resposta.",
         ms: 1500,
       },
       {
         title: "Sugerir, citando as fontes",
-        line: "A sugestão só pode citar casos que vieram da busca. Citação de fora é removida.",
+        line: "Só cita casos da busca. O resto sai.",
         caption: "A sugestão só cita casos que passaram pela busca. Citação de fora sai.",
         ms: 1700,
       },
       {
         title: "Publicar no incidente",
-        line: "A sugestão entra nas notas de trabalho, onde a pessoa analista já está olhando.",
+        line: "Vira nota no incidente. A pessoa decide.",
         caption:
           "A sugestão volta para o incidente como nota. Quem decide é a pessoa analista.",
         ms: 1400,
@@ -716,36 +716,36 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     short: "Recorrências",
     title: "Muitos incidentes, poucos padrões",
-    why: "Duzentos incidentes numa hora podem ser cinco investigações. Agrupar mostra quais.",
+    why: "Muitos incidentes, poucas causas.",
     app: { href: "/recorrencias", label: "Ver no app: Recorrências" },
     steps: [
       {
         title: "Cada incidente é um ponto",
-        line: "Os mesmos números da busca servem para comparar todos os incidentes entre si.",
+        line: "Os mesmos números da busca.",
         caption: "Cada incidente vira um ponto, usando os mesmos números da busca.",
         ms: 1200,
       },
       {
         title: "Os parecidos ficam perto",
-        line: "Reduzimos os números para duas dimensões, só para desenhar o mapa.",
+        line: "Duas dimensões, só para desenhar.",
         caption: "Incidentes com sentido parecido ficam perto uns dos outros.",
         ms: 1500,
       },
       {
         title: "O HDBSCAN acha os grupos e deixa o resto de fora",
-        line: "Não precisa saber quantos grupos existem, e não força ninguém num grupo.",
+        line: "Caso isolado fica de fora.",
         caption: "O HDBSCAN acha os grupos densos. Caso isolado fica de fora, em cinza.",
         ms: 1500,
       },
       {
         title: "A IA dá nome a cada grupo",
-        line: "Ela lê alguns incidentes de cada grupo e escreve um rótulo curto.",
+        line: "Um rótulo curto por grupo.",
         caption: "A IA lê cada grupo e dá um nome curto para o padrão.",
         ms: 1300,
       },
       {
         title: "Um grupo vira um Problema",
-        line: "O Problema investiga a causa de incidentes repetidos. Caso isolado não vira Problema.",
+        line: "O Problema investiga a causa da repetição.",
         caption:
           "Um grupo vira um Problema: o registro que investiga a causa da repetição.",
         ms: 1300,
@@ -758,24 +758,24 @@ export const CHAPTERS: Chapter[] = [
     part: "ciclo",
     short: "O ciclo fecha",
     title: "O Problema fecha o ciclo",
-    why: "A correção do Problema é uma nova mudança em produção. E o que foi resolvido ajuda o próximo incidente.",
+    why: "A correção vira Change, e a resposta vira fonte.",
     app: { href: "/problemas/PRB0004105", label: "Ver no app: PRB0004105" },
     steps: [
       {
         title: "O Problema guarda a causa",
-        line: "O PRB0004105 junta 17 incidentes de login e registra a causa raiz e a correção definitiva.",
+        line: "O PRB0004105 junta 17 incidentes de login.",
         caption: "O Problema junta os incidentes repetidos e registra a causa raiz.",
         ms: 1400,
       },
       {
         title: "A correção definitiva vira uma Change",
-        line: "Para corrigir em produção, alguém abre uma Change. E ela passa pelo mesmo juiz do capítulo 1.",
+        line: "Ela passa pelo mesmo juiz do capítulo 1.",
         caption: "A correção vira uma nova Change, que passa pelo mesmo juiz do começo.",
         ms: 1600,
       },
       {
         title: "O que foi resolvido vira fonte",
-        line: "Problemas também estão na busca. O próximo incidente parecido já encontra este.",
+        line: "O próximo incidente parecido já acha este.",
         caption:
           "O Problema entra na busca: o próximo incidente parecido já acha a resposta.",
         ms: 1500,

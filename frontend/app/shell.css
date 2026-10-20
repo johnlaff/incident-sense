@@ -1,125 +1,159 @@
 /* ===================================================================== *
-   Pulseira: the shell and the shared atoms in the new visual world.
-   Loaded after globals.css and concepts.css; it restyles the frame (deep ink
-   top bar and rail), buttons, badges, page heads, tables and tabs. Screens
-   keep their own files for their content.
+   Claro: the shell and the shared atoms.
+   Loaded after globals.css and concepts.css. The frame (top bar, rail, phone
+   tab bar) sits on the near-white ground; on desktop the screen lives on one
+   white sheet with a hairline edge. Buttons, inputs, badges, page heads,
+   tables and tabs are restyled here; screens keep their own files.
  * ===================================================================== */
 
-/* ----- Top bar: deep ink, the frame of the workspace ----- */
+/* ----- Top bar: part of the light frame ----- */
 .topbar {
-  background: var(--shell);
-  border-bottom: 1px solid var(--shell-border);
-  color: var(--shell-ink);
+  background: color-mix(in oklab, var(--surface) 86%, transparent);
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  -webkit-backdrop-filter: saturate(1.6) blur(12px);
+  backdrop-filter: saturate(1.6) blur(12px);
+}
+.brand {
+  gap: 10px;
 }
 .brand .mark {
-  background: var(--shell-ink);
-  color: var(--shell);
+  width: 26px;
+  height: 26px;
+  background: var(--ink);
+  color: var(--surface);
   box-shadow: none;
-  border-radius: 8px;
+  border-radius: 7px;
 }
 .brand-name,
 .brand-prod {
-  color: var(--shell-ink);
-  font-weight: 700;
-  font-size: var(--fs-md);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  letter-spacing: -0.01em;
 }
 .brand-prod {
-  color: var(--shell-muted);
+  color: var(--muted);
+  font-weight: 500;
 }
 .brand-accent,
 [data-theme="dark"] .brand-accent {
-  color: var(--shell-ink);
+  color: var(--muted);
 }
 .brand-sep {
-  background: var(--shell-border);
+  width: 1px;
+  height: 16px;
+  background: var(--border-strong);
+  transform: rotate(18deg);
 }
 .topbar .icon-btn {
-  color: var(--shell-muted);
+  color: var(--muted);
 }
 .topbar .icon-btn:hover,
 .topbar .icon-btn.on {
-  background: var(--shell-2);
-  color: var(--shell-ink);
+  background: var(--surface-2);
+  color: var(--ink);
 }
 .topbar .search .input {
-  background: var(--shell-2);
-  border-color: var(--shell-border);
-  color: var(--shell-ink);
+  height: 34px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-xs);
 }
 .topbar .search .input::placeholder {
-  color: var(--shell-muted);
+  color: var(--muted);
 }
 .topbar .search svg {
-  color: var(--shell-muted);
+  color: var(--muted);
 }
 .topbar button.search:hover .input {
-  border-color: var(--shell-muted);
+  border-color: var(--border-strong);
+}
+.topbar button.search:focus-visible {
+  outline: none;
 }
 .topbar button.search:focus-visible .input {
   border-color: var(--focus);
-  box-shadow: 0 0 0 3px oklch(0.75 0.13 255 / 0.35);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus) 22%, transparent);
 }
-.topbar .kbd {
-  background: var(--shell);
-  border-color: var(--shell-border);
-  color: var(--shell-muted);
+.kbd {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 500;
+  border-color: var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
 }
 .topbar .avatar {
-  background: var(--shell-2);
-  color: var(--shell-ink);
-  font-weight: 700;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 11px;
 }
 .topbar .notif-dot,
 [data-theme="dark"] .topbar .notif-dot {
-  border-color: var(--shell);
+  border-color: var(--surface);
 }
-.topbar :where(a, button):focus-visible {
-  outline-color: oklch(0.8 0.1 255);
+/* Modo aula switch: when on it reads as a lit lamp, in ink. */
+.topbar .aula-toggle {
+  border-color: var(--border);
 }
-/* Modo aula switch: when on, it reads as a lit projector lamp. */
 .topbar .aula-toggle.on {
-  background: var(--shell-ink);
-  color: var(--shell);
+  background: var(--ink);
+  color: var(--surface);
   border-color: transparent;
 }
 
-/* ----- Rail: deep ink with a concept chip per section ----- */
+/* ----- Rail: quiet list on the frame, concept glyph per section ----- */
 .sidenav {
-  background: var(--shell);
-  border-right: 1px solid var(--shell-border);
-  padding: 16px 12px;
-  gap: 4px;
+  background: transparent;
+  border-right: 0;
+  padding: 12px 10px 14px;
+  gap: 2px;
 }
 .nav-label {
-  color: var(--shell-muted);
+  color: var(--muted);
   font-size: var(--fs-xs);
-  font-weight: 700;
+  font-weight: 500;
+  padding: 14px 10px 6px;
 }
 .nav-item {
-  color: var(--shell-muted);
-  font-weight: 700;
-  font-size: var(--fs-md);
-  padding: 8px 10px 8px 8px;
-  border-radius: 10px;
-  gap: 12px;
+  position: relative;
+  color: var(--ink-body);
+  font-weight: 500;
+  font-size: var(--fs-sm);
+  min-height: 36px;
+  padding: 6px 10px 6px 8px;
+  border-radius: var(--radius-sm);
+  gap: 10px;
+  transition:
+    background var(--dur-press) var(--ease-out),
+    color var(--dur-press) var(--ease-out);
 }
 .nav-item:hover {
   background: var(--shell-2);
-  color: var(--shell-ink);
+  color: var(--ink);
 }
 .nav-item.active {
-  background: var(--shell-ink);
-  color: var(--shell);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow:
+    var(--shadow-xs),
+    0 0 0 1px var(--border);
 }
 .nav-item .nav-ico {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 22px;
+  height: 22px;
   flex: none;
-  border-radius: 8px;
-  background: var(--k, var(--shell-2));
-  color: var(--k-on, var(--shell-ink));
+  border-radius: 6px;
+  background: transparent;
+  color: var(--k, var(--muted));
 }
 .nav-item .nav-ico svg {
   width: 17px;
@@ -129,255 +163,472 @@
 .nav-item .nav-count,
 .nav-item.active .nav-count,
 [data-theme="dark"] .nav-item.active .nav-count {
-  background: var(--shell-2);
-  color: var(--shell-ink);
-  font-weight: 700;
-}
-.nav-item.active .nav-count {
-  background: var(--primary-tint);
-  color: var(--ink);
-}
-[data-theme="dark"] .nav-item.active .nav-count {
-  background: var(--shell-border);
-  color: var(--shell-ink);
+  margin-left: auto;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  padding: 0;
 }
 .nav-lesson {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--shell-2);
-  border: 1px solid var(--shell-border);
-  color: var(--shell-ink);
+  margin: 0 0 4px;
+  padding: 10px 10px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  color: var(--ink);
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 600;
+  font-size: var(--fs-sm);
   line-height: 1.25;
+  transition:
+    border-color var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out);
 }
 .nav-lesson small {
   display: block;
   font-weight: 400;
-  color: var(--shell-muted);
+  color: var(--muted);
   font-size: var(--fs-xs);
 }
 .nav-lesson svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex: none;
+  color: var(--c-ai);
 }
-.nav-lesson:hover,
+.nav-lesson:hover {
+  border-color: var(--border-strong);
+}
 .nav-lesson.active {
-  background: var(--shell-ink);
-  color: var(--shell);
-}
-.nav-lesson:hover small,
-.nav-lesson.active small {
-  color: var(--shell);
-  opacity: 0.75;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
 }
 .nav-foot {
-  background: var(--shell-2);
-  color: var(--shell-muted);
+  background: transparent;
+  color: var(--muted);
   font-size: var(--fs-xs);
   line-height: 1.45;
-}
-.sidenav :where(a, button):focus-visible {
-  outline-color: oklch(0.8 0.1 255);
+  padding: 10px;
 }
 
-/* ----- Phone tab bar: the same deep ink ----- */
+/* ----- Phone tab bar: white, hairline, glyph lights up in its color ----- */
 .tabbar {
-  background: var(--shell);
-  border-top: 1px solid var(--shell-border);
+  background: color-mix(in oklab, var(--surface) 90%, transparent);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  backdrop-filter: saturate(1.6) blur(14px);
+  border-top: 1px solid var(--border);
   box-shadow: none;
 }
 .tab-item {
-  color: var(--shell-muted);
-  font-size: 12px;
-  font-weight: 700;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 .tab-item.active {
-  color: var(--shell-ink);
+  color: var(--ink);
+  font-weight: 600;
 }
 .tab-item .tab-ico {
-  width: 44px;
-  height: 30px;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+}
+.tab-item .tab-ico svg {
+  width: 20px;
+  height: 20px;
 }
 .tab-item.active .tab-ico {
-  background: var(--k, var(--shell-ink));
-  color: var(--k-on, var(--shell));
+  background: var(--k-tint, var(--surface-2));
+  color: var(--k, var(--ink));
 }
 .tab-item:active .tab-ico {
-  background: var(--shell-2);
+  background: var(--surface-2);
 }
 
 /* ----- Buttons: ink for the person, violet for the machine ----- */
 .btn {
-  height: 40px;
-  padding: 0 16px;
-  font-weight: 700;
-  border-radius: 10px;
-  font-size: var(--fs-md);
+  height: 38px;
+  padding: 0 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  letter-spacing: -0.005em;
+  transition:
+    background var(--dur-press) var(--ease-out),
+    border-color var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.99);
 }
 .btn-sm {
-  height: 34px;
-  padding: 0 12px;
+  height: 32px;
+  padding: 0 11px;
   font-size: var(--fs-sm);
-  border-radius: 8px;
+  border-radius: 7px;
+}
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: var(--shadow-sm);
 }
 .btn-primary:hover {
-  box-shadow: 0 4px 14px oklch(0.22 0.035 265 / 0.25);
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-sm);
 }
 .btn-ai {
   background: var(--c-ai);
   color: var(--c-ai-on);
+  box-shadow:
+    0 1px 2px oklch(0.4 0.2 290 / 0.25),
+    inset 0 1px 0 oklch(1 0 0 / 0.14);
 }
 .btn-ai:hover {
-  background: color-mix(in oklab, var(--c-ai) 86%, black);
-  box-shadow: 0 4px 14px oklch(0.5 0.19 295 / 0.3);
+  background: color-mix(in oklab, var(--c-ai) 88%, black);
+  box-shadow: 0 4px 12px -2px oklch(0.45 0.2 290 / 0.35);
 }
 [data-theme="dark"] .btn-ai:hover {
-  background: color-mix(in oklab, var(--c-ai) 86%, white);
+  background: color-mix(in oklab, var(--c-ai) 88%, white);
 }
 .btn-outline {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  box-shadow: var(--shadow-xs);
+}
+.btn-outline:hover {
+  background: var(--surface-2);
   border-color: var(--border-strong);
+}
+.btn-ghost {
+  color: var(--ink-body);
+}
+.btn-ghost:hover {
+  background: var(--surface-2);
   color: var(--ink);
 }
 
 /* ----- Inputs ----- */
 .input,
 .select {
-  height: 40px;
-  border-radius: 10px;
-  font-size: var(--fs-md);
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border-color: var(--border);
+  background-color: var(--surface);
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-xs);
+}
+.input:hover,
+.select:hover {
+  border-color: var(--border-strong);
 }
 .input:focus-visible,
 .select:focus-visible {
   border-color: var(--focus);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus) 25%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus) 22%, transparent);
 }
 .field-search svg {
-  top: 12px;
+  top: 11px;
 }
 .search .kbd {
-  top: 10px;
+  top: 8px;
 }
 .segmented {
-  padding: 4px;
-  border-radius: 12px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 .segmented button {
-  padding: 6px 14px;
-  font-weight: 700;
-  border-radius: 8px;
+  white-space: nowrap;
+  padding: 5px 12px;
+  font-weight: 500;
+  font-size: var(--fs-sm);
+  border-radius: 7px;
+  color: var(--muted);
 }
-.segmented button.on {
-  background: var(--ink);
-  color: var(--surface);
-  box-shadow: none;
+.segmented button:hover {
+  color: var(--ink);
 }
+.segmented button.on,
 [data-theme="dark"] .segmented button.on {
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 1px var(--border);
 }
 .select.has-value {
-  border-color: var(--ink);
-  background-color: var(--primary-tint);
+  border-color: var(--border-strong);
+  background-color: var(--surface-2);
   color: var(--ink);
 }
 
-/* ----- Badges: small pills, never competing with the bands ----- */
+/* ----- Badges: subtle pills with a dot or icon ----- */
 .badge {
-  height: 24px;
+  height: 22px;
   font-size: var(--fs-xs);
-  font-weight: 700;
-  padding: 0 10px;
+  font-weight: 500;
+  padding: 0 8px;
+  gap: 5px;
 }
 
-/* ----- Page head: one big title, one short line ----- */
+/* ----- Page head: one title, one short line ----- */
 .page-head {
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 6px 14px;
-  margin-bottom: 14px;
+  gap: 4px 12px;
+  margin-bottom: 8px;
 }
 .page-head h1 {
   font-size: var(--fs-2xl);
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  line-height: 1.15;
 }
 .page-head .count {
-  font-size: var(--fs-md);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 .page-lede {
-  font-size: var(--fs-lg);
-  line-height: 1.5;
-  max-width: 60ch;
-  margin: -4px 0 20px;
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 62ch;
+  margin: 0 0 24px;
 }
 
 /* ----- Cards and tables ----- */
 .card {
   border-radius: var(--radius-lg);
-  border-color: var(--border);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
 }
 table.list {
-  font-size: var(--fs-md);
+  font-size: var(--fs-sm);
 }
 .list thead th {
   font-size: var(--fs-xs);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--muted);
-  padding: 12px 16px;
+  padding: 10px 16px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
 }
-.list tbody td {
-  padding: 12px 16px;
+@media (min-width: 768px) {
+  .list tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .list tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+.list tbody tr {
+  transition: background var(--dur-press) var(--ease-out);
+}
+.list tbody tr:hover {
+  background: var(--surface-2);
 }
 .list .num {
-  color: var(--c-inc-ink);
+  color: var(--ink);
   font-size: var(--fs-sm);
-  font-weight: 700;
+  font-weight: 500;
 }
 .list .desc {
-  font-weight: 700;
+  font-weight: 500;
+  color: var(--ink);
 }
-.list .svc {
+.list .svc,
+.list .desc-svc {
+  font-family: var(--font);
   font-size: var(--fs-sm);
+  color: var(--muted);
+}
+/* In lists, state and priority are a colored dot or icon plus a word: no
+   pill, so a column of them reads as a calm column, not a wall of chips. */
+.list .badge {
+  background: transparent;
+  padding: 0;
+  height: auto;
+  font-size: var(--fs-sm);
+  font-weight: 500;
 }
 .list tbody tr:has(.row-link:focus-visible) {
-  box-shadow: inset 0 0 0 3px var(--focus);
+  box-shadow: inset 0 0 0 2px var(--focus);
 }
 
-/* ----- Tabs on records ----- */
+/* ----- Records (incident, problem): flat on the white sheet, no card
+   inside a card ----- */
+.record-card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.record-head {
+  padding: 4px 0 20px;
+  gap: 10px;
+  border-bottom: 0;
+}
+.record-head h1 {
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.028em;
+}
+.record-head .meta {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.record-num {
+  font-size: inherit;
+}
+.record-card .tabs {
+  padding: 0;
+  gap: 4px;
+}
+.record-card .tab {
+  padding: 10px 10px;
+}
+.record-card .section {
+  padding: 24px 0;
+}
+@media (min-width: 1101px) {
+  .record-card .rec-body > .section:not(.rec-aside) {
+    padding-right: 32px;
+  }
+  .record-card .rec-body > .section.rec-aside {
+    padding-left: 28px;
+  }
+}
+
+/* ----- Tabs on records: underline in ink ----- */
 .tab {
-  font-size: var(--fs-md);
-  font-weight: 700;
-  border-bottom-width: 3px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom-width: 2px;
+}
+.tab:hover {
+  color: var(--ink);
 }
 .tab.on {
   color: var(--ink);
+  font-weight: 600;
   border-color: var(--ink);
 }
 .crumbs {
   font-size: var(--fs-sm);
+  color: var(--muted);
 }
 .crumbs a {
+  color: var(--muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+.crumbs a:hover {
   color: var(--ink);
-  font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: var(--border-strong);
 }
 
+/* ----- Citations inside an AI answer: a small record tag that opens it ----- */
+.cite {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  min-width: max-content;
+  height: 20px;
+  margin: 0 1px;
+  padding: 0 6px;
+  vertical-align: 1px;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--c-inc-ink);
+  background: var(--surface);
+  border: 1px solid var(--c-inc-line);
+  border-radius: 5px;
+}
+.cite:hover {
+  border-color: var(--c-inc);
+  background: var(--c-inc-tint);
+}
+[data-theme="dark"] .cite {
+  background: var(--surface);
+}
+.cite.cite-prb {
+  color: var(--c-prb-ink);
+  border-color: var(--c-prb-line);
+}
+.cite.cite-prb:hover {
+  border-color: var(--c-prb);
+  background: var(--c-prb-tint);
+}
+
 /* ----- Browser surfaces in the palette ----- */
 ::selection {
-  background: color-mix(in oklab, var(--c-inc) 28%, transparent);
+  background: color-mix(in oklab, var(--c-ai) 22%, transparent);
   color: var(--ink);
 }
 html {
   accent-color: var(--ink);
+  caret-color: var(--c-ai);
   scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+a {
+  text-underline-offset: 3px;
+}
+
+/* ----- Phone: the whole page is the white sheet ----- */
+@media (max-width: 767px) {
+  body {
+    background: var(--surface);
+  }
+}
+
+/* ----- Desktop: frame + one white sheet ----- */
+@media (min-width: 768px) {
+  .app {
+    grid-template-rows: 56px minmax(0, 1fr);
+  }
+  .topbar {
+    background: var(--bg);
+    border-bottom: 0;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    padding: 0 16px 0 18px;
+  }
+  .main {
+    margin: 0 8px 8px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-xs);
+    padding: 32px 32px 48px;
+  }
+}
+@media (min-width: 1280px) {
+  .main {
+    padding: 40px 48px 64px;
+  }
 }
 
 /* Icon rail (768-920): the lesson link shrinks to its icon. */
@@ -385,5 +636,8 @@ html {
   .nav-lesson {
     justify-content: center;
     padding: 10px 0;
+  }
+  .nav-item .nav-ico {
+    width: 24px;
   }
 }

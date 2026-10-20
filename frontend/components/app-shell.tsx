@@ -34,7 +34,7 @@ import type { IncidentSummary } from "@/lib/types";
 type Theme = "light" | "dark";
 
 // Mobile browser chrome (status bar, URL bar) follows the topbar surface.
-const THEME_COLOR: Record<Theme, string> = { light: "#131a2b", dark: "#04070f" };
+const THEME_COLOR: Record<Theme, string> = { light: "#ffffff", dark: "#0e0f11" };
 
 function syncThemeColor(theme: Theme) {
   document

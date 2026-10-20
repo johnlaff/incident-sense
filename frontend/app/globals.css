@@ -1,115 +1,114 @@
 @import "tailwindcss";
 
-/* incident-sense — Design System (light, ServiceNow-faithful ITSM).
-   Ported from the locked Claude Design prototype: light + dark themes, full app
-   chrome, ⌘K palette, peek drawer, animated recurrences map and how-it-works.
-   Fonts are provided by next/font (Inter + JetBrains Mono) via CSS variables. */
-
-/* Incident Sense: "Pulseira de triagem" (see DESIGN.md).
-   Light content on a deep ink shell. Every concept of the lesson has one
-   color, one icon and one shape (concepts.css), so a student can tell an
-   Incident from a Problem, a Change, an AI step or a human decision at a
-   glance. Fonts come from next/font (Atkinson Hyperlegible Next + Mono). */
+/* Incident Sense: "Claro" (see DESIGN.md).
+   A calm, light workspace: near-white frame, white sheets, 1px hairlines,
+   ink text. Color is information, never decoration: one accent (violet, only
+   for the machine), ink for the person, and quiet concept colors used as
+   icons, dots and faint tints (concepts.css). Fonts come from next/font
+   (Inter + JetBrains Mono). */
 
 :root {
-  /* Surfaces: cool paper under white work areas */
-  --bg: oklch(0.975 0.006 265);
+  color-scheme: light;
+  /* Surfaces: a near-white frame around white sheets */
+  --bg: oklch(0.982 0.002 265);
   --surface: oklch(1 0 0);
-  --surface-2: oklch(0.962 0.008 265);
-  --border: oklch(0.905 0.009 265);
-  --border-strong: oklch(0.8 0.014 265);
+  --surface-2: oklch(0.968 0.003 265);
+  --border: oklch(0.92 0.004 265);
+  --border-strong: oklch(0.855 0.006 265);
 
-  /* Ink: high contrast for projection */
-  --ink: oklch(0.22 0.035 265);
-  --ink-body: oklch(0.3 0.025 265);
-  --muted: oklch(0.47 0.02 265);
+  /* Ink */
+  --ink: oklch(0.2 0.012 265);
+  --ink-body: oklch(0.33 0.012 265);
+  --muted: oklch(0.49 0.012 265);
 
-  /* Shell (top bar + rail): deep ink in both themes */
-  --shell: oklch(0.22 0.035 265);
-  --shell-2: oklch(0.28 0.035 265);
-  --shell-border: oklch(0.33 0.03 265);
-  --shell-ink: oklch(0.97 0.005 265);
-  --shell-muted: oklch(0.76 0.02 265);
+  /* Shell (top bar + rail): the light frame. Kept as tokens so screens that
+     draw chrome (como-funciona, recorrencias) can follow it. */
+  --shell: var(--bg);
+  --shell-2: oklch(0.948 0.004 265);
+  --shell-border: var(--border);
+  --shell-ink: var(--ink);
+  --shell-muted: var(--muted);
 
   /* Primary = the person's action (Resolver, Publicar, Avaliar): solid ink.
      The machine never uses this color; AI owns --c-ai. */
-  --primary: oklch(0.22 0.035 265);
-  --primary-hover: oklch(0.32 0.04 265);
-  --primary-tint: oklch(0.945 0.012 265);
-  --primary-ink: oklch(0.22 0.035 265);
+  --primary: oklch(0.2 0.012 265);
+  --primary-hover: oklch(0.32 0.012 265);
+  --primary-tint: oklch(0.955 0.004 265);
+  --primary-ink: oklch(0.2 0.012 265);
   --on-primary: oklch(1 0 0);
-  --focus: oklch(0.5 0.15 255);
+  --focus: oklch(0.56 0.17 250);
 
   /* ----- Concept colors (one per idea of the lesson) -----
-     fill: solid band / icon chip; on: text drawn on the fill;
-     tint: soft background; ink: text on tint or white; line: outlines. */
-  --c-inc: oklch(0.5 0.15 255); /* Incidente: azul */
+     fill: icon, dot, small marks; on: text drawn on the fill;
+     tint: faint background; ink: colored text on white or tint;
+     line: hairline borders. Never a large solid block. */
+  --c-inc: oklch(0.56 0.17 255); /* Incidente: azul */
   --c-inc-on: oklch(1 0 0);
-  --c-inc-tint: oklch(0.955 0.03 255);
-  --c-inc-ink: oklch(0.42 0.14 255);
-  --c-inc-line: oklch(0.8 0.08 255);
+  --c-inc-tint: oklch(0.968 0.016 255);
+  --c-inc-ink: oklch(0.45 0.16 258);
+  --c-inc-line: oklch(0.87 0.045 255);
 
-  --c-prb: oklch(0.82 0.14 82); /* Problema: ouro */
-  --c-prb-on: oklch(0.22 0.035 265);
-  --c-prb-tint: oklch(0.96 0.045 85);
-  --c-prb-ink: oklch(0.45 0.1 80);
-  --c-prb-line: oklch(0.78 0.12 82);
+  --c-prb: oklch(0.74 0.15 68); /* Problema: âmbar */
+  --c-prb-on: oklch(0.2 0.012 265);
+  --c-prb-tint: oklch(0.973 0.025 80);
+  --c-prb-ink: oklch(0.49 0.12 58);
+  --c-prb-line: oklch(0.87 0.07 78);
 
-  --c-chg: oklch(0.5 0.1 185); /* Mudança: verde-azulado */
+  --c-chg: oklch(0.6 0.11 178); /* Mudança: verde-azulado */
   --c-chg-on: oklch(1 0 0);
-  --c-chg-tint: oklch(0.955 0.03 185);
-  --c-chg-ink: oklch(0.42 0.09 185);
-  --c-chg-line: oklch(0.78 0.07 185);
+  --c-chg-tint: oklch(0.968 0.018 180);
+  --c-chg-ink: oklch(0.45 0.09 182);
+  --c-chg-line: oklch(0.86 0.05 180);
 
-  --c-ai: oklch(0.5 0.19 295); /* IA: violeta (etapas e respostas) */
+  --c-ai: oklch(0.54 0.21 290); /* IA: violeta, o único acento */
   --c-ai-on: oklch(1 0 0);
-  --c-ai-tint: oklch(0.955 0.03 295);
-  --c-ai-ink: oklch(0.44 0.17 295);
-  --c-ai-line: oklch(0.8 0.09 295);
+  --c-ai-tint: oklch(0.968 0.018 290);
+  --c-ai-ink: oklch(0.47 0.2 290);
+  --c-ai-line: oklch(0.87 0.06 290);
 
-  --c-human: oklch(0.22 0.035 265); /* Pessoa: tinta (quem decide) */
+  --c-human: oklch(0.2 0.012 265); /* Pessoa: tinta (quem decide) */
   --c-human-on: oklch(1 0 0);
-  --c-human-tint: oklch(0.945 0.012 265);
-  --c-human-ink: oklch(0.22 0.035 265);
-  --c-human-line: oklch(0.7 0.02 265);
+  --c-human-tint: oklch(0.96 0.003 265);
+  --c-human-ink: oklch(0.2 0.012 265);
+  --c-human-line: oklch(0.8 0.006 265);
 
   /* Nota (score) bands and the gate verdicts */
-  --score-high: oklch(0.5 0.13 150);
-  --score-high-tint: oklch(0.955 0.04 150);
-  --score-mid: oklch(0.5 0.11 70);
-  --score-mid-tint: oklch(0.96 0.05 85);
+  --score-high: oklch(0.5 0.13 152);
+  --score-high-tint: oklch(0.966 0.03 152);
+  --score-mid: oklch(0.52 0.12 62);
+  --score-mid-tint: oklch(0.972 0.03 80);
   --score-low: oklch(0.53 0.2 27);
-  --score-low-tint: oklch(0.955 0.03 27);
+  --score-low-tint: oklch(0.966 0.02 27);
   --gate-pass: var(--score-high);
   --gate-fail: var(--score-low);
 
   /* Priority */
   --p1: oklch(0.53 0.2 27);
-  --p1-tint: oklch(0.955 0.03 27);
-  --p2: oklch(0.52 0.15 48);
-  --p2-tint: oklch(0.955 0.04 65);
-  --p3: oklch(0.5 0.09 90);
-  --p3-tint: oklch(0.96 0.05 95);
-  --p4: oklch(0.47 0.02 265);
-  --p4-tint: oklch(0.955 0.006 265);
+  --p1-tint: oklch(0.966 0.02 27);
+  --p2: oklch(0.53 0.15 48);
+  --p2-tint: oklch(0.97 0.028 60);
+  --p3: oklch(0.52 0.1 85);
+  --p3-tint: oklch(0.972 0.03 92);
+  --p4: oklch(0.49 0.012 265);
+  --p4-tint: oklch(0.96 0.003 265);
 
   /* State */
-  --st-open: oklch(0.47 0.13 240);
-  --st-open-tint: oklch(0.96 0.03 240);
-  --st-progress: oklch(0.5 0.12 55);
-  --st-progress-tint: oklch(0.96 0.04 65);
-  --st-hold: oklch(0.47 0.02 265);
-  --st-hold-tint: oklch(0.955 0.006 265);
-  --st-resolved: oklch(0.48 0.12 150);
-  --st-resolved-tint: oklch(0.955 0.04 150);
-  --st-closed: oklch(0.45 0.01 265);
+  --st-open: oklch(0.5 0.15 250);
+  --st-open-tint: oklch(0.966 0.018 250);
+  --st-progress: oklch(0.53 0.13 55);
+  --st-progress-tint: oklch(0.97 0.028 65);
+  --st-hold: oklch(0.49 0.012 265);
+  --st-hold-tint: oklch(0.96 0.003 265);
+  --st-resolved: oklch(0.5 0.12 152);
+  --st-resolved-tint: oklch(0.966 0.028 152);
+  --st-closed: oklch(0.49 0.008 265);
 
-  --success: oklch(0.5 0.13 150);
+  --success: oklch(0.5 0.13 152);
   --danger: oklch(0.53 0.2 27);
 
-  --radius: 12px;
+  --radius: 10px;
   --radius-sm: 8px;
-  --radius-lg: 18px;
+  --radius-lg: 12px;
   /* ----- Motion tokens (motion/direcao.md, 4.1) -----
      Durations by consequence, curves by meaning. Use as
      `calc(var(--dur-explain) * var(--motion-scale))` for teaching visuals. */
@@ -191,19 +190,23 @@
   );
   /* Legacy alias kept so older rules (and changes.css) resolve to the token. */
   --ease: var(--ease-out);
-  --shadow-sm: 0 1px 2px oklch(0.22 0.035 265 / 0.08);
-  --shadow-md: 0 8px 24px oklch(0.22 0.05 265 / 0.12);
+  /* Depth only for things that float (menus, drawers, the AI button). */
+  --shadow-xs: 0 1px 2px oklch(0.2 0.012 265 / 0.05);
+  --shadow-sm:
+    0 1px 2px oklch(0.2 0.012 265 / 0.06), 0 1px 1px oklch(0.2 0.012 265 / 0.03);
+  --shadow-md:
+    0 12px 32px -8px oklch(0.2 0.012 265 / 0.16), 0 2px 6px oklch(0.2 0.012 265 / 0.06);
   --font: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --mono: var(--font-mono), ui-monospace, monospace;
 
-  /* Type scale (fixed rem, ~1.25): readable at arm's length */
+  /* Type scale (fixed rem): readable at arm's length and from the back row */
   --fs-xs: 0.8125rem; /* 13: metadata only */
   --fs-sm: 0.875rem; /* 14: labels */
   --fs-md: 1rem; /* 16: body */
   --fs-lg: 1.125rem; /* 18: lead, card titles */
-  --fs-xl: 1.375rem; /* 22: section heads */
-  --fs-2xl: 1.75rem; /* 28: page titles */
-  --fs-3xl: 2.25rem; /* 36: hero titles */
+  --fs-xl: 1.3125rem; /* 21: section heads */
+  --fs-2xl: 1.875rem; /* 30: page titles */
+  --fs-3xl: 2.5rem; /* 40: hero titles */
   --fs-score: 3rem; /* 48: scores */
   --fs-score-xl: 4rem; /* 64: the one big number */
 
@@ -258,6 +261,9 @@ body {
   color: var(--ink-body);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* cv05: lowercase l with a tail, so l, I and 1 never look alike. */
+  font-feature-settings: "cv05", "cv11";
 }
 p {
   text-wrap: pretty;
@@ -266,14 +272,15 @@ h1,
 h2,
 h3 {
   color: var(--ink);
-  font-weight: 700;
-  letter-spacing: -0.012em;
+  font-weight: 600;
+  letter-spacing: -0.018em;
   margin: 0;
   text-wrap: balance;
 }
 .mono {
   font-family: var(--mono);
   font-feature-settings: normal;
+  font-variant-numeric: tabular-nums;
 }
 .muted {
   color: var(--muted);
@@ -283,7 +290,7 @@ h3 {
    links, and the role="button" rows/points/citations). Inputs and selects
    keep their own tinted-ring :focus-visible treatment below. */
 :where(a, button, [role="button"], [tabindex]):focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -1002,7 +1009,7 @@ table.list {
   gap: 10px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(var(--c-ai-tint), var(--surface));
+  background: var(--surface);
 }
 .cop-head .mark {
   width: 28px;
@@ -1134,7 +1141,7 @@ table.list {
 }
 .cand .pill {
   font-size: 10.5px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 1px 6px;
   border-radius: 999px;
 }
@@ -1154,7 +1161,7 @@ table.list {
   font-size: 13px;
 }
 .verdict .b {
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
   padding: 3px 10px;
   border-radius: 999px;
@@ -1211,10 +1218,10 @@ table.list {
 }
 .suggestion .md li::marker {
   color: var(--c-ai-ink);
-  font-weight: 700;
+  font-weight: 600;
 }
 .suggestion .md strong {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--c-ai-ink);
 }
 .suggestion .md a:not(.cite) {
@@ -1247,94 +1254,97 @@ table.list {
 }
 
 /* ===================================================================== *
- *  Dark theme — deep blue-gray, not pure black
+ *  Dark theme: neutral near-black, surfaces a few steps lighter,
+ *  hairlines in white at low alpha, concept colors lighter not louder.
  * ===================================================================== */
 [data-theme="dark"] {
-  --bg: oklch(0.17 0.02 265);
-  --surface: oklch(0.215 0.022 265);
-  --surface-2: oklch(0.255 0.024 265);
-  --border: oklch(0.31 0.022 265);
-  --border-strong: oklch(0.42 0.024 265);
+  color-scheme: dark;
+  --bg: oklch(0.155 0.004 265);
+  --surface: oklch(0.185 0.005 265);
+  --surface-2: oklch(0.225 0.006 265);
+  --border: oklch(0.27 0.006 265);
+  --border-strong: oklch(0.36 0.008 265);
 
-  --ink: oklch(0.96 0.006 265);
-  --ink-body: oklch(0.88 0.01 265);
-  --muted: oklch(0.73 0.018 265);
+  --ink: oklch(0.965 0.003 265);
+  --ink-body: oklch(0.87 0.006 265);
+  --muted: oklch(0.71 0.01 265);
 
-  --shell: oklch(0.13 0.02 265);
-  --shell-2: oklch(0.2 0.025 265);
-  --shell-border: oklch(0.26 0.025 265);
+  --shell: var(--bg);
+  --shell-2: oklch(0.22 0.006 265);
+  --shell-border: var(--border);
+  --shell-ink: var(--ink);
+  --shell-muted: var(--muted);
 
-  --primary: oklch(0.96 0.006 265);
-  --primary-hover: oklch(0.86 0.01 265);
-  --primary-tint: oklch(0.3 0.025 265);
-  --primary-ink: oklch(0.96 0.006 265);
-  --on-primary: oklch(0.18 0.03 265);
-  --focus: oklch(0.75 0.13 255);
+  --primary: oklch(0.965 0.003 265);
+  --primary-hover: oklch(0.86 0.005 265);
+  --primary-tint: oklch(0.25 0.006 265);
+  --primary-ink: oklch(0.965 0.003 265);
+  --on-primary: oklch(0.17 0.005 265);
+  --focus: oklch(0.72 0.14 250);
 
-  --c-inc: oklch(0.72 0.13 255);
-  --c-inc-on: oklch(0.18 0.03 265);
-  --c-inc-tint: oklch(0.28 0.06 255);
+  --c-inc: oklch(0.7 0.14 255);
+  --c-inc-on: oklch(0.17 0.005 265);
+  --c-inc-tint: oklch(0.24 0.035 255);
   --c-inc-ink: oklch(0.8 0.1 255);
-  --c-inc-line: oklch(0.48 0.1 255);
+  --c-inc-line: oklch(0.4 0.07 255);
 
-  --c-prb: oklch(0.84 0.13 85);
-  --c-prb-on: oklch(0.18 0.03 265);
-  --c-prb-tint: oklch(0.3 0.05 85);
-  --c-prb-ink: oklch(0.86 0.1 85);
-  --c-prb-line: oklch(0.55 0.1 85);
+  --c-prb: oklch(0.8 0.14 75);
+  --c-prb-on: oklch(0.17 0.005 265);
+  --c-prb-tint: oklch(0.25 0.035 75);
+  --c-prb-ink: oklch(0.84 0.11 80);
+  --c-prb-line: oklch(0.44 0.07 75);
 
-  --c-chg: oklch(0.74 0.1 185);
-  --c-chg-on: oklch(0.18 0.03 265);
-  --c-chg-tint: oklch(0.28 0.04 185);
-  --c-chg-ink: oklch(0.82 0.08 185);
-  --c-chg-line: oklch(0.5 0.07 185);
+  --c-chg: oklch(0.74 0.1 180);
+  --c-chg-on: oklch(0.17 0.005 265);
+  --c-chg-tint: oklch(0.24 0.03 180);
+  --c-chg-ink: oklch(0.82 0.08 180);
+  --c-chg-line: oklch(0.42 0.06 180);
 
-  --c-ai: oklch(0.74 0.14 295);
-  --c-ai-on: oklch(0.18 0.03 265);
-  --c-ai-tint: oklch(0.3 0.07 295);
-  --c-ai-ink: oklch(0.84 0.11 295);
-  --c-ai-line: oklch(0.52 0.12 295);
+  --c-ai: oklch(0.7 0.16 290);
+  --c-ai-on: oklch(0.17 0.005 265);
+  --c-ai-tint: oklch(0.25 0.045 290);
+  --c-ai-ink: oklch(0.82 0.11 290);
+  --c-ai-line: oklch(0.44 0.1 290);
 
-  --c-human: oklch(0.96 0.006 265);
-  --c-human-on: oklch(0.18 0.03 265);
-  --c-human-tint: oklch(0.3 0.025 265);
-  --c-human-ink: oklch(0.96 0.006 265);
-  --c-human-line: oklch(0.55 0.02 265);
+  --c-human: oklch(0.965 0.003 265);
+  --c-human-on: oklch(0.17 0.005 265);
+  --c-human-tint: oklch(0.25 0.006 265);
+  --c-human-ink: oklch(0.965 0.003 265);
+  --c-human-line: oklch(0.5 0.008 265);
 
-  --score-high: oklch(0.76 0.14 150);
-  --score-high-tint: oklch(0.3 0.06 150);
-  --score-mid: oklch(0.82 0.12 80);
-  --score-mid-tint: oklch(0.31 0.05 80);
-  --score-low: oklch(0.74 0.16 27);
-  --score-low-tint: oklch(0.31 0.07 27);
+  --score-high: oklch(0.76 0.14 152);
+  --score-high-tint: oklch(0.25 0.04 152);
+  --score-mid: oklch(0.82 0.12 78);
+  --score-mid-tint: oklch(0.26 0.04 78);
+  --score-low: oklch(0.73 0.16 27);
+  --score-low-tint: oklch(0.26 0.05 27);
 
-  --p1: oklch(0.74 0.16 27);
-  --p1-tint: oklch(0.31 0.07 27);
+  --p1: oklch(0.73 0.16 27);
+  --p1-tint: oklch(0.26 0.05 27);
   --p2: oklch(0.78 0.13 62);
-  --p2-tint: oklch(0.31 0.06 62);
+  --p2-tint: oklch(0.26 0.045 62);
   --p3: oklch(0.82 0.1 95);
-  --p3-tint: oklch(0.31 0.05 95);
-  --p4: oklch(0.73 0.018 265);
-  --p4-tint: oklch(0.29 0.015 265);
+  --p3-tint: oklch(0.26 0.04 95);
+  --p4: oklch(0.71 0.01 265);
+  --p4-tint: oklch(0.24 0.006 265);
 
-  --st-open: oklch(0.76 0.12 240);
-  --st-open-tint: oklch(0.29 0.06 240);
+  --st-open: oklch(0.76 0.12 245);
+  --st-open-tint: oklch(0.25 0.04 245);
   --st-progress: oklch(0.8 0.12 65);
-  --st-progress-tint: oklch(0.31 0.06 65);
-  --st-hold: oklch(0.73 0.018 265);
-  --st-hold-tint: oklch(0.29 0.015 265);
-  --st-resolved: oklch(0.76 0.13 150);
-  --st-resolved-tint: oklch(0.3 0.06 150);
+  --st-progress-tint: oklch(0.26 0.045 65);
+  --st-hold: oklch(0.71 0.01 265);
+  --st-hold-tint: oklch(0.24 0.006 265);
+  --st-resolved: oklch(0.76 0.13 152);
+  --st-resolved-tint: oklch(0.25 0.04 152);
 
-  --success: oklch(0.76 0.13 150);
-  --danger: oklch(0.74 0.16 27);
+  --success: oklch(0.76 0.13 152);
+  --danger: oklch(0.73 0.16 27);
 
+  --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.3);
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
-  --shadow-md: 0 10px 30px oklch(0 0 0 / 0.5);
+  --shadow-md: 0 16px 40px -8px oklch(0 0 0 / 0.6), 0 0 0 1px oklch(1 0 0 / 0.06);
 }
-[data-theme="dark"] .brand .mark {
-  background: oklch(0.56 0.16 285);
-}
+
 [data-theme="dark"] .cite {
   background: oklch(0.3 0.04 285 / 0.8);
 }
@@ -1630,7 +1640,7 @@ body {
   font-weight: 550;
 }
 .chip b {
-  font-weight: 700;
+  font-weight: 600;
 }
 .chip .chip-k {
   font-weight: 500;
@@ -2280,7 +2290,7 @@ body {
 }
 .cand-preview .cp-label {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--st-resolved);
@@ -2368,7 +2378,7 @@ body {
   gap: 10px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(var(--c-ai-tint), var(--surface));
+  background: var(--surface);
   position: relative;
 }
 .cph-mark {
@@ -2630,7 +2640,7 @@ body {
 .src-toggle .src-count {
   font-family: var(--mono);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--c-ai-ink);
   background: var(--c-ai-tint);
   border-radius: 999px;
@@ -2881,7 +2891,7 @@ body {
   width: 30px;
   font-family: var(--mono);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--c-inc-ink);
   background: var(--c-inc-tint);
 }
@@ -3992,7 +4002,7 @@ body {
   min-width: 0;
 }
 .vc-label {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13.5px;
   letter-spacing: 0.01em;
 }

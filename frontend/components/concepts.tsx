@@ -26,49 +26,49 @@ export const CONCEPTS: Record<ConceptKey, ConceptMeta> = {
     icon: Icons.incident,
     name: "Incidente",
     gloss: "Algo quebrou agora e alguém abriu um chamado.",
-    look: "Pulseira azul com raio e número INC",
+    look: "Etiqueta azul com raio e número INC",
   },
   prb: {
     key: "prb",
     icon: Icons.problems,
     name: "Problema",
     gloss: "A causa por trás de incidentes que se repetem.",
-    look: "Pulseira dourada com linhas que convergem e número PRB",
+    look: "Etiqueta âmbar com linhas que convergem e número PRB",
   },
   chg: {
     key: "chg",
     icon: Icons.changes,
     name: "Mudança",
     gloss: "Um pedido para alterar algo em produção, como um deploy.",
-    look: "Pulseira verde-azulada com número CHG",
+    look: "Etiqueta verde-azulada com número CHG",
   },
   similar: {
     key: "similar",
     icon: Icons.similar,
     name: "Caso parecido",
     gloss: "Um incidente antigo, já resolvido, que se parece com o atual.",
-    look: "Pulseira azul vazada, com a nota de semelhança",
+    look: "Etiqueta vazada e tracejada, com a nota de semelhança",
   },
   "ai-step": {
     key: "ai-step",
     icon: Icons.aiStep,
     name: "Etapa da IA",
     gloss: "Um passo que a máquina executa sozinha.",
-    look: "Contorno violeta tracejado com engrenagem",
+    look: "Círculo violeta tracejado com engrenagem",
   },
   "ai-out": {
     key: "ai-out",
     icon: Icons.aiSpark,
     name: "Resposta da IA",
     gloss: "O que a IA escreveu. É uma sugestão, não uma ordem.",
-    look: "Bloco violeta com estrela",
+    look: "Fundo violeta claro com estrela",
   },
   human: {
     key: "human",
     icon: Icons.human,
     name: "Decisão de uma pessoa",
     gloss: "Quem revisa e decide é sempre uma pessoa analista.",
-    look: "Botão preto com pessoa",
+    look: "Círculo preto com pessoa; botões de decisão em preto",
   },
   score: {
     key: "score",
@@ -94,7 +94,7 @@ export function conceptOf(number: string): "inc" | "prb" | "chg" {
 }
 
 /**
- * The record's "pulseira" (wristband): concept color, icon and number.
+ * The record tag: concept icon and tint, with the number in mono.
  * `ghost` draws it hollow, for a similar past case shown as evidence.
  */
 export function RecordTag({

@@ -88,7 +88,7 @@
   place-items: center;
   font-family: var(--mono);
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--muted);
   background: var(--surface);
   border: 1px dashed var(--border-strong);
@@ -273,7 +273,7 @@
   margin-top: 10px;
   padding: 5px 12px 5px 9px;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
 }
 .pipe-verdict svg {
@@ -402,7 +402,7 @@
   color: var(--c-ai-ink);
 }
 .layer-name {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
 }
 .layer-what {
@@ -519,7 +519,7 @@
   align-items: center;
   gap: 4px;
   font-size: 11.5px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 1px 8px 1px 6px;
   border-radius: 999px;
 }
@@ -689,6 +689,13 @@
 }
 .run-btn {
   margin-left: auto;
+}
+/* On a phone the label takes its own line, so the time and the button share
+   the next one instead of the button dropping alone. */
+@media (max-width: 559.98px) {
+  .run-replay {
+    flex-basis: 100%;
+  }
 }
 .run-status.is-compact {
   margin: 0 0 10px;
@@ -865,7 +872,7 @@
   min-width: 2.2ch;
   text-align: center;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   transition: opacity var(--dur-state) var(--ease-out);
@@ -950,7 +957,7 @@
   white-space: nowrap;
 }
 .ruler-floor-label b {
-  font-weight: 700;
+  font-weight: 600;
 }
 .ruler-simline {
   translate: calc(var(--sx) * 100cqi) 0;
@@ -963,7 +970,7 @@
   left: 4px;
   bottom: 26px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--c-ai-ink);
   background: var(--surface);
   padding: 0 3px;
@@ -1074,6 +1081,13 @@
   font-size: 11.5px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
+}
+/* The end labels sit inside the scale instead of hanging past its edges. */
+.ruler-ticks span:first-child {
+  translate: calc(var(--x) * 100cqi) 0;
+}
+.ruler-ticks span:last-child {
+  translate: calc(var(--x) * 100cqi - 100%) 0;
 }
 /* The draggable floor: a native range under the ticks, thumb on the scale. */
 .ruler-range {
@@ -1274,7 +1288,7 @@
 }
 .cosine-fig text.cosine-a {
   fill: var(--c-ai-ink);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 12px;
 }
 .cosine-fig figcaption {
@@ -1384,14 +1398,20 @@
 }
 .cited-list li {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 2px 10px;
+  gap: 10px;
+  min-height: 36px;
   font-size: 13px;
   color: var(--ink-body);
 }
 .cited-what {
+  min-width: 0;
   color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.cited-list .btn {
+  margin-left: auto;
+  flex: none;
 }
 
 /* ===================================================================== *
@@ -1455,7 +1475,7 @@
   place-items: center;
   font-family: var(--mono);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--muted);
   background: var(--surface);
   border: 1px dashed var(--border-strong);
@@ -1576,68 +1596,129 @@
 }
 
 /* ===================================================================== *
-   Pulseira: record head, the AI call to action and the teaching pieces
+   Claro: record head, the AI call to action and the teaching pieces.
+   The pipeline is "o fio": one hairline with small stations. (The record
+   itself sits flat on the sheet, see shell.css.)
  * ===================================================================== */
-.record-head h1 {
-  font-size: var(--fs-2xl);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-.record-head .meta {
-  font-size: var(--fs-sm);
-}
-.record-num {
-  font-size: inherit;
-}
 .rec-prose {
-  font-size: var(--fs-lg);
-  line-height: 1.6;
+  font-size: var(--fs-md);
+  line-height: 1.65;
+  color: var(--ink-body);
+  max-width: 68ch;
 }
 .rec-body .section :is(h2, h3) {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
+  font-weight: 600;
 }
 .resnotes-empty.k-ai-step-box {
-  padding: 16px;
-  gap: 10px;
+  padding: 18px;
+  gap: 12px;
 }
 .resnotes-empty.k-ai-step-box p {
   color: var(--ink-body);
   font-size: var(--fs-md);
 }
 .resnotes-empty .btn-ai {
-  height: 48px;
-  padding: 0 20px;
+  height: 44px;
+  padding: 0 18px;
 }
 
 /* Pipeline head */
 .pipe-head h2 {
   font-size: var(--fs-xl);
+  letter-spacing: -0.02em;
 }
 .pipe-lede {
   font-size: var(--fs-md);
+  color: var(--muted);
 }
 .pipe-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 16px;
-  margin-top: 10px;
+  gap: 6px 18px;
+  margin-top: 12px;
 }
 .pipe-head .btn {
-  height: 48px;
-  padding: 0 20px;
+  height: 42px;
+  padding: 0 16px;
 }
 .pipe-title {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
 }
 .pipe-decision {
   font-size: var(--fs-md);
   color: var(--ink-body);
 }
 
-/* Markers: AI steps are dashed violet circles; done ones fill. */
+/* O fio: a 1px line; the violet fill draws down it as the replay runs. */
+.pipe-step {
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 14px;
+  padding-bottom: 28px;
+}
+.pipe-step::before,
+.pipe-step::after {
+  left: 11.5px;
+  top: 28px;
+  bottom: 4px;
+}
+.pipe-step::before {
+  background: var(--border);
+}
+.pipe-step::after {
+  width: 1.5px;
+  left: 11.25px;
+}
+/* Stations: pending dashed, current tinted with a soft ring, done ringed. */
 .pipe-marker {
-  border: 2px dashed var(--c-ai-line);
+  width: 24px;
+  height: 24px;
+  font-family: var(--font);
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px dashed var(--c-ai-line);
   color: var(--c-ai-ink);
+}
+.pipe-marker svg {
+  width: 12px;
+  height: 12px;
+}
+.pipe-step.is-current .pipe-marker {
+  background: var(--c-ai-tint);
+  border: 1.5px solid var(--c-ai);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--c-ai) 14%, transparent);
+}
+.pipe-step.is-done .pipe-marker {
+  color: var(--c-ai-on);
+  background: var(--c-ai);
+  border: 1.5px solid var(--c-ai);
+  box-shadow: 0 0 0 3px var(--surface);
+}
+.pipe-step.is-gate .pipe-marker,
+.pipe-step.is-gate.is-done .pipe-marker,
+.pipe-step.is-gate.is-current .pipe-marker {
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.pipe-step.is-gate .pipe-marker .gate {
+  inset: -3px;
+  width: 30px;
+  height: 30px;
+}
+.pipe-step.is-gate.is-done:not(.is-stopped) .gate path {
+  fill: var(--c-ai-tint);
+  stroke: var(--c-ai);
+}
+.pipe-step.is-gate.is-done:not(.is-stopped) .pipe-marker-n {
+  color: var(--c-ai-ink);
+}
+.pipe-body {
+  padding-top: 1px;
+}
+.pipe-status {
+  height: 20px;
+  font-weight: 500;
 }
 
 /* Layers: a small number, a plain name, one line */
@@ -1649,24 +1730,25 @@
 .layer-n {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--c-ai-tint);
+  background: var(--surface);
+  border: 1px solid var(--c-ai-line);
   color: var(--c-ai-ink);
-  font-size: var(--fs-xs);
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 600;
   flex: none;
 }
 .layer-name {
   font-size: var(--fs-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
 }
 .layer-line {
   margin: 6px 0 10px;
   font-size: var(--fs-md);
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--ink-body);
   max-width: 62ch;
 }
@@ -1681,21 +1763,25 @@
   pointer-events: none;
 }
 .row-sim {
+  font-family: var(--font);
   font-size: var(--fs-lg);
-  font-weight: 800;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 
-/* Step 3: the number of numbers, big */
+/* Step 3: the number of numbers */
 .vec-big {
-  margin: 0 0 8px;
+  margin: 4px 0 8px;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 10px;
 }
 .vec-big b {
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-xl);
+  font-weight: 600;
   color: var(--c-ai-ink);
   letter-spacing: -0.02em;
 }
@@ -1705,14 +1791,14 @@
 
 /* Step 5: the gate */
 .pipe-gate {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 .pipe-gate .gatemark {
   font-size: var(--fs-lg);
 }
 .pipe-gate .gatemark-diamond {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
 }
 .pipe-gate-why {
   margin: 8px 0 0;
@@ -1721,54 +1807,60 @@
   max-width: 62ch;
 }
 
-/* Step 6: the AI's answer */
+/* Step 6: the AI's answer, a faint violet sheet */
 .pipe-suggestion.suggestion,
 .cop-panel .suggestion {
   background: var(--c-ai-tint);
-  border: 2px solid var(--c-ai-line);
-  border-radius: var(--radius);
+  border: 1px solid var(--c-ai-line);
+  border-radius: var(--radius-lg);
 }
 .ai-out-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .ai-out-head > span:last-child {
   font-size: var(--fs-sm);
   color: var(--muted);
 }
 
-/* Step 7: the human decides */
+/* Step 7: the human decides, on white with an ink edge */
 .pipe-human {
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  margin-top: 10px;
-  padding: 14px 16px;
-  border-radius: var(--radius);
-  background: var(--c-human-tint);
+  margin-top: 12px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
   border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
 }
 .pipe-human b {
   font-size: var(--fs-lg);
+  font-weight: 600;
   color: var(--ink);
 }
 .pipe-human p {
   margin: 4px 0 10px;
   font-size: var(--fs-md);
+  color: var(--ink-body);
 }
 .pipe-human p:last-child {
   margin-bottom: 0;
 }
 
-/* Funnel: three big numbers */
+/* Funnel: three numbers */
 .funnel-n {
   font-size: var(--fs-2xl);
-  font-weight: 800;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
 .funnel-l {
   font-size: var(--fs-sm);
+  color: var(--muted);
 }

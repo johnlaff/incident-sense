@@ -211,8 +211,7 @@ export default function RecurrencesPage() {
         </span>
       </div>
       <p className="page-lede">
-        Cada ponto é um incidente. Os parecidos se juntam e formam grupos; um grupo grande
-        pede um{" "}
+        Cada ponto é um incidente. Grupo grande pede um{" "}
         <Link className="prb-inline-link" href="/problemas">
           problema
         </Link>
@@ -401,10 +400,10 @@ export default function RecurrencesPage() {
             <TechDetails summary="Como o mapa foi feito">
               <p>
                 O texto de cada incidente vira um vetor (embedding). O HDBSCAN procura as
-                regiões densas desses vetores com distância cosseno: cada região densa é um
-                grupo, e quem não cabe em nenhuma vira caso isolado. Um LLM dá o nome curto
-                de cada grupo, e o UMAP reduz os vetores a duas dimensões para desenhar o
-                mapa.
+                regiões densas desses vetores com distância cosseno: cada região densa é
+                um grupo, e quem não cabe em nenhuma vira caso isolado. Um LLM dá o nome
+                curto de cada grupo, e o UMAP reduz os vetores a duas dimensões para
+                desenhar o mapa.
               </p>
               <p>
                 No mapa, a posição de cada grupo vem do UMAP. Dentro do grupo os pontos

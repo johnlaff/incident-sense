@@ -261,7 +261,7 @@
 }
 .rx-label-name {
   min-width: 0;
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 .rx-label-n {
   margin-left: auto;
@@ -275,7 +275,7 @@
 @media (max-width: 699.98px) {
   .rx-label {
     font-size: var(--fs-xs, 13px);
-    max-width: 10.5em;
+    max-width: 17em;
     padding: 2px 6px 2px 5px;
     gap: 4px;
   }

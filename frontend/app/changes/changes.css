@@ -336,7 +336,7 @@ a.chg-row:focus-visible {
   height: 30px;
   padding: 0 8px;
   border-radius: var(--radius-sm);
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .chg-score.good {
@@ -686,10 +686,10 @@ a.chg-row:focus-visible {
 }
 .chg-overall-num {
   font-family: var(--font);
-  font-weight: 800;
+  font-weight: 600;
   font-size: var(--fs-score-xl);
   line-height: 1;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
@@ -985,7 +985,7 @@ a.chg-row:focus-visible {
 .chg-adh-pct {
   font-family: var(--mono);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -1039,7 +1039,7 @@ a.chg-row:focus-visible {
   background: var(--p1-tint);
   color: var(--p1);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .chg-none {
@@ -1371,22 +1371,23 @@ a.chg-row:focus-visible {
 }
 
 /* ===================================================================== *
-   Pulseira: the CHG band, bigger type, the AI judge in violet
+   Claro: the CHG tag, calm type, the AI judge in violet
  * ===================================================================== */
 .chg-num .rtag {
   vertical-align: middle;
 }
 .chg-record-head h1 {
   font-size: var(--fs-2xl);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.028em;
 }
 .chg-record-head .chg-band {
   margin-bottom: 8px;
 }
 .chg-title {
   font-size: var(--fs-lg);
-  font-weight: 700;
+  font-weight: 600;
 }
 .chg-run h2,
 .chg-semantic h2 {
@@ -1406,10 +1407,13 @@ a.chg-row:focus-visible {
   font-size: var(--fs-md);
 }
 .chg-score {
-  font-family: var(--mono);
+  font-family: var(--font);
   font-size: var(--fs-lg);
-  height: 36px;
-  min-width: 56px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  height: 34px;
+  min-width: 54px;
 }
 .chg-verdict {
   background: var(--c-ai-tint);
@@ -1421,15 +1425,34 @@ a.chg-row:focus-visible {
   display: block;
   margin-bottom: 4px;
   font-size: var(--fs-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--c-ai-ink);
 }
 .chg-go-btn.btn-ai {
-  height: 52px;
-  font-size: var(--fs-lg);
+  height: 44px;
+  padding: 0 18px;
+  font-size: var(--fs-md);
 }
 .chg-run-lede {
   margin: 0 0 12px;
   font-size: var(--fs-md);
   color: var(--ink-body);
+}
+
+/* Long field text folds on a phone: five lines, then "Ler tudo". */
+.chg-more {
+  display: none;
+}
+@media (max-width: 767.98px) {
+  .chg-text-wrap[data-long="true"][data-open="false"] .chg-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    overflow: hidden;
+  }
+  .chg-text-wrap[data-long="true"] .chg-more {
+    display: inline-flex;
+    margin: 4px 0 0 -10px;
+  }
 }

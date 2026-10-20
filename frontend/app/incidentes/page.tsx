@@ -261,8 +261,7 @@ export default function IncidentesPage() {
       </div>
 
       <p className="page-lede">
-        Cada linha é um chamado: algo quebrou no banco e alguém avisou. Abra um para ver a
-        IA sugerir uma solução.
+        Cada linha é um chamado. Abra um e veja a IA sugerir a solução.
       </p>
 
       <WakeNotice show={slow} />

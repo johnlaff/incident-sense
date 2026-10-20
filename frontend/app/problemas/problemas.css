@@ -38,9 +38,6 @@
   display: grid;
   gap: 8px;
 }
-.prb-lede-more {
-  margin: 0;
-}
 .prb-list {
   list-style: none;
   margin: 0;
@@ -386,14 +383,14 @@ a.prb-row:focus-visible {
   text-underline-offset: 3px;
 }
 
-/* Pulseira: the PRB band and big, plain heads */
+/* Claro: the PRB tag and plain heads */
 .prb-num .rtag,
 .record-num .rtag {
   vertical-align: middle;
 }
 .prb-title {
   font-size: var(--fs-lg);
-  font-weight: 700;
+  font-weight: 600;
 }
 .prb-def svg {
   color: var(--c-prb-ink);

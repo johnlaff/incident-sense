@@ -27,10 +27,6 @@ export default function ProblemasPage() {
       </div>
       <div className="page-lede">
         <ProblemDefinition />
-        <p className="prb-lede-more">
-          A IA também consulta estes registros quando sugere uma solução, e cita os que
-          usou.
-        </p>
       </div>
       <WakeNotice show={slow} />
 

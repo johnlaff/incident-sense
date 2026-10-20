@@ -40,7 +40,7 @@ const STOPS: Stop[] = [
     concept: "ai-step",
     tone: "k-ai",
     title: "Como funciona",
-    line: "O caminho inteiro em poucos passos: do chamado aberto à sugestão revisada por uma pessoa.",
+    line: "Do chamado aberto à sugestão revisada.",
     href: "/como-funciona?aula=1",
     cta: "Ver o caminho",
   },
@@ -49,7 +49,7 @@ const STOPS: Stop[] = [
     concept: "inc",
     tone: "k-inc",
     title: "Um incidente real, resolvido com IA",
-    line: "A IA procura casos parecidos que já foram resolvidos e escreve uma sugestão citando cada fonte.",
+    line: "A IA acha casos parecidos e sugere, citando cada um.",
     href: "/incidentes/INC0052233?aula=1",
     cta: "Abrir o incidente",
     picks: [
@@ -66,7 +66,7 @@ const STOPS: Stop[] = [
     concept: "prb",
     tone: "k-prb",
     title: "Recorrências",
-    line: "Quando o mesmo erro volta várias vezes, os incidentes formam um grupo. Esse grupo pede um Problema.",
+    line: "Erro que se repete vira grupo. Grupo pede um Problema.",
     href: "/recorrencias?aula=1",
     cta: "Ver os grupos",
   },
@@ -75,7 +75,7 @@ const STOPS: Stop[] = [
     concept: "chg",
     tone: "k-chg",
     title: "Avaliação de uma Mudança",
-    line: "Antes do deploy, uma IA dá nota a cada campo do pedido e confere se o plano de retorno desfaz o que foi feito.",
+    line: "Antes do deploy, a IA dá nota ao pedido.",
     href: "/changes/CHG0031001?aula=1",
     cta: "Avaliar uma mudança",
     picks: [
@@ -101,9 +101,8 @@ export default function LessonPage() {
       <header className="lesson-hero">
         <h1>Aula: como a IA ajuda depois do deploy</h1>
         <p className="lesson-lede">
-          Você é analista de TI do Banco Meridiano, um banco fictício. Um deploy quebrou o
-          login do app. Siga os quatro passos e veja onde a IA ajuda e onde uma pessoa
-          decide.
+          Um deploy quebrou o login do app do Banco Meridiano, um banco fictício. Siga
+          quatro passos: a IA ajuda, uma pessoa decide.
         </p>
         <LessonModeSwitch />
       </header>
@@ -143,7 +142,7 @@ export default function LessonPage() {
                   ))}
                 </ul>
               ) : null}
-              <Link href={s.href} className="btn btn-primary stop-cta">
+              <Link href={s.href} className="btn btn-outline stop-cta">
                 {s.cta}
                 <Icons.arrowRight />
               </Link>
@@ -155,7 +154,7 @@ export default function LessonPage() {
       <section className="lesson-legend" aria-labelledby="legend-h">
         <div className="legend-head">
           <h2 id="legend-h">Como ler as cores e os ícones</h2>
-          <p>Cada ideia da aula tem sempre a mesma cor, o mesmo ícone e a mesma forma.</p>
+          <p>Cada ideia tem sempre a mesma cor e o mesmo ícone.</p>
         </div>
         <ConceptLegend />
       </section>

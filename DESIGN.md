@@ -2,146 +2,146 @@
 
 The visual system for incident-sense: a teaching workspace for a fictional bank
 (Banco Meridiano) that shows, step by step, where an AI helps after a deploy and
-where a person decides. All colors in OKLCH.
+where a person decides. All colors in OKLCH. Tokens live in
+`frontend/app/globals.css`; shell overrides in `frontend/app/shell.css`; concept
+classes in `frontend/app/concepts.css`; concept components in
+`frontend/components/concepts.tsx`.
 
-## Direction: "Pulseira de triagem"
+## Direction: "Claro"
 
-The world comes from the Manchester triage wristband used in Brazilian
-emergency rooms: every patient gets one solid color band, and anyone in the room
-reads it at a glance. Here every record and every idea of the lesson gets one
-color, one icon and one shape, always the same, on every screen. A student on a
-phone and a room watching a projector must be able to tell an Incident from a
-Problem, a machine step from a human decision, without reading a word.
+A light, calm workspace in the line of the products known for clean interfaces
+(Vercel/Geist, Linear, Stripe, Resend docs, Cal.com): a near-white frame, a
+white sheet for the content, 1px hairlines instead of shadows, ink text, one
+accent color used sparingly.
 
-Mode: **Operate** (an app the visitor uses to follow a task), with the lesson
-start page (`/aula`) as its one guided surface. Ambition shows as strong
-hierarchy, big numbers and a consistent concept language, not decoration.
+Mode: **Operate**. Ambition shows as precision and restraint: clear hierarchy,
+big tabular numbers, short copy, and one signature move.
 
 Two rules carry the whole system:
 
 1. **Violet is only for the machine.** AI steps, AI answers and the button that
-   asks the AI. Nothing else uses violet.
+   asks the AI. It is the only accent; nothing else uses violet.
 2. **Ink is for the person.** Primary human actions (Resolver, Abrir, Ver) and
-   the "Agora é com você" decision use deep ink, never a brand hue.
+   the "Agora é com você" decision use ink, never a hue.
+
+Signature move, **o fio**: sequences are drawn as a 1px line with small
+stations (the AI pipeline on an incident, the lesson route on `/aula`, the
+lifecycle row on `/como-funciona`). Violet line for the machine, ink for the
+human path. No boxes around steps.
+
+Anti-reference: the previous "Pulseira de triagem" look (dark ink frame, solid
+colored wristband chips). Concepts are now a colored icon or dot plus a faint
+tint, with the text staying dark.
 
 ## Theme
 
-Light content on a **deep ink frame**: the top bar, rail and phone tab bar are
-`--shell` (navy ink), the workspace is a cool off-white. The dark frame gives the
-app a recognizable silhouette on a projector and lets the concept chips in the
-rail read as colored bands. Dark mode is fully supported (`[data-theme="dark"]`):
-the frame goes deeper, surfaces become navy grays, concept colors get lighter at
-similar chroma.
+- **Light (default).** Frame `--bg` near white; on desktop the content sits on a
+  white sheet (`.main`: white, 1px border, radius 14px, `--shadow-xs`). On a
+  phone the body is white and the bottom tab bar is white with a hairline.
+- **Dark** (`[data-theme="dark"]` and `prefers-color-scheme`): near-black neutral
+  frame, surfaces a few steps lighter, hairline borders, concept colors lighter
+  at similar chroma.
 
 ## Color
 
 ```
-/* Surfaces and ink (light) */
---bg:            oklch(0.975 0.006 265)
---surface:       oklch(1 0 0)
---surface-2:     oklch(0.962 0.008 265)
---border:        oklch(0.905 0.009 265)
---border-strong: oklch(0.8 0.014 265)
---ink:           oklch(0.22 0.035 265)   /* headings, human actions */
---ink-body:      oklch(0.3 0.025 265)
---muted:         oklch(0.47 0.02 265)
---focus:         oklch(0.5 0.15 255)     /* 3px focus ring */
-
-/* Frame */
---shell:       oklch(0.22 0.035 265)
---shell-2:     oklch(0.28 0.035 265)
---shell-ink:   oklch(0.97 0.005 265)
---shell-muted: oklch(0.76 0.02 265)
+/* Neutrals (light) */
+--bg:            oklch(0.982 0.002 265)   /* frame */
+--surface:       oklch(1 0 0)             /* sheet, cards */
+--surface-2:     oklch(0.968 0.003 265)   /* wells, active nav */
+--border:        oklch(0.92 0.004 265)
+--border-strong: oklch(0.855 0.006 265)
+--ink:           oklch(0.2 0.012 265)     /* headings, human actions */
+--ink-body:      oklch(0.33 0.012 265)
+--muted:         oklch(0.49 0.012 265)
+--focus:         oklch(0.56 0.17 250)     /* 2px focus ring, 2px offset */
+--primary:       oklch(0.2 0.012 265)     /* ink */
+/* Shell tokens (--shell, --shell-ink, --shell-muted...) map to the frame. */
 ```
 
 ### Concept roles
 
-Each concept has five tokens: `--c-X` (solid band), `--c-X-on` (text on the
-band), `--c-X-tint` (soft surface), `--c-X-ink` (text on light surfaces),
-`--c-X-line` (borders). Classes expose them as `--k*` (see `app/concepts.css`).
+Each concept has five tokens: `--c-X` (the color, for dots and icons),
+`--c-X-on` (text on a solid fill), `--c-X-tint` (faint surface), `--c-X-ink`
+(colored text on light surfaces), `--c-X-line` (borders). Classes expose them
+as `--k*` (see `app/concepts.css`).
 
 | Concept | Token | Hue (light) | Shape |
 |---|---|---|---|
-| Incidente (INC) | `--c-inc` | blue `0.5 0.15 255` | solid band with a snap dot, bolt icon |
-| Problema (PRB) | `--c-prb` | gold `0.82 0.14 82`, dark text | solid band, converging-lines icon |
-| Mudança (CHG) | `--c-chg` | teal `0.5 0.1 185` | solid band, branch icon |
-| Caso parecido | `--c-inc` | blue, hollow | dashed hollow band |
-| Etapa da IA | `--c-ai` | violet `0.5 0.19 295` | dashed violet circle, gear icon |
-| Resposta da IA | `--c-ai` | violet tint | tinted block with a violet border, star icon |
-| Decisão de uma pessoa | `--c-human` | ink | solid ink pill, person icon |
-| Nota | `--score-*` | green / amber / red | big number plus band word |
-| Portão | `--gate-*` | ink diamond, green or red verdict | diamond plus sim/não pill |
+| Incidente (INC) | `--c-inc` | blue `0.56 0.17 255` | bolt icon + mono number, faint tint chip |
+| Problema (PRB) | `--c-prb` | amber `0.74 0.15 68` | converging-lines icon, dashed chip when cited |
+| Mudança (CHG) | `--c-chg` | teal `0.6 0.11 178` | branch icon |
+| Caso parecido | `--c-inc` | blue, hollow | ghost chip, dashed border |
+| Etapa da IA | `--c-ai` | violet `0.54 0.21 290` | dashed violet circle on the violet fio |
+| Resposta da IA | `--c-ai` | violet tint | tinted block, violet border, star icon |
+| Decisão de uma pessoa | `--c-human` | ink | ink circle with person icon |
+| Nota | `--score-*` | green 152 / amber 62 / red 27 | big tabular number + subtle band badge |
+| Portão | `--gate-*` | diamond, green or red verdict | diamond + sim/não badge |
 
-Scores: `--score-high` green 150, `--score-mid` amber 70, `--score-low` red 27,
-each with a `-tint`. Status and priority badges keep their own tokens and stay
-small, so they never compete with the bands. Color is never alone: every concept
-also has its icon and shape, every score its band word.
+Badges are "subtle": faint tint, dark colored text, pill 20 to 24px. Solid
+color only where it is the one thing that matters on the screen. Color is never
+alone: every concept has its icon and shape, every score its band word.
 
 ## Typography
 
-- **Atkinson Hyperlegible Next** (variable, via `next/font/google`) for all UI
-  text, and **Atkinson Hyperlegible Mono** for record numbers and technical
-  values. Chosen for the room: its 0/O, 1/l/I and rn/m are unambiguous on a
-  projector at the back of a hall and on a cheap phone screen, which matters for
-  numbers like INC0052233. Big scores use the sans (the mono comma is too wide).
-- Fixed rem scale: 13 / 14 / 16 / 18 / 22 / 28 / 36, plus 48 for scores and 64
-  for the one big number on a screen (`--fs-xs` to `--fs-score-xl`).
-- Body 16px; ledes 18px; page titles 28px; headings weight 700.
-- Prose capped at 60 to 64ch.
+- **Inter** (variable, `next/font`) for all UI text, with `cv05` and `cv11`;
+  **JetBrains Mono** only for record numbers and technical values, in muted or
+  concept ink, never in a colored block.
+- Weights 400 / 500 / 600. Headings 600 with negative tracking (about -0.02em).
+- Scale (`--fs-*`): 13 / 14 / 16 / 18 / 21 / 30 / 40, plus 48 and 64 for scores.
+- Body 16px, line height 1.5; ledes 18px; prose capped at 60 to 64ch.
 
 ## Layout
 
-App shell: ink top bar, ink rail (labelled from 921px, icon rail 768 to 920),
-ink bottom tab bar below 768px. The rail starts with a "Roteiro da aula" link to
-`/aula`. Each nav item carries its concept chip.
+App shell: light top bar and sidebar on the frame color; labelled sidebar from
+921px, icon rail 768 to 920, bottom tab bar below 768. Desktop content lives on
+the white sheet with 32px padding (48px from 1280). Phone gutter 16px.
+`--page-max` 1360px; `/aula` up to 1480px.
 
-Screens sit in a centred container (`--page-max: 1360px`); `/aula` goes up to
-1480px. Breakpoints: tab bar below 768, icon rail 768 to 920, labelled rail from
-921, side-by-side panels from 1101, four-across lesson route from 1100.
+Copy rule: **one short headline per block, at most one short sentence, then
+visuals, numbers or lists.** Everything technical (top-K, cosine, post-filter,
+dimensions, model names, raw fields) lives behind "Ver detalhes técnicos"
+(`.tech`). Long record text (Change fields) folds to five lines on a phone with
+"Ler tudo". Copy is PT-BR, no em dashes, only the fictional Banco Meridiano.
 
-Each step of a pipeline gets a short plain PT-BR headline and one line of
-explanation. Technical detail (top-K, cosine, post-filter, dimensions, model
-names, raw fields) lives behind a "Ver detalhes técnicos" disclosure (`.tech`).
-
-Surfaces are flat: no decorative gradients, glows, side-stripe or top-accent
-borders on rounded cards. Copy is PT-BR, plain, no em dashes, only the fictional
-Banco Meridiano.
+Chips grow with their text and never wrap onto a second line (`white-space:
+nowrap`, `min-width: max-content`); a row of chips wraps as a row.
 
 ## Components
 
-Shared concept components live in `components/concepts.tsx`:
+Shared concept components in `components/concepts.tsx`:
 
-- **RecordTag** (`.rtag`): the wristband for INC/PRB/CHG; `ghost` for a similar
-  case; sizes `sm`, default, `lg`.
-- **ConceptIcon** (`.cicon`), **ConceptLabel** (`.clabel`): icon chip and inline
+- **RecordTag** (`.rtag`): icon + mono number for INC/PRB/CHG; `ghost` for a
+  similar case; sizes `sm`, default, `lg`.
+- **ConceptIcon** (`.cicon`), **ConceptLabel** (`.clabel`): icon and inline
   label per concept.
-- **ScoreNumber** (`.score`): big number, optional max, band word.
-- **GateMark** (`.gatemark`): diamond, rule, sim/não verdict.
+- **ScoreNumber** (`.score`): big number, optional max, band badge.
+- **GateMark** (`.gatemark`): diamond, rule, sim/não badge.
 - **TechDetails** (`.tech`): the "Ver detalhes técnicos" disclosure.
-- **ConceptLegend** (`.legend`): the one legend, on `/aula`; Como funciona can reuse it.
+- **ConceptLegend** (`.legend`): the legend on `/aula`.
 
-Buttons: 40px, weight 700. `.btn-primary` is ink (human action), `.btn-ai` is
-violet (asks the machine). Every interactive state is covered:
-default, hover, focus-visible, active, disabled, loading.
+Buttons: 38px, weight 500, radius 8px. `.btn-primary` is ink (human action),
+`.btn-ai` is violet (asks the machine), `.btn-outline` and `.btn-ghost` for the
+rest. Every state is covered: default, hover, focus-visible, active, disabled,
+loading. Cards: white, 1px border, radius 10 to 12px, no shadow unless they
+float.
 
 ## Motion
 
-The motion system is unchanged and token based (`app/globals.css`):
+Token based (`app/globals.css`):
 
 - Durations `--dur-press` 100ms, `--dur-state` 200ms, `--dur-move` 320ms,
   `--dur-explain` 560ms, `--dur-count` 600ms.
-- Curves `--ease-out`, `--ease-in-out`, `--ease-exit`, and the spring curves
-  `--spring-calm` and `--spring-land` (CSS `linear()`).
-- `--motion-scale` is 1, and 1.6 in modo aula (`[data-aula]`), so the lesson
-  plays slower with captions.
-- `prefers-reduced-motion: reduce` shortens moves to 160ms and removes counts
-  and drawing animations.
-
-New in this world: the `/aula` route line draws itself and the four stops
-arrive in a short stagger; both are off under reduced motion.
+- Curves `--ease-out`, `--ease-in-out`, `--ease-exit`, springs `--spring-calm`
+  and `--spring-land` (CSS `linear()`).
+- Entrances: opacity plus a small rise. The "wow" is kept to the fio drawing
+  itself and the numbers that count.
+- `--motion-scale` is 1, and 1.6 in modo aula (`[data-aula]`).
+- `prefers-reduced-motion: reduce` shortens moves and removes counts and drawing.
 
 ## Accessibility
 
-WCAG 2.2 AA. Body text at 4.5:1 or more in light and dark (checked per token).
-3px focus ring on every interactive element. Concepts never rely on color alone.
-Main phone actions (lesson CTAs, tab bar) are full width or 48px tall. No horizontal scroll from 360px up.
+WCAG 2.2 AA. Body text at 4.5:1 or more in light and dark. 2px focus ring with
+offset on every interactive element. Concepts never rely on color alone.
+Citation chips get an invisible taller hit area on touch. No horizontal scroll
+from 360px up.

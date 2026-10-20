@@ -125,10 +125,7 @@ export function PipelineTrace({
       <div className="pipe-head">
         <div className="pipe-head-text">
           <h2>Como a IA chegou na sugestão</h2>
-          <p className="pipe-lede">
-            Sete passos. A máquina faz cada um sozinha e mostra o que decidiu. No fim,
-            quem decide é você.
-          </p>
+          <p className="pipe-lede">Sete passos da máquina. No fim, quem decide é você.</p>
           <div className="pipe-legend" aria-label="Legenda">
             <ConceptLabel concept="ai-step">Passo da IA</ConceptLabel>
             <ConceptLabel concept="gate">Portão de sim ou não</ConceptLabel>
@@ -387,8 +384,8 @@ function StepDetail({
           />
           <p className="pipe-gate-why">
             {result.classification === "PROCEDENTE"
-              ? "Procedente: é um incidente de verdade, então a IA segue para a sugestão."
-              : "Improcedente: não é falha do sistema, então a IA para aqui e não sugere nada."}
+              ? "Procedente: segue para a sugestão."
+              : "Improcedente: a IA para aqui."}
           </p>
           {result.decision.justification ? (
             <TechDetails summary="Por que a IA decidiu assim">
@@ -424,10 +421,7 @@ function StepDetail({
           <ConceptIcon concept="human" />
           <div>
             <b>Agora é com você.</b>
-            <p>
-              Confira as fontes, ajuste o texto e decida. A IA não resolve o incidente
-              sozinha.
-            </p>
+            <p>Confira as fontes e decida. A IA não resolve sozinha.</p>
             {result.publication.published ? (
               <button
                 className="btn btn-primary btn-sm pipe-notes-btn"
@@ -601,9 +595,7 @@ function Layers({
               <span className="layer-name">O quanto se parece</span>
             </div>
             <p className="layer-line">
-              Compara com incidentes resolvidos e com Problemas (a causa de erros que se
-              repetem). Cada um ganha uma nota de 0 a 1: perto de 1 é muito parecido,
-              abaixo de {formatSim(vector.min_similarity)} fica de fora.
+              Nota de 0 a 1. Abaixo de {formatSim(vector.min_similarity)} fica de fora.
             </p>
             <SimilarityRuler
               incidents={incidents}
@@ -643,8 +635,7 @@ function Layers({
               <span className="layer-name">Serve mesmo?</span>
             </div>
             <p className="layer-line">
-              Parecer não basta. Uma IA lê cada caso e descarta o que não ajuda neste
-              incidente.
+              Parecer não basta. A IA descarta o que não ajuda.
             </p>
             {postfilter.status === "fallback" ? (
               <div className="pipe-alert is-warn">
@@ -709,8 +700,8 @@ function Funnel({
 }) {
   const stages: { n: number | null; label: string }[] = [
     { n: candidates, label: `achados (até ${topK})` },
-    { n: passed, label: `parecidos de verdade (${formatSim(floor)} ou mais)` },
-    { n: kept, label: "aprovados pela IA" },
+    { n: passed, label: `de ${formatSim(floor)} para cima` },
+    { n: kept, label: "aprovados" },
   ];
   return (
     <div className="funnel" aria-label="Funil das camadas">
@@ -831,7 +822,7 @@ function CitedSources({
               <IdChip id={id} onCite={onCite} />
               <span className="cited-what">
                 {row
-                  ? `semelhança ${formatSim(row.sim)}, ${OUTCOME_LABEL[row.outcome]} na conferência`
+                  ? `${formatSim(row.sim)} · ${OUTCOME_LABEL[row.outcome]}`
                   : inContext
                     ? "entre os casos encontrados"
                     : "fora dos casos encontrados"}

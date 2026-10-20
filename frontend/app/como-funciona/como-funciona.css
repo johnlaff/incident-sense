@@ -58,6 +58,22 @@
   white-space: nowrap;
 }
 
+/* The sticky index runs to the edges of the sheet: the phone gutter, then the
+   desktop sheet padding (shell.css). */
+.cf {
+  --cf-bleed: var(--gutter, 16px);
+}
+@media (min-width: 768px) {
+  .cf {
+    --cf-bleed: 32px;
+  }
+}
+@media (min-width: 1280px) {
+  .cf {
+    --cf-bleed: 48px;
+  }
+}
+
 /* ----- Hero ----- */
 .cf-hero {
   padding: 4px 0 20px;
@@ -124,9 +140,7 @@
 .cf-life-n.is-deploy .cf-life-dot {
   background: var(--cf-fail);
   border-color: var(--cf-fail);
-  width: 14px;
-  height: 14px;
-  margin-left: -1px;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cf-fail) 22%, transparent);
 }
 .cf-life-n.is-deploy > span {
   color: var(--cf-fail);
@@ -149,6 +163,7 @@
   .cf-life {
     grid-template-columns: repeat(6, minmax(0, 1fr));
     max-width: 760px;
+    container-type: inline-size;
   }
   .cf-life-n > a,
   .cf-life-n > span {
@@ -156,13 +171,13 @@
     align-items: flex-start;
     gap: 8px;
     min-height: 0;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
   }
   .cf-life-n:not(:last-child) .cf-life-dot::after {
     left: 10px;
     top: 3px;
     height: 2px;
-    width: calc((min(760px, 100vw - 64px) / 6) - 12px);
+    width: calc(100cqi / 6 - 12px);
   }
 }
 @media (min-width: 1101px) {
@@ -177,9 +192,9 @@
   position: sticky;
   top: calc(var(--topbar-h, 52px) + var(--safe-t, 0px));
   z-index: 5;
-  margin: 0 calc(-1 * var(--gutter, 16px)) 8px;
-  padding: 8px var(--gutter, 16px);
-  background: var(--bg);
+  margin: 0 calc(-1 * var(--cf-bleed)) 8px;
+  padding: 8px var(--cf-bleed);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -448,7 +463,7 @@
   border: 2px solid var(--cf-part);
   background: var(--surface);
   color: var(--cf-part-ink);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
   transition:
@@ -1146,7 +1161,7 @@
   left: 0;
   translate: -50% 0;
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
 }
 .cf-gate-chg {
@@ -1179,7 +1194,7 @@
   translate: -50% 0;
   font-size: 0.8125rem;
   color: var(--ink);
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
 }
 .cf-gate-txt b {
@@ -1389,6 +1404,12 @@
   margin: 6px 0 0;
   color: var(--ink-body);
   font-size: 0.9375rem;
+  /* The full text is read in the next step: here two lines are enough. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 .cf-fields {
   display: grid;
@@ -1556,7 +1577,7 @@
 }
 
 .cf-ruler-plot {
-  --lab: 96px;
+  --lab: 106px;
   position: relative;
 }
 .cf-ruler-out {
@@ -1586,7 +1607,7 @@
   left: 50%;
   translate: -50% 0;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
 }
 .cf-ruler-rows {

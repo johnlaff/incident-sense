@@ -246,9 +246,8 @@ export function ContentLock() {
         })}
       </ul>
       <p className="cf-card-foot">
-        <b className="mono">1</b> chamada ao modelo em vez de <b className="mono">7</b>. O
-        texto de cada campo vira uma impressão digital: se ela não mudou, a nota é
-        reaproveitada.
+        <b className="mono">1</b> chamada ao modelo em vez de <b className="mono">7</b>.
+        Campo sem mudança reaproveita a nota.
       </p>
     </figure>
   );
@@ -395,10 +394,7 @@ export function Tasks() {
           </li>
         ))}
       </ul>
-      <p className="cf-card-foot">
-        No app, a análise devolve a nota de coerência, os problemas e quanto do retorno as
-        tarefas cobrem. A ligação tarefa a tarefa acima é só para explicar.
-      </p>
+      <p className="cf-card-foot">A ligação tarefa a tarefa é só para explicar.</p>
     </figure>
   );
 }
@@ -531,7 +527,7 @@ export function Vectorize() {
       </div>
       <p className="cf-card-foot">
         O vetor real tem <b className="mono">{EMBEDDING.dims.toLocaleString("pt-BR")}</b>{" "}
-        números. Aqui, 48 deles, inventados, só para dar a forma.
+        números. Aqui, 48 ilustrativos.
       </p>
     </figure>
   );
@@ -590,8 +586,7 @@ export function TagFilter() {
         ))}
       </p>
       <p className="cf-card-foot">
-        {TAG_FUNNEL.incidents} incidentes e {TAG_FUNNEL.problems} problemas na base;
-        sobram {TAG_FUNNEL.matchIncidents} incidentes e {TAG_FUNNEL.matchProblems}{" "}
+        Sobram {TAG_FUNNEL.matchIncidents} incidentes e {TAG_FUNNEL.matchProblems}{" "}
         problemas.
       </p>
     </figure>
@@ -762,8 +757,7 @@ export function Suggest() {
       <p className="cf-card-foot cf-sug-foot">
         <Icons.close size={14} sw={2.5} />
         <span>
-          <b className="mono">INC0051234</b> foi removida: não veio da busca. Cada citação
-          que fica abre o caso antigo, para conferir.
+          <b className="mono">INC0051234</b> saiu: não veio da busca.
         </span>
       </p>
     </figure>
@@ -860,8 +854,8 @@ export function ClusterStage({ idx, total }: { idx: number; total: number }) {
       </div>
       <p className="cf-legend">
         <span>
-          <i className="cf-sw" style={{ background: clusterColor(5) }} /> cada cor é um
-          grupo
+          <i className="cf-sw" style={{ background: clusterColor(MINI_GROUPS[0].id) }} />{" "}
+          cada cor é um grupo
         </span>
         <span>
           <i className="cf-sw" style={{ background: clusterColor(-1, true) }} /> cinza:
@@ -935,10 +929,7 @@ export function Loop() {
           <span>nova Change, mesmo juiz</span>
         </li>
       </ol>
-      <p className="cf-card-foot">
-        O demo não abre a Change da correção: esse passo fica fora do demo. A Change nova
-        seria avaliada como no capítulo 1.
-      </p>
+      <p className="cf-card-foot">A Change da correção fica fora do demo.</p>
     </figure>
   );
 }
