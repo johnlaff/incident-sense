@@ -397,8 +397,11 @@
   color: var(--muted);
 }
 /* On a phone the record head keeps its marks on one line: "Crítica" alone
-   (the badge keeps "Prioridade Crítica" as its title). */
+   (the badge keeps "Prioridade crítica" as its title). */
 @media (max-width: 479px) {
+  .badge-level {
+    text-transform: capitalize;
+  }
   .badge-word {
     /* visually hidden, still read by screen readers */
     position: absolute;

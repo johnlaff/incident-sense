@@ -87,6 +87,19 @@ export function relTime(iso: string): string {
   return `há ${mo} ${mo === 1 ? "mês" : "meses"}`;
 }
 
+/**
+ * "17 de mar." (or "17 de mar., 20:40" with the time). The demo data is a
+ * fixed snapshot, so its timestamps read as dates: "há 7 meses" would only
+ * say how old the snapshot is.
+ */
+export function dayDate(iso: string, withTime = false): string {
+  return new Date(iso).toLocaleString("pt-BR", {
+    day: "numeric",
+    month: "short",
+    ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
+  });
+}
+
 export function absDate(iso: string): string {
   return new Date(iso).toLocaleString("pt-BR", {
     dateStyle: "medium",
@@ -104,7 +117,8 @@ export interface IncidentRow {
   state: DsState;
   priority: PCode;
   openedAt: string;
-  rel: string;
+  /** When it was opened, as a short date: "17 de mar." */
+  opened: string;
   isResolved: boolean;
   category: string;
   tags: string[];
@@ -119,7 +133,7 @@ export function mapSummary(s: IncidentSummary): IncidentRow {
     state: dsState(s.state),
     priority: pCode(s.priority),
     openedAt: s.opened_at,
-    rel: relTime(s.opened_at),
+    opened: dayDate(s.opened_at),
     isResolved: s.is_resolved,
     category: s.category,
     tags: s.tags,
@@ -162,7 +176,7 @@ function synthActivity(d: IncidentDetail): ActivityItem[] {
     {
       kind: "open",
       who: OBSERVER,
-      when: relTime(d.opened_at),
+      when: dayDate(d.opened_at, true),
       text: "Incidente aberto a partir de monitoração ou contato de cliente.",
     },
   ];
@@ -170,7 +184,7 @@ function synthActivity(d: IncidentDetail): ActivityItem[] {
     items.push({
       kind: "note",
       who: ANALYST,
-      when: relTime(d.opened_at),
+      when: dayDate(d.opened_at, true),
       text: d.work_notes,
     });
   }
@@ -179,7 +193,7 @@ function synthActivity(d: IncidentDetail): ActivityItem[] {
     items.push({
       kind: "resolve",
       who: ANALYST,
-      when: relTime(d.resolved_at),
+      when: dayDate(d.resolved_at, true),
       text: d.resolution_notes,
     });
   }
@@ -216,7 +230,7 @@ export function mapDetail(d: IncidentDetail): IncidentRecord {
     state,
     priority: pCode(d.priority),
     openedAt: d.opened_at,
-    rel: relTime(d.opened_at),
+    opened: dayDate(d.opened_at, true),
     isResolved: state === "resolved",
     category: d.category,
     tags: d.tags,

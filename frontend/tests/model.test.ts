@@ -56,7 +56,7 @@ describe("mapSummary", () => {
     expect(row.state).toBe("progress");
     expect(row.priority).toBe("p2");
     expect(row.isResolved).toBe(false);
-    expect(row.rel.startsWith("há")).toBe(true);
+    expect(row.opened).toMatch(/^\d{1,2} de [a-zç]+\.?$/);
   });
 });
 

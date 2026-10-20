@@ -455,7 +455,9 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                   items={[
                     record.service,
                     record.group,
-                    localState === "resolved" ? "resolvido" : `aberto ${record.rel}`,
+                    localState === "resolved"
+                      ? "resolvido"
+                      : `aberto em ${record.opened}`,
                     assignee,
                   ]}
                 />

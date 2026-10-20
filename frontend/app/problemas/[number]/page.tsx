@@ -238,7 +238,7 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
                         <RecordTag number={r.number} size="sm" />
                       </span>
                       <span className="rdesc">{r.short}</span>
-                      <span className="svc">{r.rel}</span>
+                      <span className="svc">{r.opened}</span>
                       <StateBadge state={r.state} />
                     </div>
                   ))}

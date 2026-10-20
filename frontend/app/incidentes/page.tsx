@@ -454,7 +454,7 @@ export default function IncidentesPage() {
                         <PriorityBadge priority={x.priority} />
                       </td>
                       <td className="when" data-label="Aberto">
-                        {x.rel}
+                        {x.opened}
                       </td>
                     </tr>
                   ))
