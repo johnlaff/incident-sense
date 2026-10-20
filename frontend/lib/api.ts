@@ -1,4 +1,5 @@
 import type { Change, ChangeSummary, EvaluateBody, Evaluation, Rubric } from "./changes";
+import type { ProblemDetail, ProblemSummary } from "./problems";
 import type {
   ClustersResponse,
   Health,
@@ -104,6 +105,9 @@ export const api = {
     request<IncidentListResponse>(`/api/incidents${buildQuery(params)}`),
   getIncident: (number: string) =>
     request<IncidentDetail>(`/api/incidents/${encodeURIComponent(number)}`),
+  listProblems: () => request<ProblemSummary[]>("/api/problems"),
+  getProblem: (number: string) =>
+    request<ProblemDetail>(`/api/problems/${encodeURIComponent(number)}`),
   listChanges: () => request<ChangeSummary[]>("/api/changes"),
   getChange: (number: string) =>
     request<Change>(`/api/changes/${encodeURIComponent(number)}`),

@@ -18,7 +18,7 @@ backend/
     providers.py       OpenAI/OpenRouter clients + JSON extraction helpers
     main.py            FastAPI app (CORS, lifespan self-seeds Qdrant)
     models/            pydantic schemas (incident, suggest, cluster)
-    api/               routers: health, suggest, clusters
+    api/               routers: health, incidents, problems, suggest, clusters, changes
     rag/               clients (DI protocols), postfilter, pipeline
     clustering/        (clustering output is served from committed JSON)
     data/              archetypes, loader, ingest, precomputed (de)serialization

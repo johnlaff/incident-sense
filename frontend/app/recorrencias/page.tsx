@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Icons } from "@/components/icons";
@@ -9,7 +10,10 @@ import { activate } from "@/lib/a11y";
 import { useClusters } from "@/lib/incidents";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { clusterColor } from "@/lib/model";
+import { problemsForGroup, useProblems } from "@/lib/problems";
 import type { ClustersResponse } from "@/lib/types";
+
+import "../problemas/problemas.css";
 
 const OUTLIER_GREY = "oklch(0.62 0.012 285)";
 
@@ -101,7 +105,8 @@ export default function RecurrencesPage() {
   const [grouped, setGrouped] = useState(false);
   const [sel, setSel] = useState<number | "outlier" | null>(null);
   const [hover, setHover] = useState<number | "outlier" | null>(null);
-  const [promoted, setPromoted] = useState<Record<string, string>>({});
+  const [promoted, setPromoted] = useState<Record<string, boolean>>({});
+  const { data: problems } = useProblems();
   const [declutter, setDeclutter] = useState(0);
   const mapRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLDivElement>(null);
@@ -240,6 +245,16 @@ export default function RecurrencesPage() {
     );
   }, [sel, view]);
 
+  // Problems already registered for the selected group (their linked incidents
+  // fall inside it). With one, the group needs no new Problem: open that one.
+  const selProblems =
+    sel == null || sel === "outlier"
+      ? []
+      : problemsForGroup(
+          problems ?? [],
+          selIncidents.map((x) => x.id),
+        );
+
   if (error) {
     return (
       <div className="card">
@@ -265,7 +280,11 @@ export default function RecurrencesPage() {
       <p className="page-lede">
         Cada ponto é um incidente. Os parecidos ficam perto uns dos outros e formam
         grupos: cada grupo é uma recorrência, um padrão que vale investigar. A IA deu nome
-        aos grupos. Escolha um para ver os incidentes e abrir um <b>problema</b>.
+        aos grupos. Escolha um para ver os incidentes e o{" "}
+        <Link className="prb-inline-link" href="/problemas">
+          problema
+        </Link>{" "}
+        que explica a causa.
       </p>
       <WakeNotice show={slow} />
 
@@ -422,11 +441,36 @@ export default function RecurrencesPage() {
                         Casos isolados não viram problema: não se repetem o bastante para
                         indicar um padrão.
                       </p>
+                    ) : selProblems.length ? (
+                      <div className="rec-prb">
+                        <p className="rec-prb-head">
+                          <Icons.problems size={15} />
+                          {selProblems.length === 1
+                            ? "Este grupo já tem um problema"
+                            : `Este grupo já tem ${selProblems.length} problemas`}
+                        </p>
+                        <ul className="rec-prb-list">
+                          {selProblems.map((p) => (
+                            <li key={p.number}>
+                              <Link
+                                className="rec-prb-row"
+                                href={`/problemas/${p.number}`}
+                                transitionTypes={["nav-forward"]}
+                              >
+                                <span className="prb-num">{p.number}</span>
+                                <span className="rec-prb-title">
+                                  {p.short_description}
+                                </span>
+                                <Icons.chevronRight className="prb-go" />
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     ) : prb ? (
                       <p className="cd-done" role="status">
                         <Icons.checkCircle size={16} />
-                        Problema <span className="mono">{prb}</span> aberto para este
-                        grupo
+                        Problema aberto para este grupo. Na demonstração, nada é gravado.
                       </p>
                     ) : (
                       <button
@@ -434,8 +478,7 @@ export default function RecurrencesPage() {
                         onClick={() =>
                           setPromoted((m) => ({
                             ...m,
-                            [String(sel)]:
-                              `PRB00${40210 + (typeof sel === "number" ? sel : 0)}`,
+                            [String(sel)]: true,
                           }))
                         }
                       >
@@ -452,7 +495,8 @@ export default function RecurrencesPage() {
               <Meridian ticks={14} style={{ marginBottom: 12 }} />
               <p className="cd-note">
                 Escolha um grupo no mapa ou nesta lista para ver os incidentes e abrir um
-                problema: o registro que investiga a causa de incidentes repetidos.
+                problema: o registro da causa raiz de incidentes que se repetem e da
+                solução conhecida.
               </p>
             </div>
           )}

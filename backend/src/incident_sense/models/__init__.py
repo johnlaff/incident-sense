@@ -46,7 +46,7 @@ from .incident import (
     Urgency,
 )
 from .incident_list import IncidentDetail, IncidentListResponse, IncidentSummary
-from .problem import Problem
+from .problem import Problem, ProblemDetail, ProblemSummary
 from .suggest import (
     CitationCheck,
     CitationFlag,
@@ -103,6 +103,8 @@ __all__ = [
     "PostFilterVerdict",
     "Priority",
     "Problem",
+    "ProblemDetail",
+    "ProblemSummary",
     "ProcedenciaDecision",
     "Publication",
     "QuestionBlock",
