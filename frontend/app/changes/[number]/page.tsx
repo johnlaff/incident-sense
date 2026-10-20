@@ -527,7 +527,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   )}
                   {inScope && editing !== f.key && phase !== "running" && (
                     <button
-                      className="btn btn-ghost btn-sm chg-edit-btn"
+                      className="btn btn-outline btn-sm chg-edit-btn"
                       onClick={() => startEdit(f.key)}
                     >
                       Editar campo

@@ -811,7 +811,8 @@ function CopilotFab({
     });
     function sync() {
       const now = [...document.querySelectorAll("[data-ai-entry]")];
-      if (now.length === watched.length && now.every((el, i) => el === watched[i])) return;
+      if (now.length === watched.length && now.every((el, i) => el === watched[i]))
+        return;
       io.disconnect();
       visible.clear();
       watched = now;

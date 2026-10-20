@@ -410,10 +410,16 @@ a.chg-row:focus-visible {
   line-height: 1.5;
   font-size: 13.5px;
 }
+/* The AI's advice: plain ink inside its AI box. Not teal or green, which
+   read as Mudança or as "approved". */
 .chg-guidance {
   display: flex;
   gap: 8px;
-  color: var(--c-chg-ink) !important;
+  color: var(--ink) !important;
+  font-weight: 500;
+}
+.chg-guidance svg {
+  color: var(--c-ai-ink);
 }
 .chg-guidance svg {
   flex: none;
@@ -1318,9 +1324,9 @@ a.chg-row:focus-visible {
     min-height: 36px;
     padding: 4px;
   }
+  /* "peso" reads as a column: same x on every row, notes wrap under it. */
   .chg-led-label {
-    grid-auto-flow: column;
-    justify-content: start;
+    grid-template-columns: minmax(0, 1fr) 13ch;
     align-items: baseline;
     gap: 8px;
   }

@@ -1821,6 +1821,10 @@
 .vec-big span {
   color: var(--muted);
 }
+.vec-plain {
+  margin: 4px 0 8px;
+  color: var(--ink-body);
+}
 
 /* Step 5: the gate */
 .pipe-gate {
@@ -1896,6 +1900,15 @@
 .funnel-l {
   font-size: var(--fs-sm);
   color: var(--muted);
+}
+/* The three counts read as one row: the number never wraps away from its
+   label, and labels break between words only. */
+.funnel-n {
+  white-space: nowrap;
+}
+.funnel-l {
+  max-width: none;
+  text-wrap: balance;
 }
 
 /* Dropped candidates fold under the kept ones, one tap away. */

@@ -532,16 +532,17 @@ function Numbers({ result }: { result: SuggestResponse }) {
   return (
     <div className="pipe-block">
       <div className="vec">
-        <p className="vec-big">
-          {dims ? (
-            <>
-              <b className="mono">{dims.toLocaleString("pt-BR")}</b> números
-            </>
-          ) : (
-            <b>Uma lista longa de números</b>
-          )}
-          <span>que representam o sentido do resumo</span>
-        </p>
+        {dims ? (
+          <p className="vec-big">
+            <b className="mono">{dims.toLocaleString("pt-BR")}</b> números
+            <span>que representam o sentido do resumo</span>
+          </p>
+        ) : (
+          // Without the real count it is a sentence, not a big number.
+          <p className="vec-plain">
+            Uma lista longa de números que representam o sentido do resumo.
+          </p>
+        )}
         {preview.length ? (
           <div className="vec-bars" aria-hidden="true">
             {preview.map((v, i) => (
@@ -734,9 +735,11 @@ function Funnel({
   kept: number | null;
   floor: number;
 }) {
-  const stages: { n: number | null; label: string }[] = [
-    { n: candidates, label: `achados (até ${topK})` },
-    { n: passed, label: `de ${formatSim(floor)} para cima` },
+  const stages: { n: number | null; label: string; title?: string }[] = [
+    // Short labels keep the three counts on one row on a phone; the top-K
+    // limit is in the label's title and in "Ver detalhes técnicos".
+    { n: candidates, label: "achados", title: `achados, até ${topK}` },
+    { n: passed, label: `${formatSim(floor)} ou mais` },
     { n: kept, label: "aprovados" },
   ];
   return (
@@ -745,7 +748,9 @@ function Funnel({
         <div className={`funnel-stage${s.n == null ? " is-pending" : ""}`} key={i}>
           {i > 0 ? <Icons.arrowRight className="funnel-arrow" /> : null}
           <span className="funnel-n mono">{s.n ?? "?"}</span>
-          <span className="funnel-l">{s.label}</span>
+          <span className="funnel-l" title={s.title}>
+            {s.label}
+          </span>
         </div>
       ))}
     </div>

@@ -97,9 +97,12 @@
 [data-theme="dark"] .topbar .notif-dot {
   border-color: var(--surface);
 }
-/* Modo aula switch: when on it reads as a lit lamp, in ink. */
-.topbar .aula-toggle {
-  border-color: var(--border);
+/* Modo aula switch: when on it reads as a lit lamp, in ink. Off, it is a
+   plain icon like its neighbors; the outline comes only with its label. */
+@media (min-width: 921px) {
+  .topbar .aula-toggle {
+    border-color: var(--border);
+  }
 }
 .topbar .aula-toggle.on {
   background: var(--ink);
