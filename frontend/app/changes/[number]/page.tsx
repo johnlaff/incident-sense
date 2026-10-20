@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { use, useMemo, useState, type CSSProperties } from "react";
+import { use, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { useAulaLesson } from "@/components/aula";
 import { RecordTag, TechDetails } from "@/components/concepts";
@@ -190,6 +190,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const at = (id: StepId) => showResult && reached(steps, playback.index, id);
   const gateClosed = at("portao") && result !== null && !gatePassed(result);
 
+  const asideRef = useTallSticky();
   const inScope = result ? result.scope.in_scope : isInScope(change);
   const valueOf = (key: FieldKey) => edits[key] ?? change[key];
 
@@ -289,7 +290,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       </header>
 
       <div className="chg-grid" data-skip={playback.skipped}>
-        <aside className="chg-aside">
+        <aside className="chg-aside" ref={asideRef}>
           <section className="card chg-run" aria-labelledby="run-h">
             <h2 id="run-h">Nota da IA para este pedido</h2>
             <p className="chg-run-lede">
@@ -608,4 +609,24 @@ function outOfScopeReason(change: Change): string {
     reasons.push(`está ${(STATE_LABEL[change.state] ?? change.state).toLowerCase()}`);
   if (change.company !== "Banco Meridiano") reasons.push(`é da ${change.company}`);
   return `Não avaliada: só entram mudanças do tipo normal, novas e do Banco Meridiano, e esta ${reasons.join(" e ")}.`;
+}
+
+/** A sticky panel taller than its scroller sticks by its end, not its top. */
+function useTallSticky() {
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    const scroller = el?.closest<HTMLElement>(".main");
+    if (!el || !scroller) return;
+    const fit = () => {
+      const room = scroller.clientHeight - el.offsetHeight - 24;
+      el.style.setProperty("--aside-top", `${Math.min(0, room)}px`);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    ro.observe(scroller);
+    return () => ro.disconnect();
+  }, []);
+  return ref;
 }
