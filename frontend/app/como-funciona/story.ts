@@ -529,8 +529,7 @@ export interface Chapter {
   id: string;
   n: number;
   part: PartKey;
-  /** Name in the chapter index. */
-  short: string;
+  /** The one name of the chapter: heading, index and the line at the top. */
   title: string;
   why: string;
   app: { href: string; label: string };
@@ -542,9 +541,8 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-1",
     n: 1,
     part: "antes",
-    short: "A nota da Change",
-    title: "Antes de subir, a Change ganha uma nota",
-    why: "Ninguém revisa mil Changes por dia à mão.",
+    title: "A nota da Change",
+    why: "Antes de subir, a Change ganha uma nota. Ninguém revisa mil Changes por dia à mão.",
     app: { href: "/changes/CHG0031001", label: "Ver no app: CHG0031001" },
     steps: [
       {
@@ -585,9 +583,8 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-2",
     n: 2,
     part: "antes",
-    short: "Completo não é coerente",
-    title: "Nota alta não quer dizer que os campos combinam",
-    why: "Cada campo bom, e ainda assim sem volta segura.",
+    title: "Completo não é coerente",
+    why: "Nota alta não quer dizer que os campos combinam: cada campo bom, e ainda assim sem volta segura.",
     app: { href: "/changes/CHG0031002", label: "Ver no app: CHG0031002" },
     steps: [
       {
@@ -621,9 +618,8 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-3",
     n: 3,
     part: "depois",
-    short: "Ler o incidente",
-    title: "Quando quebra, a resposta quase sempre já está no histórico",
-    why: "O difícil é achar o caso certo.",
+    title: "Ler o incidente",
+    why: "Quando quebra, a resposta quase sempre já está no histórico. O difícil é achar o caso certo.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
@@ -653,9 +649,8 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-4",
     n: 4,
     part: "depois",
-    short: "Buscar e conferir",
-    title: "Parecido não basta: buscar e depois conferir",
-    why: "Parecer não é o mesmo que servir.",
+    title: "Buscar e conferir",
+    why: "Parecido não basta: primeiro buscar, depois conferir. Parecer não é o mesmo que servir.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
@@ -683,9 +678,8 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-5",
     n: 5,
     part: "depois",
-    short: "Decidir e responder",
-    title: "Decidir antes de escrever, e mostrar as fontes",
-    why: "Sugestão sem fonte é palpite.",
+    title: "Decidir e responder",
+    why: "Decidir antes de escrever, e mostrar as fontes. Sugestão sem fonte é palpite.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
@@ -714,9 +708,8 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-6",
     n: 6,
     part: "depois",
-    short: "Recorrências",
-    title: "Muitos incidentes, poucos padrões",
-    why: "Muitos incidentes, poucas causas.",
+    title: "Agrupar as recorrências",
+    why: "Muitos incidentes, poucas causas: os parecidos formam grupos, e grupo grande pede um Problema.",
     app: { href: "/recorrencias", label: "Ver no app: Recorrências" },
     steps: [
       {
@@ -756,7 +749,6 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-7",
     n: 7,
     part: "ciclo",
-    short: "O ciclo fecha",
     title: "O Problema fecha o ciclo",
     why: "A correção vira Change, e a resposta vira fonte.",
     app: { href: "/problemas/PRB0004105", label: "Ver no app: PRB0004105" },
@@ -798,7 +790,7 @@ export function lessonSteps(ch: Chapter): AulaLessonStep[] {
 export function allCopy(): string[] {
   const out: string[] = [];
   for (const ch of CHAPTERS) {
-    out.push(ch.short, ch.title, ch.why, ch.app.label);
+    out.push(ch.title, ch.why, ch.app.label);
     for (const s of ch.steps) out.push(s.title, s.line, s.caption);
   }
   for (const p of Object.values(PARTS)) out.push(p.title, p.who);

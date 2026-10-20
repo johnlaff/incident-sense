@@ -158,7 +158,9 @@ export function SimilarityRuler({
         {all.some((r) => r.sim < 0.5) ? (
           <span className="ruler-key">abaixo de 0,50: na borda esquerda</span>
         ) : null}
-        <span className="ruler-key ruler-hint">Toque num ponto para ver o caso.</span>
+        <span className="ruler-key ruler-hint">
+          Clique ou toque num ponto para ver o caso.
+        </span>
       </div>
 
       {pickedRow ? (

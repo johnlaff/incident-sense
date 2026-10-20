@@ -410,6 +410,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     flashToast("Sugestão copiada", 1800);
   }
 
+  // id: a system name (service, group); Inter like the rest, kept whole.
   const fields: { label: string; value: string; id?: boolean }[] = [
     { label: "Categoria", value: record.category },
     { label: "Subcategoria", value: record.subcategory },
@@ -422,7 +423,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: "detalhes", label: "Detalhes" },
-    { id: "analise", label: "Análise da IA", count: suggest.response?.steps.length },
+    { id: "analise", label: "Análise da IA" },
     { id: "atividade", label: "Atividade", count: activity.length },
     { id: "relacionados", label: "Vínculos", count: related.length },
   ];
@@ -542,7 +543,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                   {fields.map((f) => (
                     <div className="field" key={f.label}>
                       <dt>{f.label}</dt>
-                      <dd className={`val${f.id ? " mono val-id" : ""}`}>{f.value}</dd>
+                      <dd className="val">{f.id ? keepWhole(f.value) : f.value}</dd>
                     </div>
                   ))}
                   {record.clusterLabel ? (
@@ -791,7 +792,7 @@ function CopilotFab({
   onInsert: (text: string) => void;
   onCopy: (text: string) => void;
   onOpenAnalysis: () => void;
-  /** The analysis tab already shows the run: the phone button steps aside. */
+  /** The analysis tab already shows the run: the button steps aside. */
   quiet?: boolean;
 }) {
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();

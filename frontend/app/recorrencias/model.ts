@@ -4,7 +4,7 @@
 // group rule, the week buckets).
 
 import type { ClusterPoint, ClustersResponse, IncidentSummary } from "@/lib/types";
-import { CLUSTER_HUES } from "@/lib/model";
+import { CLUSTER_HUES, type ClusterTone, clusterTone } from "@/lib/model";
 import { keepWhole } from "@/lib/text";
 
 export { keepWhole };
@@ -13,9 +13,18 @@ export { keepWhole };
 export const GROUP_HUES = CLUSTER_HUES;
 
 export function groupHue(clusterId: number): number {
-  return GROUP_HUES[
-    ((clusterId % GROUP_HUES.length) + GROUP_HUES.length) % GROUP_HUES.length
-  ];
+  return clusterTone(clusterId).h;
+}
+
+/** CSS variables for a group's tone; recorrencias.css .rx-tone picks the theme. */
+export function toneVars(tone: ClusterTone): Record<string, number> {
+  return {
+    "--hue": tone.h,
+    "--gl": tone.l,
+    "--gc": tone.c,
+    "--gdl": tone.dl,
+    "--gdc": tone.dc,
+  };
 }
 
 export interface RecIncident {
@@ -45,6 +54,7 @@ export interface RecGroup {
   label: string;
   size: number;
   hue: number;
+  tone: ClusterTone;
   /** Indices into RecData.incidents. */
   members: number[];
   services: ServiceCount[];
@@ -160,6 +170,7 @@ export function buildRecData(
         label: c.label,
         size: members.length,
         hue: groupHue(c.cluster_id),
+        tone: clusterTone(c.cluster_id),
         members,
         services,
         topShare:

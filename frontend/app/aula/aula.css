@@ -62,7 +62,8 @@
 /* ----- The route: "o fio", a hairline with four stations ----- */
 .lesson-route {
   --dot: 30px;
-  --line: 1.5px;
+  /* o fio is a 1px line, here as everywhere else. */
+  --line: 1px;
   position: relative;
   list-style: none;
   margin: 8px 0 0;
@@ -208,6 +209,9 @@
 .pick-text small {
   font-size: var(--fs-xs);
   color: var(--muted);
+}
+.pick-text .pick-status {
+  color: var(--ink-body);
 }
 .stop-cta {
   margin-top: 4px;

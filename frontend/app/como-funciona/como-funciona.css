@@ -166,10 +166,14 @@
   margin-top: 2px;
 }
 
+.cf-life-num {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
 @media (min-width: 600px) {
   .cf-life {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    max-width: 760px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    max-width: 980px;
     container-type: inline-size;
   }
   .cf-life-n > a,
@@ -184,7 +188,7 @@
     left: 10px;
     top: 3px;
     height: 2px;
-    width: calc(100cqi / 6 - 12px);
+    width: calc(100cqi / 7 - 12px);
   }
 }
 @media (min-width: 1101px) {
@@ -405,11 +409,11 @@
 .cf-ch-head {
   margin-bottom: 24px;
 }
-.cf-ch-n {
-  margin: 0 0 6px;
-  color: var(--cf-part-ink);
-  font-size: var(--fs-sm, 0.875rem);
-  font-weight: 600;
+/* The chapter number, in the heading's own ink: the same number as the
+   index and the line at the top. */
+.cf-ch-num {
+  margin-right: 0.45em;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 .cf-ch-head h2 {
@@ -482,7 +486,8 @@
   place-items: center;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  /* A rounded square with a letter: chapters are the numbered circles. */
+  border-radius: 9px;
   border: 2px solid var(--cf-part);
   background: var(--surface);
   color: var(--cf-part-ink);
@@ -1261,9 +1266,9 @@
   gap: 4px;
   font-size: 0.875rem;
 }
+/* Lines of a Change are prose: Inter, like the rest of the text. */
 .cf-doc-t {
-  font-family: var(--mono);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--ink);
   overflow-wrap: anywhere;
 }
@@ -1522,8 +1527,10 @@
     rotate: 0deg;
   }
 }
+/* The text sent to the embedding model is prose: Inter, line breaks kept. */
 .cf-query {
   margin: 0;
+  font-family: var(--font);
   padding: 10px 12px;
   border-radius: var(--radius-sm, 6px);
   background: var(--surface-2);

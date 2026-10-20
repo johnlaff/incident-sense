@@ -59,6 +59,8 @@ export class MapEngine {
   private hullFocus = new Map<number, Tween>();
   private ramps = new Map<number, string[]>();
   private tints = new Map<number, string>();
+  private dims = new Map<number, string>();
+  private dimmed = new Uint8Array(0);
   private grey = "";
   private stage = 0;
   private focus: Focus = null;
@@ -85,6 +87,7 @@ export class MapEngine {
     this.dur = new Float32Array(n);
     this.alpha = new Float32Array(n).fill(1);
     this.alphaTarget = new Float32Array(n).fill(1);
+    this.dimmed = new Uint8Array(n);
     this.groupOf = new Int16Array(n);
     const rank = new Map(data.groups.map((g, k) => [g.id, k]));
     data.incidents.forEach((inc, i) => {
@@ -122,21 +125,25 @@ export class MapEngine {
   }
 
   private buildColors(): void {
-    const L = this.palette.dark ? 0.76 : 0.6;
-    this.grey = `oklch(${L} 0.012 265)`;
+    const dark = this.palette.dark;
+    this.grey = `oklch(${dark ? 0.76 : 0.6} 0.012 265)`;
     this.ramps.clear();
     this.tints.clear();
+    this.dims.clear();
     for (const g of this.data?.groups ?? []) {
+      const { h, l, c, dl, dc } = g.tone;
+      const L = dark ? dl : l;
+      const C = dark ? dc : c;
       const ramp: string[] = [];
       for (let k = 0; k < RAMP; k++) {
         const t = k / (RAMP - 1);
-        ramp.push(`oklch(${L} ${(0.012 + (0.14 - 0.012) * t).toFixed(3)} ${g.hue})`);
+        ramp.push(`oklch(${L} ${(0.012 + (C - 0.012) * t).toFixed(3)} ${h})`);
       }
       this.ramps.set(g.id, ramp);
-      this.tints.set(
-        g.id,
-        this.palette.dark ? `oklch(0.31 0.04 ${g.hue})` : `oklch(0.955 0.028 ${g.hue})`,
-      );
+      this.tints.set(g.id, dark ? `oklch(0.31 0.04 ${h})` : `oklch(0.955 0.028 ${h})`);
+      // A group out of focus steps back to a pale tone of its own hue, still
+      // 3:1 against the card, so the other groups stay readable.
+      this.dims.set(g.id, dark ? `oklch(0.52 0.04 ${h})` : `oklch(0.66 0.04 ${h})`);
     }
   }
 
@@ -216,14 +223,19 @@ export class MapEngine {
     for (let i = 0; i < data.incidents.length; i++) {
       const inc = data.incidents[i];
       let a = 1;
+      let dim = 0;
       if (scene.stage >= 2 && inc.isOutlier) a = 0.5;
       if (scene.focus != null) {
         const mine =
           scene.focus === "outlier"
             ? inc.isOutlier
             : !inc.isOutlier && inc.clusterId === scene.focus;
-        if (!mine) a = Math.min(a, 0.18);
+        // Other groups keep full opacity in a pale tone (3:1 or more);
+        // isolated cases out of focus fade, as they carry no group.
+        if (!mine && inc.isOutlier) a = Math.min(a, 0.18);
+        else if (!mine) dim = 1;
       }
+      this.dimmed[i] = dim;
       if (!scene.mask[i]) a = Math.min(a, 0.1);
       this.alphaTarget[i] = a;
       if (reduced) this.alpha[i] = a;
@@ -379,7 +391,12 @@ export class MapEngine {
       if (a < 0.02) continue;
       const g = this.groupOf[i];
       const gid = g >= 0 ? data.groups[g].id : -1;
-      const fill = gid >= 0 ? (this.ramps.get(gid) ?? [this.grey])[rampIdx] : this.grey;
+      const fill =
+        gid < 0
+          ? this.grey
+          : this.dimmed[i]
+            ? (this.dims.get(gid) ?? this.grey)
+            : (this.ramps.get(gid) ?? [this.grey])[rampIdx];
       const key = `${fill}|${Math.round(a * 10)}`;
       let list = buckets.get(key);
       if (!list) {

@@ -205,6 +205,10 @@ a.prb-row:focus-visible {
 .prb-step.is-fix {
   color: var(--st-resolved);
 }
+/* A fix still planned is not done: no "resolved" green until it is applied. */
+.prb-step.is-fix.is-pending {
+  color: var(--muted);
+}
 .prb-step.is-pending .prb-node {
   border-style: dashed;
 }
@@ -213,10 +217,12 @@ a.prb-row:focus-visible {
   gap: 3px;
   min-width: 0;
 }
+/* The step names are headings: dark ink. Only the node carries the color. */
 .prb-step-label {
   font-size: 13.5px;
   font-weight: 650;
   line-height: 22px;
+  color: var(--ink);
 }
 .prb-step-hint {
   color: var(--muted);

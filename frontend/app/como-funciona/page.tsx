@@ -320,16 +320,6 @@ const CONTENT: Record<
 
 const PART_ORDER: PartKey[] = ["antes", "depois", "ciclo"];
 
-/** The lifecycle line at the top: each stop links to its chapter. */
-const LIFE = [
-  { t: "Código" },
-  { t: "Change", to: "cap-1" },
-  { t: "Deploy" },
-  { t: "Incidente", to: "cap-3" },
-  { t: "Recorrência", to: "cap-6" },
-  { t: "Problema", to: "cap-7" },
-] as const;
-
 function scrollToId(id: string, reduced: boolean) {
   document
     .getElementById(id)
@@ -431,30 +421,28 @@ export default function HowItWorksPage() {
           Da mudança ao incidente, e de volta. O caminho abaixo, contado em sete capítulos
           curtos.
         </p>
-        <ol className="cf-life" aria-label="O caminho de qualquer software">
-          {LIFE.map((s, i) => (
+        {/* The line at the top: seven stops, one per chapter, same names as the
+            index and the headings. */}
+        <ol className="cf-life" aria-label="Os sete capítulos">
+          {CHAPTERS.map((c, i) => (
             <li
-              key={s.t}
+              key={c.id}
               className="cf-life-n"
+              data-part={c.part}
               style={{ "--i": i } as React.CSSProperties}
             >
-              {"to" in s ? (
-                <a
-                  href={`#${s.to}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToId(s.to, reduced);
-                  }}
-                >
-                  <span className="cf-life-dot" aria-hidden="true" />
-                  {s.t}
-                </a>
-              ) : (
-                <span>
-                  <span className="cf-life-dot" aria-hidden="true" />
-                  {s.t}
+              <a
+                href={`#${c.id}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToId(c.id, reduced);
+                }}
+              >
+                <span className="cf-life-dot" aria-hidden="true" />
+                <span className="cf-life-t">
+                  <span className="cf-life-num">{c.n}</span> {c.title}
                 </span>
-              )}
+              </a>
             </li>
           ))}
         </ol>
@@ -475,7 +463,7 @@ export default function HowItWorksPage() {
 
       <nav className="cf-index" aria-label="Capítulos">
         <p className="cf-index-now" aria-live="polite">
-          <span className="mono">{current.n}/7</span> {current.short}
+          <span className="mono">{current.n}/7</span> {current.title}
         </p>
         <ol className="cf-index-list">
           {PART_ORDER.map((p) => (
@@ -493,7 +481,7 @@ export default function HowItWorksPage() {
                       }}
                     >
                       <span className="cf-index-n mono">{c.n}</span>
-                      <span className="cf-index-t">{c.short}</span>
+                      <span className="cf-index-t">{c.title}</span>
                     </a>
                   </li>
                 ))}

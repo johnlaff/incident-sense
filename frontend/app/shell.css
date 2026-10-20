@@ -1,18 +1,18 @@
 /* ===================================================================== *
    Claro: the shell and the shared atoms.
    Loaded after globals.css and concepts.css. The frame (top bar, rail, phone
-   tab bar) sits on the near-white ground; on desktop the screen lives on one
-   white sheet with a hairline edge. Buttons, inputs, badges, page heads,
+   tab bar) sits on the near-white ground; on desktop the content sits right
+   on it and grouped content gets white cards (no sheet under them, see
+   DESIGN.md). Buttons, inputs, badges, page heads,
    tables and tabs are restyled here; screens keep their own files.
  * ===================================================================== */
 
 /* ----- Top bar: part of the light frame ----- */
+/* Opaque: text scrolling under a see-through bar read as a smear. */
 .topbar {
-  background: color-mix(in oklab, var(--surface) 86%, transparent);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   color: var(--ink);
-  -webkit-backdrop-filter: saturate(1.6) blur(12px);
-  backdrop-filter: saturate(1.6) blur(12px);
 }
 .brand {
   gap: 10px;
@@ -182,17 +182,16 @@
   margin: 0 0 4px;
   padding: 10px 10px;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-xs);
+  /* At rest like a nav item; the white card is only the active state, the
+     same one the nav items use, so it never reads as "you are here". */
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--ink);
   text-decoration: none;
   font-weight: 600;
   font-size: var(--fs-sm);
   line-height: 1.25;
-  transition:
-    border-color var(--dur-press) var(--ease-out),
-    box-shadow var(--dur-press) var(--ease-out);
+  transition: background-color var(--dur-press) var(--ease-out);
 }
 .nav-lesson small {
   display: block;
@@ -207,11 +206,14 @@
   color: var(--c-ai);
 }
 .nav-lesson:hover {
-  border-color: var(--border-strong);
+  background: var(--shell-2);
 }
 .nav-lesson.active {
-  border-color: var(--ink);
-  box-shadow: 0 0 0 1px var(--ink);
+  background: var(--surface);
+  border-color: transparent;
+  box-shadow:
+    var(--shadow-xs),
+    0 0 0 1px var(--border);
 }
 .nav-foot {
   background: transparent;
@@ -223,9 +225,7 @@
 
 /* ----- Phone tab bar: white, hairline, glyph lights up in its color ----- */
 .tabbar {
-  background: color-mix(in oklab, var(--surface) 90%, transparent);
-  -webkit-backdrop-filter: saturate(1.6) blur(14px);
-  backdrop-filter: saturate(1.6) blur(14px);
+  background: var(--surface);
   border-top: 1px solid var(--border);
   box-shadow: none;
 }
@@ -652,7 +652,7 @@ a {
   }
 }
 
-/* ----- Desktop: frame + one white sheet ----- */
+/* ----- Desktop: content on the frame, white cards (no sheet) ----- */
 @media (min-width: 768px) {
   .app {
     grid-template-rows: 56px minmax(0, 1fr);
@@ -660,8 +660,6 @@ a {
   .topbar {
     background: var(--bg);
     border-bottom: 0;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
     padding: 0 16px 0 18px;
   }
   .main {
@@ -733,14 +731,16 @@ a {
   }
 }
 
+/* The analysis tab shows the same run as Aurora: the button steps aside
+   there, at every width. */
+.cop-fab.quiet {
+  display: none;
+}
 /* Phones: the Aurora button floats over the text; give the record room at
-   the end, and drop the button on the analysis tab (it shows the same run). */
+   the end. */
 @media (max-width: 767px) {
   .detail-single {
     padding-bottom: 72px;
-  }
-  .cop-fab.quiet {
-    display: none;
   }
 }
 

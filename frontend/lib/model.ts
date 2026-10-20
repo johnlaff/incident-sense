@@ -240,16 +240,43 @@ export function mapDetail(d: IncidentDetail): IncidentRecord {
 
 // ----- Cluster colors --------------------------------------------------------
 
-// Categorical hues (not status), one per cluster id, cycled. Outliers are grey.
-// They stay away from the concept hues: Incidente 255, Problema ~70,
-// Mudança 178 and the AI violet 290, so a group never reads as one of them.
-export const CLUSTER_HUES = [
-  345, 140, 215, 20, 320, 120, 5, 205, 150, 335, 35, 225, 130, 10,
+// Categorical colors (not status), one per cluster id, in this fixed order.
+// Nine tones for the nine groups, told apart by hue and lightness: no purple
+// near the AI violet (no hue between 262 and 335), no two reds or two
+// blue-greens at the same lightness, and every dot at 3:1 or more against the
+// card and the group tint in both themes. l/c is the light theme, dl/dc the
+// dark one. Outliers are grey.
+export interface ClusterTone {
+  h: number;
+  l: number;
+  c: number;
+  dl: number;
+  dc: number;
+}
+
+export const CLUSTER_TONES: readonly ClusterTone[] = [
+  { h: 350, l: 0.64, c: 0.2, dl: 0.72, dc: 0.2 }, // pink
+  { h: 140, l: 0.4, c: 0.132, dl: 0.84, dc: 0.2 }, // deep green / lime
+  { h: 235, l: 0.62, c: 0.136, dl: 0.62, dc: 0.136 }, // sky blue
+  { h: 25, l: 0.52, c: 0.2, dl: 0.65, dc: 0.2 }, // red
+  { h: 55, l: 0.64, c: 0.165, dl: 0.73, dc: 0.186 }, // orange
+  { h: 100, l: 0.54, c: 0.112, dl: 0.69, dc: 0.143 }, // olive
+  { h: 55, l: 0.42, c: 0.111, dl: 0.83, dc: 0.11 }, // brown / peach
+  { h: 200, l: 0.5, c: 0.085, dl: 0.75, dc: 0.128 }, // dark teal / cyan
+  { h: 160, l: 0.61, c: 0.141, dl: 0.66, dc: 0.152 }, // green
 ];
+
+export const CLUSTER_HUES = CLUSTER_TONES.map((t) => t.h);
+
+export function clusterTone(clusterId: number): ClusterTone {
+  const n = CLUSTER_TONES.length;
+  return CLUSTER_TONES[((clusterId % n) + n) % n];
+}
 
 export function clusterColor(clusterId: number, isOutlier = false): string {
   if (isOutlier || clusterId < 0) return "oklch(0.62 0.012 285)";
-  return `oklch(0.62 0.13 ${CLUSTER_HUES[clusterId % CLUSTER_HUES.length]})`;
+  const t = clusterTone(clusterId);
+  return `oklch(${t.l} ${t.c} ${t.h})`;
 }
 
 // ----- Copilot result (maps SuggestResponse → Aurora's chat output) ----------

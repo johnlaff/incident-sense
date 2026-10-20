@@ -209,14 +209,13 @@ a.chg-row:focus-visible {
   .chg-aside {
     grid-column: 2;
     grid-row: 1;
-    /* The score panel stays in view while the fields scroll; when it is
-       taller than the window it scrolls on its own. */
+    /* The score panel stays in view while the fields scroll, without a
+       scroller of its own (that one clipped the card's top once the playback
+       had moved it). When it is taller than the window, page.tsx sets a
+       negative top: it scrolls with the page until its end shows, then
+       stays there. */
     position: sticky;
-    top: 0;
-    max-height: calc(100vh - 56px - 48px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    top: var(--aside-top, 0px);
   }
   .chg-fields {
     grid-column: 1;

@@ -38,7 +38,9 @@ tint, with the text staying dark.
 - **Light (default).** Frame `--bg` near white; on desktop the content sits
   straight on the frame and only grouped content gets a white card (no sheet
   under the cards, so a card never sits inside another card). On a phone the
-  body is white and the bottom tab bar is white with a hairline.
+  body is white and the bottom tab bar is white with a hairline. The top bar
+  and the tab bar are opaque (no see-through blur), so text never smears
+  under them.
 - **Dark** (`[data-theme="dark"]` and `prefers-color-scheme`): near-black neutral
   frame, surfaces a few steps lighter, hairline borders, concept colors lighter
   at similar chroma.
@@ -96,10 +98,18 @@ alone: every concept has its icon and shape, every score its band word.
 
 App shell: light top bar and sidebar on the frame color; labelled sidebar from
 921px, icon rail 768 to 920, bottom tab bar below 768. Desktop content sits on
-the frame with 32px padding (48px from 1280). Phone gutter 16px. Touch screens
+the frame with 32px padding (48px from 1280), with no white sheet under the
+cards. Phone gutter 16px. Touch screens
 get 44px targets (buttons, selects, tabs; small pills get an invisible 44px
 hit area). Labels never end in "...": shorten the word or let it wrap; names
 like PIX-Core stay whole (`keepWhole` in `lib/text.ts`).
+
+Group colors (`/recorrencias`, `CLUSTER_TONES` in `lib/model.ts`): nine
+categorical tones in a fixed order, told apart by hue and lightness, each with
+its own light and dark step. None is purple near the AI violet (no hue from
+262 to 335), and every dot reads at 3:1 or more on the card and on its group
+tint. A group out of focus steps back to a pale tone of its own hue, still at
+3:1. `tests/cluster-tones.test.ts` pins these rules.
 `--page-max` 1360px; `/aula` up to 1480px.
 
 Copy rule: **one short headline per block, at most one short sentence, then
