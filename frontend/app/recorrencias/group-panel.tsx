@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 
+import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import type { ProblemSummary } from "@/lib/problems";
 
@@ -46,12 +47,21 @@ export function GroupList({
               <button
                 type="button"
                 className={`rx-row${focus === g.id ? " sel" : ""}${m === 0 ? " empty" : ""}`}
-                style={{ "--hue": g.hue, "--v": g.size / max, "--m": m / max, "--i": k } as CSSProperties}
+                style={
+                  {
+                    "--hue": g.hue,
+                    "--v": g.size / max,
+                    "--m": m / max,
+                    "--i": k,
+                  } as CSSProperties
+                }
                 aria-pressed={focus === g.id}
                 onClick={() => onFocus(focus === g.id ? null : g.id)}
               >
                 <span className="rx-row-name">{g.label}</span>
-                <span className="rx-row-n">{m === g.size ? g.size : `${m} de ${g.size}`}</span>
+                <span className="rx-row-n">
+                  {m === g.size ? g.size : `${m} de ${g.size}`}
+                </span>
                 <span className="rx-row-bar" aria-hidden="true">
                   <span className="rx-row-all" />
                   <span className="rx-row-m" />
@@ -64,7 +74,12 @@ export function GroupList({
           <button
             type="button"
             className={`rx-row iso${focus === "outlier" ? " sel" : ""}`}
-            style={{ "--v": data.outliers.length / max, "--m": data.outliers.length / max } as CSSProperties}
+            style={
+              {
+                "--v": data.outliers.length / max,
+                "--m": data.outliers.length / max,
+              } as CSSProperties
+            }
             aria-pressed={focus === "outlier"}
             disabled={data.outliers.length === 0}
             onClick={() => onFocus(focus === "outlier" ? null : "outlier")}
@@ -77,8 +92,8 @@ export function GroupList({
           </button>
           {data.outliers.length === 0 ? (
             <p className="rx-iso-note">
-              Nesta base, nenhum caso ficou sozinho: todos os {data.incidents.length} caíram em algum
-              grupo.
+              Nesta base, nenhum caso ficou sozinho: todos os {data.incidents.length}{" "}
+              caíram em algum grupo.
             </p>
           ) : null}
         </li>
@@ -109,7 +124,9 @@ export function GroupDetail({
   const [shown, setShown] = useState(LIST_STEP);
   const isGroup = group !== "outlier";
   const members = isGroup ? group.members : data.outliers;
-  const rows = members.map((i) => data.incidents[i]).filter((inc) => matchesFilter(inc, filter));
+  const rows = members
+    .map((i) => data.incidents[i])
+    .filter((inc) => matchesFilter(inc, filter));
   const verdict = isGroup ? verdictOf(group) : null;
   const maxSvc = isGroup ? Math.max(1, ...group.services.map((s) => s.count)) : 1;
 
@@ -139,7 +156,9 @@ export function GroupDetail({
           {problems.length > 0 ? (
             <span className="rx-verdict ok">
               <Icons.problems size={14} />
-              {problems.length === 1 ? "Já virou um problema" : `Já virou ${problems.length} problemas`}
+              {problems.length === 1
+                ? "Já virou um problema"
+                : `Já virou ${problems.length} problemas`}
             </span>
           ) : verdict === "problem" ? (
             <span className="rx-verdict ok">
@@ -173,7 +192,9 @@ export function GroupDetail({
             </div>
           ) : null}
           <div className="rx-desk-only">
-            <p className="rx-reason">{reasonFor(group, data.weeks.length, problems.length)}</p>
+            <p className="rx-reason">
+              {reasonFor(group, data.weeks.length, problems.length)}
+            </p>
             <PromoteAction
               verdict={verdict}
               problems={problems}
@@ -184,7 +205,8 @@ export function GroupDetail({
         </>
       ) : (
         <p className="rx-reason">
-          Casos isolados não viram problema: não se repetem o bastante para indicar um padrão.
+          Casos isolados não viram problema: não se repetem o bastante para indicar um
+          padrão.
         </p>
       )}
 
@@ -193,19 +215,29 @@ export function GroupDetail({
         <ul>
           {rows.slice(0, shown).map((inc) => (
             <li key={inc.id}>
-              <button type="button" className="rx-inc" onClick={() => onOpenIncident(inc.id)}>
-                <span className="mono rx-inc-id">{inc.id}</span>
+              <button
+                type="button"
+                className="rx-inc"
+                onClick={() => onOpenIncident(inc.id)}
+              >
+                <RecordTag number={inc.id} size="sm" />
                 <span className="rx-inc-d">{inc.short}</span>
               </button>
             </li>
           ))}
         </ul>
         {rows.length > shown ? (
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShown(rows.length)}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => setShown(rows.length)}
+          >
             Mostrar todos os {rows.length}
           </button>
         ) : null}
-        {rows.length === 0 ? <p className="rx-reason">Nenhum incidente deste grupo no filtro.</p> : null}
+        {rows.length === 0 ? (
+          <p className="rx-reason">Nenhum incidente deste grupo no filtro.</p>
+        ) : null}
       </div>
     </section>
   );
@@ -243,7 +275,7 @@ export function PromoteAction({
                 href={`/problemas/${p.number}`}
                 transitionTypes={["nav-forward"]}
               >
-                <span className="prb-num">{p.number}</span>
+                <RecordTag number={p.number} size="sm" />
                 <span className="rec-prb-title">{p.short_description}</span>
                 <Icons.chevronRight className="prb-go" />
               </Link>

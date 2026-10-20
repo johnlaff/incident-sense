@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { useAulaLesson, type AulaLessonStep } from "@/components/aula";
 import { useShell } from "@/components/app-shell";
+import { TechDetails } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { LoadError, WakeNotice } from "@/components/ui";
 import { useAllIncidents, useClusters } from "@/lib/incidents";
@@ -13,7 +14,14 @@ import { problemsForGroup, useProblems, type ProblemSummary } from "@/lib/proble
 
 import { GroupDetail, GroupList, PromoteAction } from "./group-panel";
 import type { Focus } from "./map-engine";
-import { buildRecData, matchesFilter, monthLabel, reasonFor, verdictOf, type RecFilter } from "./model";
+import {
+  buildRecData,
+  matchesFilter,
+  monthLabel,
+  reasonFor,
+  verdictOf,
+  type RecFilter,
+} from "./model";
 import { RecMap } from "./rec-map";
 import { GroupTimeline } from "./timeline";
 
@@ -35,7 +43,9 @@ export default function RecurrencesPage() {
   const listSettled = !list.loading;
   const data = useMemo(
     () =>
-      clusters.data && listSettled ? buildRecData(clusters.data, list.data?.items ?? null) : null,
+      clusters.data && listSettled
+        ? buildRecData(clusters.data, list.data?.items ?? null)
+        : null,
     [clusters.data, list.data, listSettled],
   );
 
@@ -61,7 +71,8 @@ export default function RecurrencesPage() {
 
   const steps = useMemo<AulaLessonStep[]>(() => {
     const n = data?.incidents.length ?? 0;
-    let last = "O grupo que mais se repete num serviço só vira um problema para investigar a causa.";
+    let last =
+      "O grupo que mais se repete num serviço só vira um problema para investigar a causa.";
     if (featured) {
       const top = featured.services[0];
       const where = top
@@ -77,23 +88,25 @@ export default function RecurrencesPage() {
     }
     return [
       {
-        title: "Incidentes",
+        title: "Pontos",
         caption: `Cada ponto é um incidente real. Sem análise, são ${n} casos soltos.`,
         durationMs: 700,
       },
       {
-        title: "Semelhança",
+        title: "Parecidos",
         caption: "A IA compara o texto de cada caso. Os parecidos se aproximam.",
         durationMs: 1500,
       },
       {
         title: "Densidade",
-        caption: "Muitos casos parecidos juntos viram um grupo; quem fica sozinho é caso isolado.",
+        caption:
+          "Muitos casos parecidos juntos viram um grupo; quem fica sozinho é caso isolado.",
         durationMs: 900,
       },
       {
         title: "Nomes",
-        caption: "A IA dá um nome curto a cada grupo. O número diz quantos casos ele tem.",
+        caption:
+          "A IA dá um nome curto a cada grupo. O número diz quantos casos ele tem.",
         durationMs: 900,
       },
       { title: "Problema", caption: last, durationMs: 600 },
@@ -123,7 +136,11 @@ export default function RecurrencesPage() {
   }, [data, skip]);
 
   const step = lesson.step;
-  const focus: Focus = picked ? picked.focus : step >= LAST ? (data?.featuredId ?? null) : null;
+  const focus: Focus = picked
+    ? picked.focus
+    : step >= LAST
+      ? (data?.featuredId ?? null)
+      : null;
   const stage = step <= 0 ? 0 : Math.min(3, step);
   // A group picked by hand needs the groups drawn.
   const effectiveStage = picked && picked.focus != null && stage < 2 ? 3 : stage;
@@ -149,14 +166,21 @@ export default function RecurrencesPage() {
 
   const matched = useMemo(() => {
     const out = new Map<number, number>();
-    data?.groups.forEach((g) => out.set(g.id, g.members.reduce((s, i) => s + mask[i], 0)));
+    data?.groups.forEach((g) =>
+      out.set(
+        g.id,
+        g.members.reduce((s, i) => s + mask[i], 0),
+      ),
+    );
     return out;
   }, [data, mask]);
   const matchedTotal = useMemo(() => mask.reduce((s, v) => s + v, 0), [mask]);
   const filtering = filter.service != null || filter.month != null;
 
   const focusGroup =
-    data && typeof focus === "number" ? (data.groups.find((g) => g.id === focus) ?? null) : null;
+    data && typeof focus === "number"
+      ? (data.groups.find((g) => g.id === focus) ?? null)
+      : null;
 
   if (clusters.error) {
     return (
@@ -172,7 +196,9 @@ export default function RecurrencesPage() {
 
   const current = step >= 0 ? steps[step] : null;
   const showCaption =
-    !lesson.aula && current != null && !(step === LAST && picked && picked.focus !== data?.featuredId);
+    !lesson.aula &&
+    current != null &&
+    !(step === LAST && picked && picked.focus !== data?.featuredId);
 
   return (
     <div className="rx-page">
@@ -207,7 +233,11 @@ export default function RecurrencesPage() {
               Reproduzir
             </button>
             {!lesson.aula && !lesson.done && step >= 0 ? (
-              <button type="button" className="btn btn-ghost btn-sm" onClick={lesson.skip}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={lesson.skip}
+              >
                 Pular
               </button>
             ) : null}
@@ -221,7 +251,9 @@ export default function RecurrencesPage() {
                   id="rx-svc"
                   className="select rx-select"
                   value={filter.service ?? ""}
-                  onChange={(e) => setFilter((f) => ({ ...f, service: e.target.value || null }))}
+                  onChange={(e) =>
+                    setFilter((f) => ({ ...f, service: e.target.value || null }))
+                  }
                 >
                   <option value="">Todos os serviços</option>
                   {data.services.map((s) => (
@@ -245,7 +277,9 @@ export default function RecurrencesPage() {
                       type="button"
                       className={filter.month === m ? "on" : ""}
                       aria-pressed={filter.month === m}
-                      onClick={() => setFilter((f) => ({ ...f, month: f.month === m ? null : m }))}
+                      onClick={() =>
+                        setFilter((f) => ({ ...f, month: f.month === m ? null : m }))
+                      }
                     >
                       {monthLabel(m)}
                     </button>
@@ -295,7 +329,9 @@ export default function RecurrencesPage() {
                   className={`rx-step${i === step ? " on" : ""}${i < step ? " past" : ""}${
                     STEP_KIND[i] ? ` ${STEP_KIND[i]}` : ""
                   }`}
-                  title={STEP_KIND[i] === "ai" ? `${s.title}: etapa feita pela IA` : s.title}
+                  title={
+                    STEP_KIND[i] === "ai" ? `${s.title}: etapa feita pela IA` : s.title
+                  }
                   aria-current={i === step ? "step" : undefined}
                   disabled={!data}
                   onClick={() => {
@@ -336,45 +372,68 @@ export default function RecurrencesPage() {
                 <b>{focusGroup.label}</b>
                 <span>{focusGroup.size} casos</span>
               </div>
-              <GroupTimeline key={focusGroup.id} group={focusGroup} weeks={data!.weeks} month={filter.month} compact />
-              <p className="rx-reason">{reasonFor(
+              <GroupTimeline
+                key={focusGroup.id}
+                group={focusGroup}
+                weeks={data!.weeks}
+                month={filter.month}
+                compact
+              />
+              <p className="rx-reason">
+                {reasonFor(
                   focusGroup,
                   data!.weeks.length,
                   (problemsByGroup.get(focusGroup.id) ?? []).length,
-                )}</p>
+                )}
+              </p>
               <PromoteAction
                 verdict={verdictOf(focusGroup)}
                 problems={problemsByGroup.get(focusGroup.id) ?? []}
                 promoted={Boolean(promoted[String(focusGroup.id)])}
-                onPromote={() => setPromoted((m) => ({ ...m, [String(focusGroup.id)]: true }))}
+                onPromote={() =>
+                  setPromoted((m) => ({ ...m, [String(focusGroup.id)]: true }))
+                }
               />
             </div>
           ) : null}
 
-          <p className="rx-foot">
-            Posição dos grupos: projeção real dos textos (UMAP). Dentro de cada grupo os pontos foram
-            espaçados para não se cobrirem; os do centro são os mais típicos.
-          </p>
+          <div className="rx-foot">
+            <TechDetails summary="Como o mapa foi feito">
+              <p>
+                O texto de cada incidente vira um vetor (embedding). O UMAP reduz esses
+                vetores para duas dimensões com distância cosseno, e o HDBSCAN procura as
+                regiões densas: cada região densa é um grupo, e quem não cabe em nenhuma
+                vira caso isolado. Um LLM dá o nome curto de cada grupo.
+              </p>
+              <p>
+                No mapa, a posição de cada grupo vem do UMAP. Dentro do grupo os pontos
+                foram espaçados para não se cobrirem: os do centro são os mais próximos do
+                meio real do grupo.
+              </p>
+            </TechDetails>
+          </div>
         </div>
 
         <aside className="card rx-side">
-          {data && focus != null && (focusGroup || focus === "outlier") ? (
-            <GroupDetail
-              key={String(focus)}
-              data={data}
-              group={focusGroup ?? "outlier"}
-              filter={filter}
-              problems={focusGroup ? (problemsByGroup.get(focusGroup.id) ?? []) : []}
-              promoted={Boolean(promoted[String(focus)])}
-              onPromote={() => setPromoted((m) => ({ ...m, [String(focus)]: true }))}
-              onOpenIncident={openIncident}
-              onClose={() => setPicked({ focus: null })}
-            />
-          ) : data ? (
-            <GroupList data={data} matched={matched} focus={focus} onFocus={choose} />
-          ) : (
-            <div className="rx-loading small">Carregando os grupos…</div>
-          )}
+          <div className="rx-side-scroll">
+            {data && focus != null && (focusGroup || focus === "outlier") ? (
+              <GroupDetail
+                key={String(focus)}
+                data={data}
+                group={focusGroup ?? "outlier"}
+                filter={filter}
+                problems={focusGroup ? (problemsByGroup.get(focusGroup.id) ?? []) : []}
+                promoted={Boolean(promoted[String(focus)])}
+                onPromote={() => setPromoted((m) => ({ ...m, [String(focus)]: true }))}
+                onOpenIncident={openIncident}
+                onClose={() => setPicked({ focus: null })}
+              />
+            ) : data ? (
+              <GroupList data={data} matched={matched} focus={focus} onFocus={choose} />
+            ) : (
+              <div className="rx-loading small">Carregando os grupos…</div>
+            )}
+          </div>
         </aside>
       </div>
     </div>

@@ -43,9 +43,15 @@
   .rx-side {
     position: sticky;
     top: calc(var(--topbar-h, 52px) + 16px);
-    max-height: calc(100dvh - var(--topbar-h, 52px) - 32px - var(--aula-bar-h, 0px));
+    overflow: hidden;
+  }
+  /* The card keeps its corners; the content inside it scrolls. */
+  .rx-side-scroll {
+    max-height: calc(100dvh - var(--topbar-h, 52px) - 34px - var(--aula-bar-h, 0px));
     overflow-y: auto;
     overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
   }
   .rx-mobile-only {
     display: none !important;
@@ -150,8 +156,8 @@
 .rx-loading-dots {
   width: 44px;
   height: 10px;
-  background:
-    radial-gradient(circle, var(--muted) 3px, transparent 3.5px) 0 50% / 14px 10px repeat-x;
+  background: radial-gradient(circle, var(--muted) 3px, transparent 3.5px) 0 50% / 14px
+    10px repeat-x;
   opacity: 0.6;
   animation: rx-pulse 1.2s var(--ease-in-out, ease-in-out) infinite alternate;
 }
@@ -178,7 +184,7 @@
   border-radius: 999px;
   background: color-mix(in oklch, var(--surface) 92%, transparent);
   color: var(--ink-body);
-  font-size: 12.5px;
+  font-size: var(--fs-xs, 13px);
   font-variant-numeric: tabular-nums;
 }
 .rx-filter-note .btn {
@@ -202,17 +208,16 @@
   gap: 6px;
   max-width: 12.5em;
   padding: 3px 9px 3px 8px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   border-radius: 10px;
   background: color-mix(in oklch, var(--surface) 94%, transparent);
   color: var(--ink);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
   font-weight: 600;
   line-height: 1.2;
   text-align: left;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
   opacity: 0;
   visibility: hidden;
   scale: 0.94;
@@ -229,8 +234,8 @@
   visibility: visible;
   scale: 1;
   transition-delay:
-    calc(min(var(--i), 10) * var(--stagger-explain)), calc(min(var(--i), 10) * var(--stagger-explain)),
-    0s, 0s, 0s;
+    calc(min(var(--i), 10) * var(--stagger-explain)),
+    calc(min(var(--i), 10) * var(--stagger-explain)), 0s, 0s, 0s;
 }
 .rx-labels.on .rx-label.dim {
   opacity: 0.38;
@@ -269,7 +274,7 @@
 }
 @media (max-width: 699.98px) {
   .rx-label {
-    font-size: 11px;
+    font-size: var(--fs-xs, 13px);
     max-width: 10.5em;
     padding: 2px 6px 2px 5px;
     gap: 4px;
@@ -320,12 +325,12 @@
   gap: 8px;
 }
 .rx-peek-id {
-  font-size: 12.5px;
+  font-size: var(--fs-xs, 13px);
   font-weight: 600;
   color: var(--ink);
 }
 .rx-peek-p {
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
   color: var(--muted);
 }
 .rx-peek-x {
@@ -357,7 +362,7 @@
   flex-wrap: wrap;
   gap: 4px 10px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
 }
 .rx-peek-g {
   color: oklch(var(--rx-ink-l) 0.12 var(--hue));
@@ -392,7 +397,7 @@
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
   font-weight: 550;
   cursor: pointer;
   transition: background-color var(--dur-press) var(--ease-out);
@@ -412,7 +417,7 @@
   border-radius: 50%;
   border: 1.5px solid var(--border-strong);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
   font-variant-numeric: tabular-nums;
   transition:
     background-color var(--dur-state) var(--ease-out),
@@ -480,18 +485,23 @@
 }
 
 .rx-foot {
-  margin: 0;
-  padding: 10px 14px 12px;
+  padding: 4px 14px 10px;
   border-top: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
+}
+.rx-foot .tech-body p {
+  margin: 0 0 8px;
+  max-width: 68ch;
+  color: var(--ink-body);
+  font-size: var(--fs-sm, 14px);
+  line-height: 1.55;
 }
 
 /* ----- Side: group list ----- */
 .rx-side {
-  padding: 14px 16px 16px;
   min-width: 0;
+}
+.rx-side-scroll {
+  padding: 14px 16px 16px;
 }
 .rx-list-head {
   display: flex;
@@ -506,7 +516,7 @@
 }
 .rx-list-head span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
 }
 .rx-list ul,
 .rx-svc ul,
@@ -574,18 +584,21 @@
   inset: 0;
   border-radius: 3px;
   transform-origin: left center;
-  transition: transform calc(var(--dur-explain) * var(--motion-scale)) var(--spring-calm, ease-out);
+  transition: transform calc(var(--dur-explain) * var(--motion-scale))
+    var(--spring-calm, ease-out);
 }
 .rx-row-all {
   background: oklch(var(--rx-l) 0.14 var(--hue) / 0.28);
   transform: scaleX(var(--v));
-  animation: rx-bar calc(var(--dur-explain) * var(--motion-scale)) var(--spring-calm, ease-out) both;
+  animation: rx-bar calc(var(--dur-explain) * var(--motion-scale))
+    var(--spring-calm, ease-out) both;
   animation-delay: calc(min(var(--i, 0), 10) * var(--stagger));
 }
 .rx-row-m {
   background: oklch(var(--rx-l) 0.14 var(--hue));
   transform: scaleX(var(--m));
-  animation: rx-bar calc(var(--dur-explain) * var(--motion-scale)) var(--spring-calm, ease-out) both;
+  animation: rx-bar calc(var(--dur-explain) * var(--motion-scale))
+    var(--spring-calm, ease-out) both;
   animation-delay: calc(min(var(--i, 0), 10) * var(--stagger));
 }
 @keyframes rx-bar {
@@ -605,7 +618,7 @@
 .rx-iso-note {
   margin: 2px 0 0;
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: var(--fs-xs, 13px);
   line-height: 1.5;
 }
 
@@ -649,7 +662,7 @@
   gap: 6px;
   padding: 3px 10px 3px 8px;
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: var(--fs-xs, 13px);
   font-weight: 600;
 }
 .rx-verdict.ok {
@@ -694,7 +707,7 @@
   display: block;
   margin-bottom: 4px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
   font-weight: 600;
 }
 .rx-svc li {
@@ -725,11 +738,12 @@
   content: "";
   background: oklch(var(--rx-l) 0.14 var(--hue));
   transform: scaleX(var(--v));
-  animation: rx-bar calc(var(--dur-explain) * var(--motion-scale)) var(--spring-calm, ease-out) both;
+  animation: rx-bar calc(var(--dur-explain) * var(--motion-scale))
+    var(--spring-calm, ease-out) both;
 }
 .rx-svc-more {
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: var(--fs-xs, 13px);
 }
 
 .rx-incs li + li {
@@ -759,7 +773,7 @@
   outline-offset: -2px;
 }
 .rx-inc-id {
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
   color: var(--muted);
 }
 .rx-inc-d {
@@ -791,7 +805,7 @@
 }
 .rx-tl-s {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-xs, 13px);
   font-variant-numeric: tabular-nums;
 }
 .rx-tl-plot {
@@ -806,7 +820,8 @@
   height: max(3px, calc(var(--v) * 100%));
   border-radius: 3px 3px 0 0;
   background: oklch(var(--rx-l) 0.14 var(--hue));
-  animation: rx-rise calc(var(--dur-explain) * var(--motion-scale)) var(--spring-calm, ease-out) both;
+  animation: rx-rise calc(var(--dur-explain) * var(--motion-scale))
+    var(--spring-calm, ease-out) both;
   animation-delay: calc(min(var(--i), 14) * 35ms * var(--motion-scale));
   transition: opacity var(--dur-state) var(--ease-out);
 }
@@ -841,7 +856,7 @@
   grid-template-columns: repeat(var(--weeks), minmax(0, 1fr));
   margin-top: 4px;
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: var(--fs-xs, 13px);
 }
 .rx-tl-axis span {
   grid-column: calc(var(--at) + 1) / span 3;
@@ -868,7 +883,7 @@
 }
 @media (max-width: 420px) {
   .rx-step {
-    font-size: 11px;
+    font-size: var(--fs-xs, 13px);
     letter-spacing: -0.01em;
   }
 }
@@ -891,7 +906,7 @@
   background: color-mix(in oklch, var(--surface) 92%, transparent);
   border: 1px solid var(--border);
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: var(--fs-xs, 13px);
   font-variant-numeric: tabular-nums;
   pointer-events: none;
   opacity: 0;
@@ -962,4 +977,11 @@
   border-color: var(--c-prb-line, var(--primary));
   background: var(--c-prb, var(--primary));
   color: var(--c-prb-on, var(--on-primary));
+}
+
+.rx-prb .rtag,
+.rx-incs .rtag,
+.rx-peek .rtag {
+  width: fit-content;
+  justify-self: start;
 }

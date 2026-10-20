@@ -6,10 +6,14 @@
 import type { ClusterPoint, ClustersResponse, IncidentSummary } from "@/lib/types";
 
 /** Hues shared with lib/model.ts clusterColor, so a group keeps its color. */
-export const GROUP_HUES = [285, 230, 195, 160, 330, 20, 110, 60, 255, 95, 45, 300, 175, 15];
+export const GROUP_HUES = [
+  285, 230, 195, 160, 330, 20, 110, 60, 255, 95, 45, 300, 175, 15,
+];
 
 export function groupHue(clusterId: number): number {
-  return GROUP_HUES[((clusterId % GROUP_HUES.length) + GROUP_HUES.length) % GROUP_HUES.length];
+  return GROUP_HUES[
+    ((clusterId % GROUP_HUES.length) + GROUP_HUES.length) % GROUP_HUES.length
+  ];
 }
 
 export interface RecIncident {
@@ -156,7 +160,10 @@ export function buildRecData(
         hue: groupHue(c.cluster_id),
         members,
         services,
-        topShare: services.length > 0 && members.length > 0 ? services[0].count / members.length : 0,
+        topShare:
+          services.length > 0 && members.length > 0
+            ? services[0].count / members.length
+            : 0,
         perWeek,
         activeWeeks: perWeek.filter((n) => n > 0).length,
         firstAt: opened[0] ?? null,
@@ -199,7 +206,20 @@ export function matchesFilter(inc: RecIncident, f: RecFilter): boolean {
 
 // ----- Plain-language reason --------------------------------------------------
 
-const MONTHS_PT = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const MONTHS_PT = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
 
 export function monthLabel(ym: string): string {
   const m = Number(ym.slice(5, 7));
@@ -222,7 +242,9 @@ export function verdictOf(g: RecGroup): Verdict {
 export function reasonFor(g: RecGroup, totalWeeks: number, problems = 0): string {
   const v = verdictOf(g);
   const span =
-    totalWeeks > 0 ? `${g.size} casos em ${g.activeWeeks} das ${totalWeeks} semanas` : `${g.size} casos`;
+    totalWeeks > 0
+      ? `${g.size} casos em ${g.activeWeeks} das ${totalWeeks} semanas`
+      : `${g.size} casos`;
   if (v === "problem") {
     const top = g.services[0];
     const all = top.count === g.size;
@@ -289,7 +311,9 @@ export function computeLayout(data: RecData, w: number, fullH: number, top = 0):
   const rows = Math.max(1, Math.ceil(n / cols));
   const cw = (w - pad * 2) / cols;
   const ch = (h - pad * 2) / rows;
-  const order = data.incidents.map((_, i) => i).sort((a, b) => hash01(a * 7 + 1) - hash01(b * 7 + 1));
+  const order = data.incidents
+    .map((_, i) => i)
+    .sort((a, b) => hash01(a * 7 + 1) - hash01(b * 7 + 1));
   order.forEach((idx, k) => {
     const c = k % cols;
     const r = Math.floor(k / cols);
@@ -307,8 +331,14 @@ export function computeLayout(data: RecData, w: number, fullH: number, top = 0):
     }
     return { x: sx / g.members.length, y: sy / g.members.length };
   });
-  const realXs = [...cent.map((c) => c.x), ...data.outliers.map((i) => data.incidents[i].x)];
-  const realYs = [...cent.map((c) => c.y), ...data.outliers.map((i) => data.incidents[i].y)];
+  const realXs = [
+    ...cent.map((c) => c.x),
+    ...data.outliers.map((i) => data.incidents[i].x),
+  ];
+  const realYs = [
+    ...cent.map((c) => c.y),
+    ...data.outliers.map((i) => data.incidents[i].y),
+  ];
   const minX = Math.min(...realXs);
   const maxX = Math.max(...realXs);
   const minY = Math.min(...realYs);
@@ -322,7 +352,10 @@ export function computeLayout(data: RecData, w: number, fullH: number, top = 0):
   };
 
   // Disk sizes: area proportional to members, about a third of the box.
-  const total = Math.max(1, data.groups.reduce((s, g) => s + g.size, 0));
+  const total = Math.max(
+    1,
+    data.groups.reduce((s, g) => s + g.size, 0),
+  );
   const scale = Math.sqrt((0.22 * w * h) / (Math.PI * total));
   const radii = data.groups.map((g) => scale * Math.sqrt(g.size));
   const maxR = radii.length ? Math.max(...radii) : 0;
@@ -378,7 +411,11 @@ export function computeLayout(data: RecData, w: number, fullH: number, top = 0):
     const slots = Array.from({ length: m }, (_, s) => {
       const rr = c * Math.sqrt(s + 0.5);
       const th = s * GOLDEN;
-      return { x: Math.cos(th) * rr, y: Math.sin(th) * rr, th: Math.atan2(Math.sin(th), Math.cos(th)) };
+      return {
+        x: Math.cos(th) * rr,
+        y: Math.sin(th) * rr,
+        th: Math.atan2(Math.sin(th), Math.cos(th)),
+      };
     });
     const real = g.members
       .map((i) => {
@@ -444,19 +481,29 @@ export function computeLayout(data: RecData, w: number, fullH: number, top = 0):
 
 /** Convex hull (monotone chain) of interleaved points picked by `idx`. */
 export function convexHull(pos: Float32Array, idx: number[]): number[] {
-  const pts = idx.map((i) => [pos[i * 2], pos[i * 2 + 1]] as const).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const pts = idx
+    .map((i) => [pos[i * 2], pos[i * 2 + 1]] as const)
+    .sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   if (pts.length < 3) return pts.flatMap((p) => [p[0], p[1]]);
   const cross = (o: readonly number[], a: readonly number[], b: readonly number[]) =>
     (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
   const lower: (readonly number[])[] = [];
   for (const p of pts) {
-    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+    while (
+      lower.length >= 2 &&
+      cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0
+    )
+      lower.pop();
     lower.push(p);
   }
   const upper: (readonly number[])[] = [];
   for (let i = pts.length - 1; i >= 0; i--) {
     const p = pts[i];
-    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+    while (
+      upper.length >= 2 &&
+      cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0
+    )
+      upper.pop();
     upper.push(p);
   }
   lower.pop();
@@ -476,11 +523,24 @@ export interface LabelBox {
   compact: boolean;
 }
 
-function overlaps(a: { x: number; y: number; w: number; h: number }, b: typeof a, m = 4): boolean {
-  return a.x < b.x + b.w + m && b.x < a.x + a.w + m && a.y < b.y + b.h + m && b.y < a.y + a.h + m;
+function overlaps(
+  a: { x: number; y: number; w: number; h: number },
+  b: typeof a,
+  m = 4,
+): boolean {
+  return (
+    a.x < b.x + b.w + m &&
+    b.x < a.x + a.w + m &&
+    a.y < b.y + b.h + m &&
+    b.y < a.y + a.h + m
+  );
 }
 
-function hitsDisk(a: { x: number; y: number; w: number; h: number }, d: Disk, k = 0.62): boolean {
+function hitsDisk(
+  a: { x: number; y: number; w: number; h: number },
+  d: Disk,
+  k = 0.62,
+): boolean {
   const nx = Math.max(a.x, Math.min(d.cx, a.x + a.w));
   const ny = Math.max(a.y, Math.min(d.cy, a.y + a.h));
   // The rim of a group is sparse; a name may cover it, not the core.
@@ -502,7 +562,14 @@ export function placeLabels(
   const placed: LabelBox[] = [];
   const compactBox = (d: Disk, s: { h: number; cw: number; ch?: number }): LabelBox => {
     const ch = s.ch ?? s.h;
-    return { id: d.id, x: d.cx - s.cw / 2, y: d.cy - ch / 2, w: s.cw, h: ch, compact: true };
+    return {
+      id: d.id,
+      x: d.cx - s.cw / 2,
+      y: d.cy - ch / 2,
+      w: s.cw,
+      h: ch,
+      compact: true,
+    };
   };
   // Narrow maps: every group shows its count on itself; only `full` gets a name.
   const wantsFull = (d: Disk) => !opts.compactAll || opts.full === d.id;
@@ -541,7 +608,8 @@ export function placeLabels(
     for (let k = 0; k < cands.length; k++) {
       const c = cands[k];
       const box = { id: d.id, x: c.x, y: c.y, w: s.w, h: s.h, compact: false };
-      if (box.x < 4 || box.y < 4 || box.x + box.w > w - 4 || box.y + box.h > h - 4) continue;
+      if (box.x < 4 || box.y < 4 || box.x + box.w > w - 4 || box.y + box.h > h - 4)
+        continue;
       if (placed.some((p) => overlaps(p, box))) continue;
       // Centered on its own group it cannot be mistaken; only another core blocks it.
       const centered = opts.onDisk && opts.full !== d.id && k === 0;
@@ -566,8 +634,8 @@ export function placeLabels(
 
 /** --spring-calm from globals.css (M3 standard, no overshoot), sampled. */
 const SPRING_CALM = [
-  0, 0.025, 0.087, 0.171, 0.264, 0.358, 0.45, 0.535, 0.612, 0.68, 0.739, 0.79, 0.833, 0.868, 0.897,
-  0.921, 0.94, 0.955, 0.967, 0.976, 0.984, 0.989, 0.993, 0.996, 1,
+  0, 0.025, 0.087, 0.171, 0.264, 0.358, 0.45, 0.535, 0.612, 0.68, 0.739, 0.79, 0.833,
+  0.868, 0.897, 0.921, 0.94, 0.955, 0.967, 0.976, 0.984, 0.989, 0.993, 0.996, 1,
 ];
 
 export function springCalm(t: number): number {

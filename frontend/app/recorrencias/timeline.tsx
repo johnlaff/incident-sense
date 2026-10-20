@@ -26,25 +26,34 @@ export function GroupTimeline({
   const ticks: { i: number; label: string }[] = [];
   weeks.forEach((w, i) => {
     const prev = weeks[i - 1];
-    if (i === 0 || prev.slice(0, 7) !== w.slice(0, 7)) ticks.push({ i, label: monthLabel(w.slice(0, 7)) });
+    if (i === 0 || prev.slice(0, 7) !== w.slice(0, 7))
+      ticks.push({ i, label: monthLabel(w.slice(0, 7)) });
   });
   const summary =
     `${group.size} incidentes em ${group.activeWeeks} das ${weeks.length} semanas` +
-    (group.firstAt && group.lastAt ? `, de ${shortDate(group.firstAt)} a ${shortDate(group.lastAt)}` : "") +
+    (group.firstAt && group.lastAt
+      ? `, de ${shortDate(group.firstAt)} a ${shortDate(group.lastAt)}`
+      : "") +
     `. Pico de ${max} na semana de ${shortDate(weeks[peak])}.`;
 
   return (
-    <figure className={`rx-tl${compact ? " compact" : ""}`} style={{ "--weeks": weeks.length } as CSSProperties}>
+    <figure
+      className={`rx-tl${compact ? " compact" : ""}`}
+      style={{ "--weeks": weeks.length } as CSSProperties}
+    >
       <div className="rx-tl-head">
         <span className="rx-tl-t">Quando aconteceram</span>
         <span className="rx-tl-s">
-          {group.activeWeeks} de {weeks.length} semanas · pico de {max} em {shortDate(weeks[peak])}
+          {group.activeWeeks} de {weeks.length} semanas · pico de {max} em{" "}
+          {shortDate(weeks[peak])}
         </span>
       </div>
       <div className="rx-tl-plot" role="img" aria-label={summary}>
         {group.perWeek.map((n, i) => {
           const inMonth =
-            !month || weeks[i].slice(0, 7) === month || addDays(weeks[i], 6).slice(0, 7) === month;
+            !month ||
+            weeks[i].slice(0, 7) === month ||
+            addDays(weeks[i], 6).slice(0, 7) === month;
           return (
             <span
               key={weeks[i]}

@@ -10,11 +10,18 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
+import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { PRIORITY_LABEL, pCode } from "@/lib/model";
 
 import { MapEngine, type Focus, type Scene } from "./map-engine";
-import { computeLayout, placeLabels, shortDate, type LabelBox, type RecData } from "./model";
+import {
+  computeLayout,
+  placeLabels,
+  shortDate,
+  type LabelBox,
+  type RecData,
+} from "./model";
 
 interface Props {
   data: RecData;
@@ -39,11 +46,22 @@ function readPalette() {
 }
 
 function motionScale(): number {
-  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--motion-scale"));
+  const v = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue("--motion-scale"),
+  );
   return Number.isFinite(v) && v > 0 ? v : 1;
 }
 
-export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, onOpenIncident }: Props) {
+export function RecMap({
+  data,
+  stage,
+  focus,
+  mask,
+  matched,
+  reduced,
+  onFocus,
+  onOpenIncident,
+}: Props) {
   const boxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<MapEngine | null>(null);
@@ -54,7 +72,10 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
   const [pinned, setPinned] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
 
-  const layout = useMemo(() => (size ? computeLayout(data, size.w, size.h, 34) : null), [data, size]);
+  const layout = useMemo(
+    () => (size ? computeLayout(data, size.w, size.h, 34) : null),
+    [data, size],
+  );
 
   // Engine lifetime.
   useEffect(() => {
@@ -64,7 +85,10 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
     engineRef.current = engine;
     engine.setPalette(readPalette());
     const mo = new MutationObserver(() => engine.setPalette(readPalette()));
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    mo.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
     return () => {
       mo.disconnect();
       engine.destroy();
@@ -148,7 +172,8 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
     had.forEach((el) => el.classList.add("compact"));
     setLabels(
       placeLabels(layout.disks, sizes, layout.w, layout.h, {
-        compactAll: layout.w < 560,
+        // A focused group keeps its name; the others shrink to their counts.
+        compactAll: layout.w < 560 || typeof focus === "number",
         onDisk: true,
         full: typeof focus === "number" ? focus : null,
       }),
@@ -189,8 +214,12 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
   const preview = shown != null && !shownHidden && layout ? data.incidents[shown] : null;
   // Previews only open on a resting map, so the target position is the point's.
   const at = layout ? (stage >= 1 ? layout.grouped : layout.scatter) : null;
-  const pp = preview && shown != null && at ? { x: at[shown * 2], y: at[shown * 2 + 1] } : null;
-  const group = preview && !preview.isOutlier ? data.groups.find((g) => g.id === preview.clusterId) : null;
+  const pp =
+    preview && shown != null && at ? { x: at[shown * 2], y: at[shown * 2 + 1] } : null;
+  const group =
+    preview && !preview.isOutlier
+      ? data.groups.find((g) => g.id === preview.clusterId)
+      : null;
 
   let cardStyle: CSSProperties | undefined;
   if (pp && size) {
@@ -213,7 +242,10 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
         onPointerLeave={() => setHover(null)}
         onPointerUp={onTap}
       />
-      <p className={`rx-tally${stage >= 2 ? " on" : ""}`} aria-hidden={stage >= 2 ? undefined : true}>
+      <p
+        className={`rx-tally${stage >= 2 ? " on" : ""}`}
+        aria-hidden={stage >= 2 ? undefined : true}
+      >
         <b>{data.groups.length}</b> grupos densos · <b>{data.outliers.length}</b>{" "}
         {data.outliers.length === 1 ? "caso isolado" : "casos isolados"}
       </p>
@@ -250,7 +282,9 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
             >
               <span className="rx-label-dot" aria-hidden="true" />
               <span className="rx-label-name">{g.label}</span>
-              <span className="rx-label-n">{m === g.size ? g.size : `${m}/${g.size}`}</span>
+              <span className="rx-label-n">
+                {m === g.size ? g.size : `${m}/${g.size}`}
+              </span>
             </button>
           );
         })}
@@ -264,7 +298,7 @@ export function RecMap({ data, stage, focus, mask, matched, reduced, onFocus, on
           aria-label={`${preview.id}: ${preview.short}`}
         >
           <div className="rx-peek-top">
-            <span className="mono rx-peek-id">{preview.id}</span>
+            <RecordTag number={preview.id} size="sm" />
             <span className="rx-peek-p">{PRIORITY_LABEL[pCode(preview.priority)]}</span>
             {pinned != null ? (
               <button

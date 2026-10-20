@@ -170,7 +170,9 @@ export class MapEngine {
         } else {
           // Group by group, with a little jitter so it reads as a flock.
           const g = this.groupOf[i];
-          const lag = wantGrouped ? (g < 0 ? 9 : g) * 45 + this.jitter(i) * 220 : this.jitter(i) * 160;
+          const lag = wantGrouped
+            ? (g < 0 ? 9 : g) * 45 + this.jitter(i) * 220
+            : this.jitter(i) * 160;
           this.t0[i] = now + lag * scale;
           this.dur[i] = base;
         }
@@ -200,7 +202,12 @@ export class MapEngine {
       const tw = this.hullFocus.get(g.id);
       const curV = tw ? tweenValue(tw, now, springCalm) : 1;
       if (!tw || tw.to !== want) {
-        this.hullFocus.set(g.id, { from: curV, to: want, t0: now, dur: reduced ? 0 : 320 * scale });
+        this.hullFocus.set(g.id, {
+          from: curV,
+          to: want,
+          t0: now,
+          dur: reduced ? 0 : 320 * scale,
+        });
       }
     }
     this.busyUntil = Math.max(this.busyUntil, now + 340 * scale);
@@ -211,7 +218,10 @@ export class MapEngine {
       let a = 1;
       if (scene.stage >= 2 && inc.isOutlier) a = 0.5;
       if (scene.focus != null) {
-        const mine = scene.focus === "outlier" ? inc.isOutlier : !inc.isOutlier && inc.clusterId === scene.focus;
+        const mine =
+          scene.focus === "outlier"
+            ? inc.isOutlier
+            : !inc.isOutlier && inc.clusterId === scene.focus;
         if (!mine) a = Math.min(a, 0.18);
       }
       if (!scene.mask[i]) a = Math.min(a, 0.1);
@@ -310,7 +320,8 @@ export class MapEngine {
           moving = true;
           const e = springCalm(Math.max(0, t));
           this.cur[i * 2] = this.from[i * 2] + (this.to[i * 2] - this.from[i * 2]) * e;
-          this.cur[i * 2 + 1] = this.from[i * 2 + 1] + (this.to[i * 2 + 1] - this.from[i * 2 + 1]) * e;
+          this.cur[i * 2 + 1] =
+            this.from[i * 2 + 1] + (this.to[i * 2 + 1] - this.from[i * 2 + 1]) * e;
         }
       }
       const at = this.alphaTarget[i];
