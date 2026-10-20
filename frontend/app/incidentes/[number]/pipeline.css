@@ -948,7 +948,8 @@
 .ruler-axis {
   position: relative;
   container-type: inline-size;
-  margin-inline: 10px;
+  /* Room for the end labels, which center on 0,50 and 1,00 like the rest. */
+  margin-inline: 18px;
   padding-top: 26px;
 }
 .ruler-axis > .ruler-plot > .ruler-floor {
@@ -1032,9 +1033,10 @@
   color: var(--ink-body);
   margin-left: 6px;
 }
-.ruler-track-label .mono {
+.ruler-track-label .ruler-count {
   font-weight: 500;
   color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 .ruler-lanes {
   position: relative;
@@ -1051,7 +1053,8 @@
 .ruler-dot {
   position: absolute;
   left: calc(var(--dot) / -2);
-  bottom: calc(var(--lane) * var(--lane-h) + 4px - var(--dot) / 2);
+  /* Each dot rests on its line, never across it. */
+  bottom: calc(var(--lane) * var(--lane-h) + 5px);
   width: var(--dot);
   height: var(--dot);
   padding: 0;
@@ -1121,13 +1124,6 @@
   font-size: 11.5px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
-}
-/* The end labels sit inside the scale instead of hanging past its edges. */
-.ruler-ticks span:first-child {
-  translate: calc(var(--x) * 100cqi) 0;
-}
-.ruler-ticks span:last-child {
-  translate: calc(var(--x) * 100cqi - 100%) 0;
 }
 /* The draggable floor: a native range under the ticks, thumb on the scale. */
 .ruler-range {
