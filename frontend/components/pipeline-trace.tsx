@@ -20,7 +20,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { useAulaLesson } from "./aula";
+import { useAulaLesson, useAulaStart } from "./aula";
 import {
   ConceptIcon,
   ConceptLabel,
@@ -120,6 +120,7 @@ export function PipelineTrace({
   const running = phase === "running";
   const shown = running ? null : result;
   const lesson = usePipelineLesson("pipeline", shown);
+  useAulaStart("pipeline", shown ? lesson.replay : null);
   const views = useMemo(() => (shown ? stepViews(shown) : null), [shown]);
   const beat = shown ? lesson.step : -1;
   const finished = lesson.done && !lesson.aula;

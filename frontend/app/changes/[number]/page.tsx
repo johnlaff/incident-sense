@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { use, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
-import { useAulaLesson } from "@/components/aula";
+import { useAulaLesson, useAulaStart } from "@/components/aula";
 import { RecordTag, TechDetails } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { StateBlock, WakeNotice } from "@/components/ui";
@@ -249,6 +249,13 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const asideRef = useTallSticky();
   const inScope = result ? result.scope.in_scope : isInScope(change);
   const valueOf = (key: FieldKey) => edits[key] ?? change[key];
+
+  // The header's "Modo aula" plays the verdict step by step, or runs the
+  // evaluation when there is none yet.
+  useAulaStart(
+    "mudanca",
+    result ? playback.replay : inScope ? () => void evaluate() : null,
+  );
 
   async function evaluate() {
     setPhase("running");

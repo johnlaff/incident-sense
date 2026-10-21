@@ -85,6 +85,8 @@ interface AulaContextValue {
   active: LessonSnapshot | null;
   publish: (snap: Omit<LessonSnapshot, "order">) => void;
   retire: (id: string) => void;
+  /** Register how this screen starts its own lesson (null: it cannot now). */
+  register: (id: string, start: (() => void) | null) => void;
 }
 
 const AulaContext = createContext<AulaContextValue | null>(null);
@@ -184,9 +186,32 @@ export function AulaProvider({ children }: { children: ReactNode }) {
   // Turned on by hand: say what happens next. Pages with a lesson show their
   // own strip once it starts; until then this sheet points the way.
   const [hint, setHint] = useState(false);
+  // How each mounted screen starts its own lesson, newest registration last.
+  const starters = useRef(new Map<string, () => void>());
+  const register = useCallback((id: string, start: (() => void) | null) => {
+    starters.current.delete(id);
+    if (start) starters.current.set(id, start);
+  }, []);
+  // Turning the mode on starts this screen's lesson at step 1 when it has one
+  // (the strip shows at once); a screen without one gets the sheet with the
+  // roteiro and the first stop. Before, the switch only flipped a flag, so
+  // on most screens nothing visible happened.
   const toggle = useCallback(() => {
-    setHint(!aula);
-    setAula(!aula);
+    const on = !aula;
+    setAula(on);
+    if (!on) {
+      setHint(false);
+      return;
+    }
+    const start = [...starters.current.values()].pop();
+    if (!start) {
+      setHint(true);
+      return;
+    }
+    setHint(false);
+    // After the render that turns the mode on, so the lesson starts in aula
+    // (stopped at step 1, waiting for a tap) and not as a fast replay.
+    window.setTimeout(start, 0);
   }, [aula, setAula]);
 
   const publish = useCallback((snap: Omit<LessonSnapshot, "order">) => {
@@ -231,8 +256,8 @@ export function AulaProvider({ children }: { children: ReactNode }) {
   }, [aula]);
 
   const value = useMemo<AulaContextValue>(
-    () => ({ aula, setAula, toggle, active, publish, retire }),
-    [aula, setAula, toggle, active, publish, retire],
+    () => ({ aula, setAula, toggle, active, publish, retire, register }),
+    [aula, setAula, toggle, active, publish, retire, register],
   );
 
   return (
@@ -268,12 +293,31 @@ function useBarRoom() {
   return ref;
 }
 
-/** The incident the roteiro opens: its similar resolved cases make a good demo. */
-const AULA_INCIDENT = "INC0052233";
+/** The roteiro's first stop (app/aula/stops.ts STOPS[0]). */
+export const FIRST_STOP = "/como-funciona?aula=1";
 
 /**
- * Shown right after modo aula is turned on, on a screen with no lesson
- * running: what the mode does and where to start. Closes on X, on a link, on
+ * Register how this screen starts its own lesson when modo aula is switched
+ * on from the header. Pass null while it cannot start (nothing to show yet).
+ */
+export function useAulaStart(id: string, start: (() => void) | null): void {
+  const ctx = useContext(AulaContext);
+  if (!ctx) throw new Error("useAulaStart must be used within <AulaProvider>");
+  const { register } = ctx;
+  const ref = useRef(start);
+  useEffect(() => {
+    ref.current = start;
+  });
+  const can = start !== null;
+  useEffect(() => {
+    register(id, can ? () => ref.current?.() : null);
+    return () => register(id, null);
+  }, [id, can, register]);
+}
+
+/**
+ * Shown when modo aula is turned on on a screen with no lesson of its own: the
+ * roteiro and a one-tap start at its first stop. Closes on X, on a link, on
  * another page, or when a lesson starts (its strip takes the same place).
  */
 function AulaWelcome({ onClose }: { onClose: () => void }) {
@@ -282,16 +326,6 @@ function AulaWelcome({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (pathname !== first.current) onClose();
   }, [pathname, onClose]);
-  // On a screen that has its own lesson, say how to start it, with no links.
-  const here =
-    pathname === `/incidentes/${AULA_INCIDENT}`
-      ? "Toque em Analisar com a IA: a análise vira uma aula, passo a passo."
-      : /^\/changes\/CHG\d+/.test(pathname)
-        ? "Toque em Avaliar com a IA: a avaliação vira uma aula, passo a passo."
-        : pathname === "/recorrencias"
-          ? "Toque em Reproduzir: o mapa vira uma aula, passo a passo."
-          : null;
-  const onIncident = here !== null;
   const ref = useBarRoom();
   return (
     <div className="aula-bar-wrap">
@@ -299,9 +333,7 @@ function AulaWelcome({ onClose }: { onClose: () => void }) {
         <div className="aula-text">
           <span className="aula-count">Modo aula ligado</span>
           <span className="aula-caption">
-            {here
-              ? here
-              : "As telas com aula mostram aqui o passo a passo. Comece pelo roteiro ou por um incidente."}
+            Esta tela não tem passo a passo. Comece pela primeira parada do roteiro.
           </span>
         </div>
         <button
@@ -313,26 +345,20 @@ function AulaWelcome({ onClose }: { onClose: () => void }) {
         >
           <Icons.close />
         </button>
-        {onIncident ? null : (
-          <div className="aula-ctrl">
-            <Link
-              href="/aula?aula=1"
-              className="btn btn-outline btn-sm"
-              onClick={onClose}
-            >
-              Roteiro da aula
-            </Link>
-            <Link
-              href={`/incidentes/${AULA_INCIDENT}?aula=1`}
-              className="btn btn-primary btn-sm aula-next"
-              onClick={onClose}
-              aria-label={`Abrir o incidente ${AULA_INCIDENT}`}
-            >
-              Abrir incidente
-              <Icons.arrowRight />
-            </Link>
-          </div>
-        )}
+        <div className="aula-ctrl">
+          <Link href="/aula?aula=1" className="btn btn-outline btn-sm" onClick={onClose}>
+            Roteiro da aula
+          </Link>
+          <Link
+            href={FIRST_STOP}
+            className="btn btn-primary btn-sm aula-next"
+            onClick={onClose}
+            aria-label="Começar a aula pela primeira parada: Como a IA funciona"
+          >
+            Começar
+            <Icons.arrowRight />
+          </Link>
+        </div>
       </div>
     </div>
   );

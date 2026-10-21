@@ -10,7 +10,7 @@ import {
   type CSSProperties,
 } from "react";
 
-import { useAulaLesson, type AulaLessonStep } from "@/components/aula";
+import { useAulaLesson, useAulaStart, type AulaLessonStep } from "@/components/aula";
 import { useShell } from "@/components/app-shell";
 import { TechDetails } from "@/components/concepts";
 import { Icons } from "@/components/icons";
@@ -189,6 +189,8 @@ export default function RecurrencesPage() {
     setHandPlayed(true);
     lesson.replay();
   }
+
+  useAulaStart("recorrencias", data ? replay : null);
 
   const mask = useMemo(() => {
     const m = new Uint8Array(data?.incidents.length ?? 0);

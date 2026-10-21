@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, ViewTransition } from "react";
 
+import { useAulaStart } from "@/components/aula";
 import { ConceptLabel, RecordTag, TechDetails } from "@/components/concepts";
 import { showTop } from "@/lib/reveal";
 import { Icons } from "@/components/icons";
@@ -353,6 +354,10 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
       if (tabs) showTop(tabs, reduced);
     });
   }
+
+  // The header's "Modo aula" starts this screen's lesson: the analysis, or
+  // its replay once the tab is open (the trace registers that one).
+  useAulaStart("incidente", tab === "analise" && suggest.response ? null : startAnalysis);
 
   function showNotes() {
     const latest = notes[notes.length - 1];
