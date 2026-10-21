@@ -1,0 +1,43 @@
+name: backend-deploy
+
+# Keeps the demo API on Render in step with main and awake.
+# - push to main (backend or render.yaml): calls the service's deploy hook, so
+#   a merge ships without clicking "Deploy latest commit". Needs the
+#   RENDER_DEPLOY_HOOK_URL secret; without it the step is skipped.
+# - every 10 minutes: pings /api/health so the free instance does not sleep
+#   (it sleeps after 15 idle minutes and takes about a minute to wake).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "render.yaml"
+      - ".github/workflows/backend-deploy.yml"
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: backend-deploy-${{ github.event_name }}
+  cancel-in-progress: false
+
+env:
+  API_URL: https://incident-sense-api.onrender.com
+
+jobs:
+  deploy:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    env:
+      HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Trigger Render deploy
+        if: env.HOOK != ''
+        run: curl -fsS -X POST "$HOOK" > /dev/null && echo "Deploy requested"
+
+  keep-awake:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health
+        run: curl -fsS --retry 3 --retry-delay 20 --max-time 90 "$API_URL/api/health"
