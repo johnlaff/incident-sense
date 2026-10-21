@@ -200,10 +200,14 @@ function EvaluatedBadge({ mark }: { mark: EvalMark }) {
   return (
     <span
       className={`badge chg-evaluated ${ok ? "ok" : "no"}`}
-      title={ok ? "A IA recomenda seguir para aprovação" : "A IA recomenda não seguir"}
+      title={
+        (ok ? "A IA recomenda seguir para aprovação" : "A IA recomenda não seguir") +
+        (mark.edited ? ", com o texto editado nesta aba" : "")
+      }
     >
       {ok ? <Icons.check /> : <Icons.alert />}
       {ok ? "Pode seguir" : "Não segue"} · {score}
+      {mark.edited && " (com edições)"}
     </span>
   );
 }

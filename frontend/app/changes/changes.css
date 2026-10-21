@@ -1928,3 +1928,37 @@ a.chg-row:focus-visible {
     transition: none;
   }
 }
+
+/* A result reopened from this tab, and a result older than the text. */
+.chg-saved {
+  margin: 0;
+  color: var(--ink-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.chg-stale-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.chg-stale-note svg {
+  flex: none;
+  width: 16px;
+  color: var(--muted);
+}
+.chg-stale-wrap[data-stale="true"],
+.chg-led-row.edited .chg-led-score {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.chg-edited {
+  color: var(--ink-body);
+  font-weight: 600;
+}

@@ -119,10 +119,15 @@ export function fmtWeight(n: number): string {
 }
 
 /** Signed delta for display: +1,2 / −0,4 / 0,0. Uses the minus sign U+2212. */
-export function fmtDelta(delta: number): string {
-  if (delta > 0) return `+${fmt(delta)}`;
-  if (delta < 0) return `−${fmt(-delta)}`;
-  return fmt(0);
+export function fmtDelta(delta: number, places = 1): string {
+  if (delta > 0) return `+${fmt(delta, places)}`;
+  if (delta < 0) return `−${fmt(-delta, places)}`;
+  return fmt(0, places);
+}
+
+/** Change of the weighted average, at its two places. */
+export function avgDelta(current: number, previous: number): number {
+  return Math.round((current - previous) * 100) / 100;
 }
 
 /** "9,5 × 2,5" for each field, in order. */
@@ -198,22 +203,26 @@ export function decisionOf(ev: Evaluation): ChangeDecision | null {
   if (value === null) return null;
   const cut = ev.threshold;
   const low = ev.fields.filter((f) => f.score < cut).sort((a, b) => a.score - b.score);
-  const avgOk = value >= cut;
   const s = ev.semantic;
+  // The backend decides; the local rule only reads old payloads and fixtures.
+  const backend = ev.decision ?? null;
+  const avgOk = backend ? backend.reason_code !== "average_below" : value >= cut;
+  const coh = s ? Math.round(s.consistency_score * 10) / 10 : null;
   let state: GateState = "skipped";
-  if (avgOk && s) {
-    state =
-      s.consistency_score >= cut && s.backout_adherence !== "NAO_ADERENTE"
-        ? "pass"
-        : "fail";
+  if (avgOk && s && coh !== null) {
+    const passes = backend
+      ? backend.passes
+      : coh >= cut && s.backout_adherence !== "NAO_ADERENTE";
+    state = passes ? "pass" : "fail";
   }
-  const failing = !avgOk ? "average" : state === "pass" ? null : "coherence";
+  const ok = backend ? backend.passes : avgOk && state === "pass";
+  const failing = ok ? null : !avgOk ? "average" : "coherence";
   return {
-    ok: failing === null,
+    ok,
     cut,
     average: { value, state: avgOk ? "pass" : "fail" },
     coherence: {
-      value: avgOk && s ? s.consistency_score : null,
+      value: avgOk && s ? coh : null,
       adherence: avgOk && s ? s.backout_adherence : null,
       state,
     },
@@ -337,7 +346,7 @@ export function buildSteps(
       {
         id: "coerencia",
         title: "Coerência entre os campos",
-        caption: `Pergunta 2 de 2: a IA lê os campos juntos e dá uma nota de coerência, com o mesmo corte de ${cut}. O plano de retorno precisa desfazer o que as tarefas fazem: pela leitura dela, cobre ${s.backout_adherence_percent}%.`,
+        caption: `Pergunta 2 de 2: a IA lê os campos juntos e dá uma nota de coerência, com o mesmo corte de ${cut}. Pela leitura dela, o plano de retorno desfaz ${s.backout_adherence_percent}% do que as tarefas fazem.`,
         ms: t.explain + t.count + t.hold,
       },
       {
@@ -372,4 +381,42 @@ export function parseTime(value: string | null | undefined, fallback: number): n
   if (v.endsWith("ms")) return n;
   if (v.endsWith("s")) return n * 1000;
   return n;
+}
+
+// ----- Re-evaluation words ----------------------------------------------------
+
+interface Rerun {
+  /** Fields edited since the last result. */
+  dirty: number;
+  /** The model differs from the one that read the last result. */
+  modelChanged: boolean;
+  total: number;
+}
+
+/** How many fields the next run sends to the model (the content lock). */
+export function sentFields({
+  dirty,
+  modelChanged,
+  total,
+  first,
+}: Rerun & { first: boolean }) {
+  if (first || modelChanged) return total;
+  return dirty;
+}
+
+/** The line under the button while the evaluation runs. */
+export function runningLine(fields: number): string {
+  if (fields === 0) return "Conferindo se algo mudou desde a última avaliação.";
+  if (fields === 1)
+    return "A IA está lendo o campo que mudou, no servidor. Os outros são reaproveitados.";
+  return `A IA está lendo os ${fields} campos em paralelo, no servidor. As notas chegam todas juntas.`;
+}
+
+/** What the next "Reavaliar" will send, said before it runs. */
+export function rerunHint({ dirty, modelChanged, total }: Rerun): string | null {
+  if (modelChanged) return `Modelo trocado: os ${total} campos voltam para a IA.`;
+  if (dirty === 0) return null;
+  return dirty === 1
+    ? "1 campo mudou. Só ele volta para a IA; os outros são reaproveitados, porque o texto não mudou."
+    : `${dirty} campos mudaram. Só eles voltam para a IA; os outros são reaproveitados, porque o texto não mudou.`;
 }

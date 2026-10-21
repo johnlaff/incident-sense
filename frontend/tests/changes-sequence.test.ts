@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   DEFAULT_TIMING,
+  avgDelta,
   buildSteps,
   decisionOf,
+  rerunHint,
+  runningLine,
+  sentFields,
   firstSentence,
   fmtDelta,
   formulaTerms,
@@ -292,6 +296,34 @@ describe("decisionOf", () => {
     };
     expect(decisionOf(ev)).toMatchObject({ ok: false, failing: "coherence" });
   });
+  it("follows the backend's decision when it disagrees with the local numbers", () => {
+    const ev = realLike();
+    ev.decision = {
+      passes: false,
+      reason_code: "backout_not_adherent",
+      reason: "O plano de retorno não desfaz o que as tarefas fazem.",
+    };
+    expect(decisionOf(ev)).toMatchObject({
+      ok: false,
+      failing: "coherence",
+      coherence: { state: "fail" },
+    });
+  });
+  it("reads a backend pass even on a borderline 7,96 (shown as 8,0)", () => {
+    const ev = realLike();
+    ev.semantic = { ...ev.semantic!, consistency_score: 7.96 };
+    ev.decision = { passes: true, reason_code: "passes", reason: "" };
+    expect(decisionOf(ev)).toMatchObject({
+      ok: true,
+      coherence: { value: 8, state: "pass" },
+    });
+  });
+  it("every fixture carries the backend decision and the local reading agrees", () => {
+    for (const ev of Object.values(fixture) as unknown as Evaluation[]) {
+      expect(ev.decision).toBeTruthy();
+      expect(decisionOf(ev)?.ok).toBe(ev.decision!.passes);
+    }
+  });
   it("lists the fields under the cut, lowest first", () => {
     const d = decisionOf(fixture.CHG0031001 as unknown as Evaluation);
     expect(d?.ok).toBe(true);
@@ -330,5 +362,34 @@ describe("firstSentence", () => {
       "Sobe para a v2.3 hoje.",
     );
     expect(firstSentence("Sem ponto final")).toBe("Sem ponto final");
+  });
+});
+
+describe("re-evaluation words (auditoria P1-3, P2-5)", () => {
+  it("says every field goes back when the model changed", () => {
+    expect(rerunHint({ dirty: 1, modelChanged: true, total: 7 })).toBe(
+      "Modelo trocado: os 7 campos voltam para a IA.",
+    );
+    expect(sentFields({ dirty: 1, modelChanged: true, total: 7, first: false })).toBe(7);
+  });
+  it("speaks of one field in the singular", () => {
+    expect(runningLine(1)).not.toMatch(/os 1 campos/);
+    expect(runningLine(1)).toContain("o campo que mudou");
+  });
+  it("says it is only checking when nothing changed", () => {
+    expect(sentFields({ dirty: 0, modelChanged: false, total: 7, first: false })).toBe(0);
+    expect(runningLine(0)).toBe("Conferindo se algo mudou desde a última avaliação.");
+    expect(rerunHint({ dirty: 0, modelChanged: false, total: 7 })).toBeNull();
+  });
+  it("reads all fields the first time", () => {
+    expect(sentFields({ dirty: 0, modelChanged: false, total: 7, first: true })).toBe(7);
+    expect(runningLine(7)).toContain("os 7 campos em paralelo");
+  });
+});
+
+describe("average delta (auditoria P2-17)", () => {
+  it("shows the average's change with two places, like the average", () => {
+    expect(fmtDelta(avgDelta(7.96, 7.92), 2)).toBe("+0,04");
+    expect(avgDelta(7.96, 7.92)).not.toBe(0);
   });
 });

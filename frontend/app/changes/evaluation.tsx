@@ -18,6 +18,7 @@ import {
 
 import {
   DEFAULT_TIMING,
+  avgDelta,
   fmt,
   fmtDelta,
   fmtWeight,
@@ -30,6 +31,7 @@ import {
   verdictOf,
   type GateState,
   type Step,
+  runningLine,
   type StepId,
   type WeightedAverage,
 } from "./sequence";
@@ -187,7 +189,7 @@ function ScoreChip({
   const cls = big ? "chg-overall-num" : "chg-score";
   return (
     <span
-      className={`${cls} ${finished ? (neutral ? "neutral" : band(score)) : "counting"}`}
+      className={`${cls} ${finished ? (neutral ? "neutral" : band(score, places)) : "counting"}`}
       data-on={run}
       role="img"
       aria-label={label}
@@ -227,7 +229,13 @@ export function FieldScoreChip({
   );
 }
 
-export function DeltaChip({ delta }: { delta: number | null }) {
+export function DeltaChip({
+  delta,
+  places = 1,
+}: {
+  delta: number | null;
+  places?: number;
+}) {
   if (delta === null) return null;
   const kind = delta > 0 ? "up" : delta < 0 ? "down" : "same";
   return (
@@ -236,10 +244,10 @@ export function DeltaChip({ delta }: { delta: number | null }) {
       aria-label={
         delta === 0
           ? "Nota igual à da avaliação anterior"
-          : `${delta > 0 ? "Subiu" : "Caiu"} ${fmt(Math.abs(delta))} desde a avaliação anterior`
+          : `${delta > 0 ? "Subiu" : "Caiu"} ${fmt(Math.abs(delta), places)} desde a avaliação anterior`
       }
     >
-      <span aria-hidden="true">{fmtDelta(delta)}</span>
+      <span aria-hidden="true">{fmtDelta(delta, places)}</span>
     </span>
   );
 }
@@ -253,10 +261,7 @@ export function RunningNote({ seconds, fields }: { seconds: number; fields: numb
   return (
     <p className="chg-running" role="status">
       <Icons.loader className="spin" />
-      <span>
-        A IA está lendo os {fields} campos em paralelo, no servidor. As notas chegam todas
-        juntas.
-      </span>
+      <span>{runningLine(fields)}</span>
       <span className="chg-elapsed" aria-label={`${seconds} segundos`}>
         {seconds} s
       </span>
@@ -335,6 +340,7 @@ export function Ledger({
   threshold,
   caption,
   why,
+  pending = null,
 }: {
   rows: LedgerRow[];
   avg: WeightedAverage | null;
@@ -350,6 +356,8 @@ export function Ledger({
    * the rows read worst first, each with a bar against the 8,0 line.
    */
   why?: Map<FieldKey, string> | null;
+  /** Fields edited since this result: their score is the old text's. */
+  pending?: Set<FieldKey> | null;
 }) {
   const byKey = new Map(avg?.segments.map((s) => [s.key, s]) ?? []);
   const totalWeight = rows.reduce((sum, r) => sum + r.weight, 0);
@@ -378,10 +386,11 @@ export function Ledger({
           const below =
             (flagBelow || detail) && seg !== undefined && seg.score < threshold;
           const line = detail ? why?.get(r.key) : undefined;
+          const edited = pending?.has(r.key) ?? false;
           return (
             <li
               key={r.key}
-              className={`chg-led-row${below ? " flag" : ""}`}
+              className={`chg-led-row${below ? " flag" : ""}${edited ? " edited" : ""}`}
               data-on={run && seg !== undefined}
               style={{ "--i": i } as Vars}
             >
@@ -399,6 +408,7 @@ export function Ledger({
                       </span>
                     )}
                     {below && <span className="chg-below">abaixo de 8,0</span>}
+                    {edited && <span className="chg-edited">editado: reavalie</span>}
                   </span>
                   {detail && seg && (
                     <span
@@ -523,7 +533,7 @@ export function Average({
         {previousOverall !== null && onMedia && (
           <span className="chg-avg-before">
             antes {fmt(previousOverall, 2)}
-            <DeltaChip delta={Math.round((overall - previousOverall) * 10) / 10} />
+            <DeltaChip delta={avgDelta(overall, previousOverall)} places={2} />
           </span>
         )}
       </div>
@@ -680,7 +690,7 @@ export function Coherence({
   motion: Motion;
 }) {
   const s = result.semantic;
-  const passed = gatePassed(result);
+  const passed = decisionOf(result)?.average.state === "pass";
   const onScores = reached(steps, index, "coerencia");
   const onProblems = reached(steps, index, "problemas");
 
@@ -747,16 +757,18 @@ export function Coherence({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={s.backout_adherence_percent}
-            aria-label="Aderência do plano de retorno às tarefas"
+            aria-label="Quanto do que as tarefas fazem o plano de retorno desfaz"
             style={{ "--pct": s.backout_adherence_percent } as Vars}
           >
             <span className="fill" />
           </span>
-          {/* A second, narrower fact than the 0 to 10 coherence: how much of
-              the backout plan shows up among the registered tasks. */}
+          {/* A second, narrower fact than the 0 to 10 coherence, the same one
+              the prompt asks for: how much of what the registered tasks do the
+              back-out plan undoes. */}
           <span>
-            <b className="mono">{s.backout_adherence_percent}%</b> do plano de retorno
-            aparece nas tarefas cadastradas
+            O plano de retorno desfaz{" "}
+            <b className="num">{s.backout_adherence_percent}%</b> do que as tarefas
+            cadastradas fazem
           </span>
         </div>
       </div>
@@ -772,7 +784,7 @@ export function Coherence({
         {s.problems.length > 0 ? (
           <ol className={`chg-problems${combine ? " soft" : ""}`}>
             {s.problems.map((p, i) => (
-              <li key={p} style={{ "--i": i } as Vars}>
+              <li key={`${i}-${p}`} style={{ "--i": i } as Vars}>
                 <span className="n" aria-hidden="true">
                   {i + 1}
                 </span>
@@ -788,9 +800,13 @@ export function Coherence({
         ) : (
           <p>A IA não listou pontos, mas a nota de coerência ficou abaixo do mínimo.</p>
         )}
-        {s.problems.length > 0 && change ? <Excerpts change={change} /> : null}
-        <h3>Raciocínio</h3>
-        <p>{s.reasoning}</p>
+        {change && aboutBackout(s) ? <Excerpts change={change} /> : null}
+        {s.reasoning.trim() ? (
+          <>
+            <h3>Raciocínio</h3>
+            <p>{s.reasoning}</p>
+          </>
+        ) : null}
         {s.guidance.trim() ? (
           <>
             <h3>Orientação ao autor</h3>
@@ -799,6 +815,19 @@ export function Coherence({
         ) : null}
       </div>
     </section>
+  );
+}
+
+/**
+ * The two texts (tasks and back-out plan) help only when the reading is
+ * about them: the back-out plan falls short, or a point names it.
+ */
+function aboutBackout(s: NonNullable<Evaluation["semantic"]>): boolean {
+  return (
+    s.backout_adherence !== "ADERENTE" ||
+    s.problems.some((p) =>
+      /retorno|revers|reverte|desfa|rollback|backout|tarefa/i.test(p),
+    )
   );
 }
 

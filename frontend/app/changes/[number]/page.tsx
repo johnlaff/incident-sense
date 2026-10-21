@@ -17,6 +17,8 @@ import {
   isEvaluation,
   markEvaluated,
   plainTitle,
+  readSavedEvaluation,
+  saveEvaluation,
   useChange,
   useRubric,
   type Change,
@@ -48,12 +50,14 @@ import {
 } from "../evaluation";
 import {
   buildSteps,
+  decisionOf,
   firstSentence,
+  rerunHint,
+  sentFields,
   fmtWeight,
   gatePassed,
   overallOf,
   reached,
-  verdictOf,
   weightedSegments,
   type StepId,
 } from "../sequence";
@@ -79,6 +83,24 @@ export default function ChangeDetailPage({
           <span className="sk" style={{ width: "80%", height: 22 }} />
           <span className="sk" style={{ width: "60%" }} />
         </div>
+      </div>
+    );
+  }
+  if (change.errorStatus === 404) {
+    return (
+      <div className="chg-page">
+        <StateBlock
+          icon={Icons.search}
+          title="Mudança não encontrada"
+          action={
+            <Link className="btn btn-outline" href="/changes">
+              Voltar para mudanças
+            </Link>
+          }
+        >
+          Não existe mudança com o número {number.toUpperCase()}. Confira o número ou
+          escolha uma na lista.
+        </StateBlock>
       </div>
     );
   }
@@ -151,6 +173,20 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   // lock will send back to the model.
   const [dirty, setDirty] = useState<Set<FieldKey>>(new Set());
   const elapsed = useElapsed(phase === "running");
+  // The model that read the current result: another one sends every field back.
+  const [readWith, setReadWith] = useState<string | null>(null);
+  // A result reopened from this tab (the list counts it as evaluated).
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  useEffect(() => {
+    const saved = readSavedEvaluation(change);
+    if (!saved) return;
+    setEdits(saved.edits);
+    if (MODELS.some((m) => m.id === saved.model)) setModel(saved.model);
+    setReadWith(saved.model);
+    setResult(saved.result);
+    setSavedAt(saved.at);
+    setPhase("done");
+  }, [change]);
 
   const scores = useMemo(() => {
     const map = new Map<FieldKey, FieldScore>();
@@ -248,6 +284,13 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
 
   const asideRef = useTallSticky();
   const inScope = result ? result.scope.in_scope : isInScope(change);
+  const rerun = {
+    dirty: dirty.size,
+    modelChanged: result !== null && readWith !== null && readWith !== model,
+    total: EVALUATED_FIELDS.length,
+  };
+  // Edited since the result: the verdict and the numbers are the old text's.
+  const stale = result !== null && dirty.size > 0 && phase !== "running";
   const valueOf = (key: FieldKey) => edits[key] ?? change[key];
 
   // The header's "Modo aula" plays the verdict step by step, or runs the
@@ -269,21 +312,41 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       }
       setPrevious(result);
       setResult(res);
-      // /changes marks the Changes evaluated in this session.
+      setReadWith(model);
+      setSavedAt(null);
+      // /changes marks the Changes evaluated in this session, and the page
+      // reopens this result while the text stays the same.
+      const edited = Object.keys(edits).length > 0;
       markEvaluated(change.number, {
         overall: overallOf(res),
         passed: gatePassed(res),
-        ok: verdictOf(res)?.ok ?? false,
+        ok: decisionOf(res)?.ok ?? false,
+        edited,
       });
+      saveEvaluation(change, { edits, model, result: res, at: Date.now() });
       setMotion(readMotion());
       setRunKey((k) => k + 1);
       setDirty(new Set());
       setPhase("done");
     } catch (error) {
-      setErrMsg(error instanceof ApiError ? error.detail : "Erro inesperado.");
+      setErrMsg(
+        error instanceof ApiError ? error.detail : "Não foi possível avaliar agora.",
+      );
       setPhase("error");
     }
   }
+  // On a phone the button can sit near the bottom bar: bring the error up.
+  const errRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (phase !== "error") return;
+    const el = errRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const bottomBar =
+      document.querySelector(".tabbar")?.getBoundingClientRect().height ?? 0;
+    if (r.top < 64 || r.bottom > window.innerHeight - bottomBar - 8)
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [phase, errMsg]);
 
   function startEdit(key: FieldKey) {
     setEditing(key);
@@ -395,6 +458,12 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               </p>
             ) : (
               <>
+                {savedAt !== null && phase === "done" && (
+                  <p className="chg-saved">
+                    Avaliada em <span className="num">{savedTime(savedAt)}</span>, nesta
+                    aba. O resultado abaixo é dessa avaliação.
+                  </p>
+                )}
                 <button
                   className="btn btn-ai chg-go-btn"
                   onClick={evaluate}
@@ -432,18 +501,14 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 {phase === "running" && (
                   <RunningNote
                     seconds={elapsed}
-                    fields={dirty.size > 0 && result ? dirty.size : orderedFields.length}
+                    fields={sentFields({ ...rerun, first: !result })}
                   />
                 )}
-                {result && dirty.size > 0 && phase !== "running" && (
-                  <p className="chg-hint">
-                    {dirty.size === 1 ? "1 campo mudou" : `${dirty.size} campos mudaram`}.
-                    Só {dirty.size === 1 ? "ele volta" : "eles voltam"} para a IA; os
-                    outros são reaproveitados, porque o texto não mudou.
-                  </p>
+                {result && phase !== "running" && rerunHint(rerun) && (
+                  <p className="chg-hint">{rerunHint(rerun)}</p>
                 )}
                 {phase === "error" && errMsg && (
-                  <p className="chg-error" role="alert">
+                  <p className="chg-error" role="alert" ref={errRef}>
                     <Icons.alert />
                     {errMsg}
                   </p>
@@ -452,7 +517,17 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             )}
 
             {/* The answer before the numbers; modo aula keeps it for the end. */}
-            {showResult && inScope && !lesson.aula && <Decision result={result} />}
+            {stale && (
+              <p className="chg-stale-note" role="status">
+                <Icons.alert />
+                <span>Resultado do texto anterior. Reavalie para ver a nota nova.</span>
+              </p>
+            )}
+            {showResult && inScope && !lesson.aula && (
+              <div className="chg-stale-wrap" data-stale={stale}>
+                <Decision result={result} />
+              </div>
+            )}
 
             {showResult && overallOf(result) !== null && (
               <PlaybackBar
@@ -479,6 +554,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     showResult && lesson.aula ? (notasStep?.caption ?? null) : null
                   }
                   why={showResult && !lesson.aula ? whyByField : null}
+                  pending={stale ? dirty : null}
                 />
               )}
 
@@ -839,4 +915,12 @@ function useTallSticky() {
     };
   }, []);
   return ref;
+}
+
+/** "21/10 às 14:32", for a result reopened in the same tab. */
+function savedTime(at: number): string {
+  const d = new Date(at);
+  const day = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  const time = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return `${day} às ${time}`;
 }

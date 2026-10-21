@@ -50,3 +50,11 @@ describe("/aula picks", () => {
     },
   );
 });
+
+describe("no stop promises the AI's answer (auditoria P1-13)", () => {
+  it("CHG0031001 does not say it will pass", () => {
+    const text = JSON.stringify(STOPS);
+    expect(text).not.toMatch(/deve passar/);
+    expect(text).toContain("Bem preenchida: vamos ver o que a IA diz");
+  });
+});
