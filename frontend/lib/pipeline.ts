@@ -102,7 +102,10 @@ export function mergeNotes(
   loaded: WorkNote[],
   fresh: WorkNote | null | undefined,
 ): WorkNote[] {
-  if (!fresh || loaded.some((n) => n.id === fresh.id)) return loaded;
+  if (!fresh) return loaded;
+  // A second analysis replaces the visitor's AI note in place (same id).
+  if (loaded.some((n) => n.id === fresh.id))
+    return loaded.map((n) => (n.id === fresh.id ? fresh : n));
   return [...loaded, fresh];
 }
 

@@ -75,6 +75,39 @@ function aiSignal(): AbortSignal | undefined {
     : undefined;
 }
 
+/** One FastAPI validation item (the 422 `detail` is a list of these). */
+interface ValidationItem {
+  type?: string;
+  loc?: unknown[];
+  ctx?: { max_length?: number };
+}
+
+/**
+ * The sentence an error shows. The backend's own PT-BR detail passes; an
+ * English framework default, a 422 list or any other shape becomes a
+ * sentence, so a screen never gets an object to render (logica-4 P1-1).
+ */
+export function errorDetail(status: number, detail: unknown): string {
+  if (typeof detail === "string" && detail.trim()) {
+    // A framework default in English is not a sentence (E2E-3 P2-17).
+    const english =
+      /^(Internal Server Error|Not Found|Bad Gateway|Service Unavailable|Gateway Timeout|Unprocessable (Entity|Content)|Method Not Allowed)$/i;
+    if (!english.test(detail)) return detail;
+  }
+  if (Array.isArray(detail)) {
+    const items = detail.filter(
+      (d): d is ValidationItem => typeof d === "object" && d !== null,
+    );
+    const question = items.find((d) => d.loc?.includes("question"));
+    if (question?.type === "string_too_long")
+      return `A pergunta passou de ${question.ctx?.max_length ?? 600} caracteres. Encurte e envie de novo.`;
+    if (question)
+      return "O servidor não aceitou esta pergunta. Reescreva e envie de novo.";
+    return `O servidor recusou os dados enviados (erro ${status}). Recarregue a página e tente de novo.`;
+  }
+  return `O servidor respondeu com erro ${status}. Tente de novo em instantes.`;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
@@ -98,23 +131,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     );
   }
   if (!response.ok) {
-    const detail = await response
+    const detail: unknown = await response
       .json()
-      .then((body: { detail?: string }) => body.detail)
+      .then((body: { detail?: unknown }) => body.detail)
       .catch(() => undefined);
-    // A framework default in English ("Internal Server Error") is not a
-    // sentence for the reader (E2E-3 P2-17).
-    const plain =
-      detail &&
-      !/^(Internal Server Error|Not Found|Bad Gateway|Service Unavailable|Gateway Timeout)$/i.test(
-        detail,
-      );
-    throw new ApiError(
-      response.status,
-      plain
-        ? detail
-        : `O servidor respondeu com erro ${response.status}. Tente de novo em instantes.`,
-    );
+    throw new ApiError(response.status, errorDetail(response.status, detail));
   }
   return JSON.parse(withAccents(await response.text())) as T;
 }

@@ -7,6 +7,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 
 import { Icons } from "@/components/icons";
 import { ProseMarkdown } from "@/components/markdown";
+import { joinPt } from "@/lib/followup";
 import { revealSubject } from "@/lib/reveal";
 import {
   ADHERENCE_LABEL,
@@ -179,6 +180,7 @@ function ScoreChip({
   places = 1,
   label,
   neutral = false,
+  tone,
 }: {
   score: number;
   from?: number;
@@ -191,12 +193,14 @@ function ScoreChip({
   label: string;
   /** No hue: the verdict, not this number, says yes or no. */
   neutral?: boolean;
+  /** The gate's own colour, when a gate failed on this number. */
+  tone?: "good" | "mid" | "low";
 }) {
   const { value, finished } = useCount(score, from, run, delay, dur);
   const cls = big ? "chg-overall-num" : "chg-score";
   return (
     <span
-      className={`${cls} ${finished ? (neutral ? "neutral" : band(score, places)) : "counting"}`}
+      className={`${cls} ${finished ? (neutral ? "neutral" : (tone ?? band(score, places))) : "counting"}`}
       data-on={run}
       role="img"
       aria-label={label}
@@ -549,8 +553,8 @@ export function Average({
       <p className="chg-caption">
         {missing.length > 0
           ? unanswered
-            ? `A IA não conseguiu avaliar ${missing.join(", ")}: a média é dos outros ${n} campos e não decide.`
-            : `A IA não conseguiu avaliar ${missing.join(", ")}, mas nem com nota 10 a média chegaria a ${cut}.`
+            ? `A IA não conseguiu avaliar ${joinPt(missing)}: a média é dos outros ${n} campos e não decide.`
+            : `A IA não conseguiu avaliar ${joinPt(missing)}, mas nem com nota 10 a média chegaria a ${cut}.`
           : "Campos mais importantes pesam mais."}
       </p>
 
@@ -671,8 +675,8 @@ export function Average({
           <LockClosed />
           <span>
             {unanswered
-              ? `Sem a nota de ${missing.join(", ")}, a pergunta 1 fica sem resposta. Avalie de novo.`
-              : `Mesmo com nota 10 em ${missing.join(", ")}, a média chegaria no máximo a ${fmt(bestAverage(result), 2)}: a pergunta 1 já é não.`}
+              ? `Sem a nota de ${joinPt(missing)}, a pergunta 1 fica sem resposta. Avalie de novo.`
+              : `Mesmo com nota 10 em ${joinPt(missing)}, a média chegaria no máximo a ${fmt(bestAverage(result), 2)}: a pergunta 1 já é não.`}
           </span>
         </p>
       ) : (
@@ -764,9 +768,11 @@ export function Coherence({
         <p className="chg-sem-stop">{note?.line}</p>
         {/* The average's own reason names the field to fix; the other cases
             already say it all in the line above. */}
-        {d?.code === "average_below" && result.semantic_skipped_reason && (
-          <p className="chg-muted">{plainReason(result.semantic_skipped_reason)}</p>
-        )}
+        {d?.code === "average_below" &&
+          missingFields(result).length === 0 &&
+          result.semantic_skipped_reason && (
+            <p className="chg-muted">{plainReason(result.semantic_skipped_reason)}</p>
+          )}
       </section>
     );
   }
@@ -790,6 +796,8 @@ export function Coherence({
           <ScoreChip
             score={s.consistency_score}
             neutral={!combine && !d?.failed.includes("coherence_below")}
+            // Failed on coherence: red like question 2, whatever the band (E2E-4 P2-8).
+            tone={d?.failed.includes("coherence_below") ? "low" : undefined}
             run={onScores}
             delay={0}
             dur={skipped ? 0 : motion.count}
@@ -991,9 +999,9 @@ export function Decision({
           state={d.average.state}
           note={
             d.code === "field_missing"
-              ? `Falta a nota de ${missingFields(result).join(", ")}.`
+              ? `Falta a nota de ${joinPt(missingFields(result))}.`
               : missingFields(result).length > 0
-                ? `Mesmo com nota 10 em ${missingFields(result).join(", ")}, no máximo ${fmt(bestAverage(result), 2)}.`
+                ? `Mesmo com nota 10 em ${joinPt(missingFields(result))}, no máximo ${fmt(bestAverage(result), 2)}.`
                 : undefined
           }
           where="average"

@@ -11,6 +11,7 @@ import {
   type ScoredField,
   type SemanticAnalysis,
 } from "@/lib/changes";
+import { joinPt } from "@/lib/followup";
 
 /** Base timings in ms, before --motion-scale. They mirror the motion tokens. */
 export interface Timing {
@@ -152,6 +153,23 @@ export type StepId = "notas" | "media" | "portao" | "coerencia" | "problemas";
 /** The fields the AI could not judge, by label. */
 export function missingFields(ev: Evaluation): string[] {
   return ev.fields.filter((f) => !isScored(f)).map((f) => f.label);
+}
+
+/** The same fields as a phrase: "Objetivo e Benefícios" (logica-4 P2-10). */
+export function missingNames(ev: Evaluation): string {
+  return joinPt(missingFields(ev));
+}
+
+/**
+ * Fields the content lock reused although their text changed since the
+ * previous result: the text went back to one the AI had already graded.
+ */
+export function recalledFields(ev: Evaluation, previous?: Evaluation | null): string[] {
+  if (!previous) return [];
+  const before = new Map(previous.fields.map((f) => [f.key, f.content_hash]));
+  return ev.fields
+    .filter((f) => f.reused && before.has(f.key) && before.get(f.key) !== f.content_hash)
+    .map((f) => f.label);
 }
 
 export interface Step {
@@ -350,12 +368,12 @@ function localReason(ev: Evaluation, d: ChangeDecision): string {
   const s = ev.semantic;
   switch (d.code) {
     case "field_missing": {
-      const names = missingFields(ev).join(", ");
+      const names = missingNames(ev);
       return `A IA não conseguiu avaliar ${missingFields(ev).length === 1 ? "o campo" : "os campos"} ${names}. Sem essa nota não há veredito: avalie de novo.`;
     }
     case "average_below":
       return missingFields(ev).length > 0
-        ? `Mesmo com nota 10 em ${missingFields(ev).join(", ")}, a média chegaria no máximo a ${fmt(bestAverage(ev), 2)}, abaixo do mínimo de ${cut}.`
+        ? `Mesmo com nota 10 em ${missingNames(ev)}, a média chegaria no máximo a ${fmt(bestAverage(ev), 2)}, abaixo do mínimo de ${cut}.`
         : `A média ficou em ${avg}, abaixo do mínimo de ${cut}.`;
     case "semantic_missing": {
       const { why, again } = semanticCause(ev);
@@ -479,7 +497,7 @@ export function coherenceNote(ev: Evaluation): { title: string; line: string } |
     case "field_missing":
       return {
         title: "Não conferida",
-        line: `Não conferida: falta a nota de ${missingFields(ev).join(", ")}. Avalie de novo.`,
+        line: `Não conferida: falta a nota de ${missingNames(ev)}. Avalie de novo.`,
       };
     case "average_below":
       return {
@@ -546,20 +564,23 @@ export function buildSteps(
   );
   const sent = ev.fields.filter((f) => !f.reused);
   const retried = sent.filter((f) => ungraded.has(f.key)).length;
+  const recalled = recalledFields(ev, previous);
   const notas =
-    reused === n
-      ? previous
-        ? "Nada mudou desde a última avaliação: as notas foram reaproveitadas, sem chamar a IA."
-        : "Este navegador já tinha avaliado este texto: as notas foram reaproveitadas, sem chamar a IA."
-      : reused > 0 && retried === sent.length
-        ? retried === 1
-          ? "O campo que a IA não tinha avaliado voltou para ela; os outros foram reaproveitados."
-          : "Os campos que a IA não tinha avaliado voltaram para ela; os outros foram reaproveitados."
-        : reused > 0 && retried > 0
-          ? "Voltaram para a IA os campos com texto novo e os que ela não tinha avaliado. Os outros foram reaproveitados."
-          : reused > 0
-            ? "Só os campos com texto novo voltaram para a IA. Os outros foram reaproveitados, porque o texto não mudou."
-            : "Uma IA juíza dá nota de 0 a 10 a cada campo, sempre com os mesmos critérios.";
+    reused === n && recalled.length > 0
+      ? `${joinPt(recalled)} ${recalled.length === 1 ? "voltou" : "voltaram"} a um texto que a IA já tinha avaliado: a nota desse texto foi reaproveitada, sem chamar a IA.`
+      : reused === n
+        ? previous
+          ? "Nada mudou desde a última avaliação: as notas foram reaproveitadas, sem chamar a IA."
+          : "Este navegador já tinha avaliado este texto: as notas foram reaproveitadas, sem chamar a IA."
+        : reused > 0 && retried === sent.length
+          ? retried === 1
+            ? "O campo que a IA não tinha avaliado voltou para ela; os outros foram reaproveitados."
+            : "Os campos que a IA não tinha avaliado voltaram para ela; os outros foram reaproveitados."
+          : reused > 0 && retried > 0
+            ? "Voltaram para a IA os campos com texto novo e os que ela não tinha avaliado. Os outros foram reaproveitados."
+            : reused > 0
+              ? "Só os campos com texto novo voltaram para a IA. Os outros foram reaproveitados, porque o texto não mudou."
+              : "Uma IA juíza dá nota de 0 a 10 a cada campo, sempre com os mesmos critérios.";
   const steps: Step[] = [
     {
       id: "notas",
@@ -579,9 +600,9 @@ export function buildSteps(
       title: `Corte de ${cut}`,
       caption:
         missing.length > 0 && d?.code === "average_below"
-          ? `Pergunta 1 de 2: mesmo com nota 10 em ${missing.join(", ")}, a média chegaria no máximo a ${fmt(bestAverage(ev), 2)}, abaixo de ${cut}. Não segue.`
+          ? `Pergunta 1 de 2: mesmo com nota 10 em ${joinPt(missing)}, a média chegaria no máximo a ${fmt(bestAverage(ev), 2)}, abaixo de ${cut}. Não segue.`
           : missing.length > 0
-            ? `Pergunta 1 de 2 fica sem resposta: a IA não conseguiu avaliar ${missing.join(", ")}. Não segue ainda: avalie de novo.`
+            ? `Pergunta 1 de 2 fica sem resposta: a IA não conseguiu avaliar ${joinPt(missing)}. Não segue ainda: avalie de novo.`
             : passed
               ? `Pergunta 1 de 2: a média (${fmt(overallOf(ev) ?? 0, 2)}) passou do mínimo de ${cut}. Agora a IA confere se os campos contam a mesma história.`
               : `Pergunta 1 de 2: a média ficou abaixo de ${cut}. Não segue, e a pergunta 2 nem é feita.`,
@@ -612,7 +633,12 @@ export function buildSteps(
       {
         id: "problemas",
         title: d?.ok ? "As partes combinam" : note.title,
-        caption: note.line,
+        // The step shows the verdict; the points themselves are behind
+        // "Ver onde" (E2E-4 P2-7).
+        caption:
+          !d?.ok && s.problems.length > 0
+            ? `${note.line} Abra “Ver onde” para ler cada ponto.`
+            : note.line,
         ms: Math.max(1, s.problems.length) * t.problem + t.hold,
       },
     );
@@ -640,8 +666,10 @@ export function parseTime(value: string | null | undefined, fallback: number): n
 // ----- Re-evaluation words ----------------------------------------------------
 
 interface Rerun {
-  /** Fields edited since the last result. */
+  /** Fields edited since the last result to a text the AI has not read. */
   dirty: number;
+  /** Fields edited back to a text the AI already graded: that grade returns. */
+  recalled?: number;
   /** Fields the last result has no grade for and nobody edited: they go back too. */
   failed?: number;
   /** The model differs from the one that read the last result. */
@@ -698,10 +726,15 @@ export function runningLine(
 export function rerunHint({
   dirty,
   failed = 0,
+  recalled = 0,
   modelChanged,
   total,
 }: Rerun): string | null {
   if (modelChanged) return `Modelo trocado: os ${total} campos voltam para a IA.`;
+  if (dirty === 0 && failed === 0 && recalled > 0)
+    return recalled === 1
+      ? "O campo voltou a um texto que a IA já tinha avaliado: ele volta para a nota desse texto, sem chamar a IA."
+      : `${recalled} campos voltaram a textos que a IA já tinha avaliado: eles voltam para as notas desses textos, sem chamar a IA.`;
   if (dirty === 0 && failed > 0)
     return failed === 1
       ? "O campo que a IA não tinha avaliado volta para ela; os outros são reaproveitados."

@@ -995,6 +995,8 @@ table.list {
   font-size: 13px;
   font-weight: 500;
   max-width: 85%;
+  /* A pasted URL or code has no spaces: break it inside the bubble. */
+  overflow-wrap: anywhere;
 }
 
 /* pipeline trace */
@@ -2674,6 +2676,9 @@ body {
   max-width: 86%;
 }
 /* A follow-up answer: the words, then what it stands on (E2E-3 P1-2). */
+.bubble-ai.followup {
+  overflow-wrap: anywhere;
+}
 .bubble-ai.followup > :first-child {
   margin-top: 0;
 }
@@ -2727,6 +2732,7 @@ body {
 }
 .cop-input input {
   flex: 1;
+  min-width: 0;
   border: 1px solid var(--border-strong);
   border-radius: 9px;
   background: var(--surface);
@@ -2735,6 +2741,16 @@ body {
   color: var(--ink-body);
   outline: none;
   transition: border-color var(--dur-press);
+}
+/* Near the 600-character limit the field counts (logica-4 P1-1). */
+.cop-count {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.cop-count.full {
+  color: var(--danger);
 }
 .cop-input input::placeholder {
   color: var(--muted);
@@ -4729,6 +4745,14 @@ body {
   }
   .topbar .search {
     width: 320px;
+  }
+  /* With the full rail, the assistant button sits in the rail's empty
+     space, above its footnote, so it never covers the record's text on a
+     projector (E2E-4 P2-6). */
+  .cop-fab {
+    left: 20px;
+    right: auto;
+    bottom: 108px;
   }
 }
 

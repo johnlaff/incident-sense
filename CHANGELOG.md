@@ -7,6 +7,40 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Alterado
+
+- **Perguntas partem da análise guardada no servidor**: `/api/suggest` guarda,
+  por visitante e incidente, o veredito, a justificativa, a sugestão mostrada e
+  os casos mantidos com o motivo de cada um. `/ask` responde a partir disso,
+  segue os passos da sugestão na mesma ordem e ignora os `context_ids` do
+  navegador. Sem análise guardada, responde 409 e a tela roda a análise antes
+  da pergunta; uma saudação continua respondida na hora.
+- Perguntas têm limite de uso próprio (`AI_ASK_MAX_PER_CLIENT`,
+  `AI_ASK_MAX_PER_IP`), separado das análises, com frase própria.
+- O prompt das perguntas usa os rótulos da tela ("Crítica", "Em andamento").
+- Analisar de novo substitui a nota da IA no lugar, sem empilhar outra.
+- Com o rail completo, o botão "Perguntar à IA" fica no rail e não cobre o
+  texto do registro.
+
+### Corrigido
+
+- Pergunta com mais de 600 caracteres derrubava a tela do incidente: o campo
+  para em 600 com contador, e todo erro de validação vira uma frase em
+  português.
+- Chat: resposta com `kind` fora do padrão ou vazia, pergunta perdida quando a
+  análise falhava, pergunta ignorada enquanto a análise rodava, "Tentar de
+  novo" que mudava a pergunta de lugar, texto do campo cortado em 360 e que
+  oferecia sugestão no improcedente, palavras longas fora do balão.
+- Sair do incidente e voltar na mesma aba mantém a análise e a conversa.
+- O filtro de contradições só descarta frases inteiras de negação; uma
+  contradição curta e real conta.
+- Campo que volta a um texto já avaliado não aparece como "Nada mudou".
+- Média inalcançável não pede "Avalie de novo"; nomes de campos em "A e B".
+- Coerência que reprova aparece em vermelho no cartão, como na pergunta 2; o
+  último passo da aula aponta para "Ver onde".
+- "3.072 dimensões" no passo do embedding; INC0053082 com prioridade Crítica,
+  como pedem Impacto e Urgência altos.
+
 ## [1.1.0] - 2026-10-21
 
 Versão da palestra "Depois do Deploy" (TechWeek UFU, 22/10/2026). Tudo o que

@@ -173,7 +173,9 @@ Serve o resultado **pré-computado e commitado**: cada incidente como um ponto
   chamada de modelo, janela de 10 minutos por visitante (`AI_MAX_PER_CLIENT`,
   20), por IP (`AI_MAX_PER_IP`, 300; uma sala inteira divide o mesmo NAT) e
   teto diário (`AI_MAX_PER_DAY`, 3000). Acima do limite, 429 com o motivo em
-  português.
+  português. As perguntas de acompanhamento têm limite próprio
+  (`AI_ASK_MAX_PER_CLIENT`, 40, e `AI_ASK_MAX_PER_IP`, 1200), para que uma
+  conversa não gaste a cota das análises.
 - **Quem é o visitante.** O site gera um id aleatório por navegador
   (`localStorage`) e o envia em `X-Client-Id`. `client_key()` usa os primeiros
   64 caracteres desse cabeçalho ou, sem ele, o IP. A cota, a trava de conteúdo

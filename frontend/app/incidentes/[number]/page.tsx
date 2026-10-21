@@ -27,7 +27,19 @@ import {
 } from "@/components/ui";
 import { activate, useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { api, ApiError } from "@/lib/api";
-import { askNote, followUpBody, inputHint, joinPt } from "@/lib/followup";
+import {
+  askNote,
+  followUpBody,
+  inputHint,
+  joinPt,
+  QUESTION_MAX,
+  questionCount,
+  readChat,
+  saveChat,
+  settleTurns,
+  upsertTurn,
+  type Turn,
+} from "@/lib/followup";
 import { useAllIncidents, useClusters, useIncident } from "@/lib/incidents";
 import { useProblems } from "@/lib/problems";
 import { usePrefersReducedMotion } from "@/lib/motion";
@@ -59,7 +71,7 @@ import {
   stepViews,
 } from "@/lib/pipeline";
 import { funnel } from "@/lib/ruler";
-import type { AskResponse, SuggestResponse, WorkNote } from "@/lib/types";
+import type { SuggestResponse, WorkNote } from "@/lib/types";
 import { AssistantFab } from "@/components/assistant-fab";
 import { SuggestionMarkdown } from "@/components/markdown";
 import { isSuggestResponse, suggestErrorMessage } from "@/lib/suggest-guard";
@@ -82,6 +94,11 @@ export interface SuggestionRun {
   model: string;
   setModel: (id: string) => void;
   run: () => Promise<void>;
+  /** Questions typed in the assistant chat, kept with the analysis. */
+  turns: Turn[];
+  setTurns: (update: (turns: Turn[]) => Turn[]) => void;
+  /** True once an analysis ran in this visit (not one brought back). */
+  ranHere: boolean;
 }
 
 function useSuggestion(record: IncidentRecord): SuggestionRun {
@@ -91,7 +108,25 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [durationMs, setDurationMs] = useState<number | null>(null);
   const [model, setModel] = useState(DEFAULT_MODEL);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [ranHere, setRanHere] = useState(false);
   const busy = useRef(false);
+
+  // Leaving the incident and coming back in the same tab brings the analysis
+  // and the chat back, so nobody pays for (and publishes) the same analysis
+  // twice (E2E-4 P2-3).
+  useEffect(() => {
+    const kept = readChat(record.number);
+    if (!kept) return;
+    setResponse(kept.response);
+    setDurationMs(kept.durationMs);
+    if (MODELS.some((m) => m.id === kept.model)) setModel(kept.model);
+    setTurns(kept.turns);
+    setPhase("done");
+  }, [record.number]);
+  useEffect(() => {
+    if (response) saveChat(record.number, { response, durationMs, model, turns });
+  }, [record.number, response, durationMs, model, turns]);
 
   async function run() {
     if (busy.current) return;
@@ -119,6 +154,7 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
         return;
       }
       setResponse(res);
+      setRanHere(true);
       setPhase("done");
     } catch (e) {
       setError(suggestErrorMessage(e));
@@ -128,7 +164,19 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
     }
   }
 
-  return { phase, response, error, startedAt, durationMs, model, setModel, run };
+  return {
+    phase,
+    response,
+    error,
+    startedAt,
+    durationMs,
+    model,
+    setModel,
+    run,
+    turns,
+    setTurns,
+    ranHere,
+  };
 }
 
 interface RelatedRow {
@@ -880,11 +928,11 @@ function CopilotFab({
   const [srcOpen, setSrcOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [lastMessage, setLastMessage] = useState("Sugerir resolução para este incidente");
-  // Questions typed after the analysis: each one is a follow-up answered from
-  // the incident and the cases the analysis kept, never a new analysis.
-  const [turns, setTurns] = useState<FollowUp[]>([]);
-  // A question typed before any analysis waits for it, then is asked.
-  const [pending, setPending] = useState<string | null>(null);
+  // Typed questions: each one is a follow-up answered from the incident and
+  // the analysis the server kept, never a new analysis. One typed before the
+  // analysis (or while it runs) waits for it and is asked right after.
+  const { turns, setTurns } = suggest;
+  const count = questionCount(draft.length);
   const msgsRef = useRef<HTMLDivElement>(null);
   const trapRef = useFocusTrap<HTMLDivElement>(open);
   // On phones the panel is a full-height sheet; keep the record from scrolling under it.
@@ -920,51 +968,60 @@ function CopilotFab({
     await suggest.run();
   }
 
-  async function ask(question: string, id = Date.now()) {
-    const analysis = suggest.response;
-    if (!analysis) return;
-    setTurns((all) => [
-      ...all.filter((t) => t.id !== id),
-      { id, question, state: "running", res: null, error: null },
-    ]);
+  async function ask(turn: Turn) {
+    setTurns((all) =>
+      upsertTurn(all, { ...turn, state: "running", res: null, error: null }),
+    );
     try {
       const res = await api.askIncident(
         record.number,
-        followUpBody(analysis, question, model),
+        followUpBody(suggest.response, turn.question, model),
       );
-      setTurns((all) => all.map((t) => (t.id === id ? { ...t, state: "done", res } : t)));
+      setTurns((all) => upsertTurn(all, { ...turn, state: "done", res, error: null }));
     } catch (e) {
+      // 409: the server holds no analysis for this visitor yet (or lost it).
+      // The question waits, the analysis runs, then the question is asked.
+      if (e instanceof ApiError && e.status === 409 && !suggest.ranHere) {
+        setTurns((all) => upsertTurn(all, { ...turn, state: "waiting" }));
+        askDefault();
+        return;
+      }
       const error =
         e instanceof ApiError ? e.detail : "Não foi possível responder agora.";
-      setTurns((all) =>
-        all.map((t) => (t.id === id ? { ...t, state: "error", error } : t)),
-      );
+      setTurns((all) => upsertTurn(all, { ...turn, state: "error", error }));
     }
   }
 
-  // A written message is a question. With an analysis on screen it is a
-  // follow-up about it (one light call, nothing published); before one, the
-  // analysis runs first and the question is asked right after (E2E-3 P1-2).
+  // A written message is a question. The server answers a greeting at once
+  // and anything else from the analysis it kept; with none, it says so (409)
+  // and the analysis runs first. Sent while the analysis runs, it waits.
   function submit() {
-    const text = draft.trim();
-    if (!text || phase === "running") return;
+    const text = draft.trim().slice(0, QUESTION_MAX);
+    if (!text) return;
     if (turns.some((t) => t.state === "running")) return;
     setDraft("");
-    if (phase === "done" && suggest.response) {
-      void ask(text);
+    const turn: Turn = {
+      id: Date.now(),
+      question: text,
+      state: "waiting",
+      res: null,
+      error: null,
+    };
+    if (phase === "running") {
+      setTurns((all) => upsertTurn(all, turn));
       return;
     }
-    setPending(text);
-    askDefault();
+    void ask(turn);
   }
 
-  // The analysis that a typed question started has landed: ask it now.
+  // The analysis landed: ask the questions that waited for it, one at a time.
+  // After a failed analysis they stay, with its retry.
   useEffect(() => {
-    if (pending === null || phase === "running") return;
-    if (phase === "done" && suggest.response) void ask(pending);
-    setPending(null);
+    if (turns.some((t) => t.state === "running")) return;
+    const [next] = settleTurns(turns, phase).ask;
+    if (next) void ask(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, pending]);
+  }, [phase, turns]);
 
   function askDefault() {
     setLastMessage("Sugerir resolução para este incidente");
@@ -1330,34 +1387,42 @@ function CopilotFab({
                     {results}
                   </div>
                 </div>
-                {turns.map((t) => (
-                  <FollowUpTurn
-                    key={t.id}
-                    turn={t}
-                    onCite={peek}
-                    flashCite={flashCite}
-                    onRetry={() => void ask(t.question, t.id)}
-                  />
-                ))}
-                {pending ? (
-                  <div className="msg-row me">
-                    <div className="bubble-user">{pending}</div>
-                  </div>
-                ) : null}
               </>
             )}
+            {turns.map((t) => (
+              <FollowUpTurn
+                key={t.id}
+                turn={t}
+                analysis={phase}
+                onCite={peek}
+                flashCite={flashCite}
+                onRetry={() => void ask(t)}
+                onRetryAnalysis={run}
+              />
+            ))}
           </div>
 
           <div className="cop-input">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder={inputHint(phase === "done" && Boolean(suggest.response))}
+              maxLength={QUESTION_MAX}
+              placeholder={inputHint(phase === "done" ? suggest.response : null)}
               aria-label="Mensagem para a IA"
+              aria-describedby={count ? "cop-count" : undefined}
               onKeyDown={(e) => {
                 if (e.key === "Enter") submit();
               }}
             />
+            {count ? (
+              <span
+                id="cop-count"
+                className={`cop-count mono${draft.length >= QUESTION_MAX ? " full" : ""}`}
+                aria-label={`${draft.length} de ${QUESTION_MAX} caracteres`}
+              >
+                {count}
+              </span>
+            ) : null}
             <button className="send" onClick={submit} aria-label="Enviar">
               <Icons.send />
             </button>
@@ -1368,25 +1433,22 @@ function CopilotFab({
   );
 }
 
-interface FollowUp {
-  id: number;
-  question: string;
-  state: "running" | "done" | "error";
-  res: AskResponse | null;
-  error: string | null;
-}
-
 /** One typed question and its grounded answer. Nothing here is published. */
 function FollowUpTurn({
   turn,
+  analysis,
   onCite,
   flashCite,
   onRetry,
+  onRetryAnalysis,
 }: {
-  turn: FollowUp;
+  turn: Turn;
+  /** The analysis's phase: a waiting question says what it waits for. */
+  analysis: RunPhase;
   onCite: (n: string, el?: HTMLElement) => void;
   flashCite: string | null;
   onRetry: () => void;
+  onRetryAnalysis: () => void;
 }) {
   const note = turn.res ? askNote(turn.res) : null;
   return (
@@ -1399,10 +1461,25 @@ function FollowUpTurn({
           <Icons.aiSpark size={15} />
         </span>
         <div className={`bubble-ai followup is-${turn.res?.kind ?? turn.state}`}>
-          {turn.state === "running" ? (
-            <span className="followup-wait">
-              Lendo o incidente e os casos desta análise…
-            </span>
+          {turn.state === "waiting" ? (
+            analysis === "error" ? (
+              <>
+                <p>
+                  A análise não terminou, então a pergunta espera. Ela é feita assim que a
+                  análise der certo.
+                </p>
+                <button className="btn btn-outline btn-sm" onClick={onRetryAnalysis}>
+                  <Icons.retry />
+                  Analisar de novo
+                </button>
+              </>
+            ) : (
+              <span className="followup-wait">
+                A IA analisa o incidente antes de responder…
+              </span>
+            )
+          ) : turn.state === "running" ? (
+            <span className="followup-wait">Lendo o incidente e a análise…</span>
           ) : turn.state === "error" ? (
             <>
               <p>{turn.error}</p>

@@ -55,6 +55,7 @@ import {
   firstSentence,
   missingFields,
   nextDirty,
+  recalledFields,
   rerunHint,
   sentFields,
   fmtWeight,
@@ -146,6 +147,20 @@ export default function ChangeDetailPage({
   return <ChangeWorkspace change={change.data} rubric={rubric.data} />;
 }
 
+/** Add the texts of one evaluation to the ones already graded, per field. */
+function withRead(
+  all: Partial<Record<FieldKey, string[]>>,
+  read: Partial<Record<FieldKey, string>>,
+  change: Change,
+): Partial<Record<FieldKey, string[]>> {
+  const next = { ...all };
+  for (const key of EVALUATED_FIELDS) {
+    const text = read[key] ?? change[key];
+    if (!next[key]?.includes(text)) next[key] = [...(next[key] ?? []), text];
+  }
+  return next;
+}
+
 function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric }) {
   const [edits, setEdits] = useState<Partial<Record<FieldKey, string>>>({});
   const [editing, setEditing] = useState<FieldKey | null>(null);
@@ -188,11 +203,15 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const [savedAt, setSavedAt] = useState<number | null>(null);
   // The text the current result was read with: editing back to it is no edit.
   const [resultEdits, setResultEdits] = useState<Partial<Record<FieldKey, string>>>({});
+  // Every text the AI graded in this visit, per field: editing back to one of
+  // them brings its grade back from the content lock (logica-4 P2-7).
+  const [readTexts, setReadTexts] = useState<Partial<Record<FieldKey, string[]>>>({});
   useEffect(() => {
     const saved = readSavedEvaluation(change);
     if (!saved) return;
     setEdits(saved.edits);
     setResultEdits(saved.edits);
+    setReadTexts((all) => withRead(all, saved.edits, change));
     if (MODELS.some((m) => m.id === saved.model)) setModel(saved.model);
     setReadWith(saved.model);
     setResult(saved.result);
@@ -200,6 +219,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
     setPhase("done");
   }, [change]);
 
+  const recalled = useMemo(
+    () => new Set(result ? recalledFields(result, previous) : []),
+    [result, previous],
+  );
   const scores = useMemo(() => {
     const map = new Map<FieldKey, FieldScore>();
     result?.fields.forEach((f) => map.set(f.key, f));
@@ -308,8 +331,12 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
 
   const asideRef = useTallSticky();
   const inScope = result ? result.scope.in_scope : isInScope(change);
+  const recalledKeys = [...dirty].filter((key) =>
+    readTexts[key]?.includes(edits[key] ?? change[key]),
+  );
   const rerun = {
-    dirty: dirty.size,
+    dirty: dirty.size - recalledKeys.length,
+    recalled: recalledKeys.length,
     // A field the AI did not grade goes back to it even with the same text.
     failed: result?.fields.filter((f) => !isScored(f) && !dirty.has(f.key)).length ?? 0,
     modelChanged: result !== null && readWith !== null && readWith !== model,
@@ -353,6 +380,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       setPrevious(result);
       setResult(res);
       setResultEdits(edits);
+      setReadTexts((all) => withRead(all, edits, change));
       setReadWith(model);
       setSavedAt(null);
       // /changes marks the Changes evaluated in this session, and the page
@@ -837,10 +865,16 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     {score && !isDirty && score.reused && (
                       <span
                         className="chg-lock"
-                        title="O texto não mudou, então a nota foi reaproveitada sem chamar a IA"
+                        title={
+                          recalled.has(score.label)
+                            ? "Este texto já tinha nota, então ela foi reaproveitada sem chamar a IA"
+                            : "O texto não mudou, então a nota foi reaproveitada sem chamar a IA"
+                        }
                       >
                         <Icons.check sw={3} />
-                        Reaproveitado: o texto não mudou
+                        {recalled.has(score.label)
+                          ? "Reaproveitado: este texto já tinha nota"
+                          : "Reaproveitado: o texto não mudou"}
                       </span>
                     )}
                     {isDirty && (
