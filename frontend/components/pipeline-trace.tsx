@@ -34,7 +34,7 @@ import { AnswerCard } from "./answer-card";
 import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
 import { buildSuggestionMarkdown, meaningfulTags } from "@/lib/model";
 import { formatSeconds, useElapsedSeconds, useIsPhone } from "@/lib/motion";
-import { freeBand, scrollPos, showTop } from "@/lib/reveal";
+import { freeBand, scrollPos, toTop } from "@/lib/reveal";
 import {
   OUTCOME_LABEL,
   PIPELINE_STEPS,
@@ -168,7 +168,8 @@ export function PipelineTrace({
       const band = freeBand();
       const top = card.getBoundingClientRect().top;
       if (top >= band.top && top <= band.bottom - 120) return;
-      showTop(head, reduced);
+      // The card itself is below the fold: its section title goes to the top.
+      toTop(head, reduced);
     });
     return () => cancelAnimationFrame(id);
   }, [answerFirst, shown]);

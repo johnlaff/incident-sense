@@ -282,7 +282,16 @@ function AulaWelcome({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (pathname !== first.current) onClose();
   }, [pathname, onClose]);
-  const onIncident = pathname === `/incidentes/${AULA_INCIDENT}`;
+  // On a screen that has its own lesson, say how to start it, with no links.
+  const here =
+    pathname === `/incidentes/${AULA_INCIDENT}`
+      ? "Toque em Analisar com a IA: a análise vira uma aula, passo a passo."
+      : /^\/changes\/CHG\d+/.test(pathname)
+        ? "Toque em Avaliar com a IA: a avaliação vira uma aula, passo a passo."
+        : pathname === "/recorrencias"
+          ? "Toque em Reproduzir: o mapa vira uma aula, passo a passo."
+          : null;
+  const onIncident = here !== null;
   const ref = useBarRoom();
   return (
     <div className="aula-bar-wrap">
@@ -290,8 +299,8 @@ function AulaWelcome({ onClose }: { onClose: () => void }) {
         <div className="aula-text">
           <span className="aula-count">Modo aula ligado</span>
           <span className="aula-caption">
-            {onIncident
-              ? "Toque em Analisar com a IA: a análise vira uma aula, passo a passo."
+            {here
+              ? here
               : "As telas com aula mostram aqui o passo a passo. Comece pelo roteiro ou por um incidente."}
           </span>
         </div>

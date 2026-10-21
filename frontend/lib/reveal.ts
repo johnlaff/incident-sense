@@ -114,6 +114,12 @@ export function scrollPos(): number {
  * in the free band; when it sits below the fold (or above the top), scroll
  * once so the top of `el` lands just under the top bar. Never re-checks.
  */
+/** Bring the top of `el` to the top of the free band, unconditionally. */
+export function toTop(el: Element, reduced: boolean): void {
+  const top = el.getBoundingClientRect().top;
+  scrollByDelta(el, top - freeBand().top, !reduced);
+}
+
 export function showTop(el: Element, reduced: boolean): void {
   const band = freeBand();
   const top = el.getBoundingClientRect().top;
