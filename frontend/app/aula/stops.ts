@@ -63,10 +63,10 @@ export const STOPS: Stop[] = [
     concept: "prb",
     icon: Icons.recurrences,
     tone: "",
-    title: "Grupos",
-    line: "Erro que se repete vira grupo. Grupo pede um Problema.",
+    title: "Repetições",
+    line: "Falha que se repete vira grupo. Grupo pede um Problema.",
     href: "/recorrencias?aula=1",
-    cta: "Ver os grupos",
+    cta: "Ver as repetições",
   },
   {
     n: 4,

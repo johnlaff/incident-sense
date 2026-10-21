@@ -421,7 +421,7 @@ export interface MiniGroup {
   /** DEMO cluster id and label, for the color and the name. */
   id: number;
   label: string;
-  /** The same short name the Grupos map shows (app/recorrencias/model.ts). */
+  /** The same short name the Repetições map shows (app/recorrencias/model.ts). */
   short: string;
   cx: number;
   cy: number;
@@ -741,7 +741,7 @@ export const CHAPTERS: Chapter[] = [
     title: "Agrupar as recorrências",
     why: "Muitos incidentes, poucas causas: os parecidos formam grupos, e grupo grande pede um Problema.",
     note: "Mapa de exemplo, com os nomes de grupos do demo.",
-    app: { href: "/recorrencias", label: "Ver no app: Grupos" },
+    app: { href: "/recorrencias", label: "Ver no app: Repetições" },
     steps: [
       {
         title: "Cada incidente é um ponto",

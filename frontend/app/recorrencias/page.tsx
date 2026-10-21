@@ -248,7 +248,7 @@ export default function RecurrencesPage() {
       }
     >
       <div className="page-head">
-        <h1>Grupos</h1>
+        <h1>Falhas que se repetem</h1>
         <span className="count">
           {data
             ? `${data.groups.length} grupos · ${data.incidents.length} incidentes`

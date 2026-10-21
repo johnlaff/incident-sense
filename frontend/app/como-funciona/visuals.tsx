@@ -847,7 +847,7 @@ export function ClusterStage({ idx, total }: { idx: number; total: number }) {
               { "--x": g.cx, "--y": g.cy, "--i": i, "--c": clusterColor(g.id) } as Style
             }
           >
-            {/* Short names, as on the Grupos map: a long one wraps and gets cut. */}
+            {/* Short names, as on the Repetições map: a long one wraps and gets cut. */}
             <span title={g.label}>{g.short}</span>
             {i === 0 ? <b className="cf-prb-chip mono">PRB</b> : null}
           </span>

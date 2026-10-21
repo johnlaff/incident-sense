@@ -294,7 +294,7 @@ const CONTENT: Record<
           ],
           [
             "Problemas",
-            "Ao escolher um grupo, a tela Grupos mostra os Problemas que já explicam a causa. Um grupo sem Problema ganha o botão Abrir problema, que no demo só registra na tela.",
+            "Ao escolher um grupo, a tela Repetições mostra os Problemas que já explicam a causa. Um grupo sem Problema ganha o botão Abrir problema, que no demo só registra na tela.",
           ],
         ]}
       />
