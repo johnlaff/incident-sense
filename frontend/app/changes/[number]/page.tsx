@@ -504,7 +504,16 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     </div>
                   </div>
                 ) : (
-                  <LongText text={valueOf(f.key)} />
+                  <>
+                    {/* The plain sentence is about the original text: an
+                        edited field drops it. */}
+                    {!edited && change.plain_summary?.[f.key] ? (
+                      <p className="plain-summary chg-plain">
+                        <b>Em resumo:</b> {change.plain_summary[f.key]}
+                      </p>
+                    ) : null}
+                    <LongText text={valueOf(f.key)} />
+                  </>
                 )}
 
                 {score && !isDirty && editing !== f.key && (
@@ -555,6 +564,11 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 <span className="chg-weight">entra só na conferência de coerência</span>
               </div>
             </header>
+            {change.plain_summary?.backout_plan ? (
+              <p className="plain-summary chg-plain">
+                <b>Em resumo:</b> {change.plain_summary.backout_plan}
+              </p>
+            ) : null}
             <LongText text={change.backout_plan} />
             <h4>Tarefas cadastradas</h4>
             <ol className="chg-tasks">

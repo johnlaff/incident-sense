@@ -1481,3 +1481,10 @@ a.chg-row:focus-visible {
 .chg-final.no svg {
   color: var(--p1);
 }
+
+/* "Em resumo" above each field's own text */
+.chg-plain {
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}

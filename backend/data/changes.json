@@ -61,7 +61,17 @@
       }
     ],
     "scenario": "exemplar",
-    "scenario_note": "Change completa e mensurável, com plano de retorno coerente com as tarefas: deve passar no preenchimento e na análise semântica."
+    "scenario_note": "Change completa e mensurável, com plano de retorno coerente com as tarefas: deve passar no preenchimento e na análise semântica.",
+    "plain_summary": {
+      "implementation_plan": "Numa madrugada, com horário e responsável para cada passo, o Pix passa a usar o dobro de conexões com o banco que fecha os pagamentos.",
+      "validation_plan": "A troca entra aos poucos e, em cada etapa, confere-se que os erros e a demora ficam abaixo de limites combinados.",
+      "objective": "Dar mais conexões ao Pix para ele não travar nos picos de sexta-feira.",
+      "benefits": "O Pix confirma mais rápido nos picos e deixam de falhar cerca de 11 mil pagamentos por sexta-feira.",
+      "test_justification": "A troca foi ensaiada num ambiente de teste com o mesmo volume de pico, e o Pix ficou mais rápido sem sobrecarregar o banco.",
+      "short_description": "Aumentar de 40 para 80 as conexões do Pix com o banco que fecha os pagamentos.",
+      "prerequisites": "O time do banco de dados confirmou que aguenta as conexões a mais, e o teste de carga já foi feito.",
+      "backout_plan": "Se os erros passarem do limite, a versão anterior volta em poucos minutos, com quem decide já definido."
+    }
   },
   {
     "number": "CHG0031002",
@@ -109,7 +119,17 @@
       }
     ],
     "scenario": "incoerente",
-    "scenario_note": "Caso clássico do artigo: a implementação altera schema e migra dados, mas o retorno só reverte a imagem do contêiner, sem desfazer colunas nem dados."
+    "scenario_note": "Caso clássico do artigo: a implementação altera schema e migra dados, mas o retorno só reverte a imagem do contêiner, sem desfazer colunas nem dados.",
+    "plain_summary": {
+      "implementation_plan": "Numa madrugada, a emissão de boletos é pausada, a tabela ganha colunas novas e 1,9 milhão de boletos são convertidos.",
+      "validation_plan": "Acompanha-se a conversão e, no fim, a contagem de boletos tem de bater; depois, boletos de teste são pagos.",
+      "objective": "Publicar a versão que cria o boleto que também pode ser pago por Pix.",
+      "benefits": "Quem paga quita na hora pelo Pix, e a empresa que cobra recebe a confirmação no mesmo minuto.",
+      "test_justification": "A conversão foi ensaiada num ambiente de teste com o mesmo número de boletos, sem erros.",
+      "short_description": "Nova versão do serviço de boletos, com um boleto que também aceita Pix.",
+      "prerequisites": "O script que mexe nos dados foi revisado e há uma cópia de segurança da tabela antes de começar.",
+      "backout_plan": "O plano só volta a versão do programa; ele não desfaz as colunas novas nem a conversão dos boletos."
+    }
   },
   {
     "number": "CHG0031003",
@@ -145,7 +165,17 @@
       }
     ],
     "scenario": "fraca",
-    "scenario_note": "Campos genéricos de poucas palavras: nota baixa em todos os campos e análise semântica não roda."
+    "scenario_note": "Campos genéricos de poucas palavras: nota baixa em todos os campos e análise semântica não roda.",
+    "plain_summary": {
+      "implementation_plan": "O texto não diz o que será feito, nem quando, nem por quem.",
+      "validation_plan": "O texto não diz como saber se deu certo.",
+      "objective": "O texto não diz o que muda nem por quê.",
+      "benefits": "O texto não diz quem ganha nem quanto.",
+      "test_justification": "O texto não diz que testes foram feitos.",
+      "short_description": "O título não diz o que muda nem em que sistema.",
+      "prerequisites": "O texto não diz o que precisa estar pronto antes.",
+      "backout_plan": "O texto não diz como voltar atrás, nem quem decide."
+    }
   },
   {
     "number": "CHG0031004",
@@ -201,7 +231,17 @@
       }
     ],
     "scenario": "exemplar",
-    "scenario_note": "Change exemplar que reconhece que partições não podem ser reduzidas e desenha o retorno no consumidor, coerente com as tarefas."
+    "scenario_note": "Change exemplar que reconhece que partições não podem ser reduzidas e desenha o retorno no consumidor, coerente com as tarefas.",
+    "plain_summary": {
+      "implementation_plan": "Numa madrugada, com horário e responsável para cada passo, a fila de notificações é dividida em mais partes e ganha mais leitores.",
+      "validation_plan": "Em cada passo, confere-se que nenhuma parte da fila ficou sem dono e que o atraso das mensagens cai.",
+      "objective": "Dobrar a capacidade da fila que avisa o cliente de um crédito, porque ela atrasa no dia do salário.",
+      "benefits": "O aviso de salário chega em segundos, não em minutos, e caem os chamados de crédito sem aviso.",
+      "test_justification": "O mesmo ajuste foi ensaiado num ambiente de teste com carga alta, sem perder nenhuma mensagem.",
+      "short_description": "Dividir a fila de notificações em 24 partes em vez de 12, para dar conta do volume.",
+      "prerequisites": "Os times que leem a fila confirmaram que a mudança não os atrapalha, e há espaço em disco.",
+      "backout_plan": "Se o erro ou o atraso passarem do limite, o número de leitores volta ao anterior, com quem decide definido."
+    }
   },
   {
     "number": "CHG0031005",
@@ -237,7 +277,17 @@
       }
     ],
     "scenario": "mediana",
-    "scenario_note": "Change razoável mas sem métricas na validação e com benefícios vagos: nota entre 6 e 7,5, barrada pela trava de 8,0."
+    "scenario_note": "Change razoável mas sem métricas na validação e com benefícios vagos: nota entre 6 e 7,5, barrada pela trava de 8,0.",
+    "plain_summary": {
+      "implementation_plan": "Os passos para criar o atalho na tabela estão listados, mas sem horário nem gatilho para parar.",
+      "validation_plan": "Confere-se que o atalho existe e que o extrato ficou mais rápido, sem um número claro para dizer que falhou.",
+      "objective": "Criar um atalho na tabela de lançamentos para o extrato de 90 dias abrir mais rápido.",
+      "benefits": "O extrato abre mais rápido e caem as reclamações de lentidão.",
+      "test_justification": "Foi testado num ambiente de teste e ficou mais rápido, mas sem números do resultado.",
+      "short_description": "Criar um atalho na tabela de lançamentos do extrato.",
+      "prerequisites": "O script foi revisado, a janela foi aprovada e há espaço em disco.",
+      "backout_plan": "Se algo piorar, o atalho é removido."
+    }
   },
   {
     "number": "CHG0031006",
@@ -277,7 +327,17 @@
       }
     ],
     "scenario": "fora_do_escopo",
-    "scenario_note": "Change do tipo Standard: fora do escopo do avaliador, deve aparecer como não avaliada, nunca como nota zero."
+    "scenario_note": "Change do tipo Standard: fora do escopo do avaliador, deve aparecer como não avaliada, nunca como nota zero.",
+    "plain_summary": {
+      "implementation_plan": "Troca-se o certificado de segurança guardado no cofre e o serviço é reiniciado aos poucos.",
+      "validation_plan": "Confere-se que o certificado novo está em uso e que 10 chamadas de teste funcionam.",
+      "objective": "Trocar o certificado de segurança do Open Finance antes que ele vença.",
+      "benefits": "Evita que o compartilhamento de dados com outros bancos pare por certificado vencido.",
+      "test_justification": "É um procedimento de rotina, repetido todo mês em outros certificados.",
+      "short_description": "Trocar o certificado de segurança do Open Finance que vence em 15/11.",
+      "prerequisites": "O certificado novo já foi emitido e guardado no cofre.",
+      "backout_plan": "Volta-se o certificado antigo, que ainda vale, e o serviço é reiniciado."
+    }
   },
   {
     "number": "CHG0031007",
@@ -337,7 +397,17 @@
       }
     ],
     "scenario": "exemplar",
-    "scenario_note": "Mudança de configuração de segurança com impacto medido antes, validação objetiva e retorno alinhado às tarefas."
+    "scenario_note": "Mudança de configuração de segurança com impacto medido antes, validação objetiva e retorno alinhado às tarefas.",
+    "plain_summary": {
+      "implementation_plan": "Numa madrugada, com horário e responsável para cada passo, o Open Finance deixa de aceitar dois tipos antigos de criptografia.",
+      "validation_plan": "Em cada servidor atualizado, confere-se por 10 minutos que as conexões dos maiores parceiros continuam funcionando.",
+      "objective": "Tirar do Open Finance duas formas antigas de criptografia, consideradas fracas pela auditoria.",
+      "benefits": "Fecha o apontamento da auditoria no prazo e deixa todas as conexões com outros bancos mais seguras.",
+      "test_justification": "A bateria oficial de testes do Open Finance passou, e só 0,02% das conexões usavam as formas antigas.",
+      "short_description": "Remover formas antigas de criptografia do Open Finance.",
+      "prerequisites": "Os dois parceiros que usavam as formas antigas confirmaram por escrito que já mudaram, e a Segurança aprovou.",
+      "backout_plan": "Se as conexões falharem acima do limite, a configuração anterior volta, com quem decide definido."
+    }
   },
   {
     "number": "CHG0031008",
@@ -381,7 +451,17 @@
       }
     ],
     "scenario": "incoerente",
-    "scenario_note": "Objetivo, benefícios e validação falam do cache de saldo no App-Mobile, mas o plano e as tarefas mexem na sessão do Login-IDP."
+    "scenario_note": "Objetivo, benefícios e validação falam do cache de saldo no App-Mobile, mas o plano e as tarefas mexem na sessão do Login-IDP.",
+    "plain_summary": {
+      "implementation_plan": "Numa madrugada, liga-se o saldo guardado no celular e também se muda quanto tempo dura o acesso ao app.",
+      "validation_plan": "Confere-se que a tela inicial abre mais rápido e que o saldo guardado não fica diferente do real.",
+      "objective": "Fazer a tela inicial do app abrir mais rápido, mostrando o saldo guardado no celular por até 60 segundos.",
+      "benefits": "O app abre mais rápido, que é a maior reclamação nas avaliações da loja.",
+      "test_justification": "Clientes acharam a tela mais rápida, e a medição em 12 celulares confirmou.",
+      "short_description": "Abrir a tela inicial do app mais rápido usando um saldo guardado no celular.",
+      "prerequisites": "A versão do app já está nas lojas com a função desligada, e a Segurança deu parecer.",
+      "backout_plan": "O plano desliga o saldo guardado, mas não desfaz a mudança na duração do acesso."
+    }
   },
   {
     "number": "CHG0031009",
@@ -417,7 +497,17 @@
       }
     ],
     "scenario": "fraca",
-    "scenario_note": "Mesmo texto copiado em vários campos numa Change de risco alto: mostra que repetir não é preencher."
+    "scenario_note": "Mesmo texto copiado em vários campos numa Change de risco alto: mostra que repetir não é preencher.",
+    "plain_summary": {
+      "implementation_plan": "O texto só repete que o autorizador será atualizado, sem dizer como.",
+      "validation_plan": "O texto não diz como saber se deu certo.",
+      "objective": "O texto não diz o que muda nem por quê.",
+      "benefits": "O texto repete o objetivo e não diz quem ganha.",
+      "test_justification": "O texto não diz que testes foram feitos.",
+      "short_description": "O título não diz o que muda no autorizador de cartões.",
+      "prerequisites": "O texto não diz o que precisa estar pronto antes.",
+      "backout_plan": "O texto só diz voltar atrás, sem dizer como nem quem decide."
+    }
   },
   {
     "number": "CHG0031010",
@@ -477,7 +567,17 @@
       }
     ],
     "scenario": "exemplar",
-    "scenario_note": "Change de risco alto bem preenchida: atualização nó a nó com critérios numéricos de parada e retorno coerente com as tarefas."
+    "scenario_note": "Change de risco alto bem preenchida: atualização nó a nó com critérios numéricos de parada e retorno coerente com as tarefas.",
+    "plain_summary": {
+      "implementation_plan": "Numa madrugada, com horário e responsável para cada passo, o sistema que aprova compras no cartão é atualizado servidor por servidor.",
+      "validation_plan": "Em cada servidor, com parte das compras, confere-se que a taxa de aprovação e a velocidade continuam iguais.",
+      "objective": "Atualizar o sistema que aprova compras no cartão para pedir a senha depois de muitas compras por aproximação seguidas.",
+      "benefits": "O banco cumpre a regra da bandeira no prazo, evita multa e reduz fraude com cartão perdido.",
+      "test_justification": "A versão passou nos 312 testes da bandeira e aguentou carga alta por 2 horas no ambiente de teste.",
+      "short_description": "Nova versão do sistema que aprova compras no cartão, com a regra nova de aproximação.",
+      "prerequisites": "A bandeira certificou a versão e o comitê de mudanças aprovou.",
+      "backout_plan": "Se a aprovação ou a velocidade caírem além do limite, a versão anterior volta, com quem decide definido."
+    }
   },
   {
     "number": "CHG0031011",
@@ -521,7 +621,17 @@
       }
     ],
     "scenario": "incoerente",
-    "scenario_note": "O plano particiona e expurga dados do Extrato-Service, mas a validação só olha login e CPU do Internet-Banking-Web, sem conferir contagem, extrato ou p95."
+    "scenario_note": "O plano particiona e expurga dados do Extrato-Service, mas a validação só olha login e CPU do Internet-Banking-Web, sem conferir contagem, extrato ou p95.",
+    "plain_summary": {
+      "implementation_plan": "Numa madrugada, a tabela de lançamentos é dividida por mês e os lançamentos antigos vão para um arquivo mais barato.",
+      "validation_plan": "O plano confere o Internet Banking e a tela de login, não a tabela de lançamentos que está sendo mudada.",
+      "objective": "Dividir a tabela de lançamentos por mês e arquivar o que tem mais de 5 anos, porque ela ficou grande demais.",
+      "benefits": "O extrato fica bem mais rápido e a tabela diminui cerca de 40%.",
+      "test_justification": "A divisão e o arquivamento foram ensaiados com 10% do volume, e as contagens bateram.",
+      "short_description": "Dividir por mês a tabela de lançamentos do extrato e arquivar os antigos.",
+      "prerequisites": "O jurídico aprovou o arquivamento e há espaço reservado no arquivo.",
+      "backout_plan": "Se as contagens não baterem, os nomes das tabelas são trocados de volta e a original volta a valer."
+    }
   },
   {
     "number": "CHG0031012",
@@ -561,7 +671,17 @@
       }
     ],
     "scenario": "fora_do_escopo",
-    "scenario_note": "Change já no estado Scheduled: o avaliador só considera estado New, então deve aparecer como não avaliada, nunca como zero."
+    "scenario_note": "Change já no estado Scheduled: o avaliador só considera estado New, então deve aparecer como não avaliada, nunca como zero.",
+    "plain_summary": {
+      "implementation_plan": "Publica-se a nova versão do site e a função é ligada para 10% dos clientes, depois para todos.",
+      "validation_plan": "Acompanha-se o erro do site e fazem-se 5 agendamentos de teste.",
+      "objective": "Levar para o site o agendamento de Pix que se repete toda semana ou todo mês, que hoje só existe no app.",
+      "benefits": "Clientes empresariais, que usam mais o site, pediram a função em 420 chamados.",
+      "test_justification": "Os testes automáticos do site passaram e o agendamento foi testado do começo ao fim.",
+      "short_description": "Nova versão do Internet Banking com o Pix agendado que se repete.",
+      "prerequisites": "O Pix já aceita agendamentos e a função está criada, desligada.",
+      "backout_plan": "Desliga-se a função e, se preciso, volta a versão anterior do site."
+    }
   },
   {
     "number": "CHG0031013",
@@ -597,7 +717,17 @@
       }
     ],
     "scenario": "fraca",
-    "scenario_note": "Texto copiado entre objetivo e benefícios e plano sem passos: nota baixa, sem diagnóstico semântico."
+    "scenario_note": "Texto copiado entre objetivo e benefícios e plano sem passos: nota baixa, sem diagnóstico semântico.",
+    "plain_summary": {
+      "implementation_plan": "O texto não diz que configuração muda.",
+      "validation_plan": "O texto não diz o que conferir.",
+      "objective": "O texto não diz o que muda no Kafka nem por quê.",
+      "benefits": "O texto repete o objetivo e não diz quem ganha.",
+      "test_justification": "O texto diz que não houve teste, sem explicar por quê.",
+      "short_description": "O título não diz o que muda no Kafka.",
+      "prerequisites": "O texto diz que nada é necessário antes, sem justificar.",
+      "backout_plan": "O texto só diz desfazer, sem dizer como nem quem decide."
+    }
   },
   {
     "number": "CHG0031014",
@@ -653,7 +783,17 @@
       }
     ],
     "scenario": "exemplar",
-    "scenario_note": "Rollout gradual por feature flag com critérios por etapa e retorno simples e coerente com as tarefas."
+    "scenario_note": "Rollout gradual por feature flag com critérios por etapa e retorno simples e coerente com as tarefas.",
+    "plain_summary": {
+      "implementation_plan": "Numa noite, com horário e responsável para cada passo, o Pix por aproximação é ligado para 1%, 10% e 50% dos clientes Android.",
+      "validation_plan": "Em cada etapa, confere-se que os pagamentos dão certo, que o app não trava e que a resposta é rápida.",
+      "objective": "Ligar aos poucos o Pix por aproximação no app, que já está instalado mas desligado.",
+      "benefits": "Pagar com Pix na loja cai de 14 para cerca de 4 segundos.",
+      "test_justification": "Um piloto com 2.000 pagamentos reais de funcionários deu certo em 99,2% dos casos.",
+      "short_description": "Ligar aos poucos o Pix por aproximação no app.",
+      "prerequisites": "A maioria dos celulares Android já tem a versão certa do app, e o Pix já aceita esse pagamento.",
+      "backout_plan": "Se os pagamentos ou o app falharem além do limite, a função é desligada, com quem decide definido."
+    }
   },
   {
     "number": "CHG0031015",
@@ -693,7 +833,17 @@
       }
     ],
     "scenario": "mediana",
-    "scenario_note": "Change coerente mas genérica nos benefícios, validação e justificativa: nota mediana, barrada pela trava de 8,0 antes da análise semântica."
+    "scenario_note": "Change coerente mas genérica nos benefícios, validação e justificativa: nota mediana, barrada pela trava de 8,0 antes da análise semântica.",
+    "plain_summary": {
+      "implementation_plan": "Os passos para atualizar o serviço de login estão listados, mas sem horário por passo nem gatilho para parar.",
+      "validation_plan": "Testa-se o login com usuários de teste, sem um número claro para dizer que falhou.",
+      "objective": "Atualizar o serviço de login do site e do app para corrigir 3 falhas de segurança.",
+      "benefits": "Corrige 3 falhas de segurança, 2 delas graves.",
+      "test_justification": "O time testou cerca de 200 logins num ambiente de teste, sem erros.",
+      "short_description": "Atualizar o serviço de login para a versão 24.0.3.",
+      "prerequisites": "A versão foi aprovada pelo time e a configuração atual será copiada antes.",
+      "backout_plan": "Se der problema, volta a versão anterior e a configuração copiada."
+    }
   },
   {
     "number": "CHG0031016",
@@ -737,7 +887,17 @@
       }
     ],
     "scenario": "incoerente",
-    "scenario_note": "Plano de retorno detalhado em 4 passos, mas nenhuma tarefa cadastrada cobre o retorno: aderência baixa entre retorno e tarefas."
+    "scenario_note": "Plano de retorno detalhado em 4 passos, mas nenhuma tarefa cadastrada cobre o retorno: aderência baixa entre retorno e tarefas.",
+    "plain_summary": {
+      "implementation_plan": "Numa madrugada, o Pix ganha um limite à noite para chaves novas e 3,2 milhões de limites são copiados para uma tabela nova.",
+      "validation_plan": "Confere-se que a cópia dos limites bateu e testa-se um Pix noturno para uma chave nova.",
+      "objective": "Limitar o Pix à noite para chaves cadastradas há menos de um dia, contra golpes, e mudar os limites para uma tabela nova.",
+      "benefits": "Menos dinheiro perdido em golpes com chave recém cadastrada, e o cliente ajusta o limite pelo app.",
+      "test_justification": "A cópia dos limites foi ensaiada com o volume inteiro, e a regra passou em 48 casos de teste.",
+      "short_description": "Novo limite noturno no Pix e cópia dos limites para uma tabela nova.",
+      "prerequisites": "O comitê de prevenção a fraude aprovou a regra e a cópia foi ensaiada.",
+      "backout_plan": "Desliga-se a regra e o Pix volta a ler a tabela antiga de limites."
+    }
   },
   {
     "number": "CHG0031017",
@@ -773,7 +933,17 @@
       }
     ],
     "scenario": "fraca",
-    "scenario_note": "Quase tudo N/A ou remetendo a anexo: campos vazios na prática, nota perto de zero mas a Change foi avaliada."
+    "scenario_note": "Quase tudo N/A ou remetendo a anexo: campos vazios na prática, nota perto de zero mas a Change foi avaliada.",
+    "plain_summary": {
+      "implementation_plan": "O texto só aponta para um anexo e não diz o que será feito.",
+      "validation_plan": "O texto não diz como saber se deu certo.",
+      "objective": "O texto não diz que problema será corrigido.",
+      "benefits": "O texto não diz quem ganha.",
+      "test_justification": "O texto não diz que testes foram feitos.",
+      "short_description": "O título não diz o que muda nos boletos.",
+      "prerequisites": "O texto não diz o que precisa estar pronto antes.",
+      "backout_plan": "O texto não diz como voltar atrás."
+    }
   },
   {
     "number": "CHG0031018",
@@ -813,6 +983,16 @@
       }
     ],
     "scenario": "fora_do_escopo",
-    "scenario_note": "Change de outra empresa do grupo (Meridiano Seguros): fora do escopo, deve aparecer como não avaliada, nunca como zero."
+    "scenario_note": "Change de outra empresa do grupo (Meridiano Seguros): fora do escopo, deve aparecer como não avaliada, nunca como zero.",
+    "plain_summary": {
+      "implementation_plan": "Cadastra-se o portal de seguros no serviço de login do banco e entregam-se os dados de acesso ao time do portal.",
+      "validation_plan": "Faz-se login no portal com 5 usuários de teste e confere-se que não há erro de redirecionamento.",
+      "objective": "Deixar o cliente do banco entrar no portal de seguros com a mesma senha do banco.",
+      "benefits": "Acaba a senha separada do portal, que gera cerca de 2.300 pedidos de troca de senha por mês.",
+      "test_justification": "O login foi testado num ambiente de teste, inclusive recusando um endereço não cadastrado.",
+      "short_description": "Permitir entrar no portal de seguros com a senha do banco.",
+      "prerequisites": "O contrato entre as empresas foi aprovado e a Segurança validou os endereços do portal.",
+      "backout_plan": "Desliga-se o cadastro do portal, que volta a usar o login próprio."
+    }
   }
 ]

@@ -48,6 +48,8 @@ export interface Change extends Record<FieldKey, string> {
   tasks: ChangeTask[];
   scenario: string;
   scenario_note: string;
+  /** One plain sentence per field card, keyed by field (and backout_plan). */
+  plain_summary?: Partial<Record<FieldKey | "backout_plan", string>>;
 }
 
 export interface RubricField {
