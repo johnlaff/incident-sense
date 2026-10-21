@@ -13,6 +13,7 @@
 // The step machine itself is pure (lib/aula-machine.ts).
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -134,9 +135,13 @@ function holdScroll(): () => void {
   }
   return () => {
     const put = () => {
-      const kept = chain.find((c) => c.el.isConnected && c.el.getClientRects().length);
-      if (!kept) return;
-      const d = kept.el.getBoundingClientRect().top - kept.top;
+      const at = chain.findIndex((c) => c.el.isConnected && c.el.getClientRects().length);
+      if (at < 0) return;
+      const kept = chain[at];
+      // What the reader was on is gone (the lesson layout folded away): show
+      // the start of the block that holds its replacement, not its middle.
+      const lost = at > 0 && kept.top < y;
+      const d = kept.el.getBoundingClientRect().top - (lost ? y - 4 : kept.top);
       if (Math.abs(d) < 2) return;
       const box =
         main &&
@@ -176,7 +181,13 @@ export function AulaProvider({ children }: { children: ReactNode }) {
     }
     restore();
   }, []);
-  const toggle = useCallback(() => setAula(!aula), [aula, setAula]);
+  // Turned on by hand: say what happens next. Pages with a lesson show their
+  // own strip once it starts; until then this sheet points the way.
+  const [hint, setHint] = useState(false);
+  const toggle = useCallback(() => {
+    setHint(!aula);
+    setAula(!aula);
+  }, [aula, setAula]);
 
   const publish = useCallback((snap: Omit<LessonSnapshot, "order">) => {
     setLessons((list) => {
@@ -228,7 +239,93 @@ export function AulaProvider({ children }: { children: ReactNode }) {
     <AulaContext.Provider value={value}>
       {children}
       {aula && active ? <AulaBar lesson={active} /> : null}
+      {aula && !active && hint ? <AulaWelcome onClose={() => setHint(false)} /> : null}
     </AulaContext.Provider>
+  );
+}
+
+/**
+ * Publish the strip's height so the page, the FAB and the assistant sheet
+ * make room for it: nothing sits hidden behind the strip.
+ */
+function useBarRoom() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    const root = document.documentElement;
+    if (!el) return;
+    root.setAttribute("data-aula-bar", "");
+    const ro = new ResizeObserver(() =>
+      root.style.setProperty("--aula-bar-h", `${el.offsetHeight}px`),
+    );
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.removeAttribute("data-aula-bar");
+      root.style.removeProperty("--aula-bar-h");
+    };
+  }, []);
+  return ref;
+}
+
+/** The incident the roteiro opens: its similar resolved cases make a good demo. */
+const AULA_INCIDENT = "INC0052233";
+
+/**
+ * Shown right after modo aula is turned on, on a screen with no lesson
+ * running: what the mode does and where to start. Closes on X, on a link, on
+ * another page, or when a lesson starts (its strip takes the same place).
+ */
+function AulaWelcome({ onClose }: { onClose: () => void }) {
+  const pathname = usePathname();
+  const first = useRef(pathname);
+  useEffect(() => {
+    if (pathname !== first.current) onClose();
+  }, [pathname, onClose]);
+  const onIncident = pathname === `/incidentes/${AULA_INCIDENT}`;
+  const ref = useBarRoom();
+  return (
+    <div className="aula-bar-wrap">
+      <div className="aula-bar aula-welcome" ref={ref} role="status" aria-live="polite">
+        <div className="aula-text">
+          <span className="aula-count">Modo aula ligado</span>
+          <span className="aula-caption">
+            {onIncident
+              ? "Toque em Analisar com a IA: a análise vira uma aula, passo a passo."
+              : "As telas com aula mostram aqui o passo a passo. Comece pelo roteiro ou por um incidente."}
+          </span>
+        </div>
+        <button
+          type="button"
+          className="icon-btn aula-close"
+          onClick={onClose}
+          aria-label="Fechar este aviso"
+          title="Fechar"
+        >
+          <Icons.close />
+        </button>
+        {onIncident ? null : (
+          <div className="aula-ctrl">
+            <Link
+              href="/aula?aula=1"
+              className="btn btn-outline btn-sm"
+              onClick={onClose}
+            >
+              Roteiro da aula
+            </Link>
+            <Link
+              href={`/incidentes/${AULA_INCIDENT}?aula=1`}
+              className="btn btn-primary btn-sm aula-next"
+              onClick={onClose}
+              aria-label={`Abrir o incidente ${AULA_INCIDENT}`}
+            >
+              Abrir incidente
+              <Icons.arrowRight />
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -387,25 +484,8 @@ export function useAulaLesson({
 
 /** The fixed caption strip: "Passo 4 de 7", the caption and the controls. */
 function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useBarRoom();
   const current = lesson.steps[lesson.step];
-
-  // Publish the bar height so the FAB and the assistant sheet can make room.
-  useEffect(() => {
-    const el = ref.current;
-    const root = document.documentElement;
-    if (!el) return;
-    root.setAttribute("data-aula-bar", "");
-    const ro = new ResizeObserver(() =>
-      root.style.setProperty("--aula-bar-h", `${el.offsetHeight}px`),
-    );
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-      root.removeAttribute("data-aula-bar");
-      root.style.removeProperty("--aula-bar-h");
-    };
-  }, []);
 
   if (!current) return null;
   const last = lesson.step >= lesson.total - 1;
@@ -418,6 +498,18 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
           </span>
           <span className="aula-caption">{current.caption}</span>
         </div>
+        {last ? null : (
+          // Phones: "Ir ao fim" sits on the counter's line, so the three
+          // controls below keep their full labels at 360px.
+          <button
+            type="button"
+            className="aula-skip-top"
+            onClick={lesson.skip}
+            title="Pular os passos que faltam e ir ao último"
+          >
+            Ir ao fim
+          </button>
+        )}
         <div className="aula-ctrl">
           <button
             type="button"
@@ -434,15 +526,13 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
             className="icon-btn aula-btn aula-play"
             onClick={lesson.togglePlay}
             aria-label={
-              lesson.playing ? "Pausar" : "Tocar sozinho: os passos seguem sem clicar"
+              lesson.playing ? "Pausar" : "Reproduzir: os passos seguem sem clicar"
             }
-            title={
-              lesson.playing ? "Pausar" : "Tocar sozinho: os passos seguem sem clicar"
-            }
+            title={lesson.playing ? "Pausar" : "Reproduzir: os passos seguem sem clicar"}
           >
             {lesson.playing ? <Icons.pause /> : <Icons.play />}
             <span className="aula-btn-t" aria-hidden="true">
-              {lesson.playing ? "Pausar" : "Tocar"}
+              {lesson.playing ? "Pausar" : "Reproduzir"}
             </span>
           </button>
           {last ? (
