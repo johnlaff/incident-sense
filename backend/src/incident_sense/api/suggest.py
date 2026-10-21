@@ -14,6 +14,7 @@ import openai
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from incident_sense.config import get_settings, resolve_chat_model
+from incident_sense.data.analyses import AnalysisMemory, AnalysisStore, get_analysis_store
 from incident_sense.guard import ai_quota, client_key
 from incident_sense.logging import get_logger
 from incident_sense.models import SuggestRequest, SuggestResponse
@@ -44,6 +45,7 @@ def suggest(
     request: SuggestRequest,
     deps: Annotated[RagDeps, Depends(get_rag_deps)],
     http: Request,
+    analyses: Annotated[AnalysisStore, Depends(get_analysis_store)],
 ) -> SuggestResponse:
     """Run the seven-step pipeline: classify, suggest with sources, publish.
 
@@ -62,7 +64,7 @@ def suggest(
             deps, llm=OpenAILLMClient(make_chat_client(settings), chosen, reasoning=False)
         )
     try:
-        return run_suggestion(request, deps, settings, model=chosen, client_id=client_key(http))
+        response = run_suggestion(request, deps, settings, model=chosen, client_id=client_key(http))
     except HTTPException:
         raise
     except openai.APITimeoutError as exc:
@@ -88,3 +90,31 @@ def suggest(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=("Não foi possível gerar a sugestão agora. Tente de novo em instantes."),
         ) from exc
+    remember(analyses, client_key(http), response)
+    return response
+
+
+def remember(store: AnalysisStore, client_id: str, response: SuggestResponse) -> None:
+    """Hold what a follow-up question needs from this analysis (logica-4 P1-2)."""
+    if not response.incident_number:
+        return
+    kept = list(response.context_ids)
+    reasons = {
+        c.number: c.postfilter_reason
+        for c in response.candidates
+        if c.number in kept and c.postfilter_reason
+    }
+    for p in response.problems:
+        if p.number in kept and p.postfilter_reason:
+            reasons[p.number] = p.postfilter_reason
+    store.put(
+        client_id,
+        response.incident_number,
+        AnalysisMemory(
+            classification=str(response.classification),
+            justification=response.decision.justification,
+            suggestion=response.suggestion,
+            kept=kept,
+            reasons=reasons,
+        ),
+    )

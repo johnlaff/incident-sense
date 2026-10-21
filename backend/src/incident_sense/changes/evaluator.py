@@ -172,11 +172,23 @@ def _points(value: object) -> object:
 
 
 _NONE_WORDS = re.compile(r"^(n ?a|none|nenhum|nenhuma|nada|vazio|sem|nao se aplica|nao ha)$")
-_SAYS_NONE = re.compile(
-    r"^(nenhum|nenhuma|nao ha|nao foram|nao foi|nao existe|nao existem|sem|nada)\b"
+# A filler denies that any contradiction exists, as a whole phrase: a negation,
+# then the word for a contradiction, then only filler words. "Nenhuma tarefa
+# cobre o problema..." names something real, so it is kept (logica-4 P2-5).
+_FILLER_TAIL = (
+    r"(?:\s+(?:encontrad\w*|identificad\w*|detectad\w*|apontad\w*|relevante\w*|real|reais|"
+    r"aparente\w*|significativ\w*|grave\w*|entre|as|os|partes|do|da|de|dos|das|pedido|campos|"
+    r"neste|nesta|nos|nas|no|na|change|mudanca|foi|foram|a|apontar|dign\w*|nota|aqui))*"
 )
-_ABOUT_CONTRADICTION = re.compile(
-    r"contradi|problema|inconsisten|divergen|conflito|incoeren|ponto|ressalva"
+_SAYS_NONE = re.compile(
+    r"^(?:nao ha|nao houve|nao foi encontrad\w*|nao foram encontrad\w*|nao foi identificad\w*|"
+    r"nao foram identificad\w*|nao existem?|nao se identificou|nenhum|nenhuma|sem|nada de)"
+    r"\s+(?:outr[ao]s?\s+)?"
+    r"(?:contradic\w*|inconsistenc\w*|problemas?|divergenc\w*|conflitos?|incoerenc\w*|"
+    r"pontos?|ressalvas?)" + _FILLER_TAIL + r"$"
+)
+_NOTHING_TO_SAY = re.compile(
+    r"^(?:nada a (?:apontar|declarar|destacar|relatar|acrescentar)|tudo certo|tudo ok)$"
 )
 
 
@@ -184,18 +196,15 @@ def _says_nothing(text: str) -> bool:
     """Tell a filler item ("Nenhuma contradição encontrada.", "N/A", "-") apart.
 
     A list filled out of politeness says there is no contradiction, so its
-    items are not one.
+    items are not one. Only a phrase that, whole, denies a contradiction is a
+    filler; a short sentence that names something missing is a real point.
     """
     bare = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
     bare = re.sub(r"[^a-z0-9 ]+", " ", bare)
     bare = " ".join(bare.split())
-    if not bare or _NONE_WORDS.match(bare):
+    if not bare or _NONE_WORDS.match(bare) or _NOTHING_TO_SAY.match(bare):
         return True
-    return (
-        bool(_SAYS_NONE.match(bare))
-        and bool(_ABOUT_CONTRADICTION.search(bare))
-        and len(bare.split()) <= 10
-    )
+    return bool(_SAYS_NONE.match(bare))
 
 
 def _plain(text: str) -> str:
@@ -280,6 +289,13 @@ def _fmt(n: float, places: int = 1) -> str:
     return f"{n:.{places}f}".replace(".", ",")
 
 
+def join_pt(items: list[str]) -> str:
+    """List names as the screen does: "A, B e C"."""
+    if len(items) <= 1:
+        return items[0] if items else ""
+    return f"{', '.join(items[:-1])} e {items[-1]}"
+
+
 def _plural(n: int, one: str, many: str) -> str:
     return f"{n} {one if n == 1 else many}"
 
@@ -321,7 +337,7 @@ def decide(
     avg = _fmt(overall, 2)
     cut = _fmt(threshold)
     if missing:
-        names = ", ".join(missing)
+        names = join_pt(missing)
         if best is not None and best < threshold:
             return Decision(
                 passes=False,
@@ -636,10 +652,17 @@ class ChangeEvaluator:
         semantic_error: str | None = None
         skipped: str | None = None
         if missing:
+            reachable = best >= rubric.eligibility_threshold
+            # Unreachable: the answer is already "Não segue"; asking to
+            # evaluate again would contradict it (logica-4 P2-9).
             skipped = (
                 "A conferência de coerência espera todas as notas: falta "
-                + ", ".join(missing)
+                + join_pt(missing)
                 + ". Avalie de novo."
+                if reachable
+                else "Não conferida: nem com nota 10 em "
+                + join_pt(missing)
+                + " a média chegaria ao mínimo."
             )
         elif overall >= rubric.eligibility_threshold:
             semantic, semantic_error = self._semantic(

@@ -16,11 +16,16 @@ import pytest
 from fastapi.testclient import TestClient
 
 from incident_sense.api.ask import get_ask_llm
+from incident_sense.data.analyses import AnalysisMemory
 from incident_sense.data.work_notes import get_work_notes_store
 from incident_sense.guard import UsageGuard, get_usage_guard
 
 _REQ = httpx.Request("POST", "https://ia.example")
 KEPT = ["INC0052219", "PRB0004105"]
+SUGGESTION = (
+    "1. **Expirar as sessões antigas**: invalidar as sessões emitidas antes do deploy "
+    "[PRB0004105].\n\n2. **Reverter a validação do token** [INC0052219]."
+)
 
 
 class _LLM:
@@ -35,9 +40,28 @@ class _LLM:
         return self.reply
 
 
-def _wire(client: TestClient, reply: str | Exception) -> _LLM:
+def _wire(
+    client: TestClient,
+    reply: str | Exception,
+    *,
+    kept: list[str] | None = None,
+    classification: str = "PROCEDENTE",
+    suggestion: str | None = SUGGESTION,
+) -> _LLM:
+    """The model answers `reply`; the server holds this visitor's analysis."""
     llm = _LLM(reply)
     client.app.dependency_overrides[get_ask_llm] = lambda: llm  # type: ignore[attr-defined]
+    client.app.state.analysis_store.put(  # type: ignore[attr-defined]
+        "aluno-1",
+        "INC0052233",
+        AnalysisMemory(
+            classification=classification,
+            justification="Falha técnica após o deploy.",
+            suggestion=suggestion,
+            kept=KEPT if kept is None else kept,
+            reasons={"PRB0004105": "mesma causa: sessões antigas após deploy"},
+        ),
+    )
     return llm
 
 
@@ -98,7 +122,7 @@ def test_the_incident_itself_answers_priority_and_owner(client: TestClient) -> N
     body = _ask(client, "Qual é a prioridade e quem está cuidando?").json()
     assert "fora das fontes" not in body["answer"]  # its own number is not a stray citation
     assert body["citations"]["cited"] == []
-    assert "Prioridade: 1" in llm.calls[0][1]
+    assert "Prioridade: Crítica" in llm.calls[0][1]
 
 
 @pytest.mark.parametrize("hello", ["oi", "Olá!", "bom dia", "obrigado", "valeu", "?"])
@@ -135,8 +159,12 @@ def test_prose_instead_of_json_is_still_an_answer(client: TestClient) -> None:
 
 
 def test_unknown_or_unresolved_ids_are_not_context(client: TestClient) -> None:
-    llm = _wire(client, _reply("answer", "Veja [INC0052233] e [PRB9999999]."))
-    body = _ask(client, "E aí, como resolvo?", ["PRB9999999", "INC0052233", "NAOEID"]).json()
+    llm = _wire(
+        client,
+        _reply("answer", "Veja [INC0052233] e [PRB9999999]."),
+        kept=["PRB9999999", "INC0052233", "NAOEID"],
+    )
+    body = _ask(client, "E aí, como resolvo?").json()
     assert body["context_ids"] == []
     assert body["citations"]["cited"] == []
     assert "[PRB9999999]" not in llm.calls[0][1]
@@ -169,16 +197,28 @@ def test_errors_have_their_own_copy(
     assert said in r.json()["detail"]
 
 
-def test_follow_ups_are_rate_limited_like_suggest(client: TestClient) -> None:
+def test_questions_have_their_own_budget_and_copy(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """logica-4 P2-11/P2-12: a question is not an analysis, in budget or in words."""
+    from incident_sense.config import get_settings
+
     class _Full(UsageGuard):
         def check(self, **_: object) -> str | None:  # type: ignore[override]
             return "Você fez muitas análises seguidas. Espere alguns minutos."
 
+    # Analyses used up: questions still go through.
     client.app.dependency_overrides[get_usage_guard] = lambda: _Full()  # type: ignore[attr-defined]
-    llm = _wire(client, _reply("answer", "x"))
-    r = _ask(client, "Como resolvo?")
-    assert r.status_code == 429
-    assert llm.calls == []
+    monkeypatch.setenv("AI_ASK_MAX_PER_CLIENT", "2")
+    get_settings.cache_clear()
+    llm = _wire(client, _reply("answer", "Expire as sessões [PRB0004105]."))
+    assert _ask(client, "Como resolvo?").status_code == 200
+    assert _ask(client, "E depois?").status_code == 200
+    third = _ask(client, "E por último?")
+    assert third.status_code == 429
+    assert "perguntas" in third.json()["detail"]
+    assert "análises" not in third.json()["detail"]
+    assert len(llm.calls) == 2
 
 
 def test_question_length_is_bounded(client: TestClient) -> None:

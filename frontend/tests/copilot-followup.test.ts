@@ -90,7 +90,7 @@ describe("P1-2: a typed question is a follow-up, not a new analysis", () => {
       kind: "answer",
       answer: "x",
       citations: { cited: [], flagged: [] },
-      context_ids: [],
+      context_ids: ["PRB0004105"],
       ...over,
     });
     expect(askNote(answer({ kind: "not_in_cases" }))).toMatch(/não respondem/);
@@ -102,7 +102,7 @@ describe("P1-2: a typed question is a follow-up, not a new analysis", () => {
   });
 
   it("the input says what it does before and after the analysis", () => {
-    expect(inputHint(false)).toMatch(/analisa/);
-    expect(inputHint(true)).toMatch(/sugestão|casos/);
+    expect(inputHint(null)).toMatch(/analisa/);
+    expect(inputHint(res)).toMatch(/sugestão/);
   });
 });

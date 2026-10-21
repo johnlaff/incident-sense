@@ -650,6 +650,8 @@ def run_suggestion(
     # 3. Embedding of summary + categoria, subcategoria, empresa.
     query_text = build_query_text(summary, incident)
     vector = embed_query(deps, query_text)
+    # "3.072", as every caption writes it (E2E-4 P2-12).
+    size = f"{len(vector):_}".replace("_", ".")
     steps.append(
         _step(
             "embedding",
@@ -657,7 +659,7 @@ def run_suggestion(
             "Embedding do resumo",
             StepStatus.DONE,
             (
-                f"Vetor de {len(vector)} dimensões do resumo com categoria "
+                f"Vetor de {size} dimensões do resumo com categoria "
                 f"{incident.category or 'não informada'}, subcategoria "
                 f"{incident.subcategory or 'não informada'} e empresa {incident.empresa}."
             ),
