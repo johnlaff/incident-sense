@@ -13,8 +13,8 @@
     "assignment_group": "Sustentacao-Pagamentos",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-02-03T10:00:00",
-    "resolved_at": "2026-03-20T18:00:00",
+    "opened_at": "2026-03-20T10:00:00",
+    "resolved_at": "2026-04-24T17:00:00",
     "tags": [
       "pix",
       "pagamentos",
@@ -58,8 +58,8 @@
     "assignment_group": "Sustentacao-Pagamentos",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-03-02T09:30:00",
-    "resolved_at": "2026-04-15T17:00:00",
+    "opened_at": "2026-04-24T10:00:00",
+    "resolved_at": "2026-06-19T17:00:00",
     "tags": [
       "pix",
       "pagamentos",
@@ -104,8 +104,8 @@
     "assignment_group": "Sustentacao-Canais-Digitais",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-01-20T11:00:00",
-    "resolved_at": "2026-02-28T16:00:00",
+    "opened_at": "2026-03-20T10:00:00",
+    "resolved_at": "2026-06-15T17:00:00",
     "tags": [
       "internet-banking",
       "performance",
@@ -164,8 +164,8 @@
     "assignment_group": "Sustentacao-Canais-Digitais",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-02-10T08:00:00",
-    "resolved_at": "2026-03-05T19:00:00",
+    "opened_at": "2026-03-19T10:00:00",
+    "resolved_at": "2026-05-03T17:00:00",
     "tags": [
       "app-mobile",
       "login",
@@ -204,7 +204,7 @@
     "assignment_group": "Sustentacao-Canais-Digitais",
     "empresa": "Banco Meridiano",
     "state": "Erro conhecido",
-    "opened_at": "2026-03-12T14:00:00",
+    "opened_at": "2026-05-01T10:00:00",
     "resolved_at": null,
     "tags": [
       "app-mobile",
@@ -245,8 +245,8 @@
     "assignment_group": "Sustentacao-Pagamentos",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-01-15T09:00:00",
-    "resolved_at": "2026-02-12T18:00:00",
+    "opened_at": "2026-03-21T10:00:00",
+    "resolved_at": "2026-06-19T17:00:00",
     "tags": [
       "boleto",
       "pagamentos"
@@ -306,8 +306,8 @@
     "assignment_group": "Sustentacao-Cartoes",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-02-01T10:00:00",
-    "resolved_at": "2026-02-25T15:00:00",
+    "opened_at": "2026-03-20T10:00:00",
+    "resolved_at": "2026-06-20T17:00:00",
     "tags": [
       "cartoes",
       "autorizacao",
@@ -365,8 +365,8 @@
     "assignment_group": "Sustentacao-Contas",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-01-25T07:00:00",
-    "resolved_at": "2026-03-10T12:00:00",
+    "opened_at": "2026-03-21T10:00:00",
+    "resolved_at": "2026-06-16T17:00:00",
     "tags": [
       "extrato",
       "contas",
@@ -419,8 +419,8 @@
     "assignment_group": "Infra-Mensageria",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-02-14T13:00:00",
-    "resolved_at": "2026-03-18T10:00:00",
+    "opened_at": "2026-03-19T10:00:00",
+    "resolved_at": "2026-06-14T17:00:00",
     "tags": [
       "mensageria",
       "kafka",
@@ -470,8 +470,8 @@
     "assignment_group": "Integracoes-OpenFinance",
     "empresa": "Banco Meridiano",
     "state": "Resolvido",
-    "opened_at": "2026-01-28T09:00:00",
-    "resolved_at": "2026-02-20T17:00:00",
+    "opened_at": "2026-03-21T10:00:00",
+    "resolved_at": "2026-06-19T17:00:00",
     "tags": [
       "open-finance",
       "integracao"

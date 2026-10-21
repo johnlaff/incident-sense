@@ -110,3 +110,68 @@ def test_lowercase_number_opens_the_incident(client) -> None:  # type: ignore[no
 def test_lowercase_change_and_problem_numbers_open(client) -> None:  # type: ignore[no-untyped-def]
     assert client.get("/api/changes/chg0031001").status_code == 200
     assert client.get("/api/problems/prb0004105").status_code == 200
+
+
+# ----- E2E P0-2: the post-filter reads the case, not only its title ------------
+
+
+class _PromptSpy(ScriptedLLM):
+    def __init__(self) -> None:
+        super().__init__()
+        self.postfilter_prompt = ""
+
+    def complete(self, system: str, user: str, **kw: object) -> str:
+        if "REALMENTE relevantes" in system:
+            self.postfilter_prompt = user
+        return super().complete(system, user, **kw)  # type: ignore[arg-type]
+
+
+def test_postfilter_sees_description_and_resolution_of_the_class_case() -> None:
+    """INC0052233: its five nearest neighbours were dropped as "sem menção a token
+    ou sessão" while their descriptions talk about invalid tokens and sessions."""
+    ids = ["INC0052219", "INC0052228", "INC0052273", "INC0052202", "INC0052209"]
+    hits = []
+    for n in ids:
+        hit = _inc_hit(n, 0.96)
+        hit.payload["short_description"] = "Falha de login no app"
+        hit.payload["description"] = (
+            "Usuários enfrentando erros relacionados a tokens inválidos após o deploy, "
+            "principalmente entre aqueles com sessão ativa."
+        )
+        hit.payload["resolution_notes"] = "Sessões antigas expiradas de forma controlada."
+        hits.append(hit)
+    llm = _PromptSpy()
+    _run(llm, incident_hits=hits, problem_hits=[])
+    prompt = llm.postfilter_prompt
+    for n in ids:
+        assert n in prompt
+    assert "tokens inválidos" in prompt
+    assert "sessão ativa" in prompt
+    assert "Sessões antigas expiradas" in prompt
+
+
+def test_answer_key_tags_never_reach_the_pipeline() -> None:
+    """E2E P1-9: procedente, borderline and friends describe the dataset."""
+    from test_incident_pipeline import _incident
+
+    record = _incident(tags=["pix", "procedente", "borderline", "demo", "ruido"])
+    response, _ = _run(incident=record)
+    tags_step = next(s for s in response.steps if s.id == "recuperar")
+    assert "procedente" not in tags_step.decision
+    assert "borderline" not in tags_step.decision
+
+
+def test_problem_dates_follow_their_incidents() -> None:
+    """E2E P1-1: a Problem cannot be resolved before its incidents happened."""
+    from incident_sense.data.loader import load_incidents, load_problems
+
+    by_number = {i.number: i for i in load_incidents()}
+    for problem in load_problems():
+        linked = [by_number[n] for n in problem.linked_incidents if n in by_number]
+        if not linked:
+            continue
+        first = min(i.opened_at for i in linked)
+        last = max(i.opened_at for i in linked)
+        assert problem.opened_at >= first, problem.number
+        if problem.resolved_at is not None:
+            assert problem.resolved_at >= last, problem.number
