@@ -61,7 +61,12 @@ _SEMANTIC_SYSTEM = (
     "plano de retorno precisam ser coerentes entre si, e o plano de retorno precisa "
     "desfazer de fato o que a implementação altera (por exemplo: se a implementação "
     "muda estrutura de dados, reverter só a imagem do contêiner não basta). Compare "
-    "também o plano de retorno com as tarefas cadastradas. Responda apenas com JSON."
+    'também o plano de retorno com as tarefas cadastradas. Em "problems" entram '
+    "SOMENTE contradições reais: uma parte do pedido afirma ou faz algo que outra "
+    "parte desmente, ou o retorno deixa de desfazer algo que a implementação altera. "
+    "Sugestões de melhoria, detalhes que faltam e boas práticas não são contradições: "
+    'vão em "guidance". Se não houver contradição real, "problems" fica vazio. '
+    "Responda apenas com JSON."
 )
 
 SCOPE_TYPE = "Normal"
@@ -160,9 +165,10 @@ def _semantic_prompt(change: Change, values: dict[str, str], backout: str) -> st
         f"Plano de retorno:\n{backout}\n\n"
         f"TAREFAS CADASTRADAS:\n{tasks or '(nenhuma)'}\n\n"
         'Responda com JSON: {"consistency_score": <0 a 10>, '
-        '"problems": ["<cada incoerência encontrada, uma frase>"], '
+        '"problems": ["<cada contradição real entre as partes, uma frase; '
+        'sugestões não entram aqui>"], '
         '"reasoning": "<duas ou três frases com o raciocínio>", '
-        '"guidance": "<o que o autor deve ajustar>", '
+        '"guidance": "<o que o autor deve ajustar, incluindo sugestões de melhoria>", '
         '"backout_adherence": "ADERENTE" | "PARCIAL" | "NAO_ADERENTE", '
         '"backout_adherence_percent": <0 a 100, quanto do plano de retorno está '
         "coberto pelas tarefas cadastradas>}"
