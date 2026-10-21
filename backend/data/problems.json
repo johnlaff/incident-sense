@@ -2,6 +2,7 @@
   {
     "number": "PRB0004101",
     "short_description": "Timeouts recorrentes no Pix por saturação do pool de threads do PIX-Core",
+    "plain_summary": "Nos horários de pico o Pix ficava sem fôlego e os pagamentos demoravam até desistir. A solução foi fazer o sistema crescer sozinho quando a fila aumenta.",
     "description": "Picos de volume esgotam o pool de threads do PIX-Core e as chamadas ao DICT passam a exceder o timeout do cliente HTTP. A confirmação do Pix expira na tela do cliente.",
     "root_cause": "Pool de threads do PIX-Core dimensionado para o volume médio, sem margem para os picos do horário comercial; o timeout do cliente HTTP para o DICT estava abaixo da latência observada no pico.",
     "workaround": "Aumentar temporariamente os workers do PIX-Core e ajustar o timeout do cliente HTTP para o DICT durante o pico.",
@@ -46,6 +47,7 @@
   {
     "number": "PRB0004102",
     "short_description": "Pix debitado sem comprovante por falha na conciliação de transações pendentes",
+    "plain_summary": "Alguns Pix saíam da conta mas o comprovante não chegava, porque a conferência só rodava de duas em duas horas. Agora ela corre logo e refaz o que ficou pendente.",
     "description": "Após um timeout na confirmação, a transação fica pendente: o débito ocorre, mas o comprovante não é emitido até a próxima janela de conciliação.",
     "root_cause": "A rotina de conciliação roda em lote a cada duas horas e não trata transações que expiraram no meio da confirmação com o DICT.",
     "workaround": "Disparar manualmente o reprocessamento das transações pendentes pela rotina de conciliação e reenviar os comprovantes.",
@@ -91,6 +93,7 @@
   {
     "number": "PRB0004103",
     "short_description": "Vazamento de conexões esgota o pool do Internet Banking sob carga",
+    "plain_summary": "O Internet Banking esquecia de devolver as conexões com o banco de dados a cada erro, até acabarem. O código foi corrigido para sempre devolvê-las.",
     "description": "Uma rotina de consulta de saldo e extrato não devolve a conexão ao pool quando ocorre exceção; sob carga o pool se esgota e as páginas respondem com erro 500.",
     "root_cause": "Conexão com o banco de dados aberta fora de um bloco finally na rotina de consulta, vazando a cada exceção.",
     "workaround": "Aumentar temporariamente o tamanho do pool e reiniciar as instâncias de forma rotativa.",
@@ -150,6 +153,7 @@
   {
     "number": "PRB0004104",
     "short_description": "Mudança no formato do token JWT quebra o login de versões antigas do app",
+    "plain_summary": "Uma troca no formato da chave de acesso fez as versões antigas do app pararem de entrar. Agora toda troca é testada com as versões que os clientes ainda usam.",
     "description": "Um deploy do serviço de identidade alterou o formato do token JWT; versões anteriores do aplicativo deixaram de validar o token e o login falha.",
     "root_cause": "Ausência de teste de compatibilidade retroativa entre o serviço de identidade e as versões do app ainda em uso.",
     "workaround": "Rollback do serviço de identidade para a versão anterior.",
@@ -189,6 +193,7 @@
   {
     "number": "PRB0004105",
     "short_description": "Sessões ativas inválidas após deploy mantêm clientes presos na tela de login",
+    "plain_summary": "Depois de um deploy, quem já estava logado ficava preso na tela de login. Por enquanto as sessões antigas são encerradas à mão; a correção no app ainda vai sair.",
     "description": "Clientes com sessão aberta antes do deploy recebem token inválido e o app entra em ciclo de login sem renovar a sessão.",
     "root_cause": "As sessões emitidas antes do deploy não eram expiradas, e o app não tratava o erro de token inválido com uma renovação limpa.",
     "workaround": "Expirar de forma controlada as sessões emitidas antes do deploy.",
@@ -229,6 +234,7 @@
   {
     "number": "PRB0004106",
     "short_description": "Instabilidade do provedor de liquidação impede o registro de boletos",
+    "plain_summary": "Quando a empresa parceira que registra boletos falhava, o boleto não era criado. Agora o pedido fica numa fila e é tentado de novo sozinho.",
     "description": "O serviço de registro de boletos recebe erros intermitentes do provedor de liquidação; o boleto sai sem linha digitável ou a segunda via falha.",
     "root_cause": "Registro síncrono dependente de um único provedor de liquidação, sem retentativa.",
     "workaround": "Reemitir os boletos afetados manualmente após a normalização do provedor.",
@@ -289,6 +295,7 @@
   {
     "number": "PRB0004107",
     "short_description": "Regra nova do antifraude recusa transações legítimas de cartão",
+    "plain_summary": "Uma regra nova contra fraude recusou compras de cartão de clientes de verdade. A regra foi ajustada e novas regras passam antes por um período só de observação.",
     "description": "Após a publicação de uma regra no motor antifraude, transações com limite e saldo disponíveis passaram a ser recusadas com o mesmo código.",
     "root_cause": "Regra publicada sem calibração com a base histórica, gerando falsos positivos acima do patamar normal.",
     "workaround": "Desativar a regra nova e orientar os clientes a tentar novamente.",
@@ -347,6 +354,7 @@
   {
     "number": "PRB0004108",
     "short_description": "Atraso na conciliação gera divergência entre saldo e extrato",
+    "plain_summary": "O saldo e o extrato discordavam porque a conferência noturna atrasava. Agora ela roda aos poucos, com prioridade, e avisa se atrasar.",
     "description": "O extrato mostra lançamentos que ainda não refletem no saldo, ou o contrário, porque a conciliação entre o core e o serviço de extrato atrasou.",
     "root_cause": "Job de conciliação concorrendo com a janela de processamento noturno e sem prioridade de recursos.",
     "workaround": "Reexecutar a conciliação do período afetado e invalidar o cache do extrato.",
@@ -400,6 +408,7 @@
   {
     "number": "PRB0004109",
     "short_description": "Mensagem malformada bloqueia o consumidor e o lag do Kafka cresce",
+    "plain_summary": "Uma mensagem com defeito travava a fila de notificações, que era lida de novo sem parar. Agora a mensagem ruim é separada depois de três tentativas.",
     "description": "Um consumidor trava ao processar uma mensagem malformada e o lag do tópico cresce, atrasando notificações e integrações.",
     "root_cause": "Consumidor sem tratamento de mensagem inválida: a mesma mensagem é relida indefinidamente.",
     "workaround": "Mover a mensagem problemática para a DLQ e reiniciar o consumidor.",
@@ -450,6 +459,7 @@
   {
     "number": "PRB0004110",
     "short_description": "Certificado expirado no gateway derruba o compartilhamento do Open Finance",
+    "plain_summary": "Um certificado de segurança venceu sem ninguém perceber e o compartilhamento de dados do Open Finance caiu. Agora ele se renova sozinho e avisa um mês antes.",
     "description": "Chamadas das instituições participantes ao gateway de Open Finance falham na negociação TLS quando o certificado de transporte expira.",
     "root_cause": "Renovação de certificado manual, sem alerta de expiração.",
     "workaround": "Renovar o certificado de transporte e reiniciar o gateway.",

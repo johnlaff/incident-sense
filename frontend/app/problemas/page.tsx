@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { ViewTransition, type CSSProperties } from "react";
 
-import { RecordTag } from "@/components/concepts";
+import { KindLine, RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
-import { ProblemDefinition, ProblemStateBadge } from "@/components/problem";
+import { ProblemStateBadge } from "@/components/problem";
 import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
 import { causeSummary, problemState, useProblems } from "@/lib/problems";
 
@@ -27,7 +27,12 @@ export default function ProblemasPage() {
         ) : null}
       </div>
       <div className="page-lede">
-        <ProblemDefinition />
+        <KindLine />
+        <p className="prb-terms">
+          <b>Causa raiz</b> é o motivo de fundo que faz os incidentes se repetirem.{" "}
+          <b>Erro conhecido</b> é um problema com a causa já achada e um contorno para
+          usar até a correção definitiva chegar.
+        </p>
       </div>
       <WakeNotice show={slow} />
 
@@ -73,6 +78,11 @@ export default function ProblemasPage() {
                   <ProblemStateBadge state={p.state} />
                 </span>
                 <span className="prb-title">{keepWhole(p.short_description)}</span>
+                {p.plain_summary ? (
+                  <span className="plain-summary">
+                    <b>Em resumo:</b> {p.plain_summary}
+                  </span>
+                ) : null}
                 <span className="prb-cause">
                   <b>Causa raiz:</b> {causeSummary(p.root_cause)}
                 </span>

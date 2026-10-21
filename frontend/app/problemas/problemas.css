@@ -31,6 +31,17 @@
   display: grid;
   gap: 8px;
 }
+.prb-terms {
+  margin: 0;
+  color: var(--ink-body);
+  font-size: 14px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.prb-terms b {
+  font-weight: 600;
+  color: var(--ink);
+}
 .prb-list {
   list-style: none;
   margin: 0;
@@ -55,6 +66,7 @@
   grid-template-areas:
     "head go"
     "title title"
+    "plain plain"
     "cause cause"
     "meta meta";
   column-gap: 10px;
@@ -71,6 +83,7 @@
     grid-template-areas:
       "head go"
       "title go"
+      "plain go"
       "cause go"
       "meta go";
   }
@@ -103,10 +116,14 @@ a.prb-row:focus-visible {
   overflow-wrap: anywhere;
   text-wrap: pretty;
 }
+.prb-row .plain-summary {
+  grid-area: plain;
+  max-width: 60ch;
+}
 .prb-cause {
   grid-area: cause;
   margin: 0;
-  color: var(--ink-body);
+  color: var(--muted);
   font-size: 13.5px;
   line-height: 1.5;
   max-width: 60ch;

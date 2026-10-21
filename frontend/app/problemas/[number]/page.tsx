@@ -11,7 +11,7 @@ import { ProblemChain, ProblemDefinition, ProblemStateBadge } from "@/components
 import { MetaLine, StateBadge, StateBlock, WakeNotice } from "@/components/ui";
 import { activate } from "@/lib/a11y";
 import { mapSummary } from "@/lib/model";
-import { useProblem, type ProblemDetail } from "@/lib/problems";
+import { problemState, useProblem, type ProblemDetail } from "@/lib/problems";
 
 import "../problemas.css";
 import { keepWhole } from "@/lib/text";
@@ -158,11 +158,22 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
             </div>
           </div>
           <ProblemDefinition className="prb-head-def" />
+          {problemState(problem.state).tone === "known" ? (
+            <p className="prb-terms prb-head-def">
+              <b>Erro conhecido:</b> a causa já foi achada e há um contorno para usar até a
+              correção definitiva chegar.
+            </p>
+          ) : null}
         </div>
 
         <div className="rec-body prb-body">
           <section className="section rec-desc" aria-labelledby="h-desc">
             <h2 id="h-desc">O que acontece</h2>
+            {problem.plain_summary ? (
+              <p className="plain-summary plain-summary-lg">
+                <b>Em resumo:</b> {problem.plain_summary}
+              </p>
+            ) : null}
             <p className="rec-prose">{problem.description}</p>
           </section>
 
