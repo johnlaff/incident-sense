@@ -57,7 +57,7 @@ export function Weights() {
   return (
     <figure className="cf-card cf-weights">
       <figcaption className="cf-card-head">
-        <span>Grade de avaliação</span>
+        <span>Quanto cada parte conta na nota</span>
         <Origin kind="demo">critérios do demo</Origin>
       </figcaption>
       <ul className="cf-wt-list">
@@ -71,12 +71,15 @@ export function Weights() {
             <span className="cf-bar-track" aria-hidden="true">
               <i className="cf-bar" />
             </span>
-            <b className="mono">{br(r.weight)}</b>
+            <span className="cf-wt-v">
+              peso <b className="mono">{br(r.weight)}</b> de {br(TOTAL_WEIGHT)}
+            </span>
           </li>
         ))}
       </ul>
       <p className="cf-card-foot">
-        Soma dos pesos: <b className="mono">{br(TOTAL_WEIGHT)}</b>
+        Pesos, não notas: somam <b className="mono">{br(TOTAL_WEIGHT)}</b>. A parte de
+        peso maior conta mais na média.
       </p>
     </figure>
   );
