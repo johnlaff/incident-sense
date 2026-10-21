@@ -2553,3 +2553,28 @@
   width: 16px;
   height: 16px;
 }
+
+/* Phones: the whole answer fits in about a screen and a half. */
+@media (max-width: 767px) {
+  .ans-one {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .ans-steps {
+    gap: 10px;
+  }
+  .ans-steps p {
+    font-size: 14.5px;
+    line-height: 1.45;
+  }
+  .ans-human-body {
+    gap: 4px;
+  }
+  .ans-human-body > p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .ans-block {
+    gap: 6px;
+  }
+}

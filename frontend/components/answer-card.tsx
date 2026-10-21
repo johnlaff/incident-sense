@@ -412,7 +412,12 @@ function SourcesBlock({
   if (!cited.length) return null;
   return (
     <div className="ans-block">
-      <h4 className="ans-label">Com base em</h4>
+      <h4 className="ans-label">
+        Com base em{" "}
+        <span className="ans-label-note">
+          (semelhança de 0 a 1: perto de 1, mais parecido)
+        </span>
+      </h4>
       <ul className="ans-sources">
         {cited.map((id) => {
           const { row, inContext } = citationSource(id, result);
@@ -444,7 +449,6 @@ function SourcesBlock({
           );
         })}
       </ul>
-      <p className="ans-note">Semelhança de 0 a 1: perto de 1, mais parecido.</p>
     </div>
   );
 }
