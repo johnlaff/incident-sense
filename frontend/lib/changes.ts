@@ -104,6 +104,26 @@ export interface Evaluation {
   duration_ms: number;
 }
 
+/**
+ * True when a response has the shape the screen reads. A proxy error page or
+ * an older backend can answer 200 with something else; the screen then shows
+ * its error state instead of breaking.
+ */
+export function isEvaluation(value: unknown): value is Evaluation {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Partial<Evaluation>;
+  return (
+    Array.isArray(v.fields) &&
+    v.fields.every(
+      (f) => f && typeof f.key === "string" && typeof f.score === "number",
+    ) &&
+    typeof v.scope === "object" &&
+    v.scope !== null &&
+    typeof v.scope.in_scope === "boolean" &&
+    typeof v.threshold === "number"
+  );
+}
+
 export interface EvaluateBody {
   fields?: Partial<Record<FieldKey, string>>;
   backout_plan?: string;

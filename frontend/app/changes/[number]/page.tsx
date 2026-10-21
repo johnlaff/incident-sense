@@ -14,6 +14,7 @@ import {
   STATE_LABEL,
   TYPE_HINT,
   TYPE_LABEL,
+  isEvaluation,
   markEvaluated,
   useChange,
   useRubric,
@@ -230,6 +231,11 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
     setErrMsg(null);
     try {
       const res = await api.evaluateChange(change.number, { fields: edits, model });
+      if (!isEvaluation(res)) {
+        setErrMsg("A avaliação voltou incompleta. Tente de novo.");
+        setPhase("error");
+        return;
+      }
       setPrevious(result);
       setResult(res);
       // /changes marks the Changes evaluated in this session.
