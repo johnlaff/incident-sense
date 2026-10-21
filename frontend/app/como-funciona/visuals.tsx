@@ -12,6 +12,7 @@ import { clusterColor } from "@/lib/model";
 import { Origin } from "./chapter";
 import {
   CANDIDATES,
+  CHG2_AVERAGE,
   CHG2_BACKOUT,
   CHG2_COHERENCE,
   CHG2_IMPLEMENTATION,
@@ -36,6 +37,7 @@ import {
   fingerprint,
   funnel,
   latencySummary,
+  REAL_EVAL_SECONDS,
   miniMap,
   queryText,
   rulerPos,
@@ -147,7 +149,9 @@ export function Parallel() {
         </div>
       </div>
       <p className="cf-card-foot">
-        O tempo total fica perto do campo mais lento, não da soma.
+        O tempo total fica perto do campo mais lento, não da soma. Com a coerência, que
+        vem depois, a avaliação real levou cerca de{" "}
+        <span className="num">{REAL_EVAL_SECONDS} s</span>.
       </p>
     </figure>
   );
@@ -410,12 +414,15 @@ export function Coherence() {
         <Origin kind="ensaio" />
       </figcaption>
       <div className="cf-coh-rows">
-        <div className="cf-coh-row is-high" style={{ "--v": 0.904, "--i": 0 } as Style}>
+        <div
+          className="cf-coh-row is-high"
+          style={{ "--v": CHG2_AVERAGE / 10, "--i": 0 } as Style}
+        >
           <span className="cf-coh-l">Média ponderada</span>
           <span className="cf-bar-track" aria-hidden="true">
             <i className="cf-bar" />
           </span>
-          <b className="num">9,04</b>
+          <b className="num">{br(CHG2_AVERAGE, 2)}</b>
         </div>
         <div
           className="cf-coh-row is-low"
@@ -540,7 +547,7 @@ export function Vectorize() {
 // Chapter 4
 // ---------------------------------------------------------------------------
 
-/** Which cells of the 336-record grid share a tag (spread, deterministic). */
+/** Which cells of the record grid share a tag (spread, deterministic). */
 function tagCells(): boolean[] {
   const total = TAG_FUNNEL.incidents + TAG_FUNNEL.problems;
   const match = TAG_FUNNEL.matchIncidents + TAG_FUNNEL.matchProblems;
@@ -553,7 +560,6 @@ function tagCells(): boolean[] {
 
 export function TagFilter() {
   const cells = tagCells();
-  const total = cells.length;
   const match = TAG_FUNNEL.matchIncidents + TAG_FUNNEL.matchProblems;
   return (
     <figure className="cf-card cf-tagf">
@@ -564,7 +570,7 @@ export function TagFilter() {
       <div
         className="cf-grid"
         role="img"
-        aria-label={`${total} registros resolvidos; ${match} dividem uma tag com o incidente`}
+        aria-label={`${TAG_FUNNEL.incidents} incidentes resolvidos e ${TAG_FUNNEL.problems} Problemas; ${match} dividem uma tag com o incidente`}
       >
         {cells.map((hit, i) => (
           <i
@@ -575,7 +581,8 @@ export function TagFilter() {
         ))}
       </div>
       <p className="cf-count">
-        <b className="mono">{total}</b> registros resolvidos{" "}
+        <b className="mono">{TAG_FUNNEL.incidents}</b> incidentes resolvidos e{" "}
+        <b className="mono">{TAG_FUNNEL.problems}</b> Problemas{" "}
         <Icons.arrowRight size={14} /> <b className="mono">{match}</b> com{" "}
         {INCIDENT.tags.map((t, i) => (
           <span key={t}>
@@ -784,7 +791,7 @@ export function Publish() {
           </span>
           <span className="cf-note-t">
             Sugestão de resolução, com 3 fontes citadas: PRB0004105, PRB0004104 e
-            INC0052226.
+            INC0052219.
           </span>
         </li>
         <li className="cf-note">

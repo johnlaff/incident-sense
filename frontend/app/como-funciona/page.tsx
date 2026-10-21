@@ -141,7 +141,12 @@ const CONTENT: Record<
       <Tasks key="t" />,
       <Coherence key="c" />,
     ],
-    source: <>As notas 9,04 e 4,0 saíram no ensaio e podem mudar com o modelo.</>,
+    source: (
+      <>
+        A média 8,87 saiu de uma avaliação real no app; a coerência 4,0, do ensaio. As
+        duas podem mudar um pouco com o modelo.
+      </>
+    ),
     details: (
       <Tech
         rows={[
