@@ -924,7 +924,7 @@
 }
 .cf-wt {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px;
+  grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas: "l n" "b b";
   gap: 4px 10px;
   align-items: center;
@@ -936,14 +936,20 @@
 .cf-wt .cf-bar-track {
   grid-area: b;
 }
-.cf-wt b {
+/* "peso 2,5 de 13,5": a share of the total, not a grade. */
+.cf-wt-v {
   grid-area: n;
   text-align: right;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cf-wt-v b {
   color: var(--ink);
 }
 @media (min-width: 600px) {
   .cf-wt {
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 34px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
     grid-template-areas: "l b n";
   }
 }
@@ -2238,4 +2244,11 @@
 .cf-not b {
   color: var(--ink);
   font-weight: 600;
+}
+
+/* Who made the talk: last, under the footer. */
+.cf-credit {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted);
 }

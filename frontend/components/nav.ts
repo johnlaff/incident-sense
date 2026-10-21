@@ -36,11 +36,10 @@ export const NAV_ITEMS: readonly NavItem[] = [
     key: "recurrences",
     href: "/recorrencias",
     icon: Icons.recurrences,
-    // The tab, the menu and the page all say "Grupos": "Recorrências" does
-    // not fit a ~66px tab on a 360px phone. The page names recorrências in
-    // its lede.
-    label: "Grupos",
-    short: "Grupos",
+    // "Repetições" says what the section is about (failures that repeat) and
+    // fits a ~66px tab on a 360px phone; the page title spells it out.
+    label: "Repetições",
+    short: "Repetições",
     sub: "Incidentes que se repetem, em grupos",
     match: ["/recorrencias"],
     tone: "k-rec",

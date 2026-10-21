@@ -31,6 +31,8 @@ export interface ChangeSummary {
   planned_start: string;
   in_scope: boolean;
   scenario: string;
+  /** The title in plain words (may be missing from an older backend). */
+  plain?: string;
 }
 
 export interface Change extends Record<FieldKey, string> {
@@ -119,6 +121,20 @@ export const STATE_LABEL: Record<string, string> = {
   Scheduled: "Agendada",
   Implement: "Em implantação",
   Closed: "Encerrada",
+};
+
+/** The type and state in plain words, for a reader new to ITSM. */
+export const TYPE_HINT: Record<string, string> = {
+  Normal: "comum, não urgente",
+  Standard: "de rotina, já pré-aprovado",
+  Emergency: "urgente",
+};
+
+export const STATE_HINT: Record<string, string> = {
+  New: "ainda não analisado",
+  Scheduled: "com data marcada",
+  Implement: "sendo feito agora",
+  Closed: "já terminou",
 };
 
 export const ADHERENCE_LABEL: Record<BackoutAdherence, string> = {

@@ -7,7 +7,9 @@ import { RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { LoadError, StateBlock, WakeNotice } from "@/components/ui";
 import {
+  STATE_HINT,
   STATE_LABEL,
+  TYPE_HINT,
   TYPE_LABEL,
   readEvalMarks,
   useChanges,
@@ -52,9 +54,9 @@ export default function ChangesPage() {
         <h1>Mudanças</h1>
       </div>
       <p className="page-lede">
-        Pedidos para mexer em produção. Abra um e veja a nota da IA. Ela só avalia
-        mudanças normais, novas e do Banco Meridiano; as outras ficam fora do escopo da
-        IA.
+        Pedidos para alterar sistemas que os clientes usam. A IA dá nota aos pedidos
+        comuns, não urgentes, ainda não analisados e do próprio banco. Abra um para ver a
+        nota.
       </p>
       {data && (
         <p className="chg-counts">
@@ -128,6 +130,7 @@ export default function ChangesPage() {
                   <RecordTag number={c.number} size="sm" />
                 </span>
                 <span className="chg-title">{keepWhole(c.short_description)}</span>
+                {c.plain ? <span className="chg-row-plain">{c.plain}</span> : null}
                 <span className="chg-meta">
                   <span>{keepWhole(c.cmdb_ci)}</span>
                   <span>{absDate(c.planned_start)}</span>
@@ -144,12 +147,14 @@ export default function ChangesPage() {
                     <span className="badge chg-type">
                       <span className="dot" />
                       {TYPE_LABEL[c.type] ?? c.type}
+                      {TYPE_HINT[c.type] ? ` (${TYPE_HINT[c.type]})` : ""}
                     </span>
                   )}
                   {c.state !== "New" && (
                     <span className="badge chg-state">
                       <span className="dot" />
                       {STATE_LABEL[c.state] ?? c.state}
+                      {STATE_HINT[c.state] ? ` (${STATE_HINT[c.state]})` : ""}
                     </span>
                   )}
                   {!c.in_scope && (

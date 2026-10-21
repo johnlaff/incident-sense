@@ -57,7 +57,7 @@ export function Weights() {
   return (
     <figure className="cf-card cf-weights">
       <figcaption className="cf-card-head">
-        <span>Grade de avaliação</span>
+        <span>Quanto cada parte conta na nota</span>
         <Origin kind="demo">critérios do demo</Origin>
       </figcaption>
       <ul className="cf-wt-list">
@@ -71,12 +71,15 @@ export function Weights() {
             <span className="cf-bar-track" aria-hidden="true">
               <i className="cf-bar" />
             </span>
-            <b className="mono">{br(r.weight)}</b>
+            <span className="cf-wt-v">
+              peso <b className="mono">{br(r.weight)}</b> de {br(TOTAL_WEIGHT)}
+            </span>
           </li>
         ))}
       </ul>
       <p className="cf-card-foot">
-        Soma dos pesos: <b className="mono">{br(TOTAL_WEIGHT)}</b>
+        Pesos, não notas: somam <b className="mono">{br(TOTAL_WEIGHT)}</b>. A parte de
+        peso maior conta mais na média.
       </p>
     </figure>
   );
@@ -847,7 +850,7 @@ export function ClusterStage({ idx, total }: { idx: number; total: number }) {
               { "--x": g.cx, "--y": g.cy, "--i": i, "--c": clusterColor(g.id) } as Style
             }
           >
-            {/* Short names, as on the Grupos map: a long one wraps and gets cut. */}
+            {/* Short names, as on the Repetições map: a long one wraps and gets cut. */}
             <span title={g.label}>{g.short}</span>
             {i === 0 ? <b className="cf-prb-chip mono">PRB</b> : null}
           </span>
@@ -927,7 +930,7 @@ export function Loop() {
           </li>
         ))}
         <li className="cf-ring-back" style={{ "--i": 5 } as Style}>
-          <Icons.replay size={14} />
+          <Icons.retry size={14} />
           <span>nova Mudança, mesmo juiz</span>
         </li>
       </ol>

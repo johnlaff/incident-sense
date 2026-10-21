@@ -304,7 +304,7 @@ export function PlaybackBar({
           </p>
           <button className="btn btn-ghost btn-sm" onClick={playback.replay}>
             <Icons.replay />
-            {instant ? "Ver passo a passo" : "Repassar"}
+            Rever passo a passo
           </button>
         </>
       )}
@@ -350,6 +350,7 @@ export function Ledger({
   why?: Map<FieldKey, string> | null;
 }) {
   const byKey = new Map(avg?.segments.map((s) => [s.key, s]) ?? []);
+  const totalWeight = rows.reduce((sum, r) => sum + r.weight, 0);
   const detail = Boolean(why) && avg !== null;
   const ordered = detail
     ? [...rows].sort(
@@ -380,7 +381,7 @@ export function Ledger({
                 <span className="chg-led-label">
                   <span>{r.label}</span>
                   <span className="chg-led-meta">
-                    peso {fmtWeight(seg?.weight ?? r.weight)}
+                    peso {fmtWeight(seg?.weight ?? r.weight)} de {fmtWeight(totalWeight)}
                     {seg?.reused && run && (
                       <span
                         className="chg-reused"
@@ -740,7 +741,7 @@ export function Coherence({
         data-on={onProblems}
         style={{ "--n": Math.max(1, s.problems.length) } as Vars}
       >
-        <h3>Incoerências</h3>
+        <h3>Contradições</h3>
         {s.problems.length > 0 ? (
           <ol className="chg-problems">
             {s.problems.map((p, i) => (
@@ -755,7 +756,7 @@ export function Coherence({
         ) : (
           <p className="chg-none">
             <Icons.checkCircle />
-            Nenhuma incoerência apontada.
+            Nada se contradiz entre as partes do pedido.
           </p>
         )}
         {s.problems.length > 0 && change ? <Excerpts change={change} /> : null}

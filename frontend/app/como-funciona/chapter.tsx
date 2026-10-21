@@ -222,7 +222,7 @@ export function ChapterView({
         )}
         {!aula && lesson.playing ? (
           <button type="button" className="btn btn-ghost btn-sm" onClick={lesson.skip}>
-            Pular
+            Pular para o fim
           </button>
         ) : null}
       </div>

@@ -322,20 +322,21 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-/* No room beside the group: its short name and count sit on it. */
+/* No room for the name anywhere clear of the other groups: the label shrinks
+   to the group's colour and count, on the group itself. The list under the
+   map (same colour dot, same count) says which group it is. */
 .rx-label-short {
   display: none;
 }
 .rx-label.compact .rx-label-name {
   display: none;
 }
-.rx-label.compact .rx-label-short {
-  display: inline;
-}
 @media (max-width: 699.98px) {
+  /* Narrow names (two short lines) fit on their own group more often. */
   .rx-label {
-    font-size: var(--fs-xs, 13px);
-    max-width: 17em;
+    font-size: 12px;
+    line-height: 1.2;
+    max-width: 9.5em;
     padding: 3px 7px 3px 6px;
     gap: 5px;
   }
@@ -635,6 +636,16 @@
 }
 .rx-row:disabled {
   cursor: default;
+}
+.rx-list-note {
+  margin: 0 0 8px;
+  font-size: var(--fs-xs, 13px);
+  color: var(--muted);
+}
+.rx-row-name .rx-dot {
+  display: inline-block;
+  margin-right: 7px;
+  vertical-align: 0.05em;
 }
 .rx-row-name {
   min-width: 0;

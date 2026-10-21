@@ -35,6 +35,7 @@
   grid-template-areas:
     "num go"
     "title title"
+    "plain plain"
     "meta meta"
     "tags tags";
   column-gap: 10px;
@@ -81,6 +82,13 @@ a.chg-row:focus-visible {
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
+/* The title in plain words, under the technical one. */
+.chg-row-plain {
+  grid-area: plain;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-body);
+}
 .chg-meta {
   grid-area: meta;
   display: flex;
@@ -120,6 +128,7 @@ a.chg-row:focus-visible {
     grid-template-columns: 112px minmax(0, 1fr) auto auto;
     grid-template-areas:
       "num title tags go"
+      "num plain tags go"
       "num meta tags go";
     column-gap: 16px;
     padding: 12px 16px;
@@ -1696,4 +1705,12 @@ a.chg-row:focus-visible {
 }
 .chg-evaluated.no {
   color: var(--p1);
+}
+
+/* One line on what "peso" means, above the field cards. */
+.chg-weight-note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-body);
 }

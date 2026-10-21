@@ -97,7 +97,7 @@ export default function ProblemDetailPage() {
           action={
             <div className="state-actions">
               <button className="btn btn-outline btn-sm" onClick={retry}>
-                <Icons.replay />
+                <Icons.retry />
                 Tentar de novo
               </button>
               <Link href="/problemas" className="btn btn-ghost btn-sm">

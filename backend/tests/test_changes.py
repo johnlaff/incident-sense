@@ -170,6 +170,8 @@ def test_list_and_detail(wired: tuple[TestClient, _Judge]) -> None:
         "CHG2": False,
         "CHG3": False,
     }
+    # The list carries the title in plain words when the record has one.
+    assert all(isinstance(c["plain"], str) for c in listed)
     assert client.get("/api/changes/CHG1").json()["backout_plan"] == "Voltar a imagem 4.2.0."
     assert client.get("/api/changes/NOPE").status_code == 404
 
@@ -240,3 +242,11 @@ def test_skip_reason_never_rounds_up_to_the_cut(client: TestClient) -> None:
     assert body["overall"] == 7.96
     assert body["semantic"] is None
     assert body["semantic_skipped_reason"].startswith("Nota 7.96 abaixo de 8.0")
+
+
+def test_list_line_uses_the_plain_title() -> None:
+    change = _change("CHG1").model_copy(
+        update={"plain_summary": {"short_description": "Trocar a versão do app."}}
+    )
+    (summary,) = ChangeRepository([change]).list()
+    assert summary.plain == "Trocar a versão do app."

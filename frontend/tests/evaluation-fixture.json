@@ -273,7 +273,7 @@
   "overall": 3.13,
   "threshold": 8.0,
   "semantic": null,
-  "semantic_skipped_reason": "Nota 3.13 abaixo de 8.0: o problema ainda é campo vazio ou genérico, e apontar incoerência entre campos não ajuda o autor agora.",
+  "semantic_skipped_reason": "Nota 3.13 abaixo de 8.0: o problema ainda é campo vazio ou vago, e procurar contradições entre as partes do pedido não ajuda o autor agora.",
   "model": "anthropic/claude-haiku-5.5",
   "model_calls": 7,
   "duration_ms": 2

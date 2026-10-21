@@ -202,14 +202,14 @@ export function verdictOf(ev: Evaluation): ChangeVerdict | null {
       ok: false,
       title: "Não segue",
       reason: `A média passou do mínimo (${avg}), mas a IA achou ${
-        n === 1 ? "1 incoerência" : `${n} incoerências`
-      } entre os campos.`,
+        n === 1 ? "1 ponto" : `${n} pontos`
+      } em que as partes do pedido se contradizem.`,
     };
   }
   return {
     ok: true,
     title: "Pode seguir",
-    reason: `Média ${avg}, acima do mínimo de ${cut}, e nenhuma incoerência entre os campos.`,
+    reason: `Média ${avg}, acima do mínimo de ${cut}, e as partes do pedido não se contradizem.`,
   };
 }
 
@@ -273,11 +273,11 @@ export function buildSteps(
       },
       {
         id: "problemas",
-        title: "Incoerências",
+        title: "Contradições",
         caption:
           s.problems.length > 0
-            ? "Cada incoerência é um ponto em que os campos contam histórias diferentes."
-            : "Nenhuma incoerência apontada: os campos contam a mesma história.",
+            ? "Cada ponto é um lugar em que as partes do pedido contam histórias diferentes."
+            : "Nada se contradiz: as partes do pedido contam a mesma história.",
         ms: Math.max(1, s.problems.length) * t.problem + t.hold,
       },
     );

@@ -294,7 +294,7 @@ const CONTENT: Record<
           ],
           [
             "Problemas",
-            "Ao escolher um grupo, a tela Grupos mostra os Problemas que já explicam a causa. Um grupo sem Problema ganha o botão Abrir problema, que no demo só registra na tela.",
+            "Ao escolher um grupo, a tela Repetições mostra os Problemas que já explicam a causa. Um grupo sem Problema ganha o botão Abrir problema, que no demo só registra na tela.",
           ],
         ]}
       />
@@ -353,13 +353,15 @@ function Summary30({ reduced }: { reduced: boolean }) {
       <h2 id="cf-30-h">Em 30 segundos</h2>
       <ol>
         <li>
-          <b>Antes do deploy, a Mudança:</b> a IA dá nota de 0 a 10 a cada campo do pedido
-          e, com 8,0 ou mais, confere se os campos combinam.{" "}
-          <Cap n={1} reduced={reduced} /> <Cap n={2} reduced={reduced} />
+          <b>Antes de ir ao ar, a Mudança:</b> antes de uma alteração entrar no sistema (o
+          deploy), a IA dá nota de 0 a 10 a cada parte do pedido e, com 8,0 ou mais,
+          confere se as partes combinam. <Cap n={1} reduced={reduced} />{" "}
+          <Cap n={2} reduced={reduced} />
         </li>
         <li>
-          <b>Depois do deploy, o incidente:</b> a IA resume o chamado, acha casos
-          parecidos já resolvidos e sugere uma solução citando cada um.{" "}
+          <b>Depois, o incidente:</b> a IA resume o chamado e acha casos parecidos já
+          resolvidos. Parecido quer dizer com o mesmo sentido, mesmo escrito com outras
+          palavras. Depois sugere uma solução citando cada caso.{" "}
           <Cap n={3} reduced={reduced} /> <Cap n={4} reduced={reduced} />{" "}
           <Cap n={5} reduced={reduced} />
         </li>
@@ -480,9 +482,9 @@ export default function HowItWorksPage() {
         {/* Same name as the tab and the menu. */}
         <h1>Como a IA funciona</h1>
         <p className="cf-lede">
-          Depois do deploy, do começo ao fim: da mudança ao incidente, e de volta, em sete
-          capítulos curtos. Solange e João, os palestrantes, escreveram os artigos que
-          inspiraram esta demo.
+          A IA compara o sentido do texto de um chamado com casos já resolvidos, acha os
+          mais parecidos e escreve uma sugestão citando cada um. Quem decide é uma pessoa.
+          Aqui está o caminho todo, em sete capítulos curtos.
         </p>
         <Summary30 reduced={reduced} />
         {/* The line at the top: seven stops, one per chapter, same names as the
@@ -616,6 +618,9 @@ export default function HowItWorksPage() {
         <p>
           Banco Meridiano é fictício e os dados são sintéticos. A IA sugere; a pessoa
           analista decide.
+        </p>
+        <p className="cf-credit">
+          Solange e João, os palestrantes, escreveram os artigos que inspiraram esta demo.
         </p>
       </footer>
     </div>

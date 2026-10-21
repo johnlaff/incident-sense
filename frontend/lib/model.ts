@@ -427,3 +427,8 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
     noBase: procedente && suggestion === null,
   };
 }
+
+/** A team name with "N1" explained once: the first line of support. */
+export function groupPlain(group: string): string {
+  return /(^|-)N1$/.test(group) ? `${group} (primeiro atendimento)` : group;
+}

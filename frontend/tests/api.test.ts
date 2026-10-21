@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, withAccents, withoutAccents } from "@/lib/api";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -20,6 +20,13 @@ describe("api client", () => {
       text: async () => JSON.stringify({ group: "Sustentacao-Pagamentos" }),
     });
     await expect(api.getHealth()).resolves.toEqual({ group: "Sustentação-Pagamentos" });
+  });
+
+  it("accents service names on screen and stores them back for filters", () => {
+    expect(
+      withAccents("Cartoes-Autorizador · Estacao-Trabalho · Integracoes-OpenFinance"),
+    ).toBe("Cartões-Autorizador · Estação-Trabalho · Integrações-OpenFinance");
+    expect(withoutAccents("Cartões-Autorizador")).toBe("Cartoes-Autorizador");
   });
 
   it("throws ApiError carrying the backend detail on error responses", async () => {

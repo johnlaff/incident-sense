@@ -10,7 +10,9 @@ import { StateBlock, WakeNotice } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import {
   EVALUATED_FIELDS,
+  STATE_HINT,
   STATE_LABEL,
+  TYPE_HINT,
   TYPE_LABEL,
   markEvaluated,
   useChange,
@@ -95,7 +97,7 @@ export default function ChangeDetailPage({
                   rubric.retry();
                 }}
               >
-                <Icons.replay />
+                <Icons.retry />
                 Tentar de novo
               </button>
               <Link className="btn btn-ghost" href="/changes">
@@ -267,6 +269,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
     (EVALUATED_FIELDS as readonly string[]).includes(f.key),
   );
   const order = new Map(orderedFields.map((f, i) => [f.key, i]));
+  const totalWeight = orderedFields.reduce((sum, f) => sum + f.weight, 0);
   const epoch = `${runKey}-${playback.epoch}`;
   useFollowStep(steps, playback.index, epoch, motion.reduced, {
     aula: lesson.aula,
@@ -297,10 +300,12 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           <span className="badge chg-type">
             <span className="dot" />
             {TYPE_LABEL[change.type] ?? change.type}
+            {TYPE_HINT[change.type] ? `: ${TYPE_HINT[change.type]}` : ""}
           </span>
           <span className="badge chg-state">
             <span className="dot" />
             {STATE_LABEL[change.state] ?? change.state}
+            {STATE_HINT[change.state] ? `: ${STATE_HINT[change.state]}` : ""}
           </span>
           <span className="badge chg-risk">
             <span className="dot" />
@@ -337,7 +342,8 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           <section className="card chg-run" aria-labelledby="run-h">
             <h2 id="run-h">Nota da IA para este pedido</h2>
             <p className="chg-run-lede">
-              Nota de 0 a 10 por campo. Quem aprova é uma pessoa.
+              A IA dá nota a cada parte do pedido e diz se pode seguir. Quem aprova é uma
+              pessoa.
             </p>
             {!inScope ? (
               <p className="chg-out-note">
@@ -349,21 +355,6 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               </p>
             ) : (
               <>
-                <label className="chg-model">
-                  <span>Modelo de IA</span>
-                  <select
-                    className="select"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    disabled={phase === "running"}
-                  >
-                    {MODELS.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
                 <button
                   className="btn btn-ai chg-go-btn"
                   onClick={evaluate}
@@ -381,6 +372,23 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     </>
                   )}
                 </button>
+                <TechDetails summary="Detalhes técnicos">
+                  <label className="chg-model">
+                    <span>Modelo de IA</span>
+                    <select
+                      className="select"
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                      disabled={phase === "running"}
+                    >
+                      {MODELS.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </TechDetails>
                 {phase === "running" && (
                   <RunningNote
                     seconds={elapsed}
@@ -487,6 +495,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
         </aside>
 
         <section className="chg-fields" aria-label="Campos avaliados">
+          <p className="chg-weight-note">
+            <b>Peso</b> é quanto cada parte conta na nota final. Os pesos somam{" "}
+            <span className="mono">{fmtWeight(totalWeight)}</span>.
+          </p>
           {orderedFields.map((f) => {
             const score = showResult ? scores.get(f.key) : undefined;
             const isDirty = dirty.has(f.key);
@@ -506,7 +518,8 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   <div className="chg-field-title">
                     <h3>{f.label}</h3>
                     <span className="chg-weight">
-                      peso {fmtWeight(seg?.weight ?? f.weight)}
+                      peso {fmtWeight(seg?.weight ?? f.weight)} de{" "}
+                      {fmtWeight(totalWeight)}
                       {below && <span className="chg-below">abaixo do corte</span>}
                     </span>
                   </div>

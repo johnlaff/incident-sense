@@ -102,10 +102,31 @@ export const Icons = {
       stroke="none"
     />,
   ),
-  replay: icon(
+  thumbUp: icon(
+    <>
+      <path d="M7 10v11" />
+      <path d="M15 5.9 14 10h5.8a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 18.4 21H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h3l4-8a3 3 0 0 1 4 3.9Z" />
+    </>,
+  ),
+  thumbDown: icon(
+    <>
+      <path d="M17 14V3" />
+      <path d="M9 18.1 10 14H4.2a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 5.6 3H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3l-4 8a3 3 0 0 1-4-3.9Z" />
+    </>,
+  ),
+  /** Try again, reopen, go around: a turning arrow. */
+  retry: icon(
     <>
       <path d="M3 2v6h6" />
       <path d="M21 12A9 9 0 0 0 6 5.3L3 8" />
+    </>,
+  ),
+  /** Play it again: a circle of arrow around a play triangle. */
+  replay: icon(
+    <>
+      <path d="M20.5 12a8.5 8.5 0 1 1-2.5-6" />
+      <path d="M18.5 2.5V6.5H14.5" />
+      <path d="M10 8.8v6.4l5-3.2-5-3.2Z" />
     </>,
   ),
   assign: icon(

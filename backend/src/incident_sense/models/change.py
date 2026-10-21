@@ -80,6 +80,10 @@ class ChangeSummary(BaseModel):
     planned_start: datetime
     in_scope: bool
     scenario: str
+    plain: str = Field(
+        default="",
+        description="The title in plain words, for a reader new to ITSM (list line).",
+    )
 
 
 class RubricField(BaseModel):

@@ -276,15 +276,15 @@ export function reasonFor(g: RecGroup, totalWeeks: number, problems = 0): string
 
 /** One or two words for the map, where the full name covers other groups. */
 const SHORT_NAMES: Record<string, string> = {
-  "Timeout em pagamentos Pix com débito": "Pix",
-  "Recusas de cartão por antifraude": "Cartão",
+  "Timeout em pagamentos Pix com débito": "Pix lento",
+  "Recusas de cartão por antifraude": "Cartão recusado",
   "Falha de login no app após atualização": "Login no app",
-  "Lentidão e erros no Internet Banking": "Banking",
-  "Falha na geração de boletos": "Boletos",
-  "Divergência entre saldo e extrato": "Saldo e extrato",
-  "Consumidor Kafka travado por mensagem malformada": "Kafka",
+  "Lentidão e erros no Internet Banking": "Internet Banking",
+  "Falha na geração de boletos": "Boleto com falha",
+  "Divergência entre saldo e extrato": "Saldo errado",
+  "Consumidor Kafka travado por mensagem malformada": "Fila de mensagens",
   "Falhas nas APIs do Open Finance": "Open Finance",
-  "Problemas em projetores e cafeteiras": "Projetores",
+  "Problemas em projetores e cafeteiras": "Projetor e café",
 };
 
 export function shortName(label: string): string {
@@ -714,44 +714,36 @@ export function placeLabels(
     }
     cands.push({ x: d.cx + d.r + g, y: d.cy - s.h / 2 });
     cands.push({ x: d.cx - d.r - g - s.w, y: d.cy - s.h / 2 });
+    // Further out, all around, before giving up on the name.
+    for (const extra of [10, 22]) {
+      const rr = d.r + g + extra;
+      for (let t = 0; t < 8; t++) {
+        const a = (t * Math.PI) / 4;
+        const ex = d.cx + Math.cos(a) * rr;
+        const ey = d.cy + Math.sin(a) * rr;
+        cands.push({
+          x: Math.cos(a) > 0.3 ? ex : Math.cos(a) < -0.3 ? ex - s.w : ex - s.w / 2,
+          y: Math.sin(a) > 0.3 ? ey : Math.sin(a) < -0.3 ? ey - s.h : ey - s.h / 2,
+        });
+      }
+    }
+    // A name never sits on another group: it would read as that group's.
+    // The first free spot wins (they are listed best first).
     let chosen: LabelBox | null = null;
-    let bestCost = Infinity;
     const others = disks.filter((o) => o.id !== d.id);
-    for (let k = 0; k < cands.length; k++) {
-      const c = cands[k];
+    for (const c of cands) {
       const box = { id: d.id, x: c.x, y: c.y, w: s.w, h: s.h, compact: false };
       if (box.x < 4 || box.y < 4 || box.x + box.w > w - 4 || box.y + box.h > h - 4)
         continue;
       if (opts.avoid && overlaps(opts.avoid, box)) continue;
       if (placed.some((p) => overlaps(p, box))) continue;
-      // Centered on its own group it cannot be mistaken; only another core blocks it.
-      const centered = opts.onDisk && opts.full !== d.id && k === 0;
-      if (others.some((o) => hitsDisk(box, o, centered ? 0.4 : 0.62))) continue;
-      if (centered) {
-        chosen = box;
-        break;
-      }
-      // A name over another group's rim reads as that group's: avoid it.
-      const cost = k + others.filter((o) => hitsDisk(box, o, 1.1)).length * 20;
-      if (cost < bestCost) {
-        bestCost = cost;
-        chosen = box;
-      }
-    }
-    // Crowded: any spot clear of the other names, even over a group's rim.
-    if (!chosen) {
-      for (const c of cands) {
-        const box = { id: d.id, x: c.x, y: c.y, w: s.w, h: s.h, compact: false };
-        if (box.x < 4 || box.y < 4 || box.x + box.w > w - 4 || box.y + box.h > h - 4)
-          continue;
-        if (opts.avoid && overlaps(opts.avoid, box)) continue;
-        if (placed.some((p) => overlaps(p, box))) continue;
-        chosen = box;
-        break;
-      }
+      if (others.some((o) => hitsDisk(box, o, 0.95))) continue;
+      chosen = box;
+      break;
     }
     if (!chosen) {
-      // Last resort on the group itself, nudged off any name already there.
+      // No room for the name: the group shows its colour and count on itself
+      // (the list says which group that is), nudged off any name already there.
       const base = compactBox(d, s);
       const step = base.h + 4;
       for (const dy of [0, -step, step, -2 * step, 2 * step]) {
