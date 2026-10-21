@@ -72,14 +72,14 @@ export function Weights() {
               <i className="cf-bar" />
             </span>
             <span className="cf-wt-v">
-              peso <b className="mono">{br(r.weight)}</b> de {br(TOTAL_WEIGHT)}
+              peso <b className="num">{br(r.weight)}</b> de {br(TOTAL_WEIGHT)}
             </span>
           </li>
         ))}
       </ul>
       <p className="cf-card-foot">
-        Pesos, não notas: somam <b className="mono">{br(TOTAL_WEIGHT)}</b>. A parte de
-        peso maior conta mais na média.
+        Pesos, não notas: somam <b className="num">{br(TOTAL_WEIGHT)}</b>. A parte de peso
+        maior conta mais na média.
       </p>
     </figure>
   );
@@ -101,7 +101,7 @@ export function Parallel() {
       </figcaption>
       <div className="cf-par-group">
         <p className="cf-par-k">
-          Juntas <b className="mono">{br(parallel)} s</b>
+          Juntas <b className="num">{br(parallel)} s</b>
         </p>
         <ul className="cf-par-lanes">
           {RUBRIC.map((r, i) => {
@@ -122,7 +122,7 @@ export function Parallel() {
       </div>
       <div className="cf-par-group">
         <p className="cf-par-k">
-          Uma depois da outra <b className="mono">{br(queue)} s</b>
+          Uma depois da outra <b className="num">{br(queue)} s</b>
         </p>
         <div className="cf-par-queue" aria-hidden="true">
           {RUBRIC.map((r, i) => {
@@ -192,13 +192,13 @@ export function Average() {
             />
           ))}
           <span className="cf-gate-tick">
-            <span className="mono">{br(GATE)}</span>
+            <span className="num">{br(GATE)}</span>
           </span>
         </div>
         <span className="cf-pointer">
-          <b className="mono">{br(average, 2)}</b>
+          <b className="num">{br(average, 2)}</b>
         </span>
-        <div className="cf-scale-ticks mono" aria-hidden="true">
+        <div className="cf-scale-ticks num" aria-hidden="true">
           <span>0</span>
           <span>5</span>
           <span>10</span>
@@ -268,7 +268,7 @@ export function Gate() {
         <div className="cf-door" aria-hidden="true">
           <i className="cf-door-a" />
           <i className="cf-door-b" />
-          <span className="cf-door-k mono">{br(GATE)}</span>
+          <span className="cf-door-k num">{br(GATE)}</span>
         </div>
         {GATE_EXAMPLES.map((g, i) => {
           const pass = g.grade >= GATE;
@@ -279,7 +279,7 @@ export function Gate() {
               style={{ "--i": i, "--x": fix(g.grade / 10) } as Style}
             >
               <span className="cf-gate-dot" aria-hidden="true" />
-              <span className="cf-gate-txt mono">
+              <span className="cf-gate-txt num">
                 <span className="cf-sr">{g.number}: nota </span>
                 {g.approx ? "≈ " : ""}
                 {br(g.grade, g.approx ? 0 : 2)}
@@ -415,7 +415,7 @@ export function Coherence() {
           <span className="cf-bar-track" aria-hidden="true">
             <i className="cf-bar" />
           </span>
-          <b className="mono">9,04</b>
+          <b className="num">9,04</b>
         </div>
         <div
           className="cf-coh-row is-low"
@@ -425,7 +425,7 @@ export function Coherence() {
           <span className="cf-bar-track" aria-hidden="true">
             <i className="cf-bar" />
           </span>
-          <b className="mono">{br(CHG2_COHERENCE)}</b>
+          <b className="num">{br(CHG2_COHERENCE)}</b>
         </div>
       </div>
       <p className="cf-problem">
@@ -608,7 +608,7 @@ export function Ruler() {
       <div className="cf-ruler-plot" style={{ "--floor": floorX } as Style}>
         <div className="cf-ruler-out" aria-hidden="true" />
         <div className="cf-ruler-floor" aria-hidden="true">
-          <span className="mono">{br(RETRIEVAL.floor, 2)}</span>
+          <span className="num">{br(RETRIEVAL.floor, 2)}</span>
         </div>
         <ul className="cf-ruler-rows">
           {CANDIDATES.map((c, i) => {
@@ -627,13 +627,13 @@ export function Ruler() {
                 </span>
                 {/* The value sits in its own column: inside the plot it ran
                     into the 0,80 line and its neighbors on a phone. */}
-                <span className="cf-ruler-v mono">{br(c.sim, 2)}</span>
+                <span className="cf-ruler-v num">{br(c.sim, 2)}</span>
                 <span className="cf-sr">{pass ? "passou" : "abaixo do limiar"}</span>
               </li>
             );
           })}
         </ul>
-        <div className="cf-ruler-ticks mono" aria-hidden="true">
+        <div className="cf-ruler-ticks num" aria-hidden="true">
           <span>0,50</span>
           <span>1,00</span>
         </div>
@@ -959,7 +959,7 @@ export function BackToSearch() {
           <span className="cf-back-k">Encontra</span>
           <span>
             <RecordTag number={c.number} size="sm" ghost /> com{" "}
-            <b className="mono">{br(c.sim, 2)}</b>, mantido pela conferência.
+            <b className="num">{br(c.sim, 2)}</b>, mantido pela conferência.
           </span>
         </li>
         <li style={{ "--i": 2 } as Style}>

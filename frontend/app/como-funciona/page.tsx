@@ -353,17 +353,15 @@ function Summary30({ reduced }: { reduced: boolean }) {
       <h2 id="cf-30-h">Em 30 segundos</h2>
       <ol>
         <li>
-          <b>Antes de ir ao ar, a Mudança:</b> antes de uma alteração entrar no sistema (o
-          deploy), a IA dá nota de 0 a 10 a cada parte do pedido e, com 8,0 ou mais,
-          confere se as partes combinam. <Cap n={1} reduced={reduced} />{" "}
-          <Cap n={2} reduced={reduced} />
+          <b>No incidente:</b> a IA resume o chamado e acha casos parecidos já resolvidos.
+          Parecido quer dizer com o mesmo sentido, mesmo escrito com outras palavras.
+          Depois sugere uma solução citando cada caso. <Cap n={3} reduced={reduced} />{" "}
+          <Cap n={4} reduced={reduced} /> <Cap n={5} reduced={reduced} />
         </li>
         <li>
-          <b>Depois, o incidente:</b> a IA resume o chamado e acha casos parecidos já
-          resolvidos. Parecido quer dizer com o mesmo sentido, mesmo escrito com outras
-          palavras. Depois sugere uma solução citando cada caso.{" "}
-          <Cap n={3} reduced={reduced} /> <Cap n={4} reduced={reduced} />{" "}
-          <Cap n={5} reduced={reduced} />
+          <b>Na Mudança, antes de ela ir ao ar:</b> a IA dá nota de 0 a 10 a cada parte do
+          pedido e, com 8,0 ou mais, confere se as partes combinam.{" "}
+          <Cap n={1} reduced={reduced} /> <Cap n={2} reduced={reduced} />
         </li>
         <li>
           <b>O ciclo fecha:</b> incidentes que se repetem formam grupos, o grupo vira um
@@ -383,8 +381,9 @@ export default function HowItWorksPage() {
   const signals = useRef<Record<string, ChapterSignal>>({});
   const focusedRef = useRef(focused);
   // The hero's line already lists the seven chapters: the sticky pager only
-  // shows once that line has left the screen, so the index is never doubled.
-  const lifeRef = useRef<HTMLOListElement>(null);
+  // shows once that line (and the hint under it) has left the screen, so the
+  // index is never doubled and is already stuck when it appears.
+  const lifeRef = useRef<HTMLParagraphElement>(null);
   const [lifeShown, setLifeShown] = useState(true);
   useEffect(() => {
     const el = lifeRef.current;
@@ -489,7 +488,7 @@ export default function HowItWorksPage() {
         <Summary30 reduced={reduced} />
         {/* The line at the top: seven stops, one per chapter, same names as the
             index and the headings. */}
-        <ol className="cf-life" aria-label="Os sete capítulos" ref={lifeRef}>
+        <ol className="cf-life" aria-label="Os sete capítulos">
           {CHAPTERS.map((c, i) => (
             <li
               key={c.id}
@@ -512,7 +511,7 @@ export default function HowItWorksPage() {
             </li>
           ))}
         </ol>
-        <p className="cf-hint">
+        <p className="cf-hint" ref={lifeRef}>
           {aula ? (
             <>
               <Icons.board size={16} />

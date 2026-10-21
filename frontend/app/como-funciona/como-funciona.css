@@ -207,7 +207,9 @@
   position: sticky;
   top: calc(var(--topbar-h, 52px) + var(--safe-t, 0px));
   z-index: 5;
-  margin: 0 calc(-1 * var(--cf-bleed)) 8px;
+  /* It takes no room in the flow: hidden under the hero it would leave a
+     blank band; shown, it is stuck to the top and the chapters run under it. */
+  margin: 0 calc(-1 * var(--cf-bleed)) calc(-1 * var(--cf-index-h));
   padding: 8px var(--cf-bleed);
   background: var(--cf-index-bg);
   border-bottom: 1px solid var(--border);
@@ -1176,7 +1178,7 @@
 .cf-gate-axis {
   position: relative;
   container-type: inline-size;
-  height: 92px;
+  height: 110px;
   margin: 8px 8px 0;
 }
 .cf-gate-line {
@@ -1218,7 +1220,8 @@
 }
 .cf-door-k {
   position: absolute;
-  top: 66px;
+  /* Below the lower door even before it closes (it starts 10px lower). */
+  top: 76px;
   left: 0;
   translate: -50% 0;
   font-size: 0.8125rem;

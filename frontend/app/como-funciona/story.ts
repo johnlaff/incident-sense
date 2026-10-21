@@ -533,9 +533,9 @@ export const PROBLEM = {
 export type PartKey = "antes" | "depois" | "ciclo";
 
 export const PARTS: Record<PartKey, { title: string; who: string }> = {
-  antes: { title: "Antes do deploy", who: "Parte do Solange" },
-  depois: { title: "Depois do deploy", who: "Parte do João" },
-  ciclo: { title: "O ciclo fecha", who: "Os dois juntos" },
+  antes: { title: "Antes do deploy", who: "baseado no artigo de Solange, palestrante" },
+  depois: { title: "Depois do deploy", who: "baseado no artigo de João, palestrante" },
+  ciclo: { title: "O ciclo fecha", who: "baseado nos dois artigos" },
 };
 
 export interface StoryStep {
