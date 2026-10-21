@@ -31,6 +31,7 @@ import { usePrefersReducedMotion } from "@/lib/motion";
 import {
   absDate,
   buildSuggestionMarkdown,
+  groupPlain,
   mapDetail,
   mapSuggest,
   markdownToPlain,
@@ -417,7 +418,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     { label: "Subcategoria", value: record.subcategory },
     { label: "Empresa", value: record.empresa },
     { label: "Serviço afetado", value: record.service, id: true },
-    { label: "Grupo de atendimento", value: record.group, id: true },
+    { label: "Grupo de atendimento", value: groupPlain(record.group), id: true },
     { label: "Impacto", value: record.impact },
     { label: "Urgência", value: record.urgency },
   ];
@@ -455,7 +456,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 <MetaLine
                   items={[
                     record.service,
-                    record.group,
+                    groupPlain(record.group),
                     localState === "resolved"
                       ? "resolvido"
                       : `aberto em ${record.opened}`,
@@ -513,7 +514,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 ) : record.resolutionNotes ? (
                   <p className="rec-prose">{record.resolutionNotes}</p>
                 ) : (
-                  <div className="resnotes-empty k-ai-step-box">
+                  <div className="resnotes-empty k-ai-step-box" data-ai-entry="">
                     <ConceptLabel concept="ai-step">Ainda sem solução</ConceptLabel>
                     <p>
                       A IA pode procurar incidentes parecidos que já foram resolvidos e
@@ -521,7 +522,6 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                     </p>
                     <button
                       className="btn btn-ai"
-                      data-ai-entry=""
                       onClick={() => {
                         setTab("analise");
                         if (suggest.phase !== "running") void suggest.run();

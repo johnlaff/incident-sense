@@ -21,8 +21,8 @@ export interface IncidentQuery {
 function buildQuery(params: IncidentQuery): string {
   const search = new URLSearchParams();
   if (params.state && params.state !== "all") search.set("state", params.state);
-  if (params.service) search.set("service", params.service);
-  if (params.q) search.set("q", params.q);
+  if (params.service) search.set("service", withoutAccents(params.service));
+  if (params.q) search.set("q", withoutAccents(params.q));
   if (params.limit != null) search.set("limit", String(params.limit));
   if (params.offset) search.set("offset", String(params.offset));
   const qs = search.toString();
@@ -97,8 +97,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
  * The synthetic data writes team names the way ITSM tools store them, without
  * accents ("Sustentacao-Pagamentos"). On screen they read as Portuguese.
  */
+const ACCENTS: [RegExp, string, string][] = [
+  [/Sustentacao/g, "Sustentacao", "Sustentação"],
+  [/Cartoes/g, "Cartoes", "Cartões"],
+  [/Estacao/g, "Estacao", "Estação"],
+  [/Integracoes/g, "Integracoes", "Integrações"],
+];
+
 export function withAccents(text: string): string {
-  return text.replace(/Sustentacao/g, "Sustentação");
+  return ACCENTS.reduce((t, [re, , shown]) => t.replace(re, shown), text);
+}
+
+/** Back to the stored spelling, for a name sent to the API as a filter. */
+export function withoutAccents(text: string): string {
+  return ACCENTS.reduce((t, [, stored, shown]) => t.split(shown).join(stored), text);
 }
 
 export const api = {
