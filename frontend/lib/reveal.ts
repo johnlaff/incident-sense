@@ -44,8 +44,17 @@ function delta(el: Element, below: Element | null): number {
   }
   const r = el.getBoundingClientRect();
   const room = band.bottom - band.top;
-  // Taller than the band: show its start.
-  if (r.height > room) return r.top - band.top;
+  if (r.height > room) {
+    // Short by less than the band's margins: give them up and center the
+    // subject in the whole free space, so it shows whole.
+    const fullTop = band.top - (below ? 12 : 8);
+    const fullBottom = band.bottom + 12;
+    if (r.height <= fullBottom - fullTop) {
+      return r.top - (fullTop + (fullBottom - fullTop - r.height) / 2);
+    }
+    // Taller than the band: show its start.
+    return r.top - band.top;
+  }
   if (r.bottom > band.bottom) return r.bottom - band.bottom;
   if (r.top < band.top) return r.top - band.top;
   return 0;

@@ -35,7 +35,7 @@ export const STOPS: Stop[] = [
     n: 1,
     concept: "ai-step",
     tone: "k-ai",
-    title: "Sobre a IA",
+    title: "Como a IA funciona",
     line: "Do chamado aberto à sugestão revisada.",
     href: "/como-funciona?aula=1",
     cta: "Ver o caminho",

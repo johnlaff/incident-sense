@@ -1,6 +1,6 @@
 "use client";
 
-// "Como funciona": the whole lifecycle after the deploy, as the talk "Depois
+// "Como a IA funciona": the whole lifecycle after the deploy, as the talk "Depois
 // do Deploy" tells it and as the demo does it. Seven chapters: the Change
 // graded before it ships, the incident after it breaks (seven steps), the
 // recurrences that become a Problem, and the Problem that closes the loop.
@@ -102,13 +102,12 @@ const CONTENT: Record<
             "LLM-as-judge: o modelo não escreve, ele avalia o texto de uma pessoa.",
           ],
           [
-            "Grade",
+            "Critérios",
             <>
-              <span className="mono">
-                backend/src/incident_sense/changes/rubrica.toml
-              </span>
-              , versão {RUBRIC_VERSION}, sete campos, soma {br(TOTAL_WEIGHT)}, corte{" "}
-              {br(GATE)}. Mudar o critério é um pull request, não um release.
+              Ficam num arquivo de configuração do demo (
+              <span className="mono">rubrica.toml</span>), versão {RUBRIC_VERSION}: sete
+              campos, pesos que somam {br(TOTAL_WEIGHT)}, mínimo {br(GATE)}. Mudar um
+              critério é editar esse arquivo, sem nova versão do sistema.
             </>,
           ],
           [
@@ -152,7 +151,7 @@ const CONTENT: Record<
           ],
           [
             "Entrada",
-            "Um prompt só, com os sete campos, o plano de retorno e as tarefas cadastradas.",
+            "Uma instrução só para a IA (o prompt), com os sete campos, o plano de retorno e as tarefas cadastradas.",
           ],
           [
             "Saída",
@@ -185,11 +184,11 @@ const CONTENT: Record<
             "Resumo + Categoria + Subcategoria + Empresa, uma linha cada. Nunca o texto cru.",
           ],
           [
-            "Embedding",
+            "Vetor (embedding)",
             <>
               <span className="mono">{EMBEDDING.model}</span>,{" "}
-              {EMBEDDING.dims.toLocaleString("pt-BR")} dimensões. A tela do pipeline
-              mostra os 24 primeiros números que a API devolve.
+              {EMBEDDING.dims.toLocaleString("pt-BR")} números por texto. A tela do
+              pipeline mostra os 24 primeiros números que a API devolve.
             </>,
           ],
           [
@@ -204,7 +203,8 @@ const CONTENT: Record<
     visuals: [<TagFilter key="t" />, <Ruler key="r" />, <PostFilter key="p" />],
     source: (
       <>
-        Corte e top-K do <Cite who="joao" />.
+        O mínimo de 0,80 e quantos casos a busca traz (o top-K) vêm do <Cite who="joao" />
+        .
       </>
     ),
     details: (
@@ -217,11 +217,13 @@ const CONTENT: Record<
           [
             "Camada 2",
             <>
-              Qdrant em memória, distância de cosseno, piso{" "}
-              <span className="mono">RETRIEVAL_MIN_SIMILARITY = {RETRIEVAL.floor}</span>,
-              top-K <span className="mono">{RETRIEVAL.incidentTopK}</span> incidentes e{" "}
-              <span className="mono">{RETRIEVAL.problemTopK}</span> problemas, em coleções
-              separadas.
+              Banco de vetores Qdrant, em memória. A semelhança de cosseno compara a
+              direção de dois vetores: 1 é o mesmo sentido, 0 é nada a ver. Mínimo{" "}
+              <span className="mono">RETRIEVAL_MIN_SIMILARITY = {RETRIEVAL.floor}</span>;
+              a busca traz no máximo{" "}
+              <span className="mono">{RETRIEVAL.incidentTopK}</span> incidentes e{" "}
+              <span className="mono">{RETRIEVAL.problemTopK}</span> problemas (o top-K),
+              em coleções separadas.
             </>,
           ],
           [
@@ -243,7 +245,7 @@ const CONTENT: Record<
         rows={[
           [
             "Classificar",
-            "Pergunta se é incidente de verdade, independente da busca. Improcedente: pedido de autoatendimento, sem sugestão. Procedente sem caso parecido: também sem sugestão.",
+            "Pergunta se é falha de verdade, independente da busca. Não é falha (improcedente): pedido de autoatendimento, sem sugestão. É falha (procedente), mas sem caso parecido: também sem sugestão.",
           ],
           [
             "Citações",
@@ -272,7 +274,7 @@ const CONTENT: Record<
         rows={[
           [
             "Pipeline",
-            "BERTopic: HDBSCAN agrupa os embeddings dos incidentes (cosseno), um LLM escreve o rótulo curto e o UMAP (semente fixa) só desenha o mapa em 2 dimensões.",
+            "BERTopic: o HDBSCAN agrupa os vetores dos incidentes pela semelhança de cosseno, um LLM escreve o rótulo curto e o UMAP (semente fixa) só desenha o mapa em 2 dimensões.",
           ],
           [
             "Por que HDBSCAN",
@@ -327,6 +329,48 @@ function scrollToId(id: string, reduced: boolean) {
   document
     .getElementById(id)
     ?.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
+}
+
+function Cap({ n, reduced }: { n: number; reduced: boolean }) {
+  return (
+    <a
+      className="cf-30-cap"
+      href={`#cap-${n}`}
+      onClick={(e) => {
+        e.preventDefault();
+        scrollToId(`cap-${n}`, reduced);
+      }}
+    >
+      cap. {n}
+    </a>
+  );
+}
+
+/** Three lines that tell both flows, each with links to its chapters. */
+function Summary30({ reduced }: { reduced: boolean }) {
+  return (
+    <section className="cf-30" aria-labelledby="cf-30-h">
+      <h2 id="cf-30-h">Em 30 segundos</h2>
+      <ol>
+        <li>
+          <b>Antes do deploy, a Mudança:</b> a IA dá nota de 0 a 10 a cada campo do pedido
+          e, com 8,0 ou mais, confere se os campos combinam.{" "}
+          <Cap n={1} reduced={reduced} /> <Cap n={2} reduced={reduced} />
+        </li>
+        <li>
+          <b>Depois do deploy, o incidente:</b> a IA resume o chamado, acha casos
+          parecidos já resolvidos e sugere uma solução citando cada um.{" "}
+          <Cap n={3} reduced={reduced} /> <Cap n={4} reduced={reduced} />{" "}
+          <Cap n={5} reduced={reduced} />
+        </li>
+        <li>
+          <b>O ciclo fecha:</b> incidentes que se repetem formam grupos, o grupo vira um
+          Problema e a correção volta como Mudança. <Cap n={6} reduced={reduced} />{" "}
+          <Cap n={7} reduced={reduced} />
+        </li>
+      </ol>
+    </section>
+  );
 }
 
 export default function HowItWorksPage() {
@@ -433,15 +477,14 @@ export default function HowItWorksPage() {
   return (
     <div className="cf">
       <header className="cf-hero">
-        {/* The page is "Sobre a IA" in the tab and the menu; the eyebrow says so. */}
-        <h1>
-          <span className="cf-eyebrow">Sobre a IA</span>
-          Depois do deploy, do começo ao fim
-        </h1>
+        {/* Same name as the tab and the menu. */}
+        <h1>Como a IA funciona</h1>
         <p className="cf-lede">
-          Da mudança ao incidente, e de volta. O caminho abaixo, contado em sete capítulos
-          curtos.
+          Depois do deploy, do começo ao fim: da mudança ao incidente, e de volta, em sete
+          capítulos curtos. Solange e João, os palestrantes, escreveram os artigos que
+          inspiraram esta demo.
         </p>
+        <Summary30 reduced={reduced} />
         {/* The line at the top: seven stops, one per chapter, same names as the
             index and the headings. */}
         <ol className="cf-life" aria-label="Os sete capítulos" ref={lifeRef}>
@@ -533,11 +576,37 @@ export default function HowItWorksPage() {
         );
       })}
 
+      <section className="cf-not" aria-labelledby="cf-not-h">
+        <h2 id="cf-not-h">O que a IA não faz</h2>
+        <ul>
+          <li>
+            <b>Não decide.</b> Quem aprova a Mudança e resolve o incidente é uma pessoa.
+          </li>
+          <li>
+            <b>Não mexe em nada.</b> Não altera sistemas, não fecha chamados e não abre
+            Problemas sozinha. No demo, nada é gravado.
+          </li>
+          <li>
+            <b>Não inventa fonte.</b> Só cita casos que a busca trouxe; uma citação de
+            fora é removida.
+          </li>
+          <li>
+            <b>Não responde sem base.</b> Sem caso parecido o bastante, diz que não tem
+            sugestão.
+          </li>
+          <li>
+            <b>Não garante que a mudança é segura.</b> A nota julga o texto do pedido, não
+            a execução.
+          </li>
+        </ul>
+      </section>
+
       <aside className="cf-next">
         <h2>Próximo passo nos dois lados: medir</h2>
         <p>
-          Um gabarito de casos conhecidos, rodado a cada troca de prompt ou modelo. Isso é
-          eval: medir que melhorou, não achar.
+          Um gabarito de casos com resposta conhecida, rodado a cada troca de instrução
+          (prompt) ou de modelo. É o que se chama de eval: medir que melhorou, em vez de
+          achar.
         </p>
         <Origin kind="fora" />
       </aside>

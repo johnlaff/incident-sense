@@ -69,10 +69,10 @@ export const NAV_ITEMS: readonly NavItem[] = [
     key: "how",
     href: "/como-funciona",
     icon: Icons.how,
-    // One name in the tab, the menu and the page: "Como funciona" does not
-    // fit a ~66px tab on a 360px phone.
-    label: "Sobre a IA",
-    short: "Sobre a IA",
+    // One name in the tab, the menu and the page. On a 360px phone the tab is
+    // ~66px wide: the name goes on two lines there ("\n" marks the break).
+    label: "Como a IA funciona",
+    short: "Como a IA\nfunciona",
     sub: "O caminho todo, passo a passo",
     match: ["/como-funciona"],
     tone: "k-ai",

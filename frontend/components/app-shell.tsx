@@ -398,7 +398,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className="tab-ico">
                   <n.icon />
                 </span>
-                <span className="tab-label">{n.short}</span>
+                {n.short.includes("\n") ? (
+                  <span className="tab-label two">
+                    {n.short.split("\n").map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
+                  </span>
+                ) : (
+                  <span className="tab-label">{n.short}</span>
+                )}
               </Link>
             ))}
           </nav>

@@ -200,7 +200,11 @@ export function ChapterView({
           })}
         </ol>
       </div>
-      {source ? <p className="cf-source">{source}</p> : null}
+      {/* One note per chapter on where the values come from, not a chip per visual. */}
+      <p className="cf-source">
+        {source ? <>{source} </> : null}
+        <span className="cf-ch-note">{chapter.note}</span>
+      </p>
 
       <div className="cf-ch-foot">
         <Link
@@ -232,7 +236,11 @@ export function stepLetter(i: number): string {
   return String.fromCharCode(97 + i);
 }
 
-/** Small label that says where a value comes from. */
+/**
+ * Small label that says where a value comes from. Only "fora do demo" shows on
+ * the visual itself; demo, rehearsal and example values are named once per
+ * chapter, in its note (story.ts), so the chips do not crowd every picture.
+ */
 export function Origin({
   kind,
   children,
@@ -240,18 +248,11 @@ export function Origin({
   kind: "demo" | "ilustrativo" | "ensaio" | "fora";
   children?: ReactNode;
 }) {
-  const label =
-    kind === "demo"
-      ? "dado do demo"
-      : kind === "ensaio"
-        ? "ensaio da palestra"
-        : kind === "fora"
-          ? "fora do demo"
-          : "ilustrativo";
+  if (kind !== "fora") return null;
   return (
     <span className={`cf-origin is-${kind}`}>
-      {kind === "fora" ? <Icons.external /> : <Icons.dot />}
-      {children ?? label}
+      <Icons.external />
+      {children ?? "fora do demo"}
     </span>
   );
 }

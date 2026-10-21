@@ -421,15 +421,38 @@ export interface MiniGroup {
   /** DEMO cluster id and label, for the color and the name. */
   id: number;
   label: string;
+  /** The same short name the Grupos map shows (app/recorrencias/model.ts). */
+  short: string;
   cx: number;
   cy: number;
   n: number;
 }
 
 export const MINI_GROUPS: MiniGroup[] = [
-  { id: 2, label: "Falha de login no app após atualização", cx: 0.26, cy: 0.4, n: 13 },
-  { id: 0, label: "Timeout em pagamentos Pix com débito", cx: 0.72, cy: 0.4, n: 11 },
-  { id: 4, label: "Falha na geração de boletos", cx: 0.6, cy: 0.8, n: 9 },
+  {
+    id: 2,
+    label: "Falha de login no app após atualização",
+    short: "Login no app",
+    cx: 0.26,
+    cy: 0.4,
+    n: 13,
+  },
+  {
+    id: 0,
+    label: "Timeout em pagamentos Pix com débito",
+    short: "Pix",
+    cx: 0.72,
+    cy: 0.4,
+    n: 11,
+  },
+  {
+    id: 4,
+    label: "Falha na geração de boletos",
+    short: "Boletos",
+    cx: 0.6,
+    cy: 0.8,
+    n: 9,
+  },
 ];
 export const MINI_ISOLATED = 7;
 
@@ -532,6 +555,8 @@ export interface Chapter {
   /** The one name of the chapter: heading, index and the line at the top. */
   title: string;
   why: string;
+  /** One quiet line: which values on screen come from the demo, which are examples. */
+  note: string;
   app: { href: string; label: string };
   steps: StoryStep[];
 }
@@ -543,6 +568,7 @@ export const CHAPTERS: Chapter[] = [
     part: "antes",
     title: "A nota da Mudança",
     why: "Antes de subir, a Mudança ganha uma nota. Ninguém revisa mil Mudanças por dia à mão.",
+    note: "Pesos e corte vêm do demo; as notas por campo e os tempos são exemplos.",
     app: { href: "/changes/CHG0031001", label: "Ver no app: CHG0031001" },
     steps: [
       {
@@ -585,6 +611,7 @@ export const CHAPTERS: Chapter[] = [
     part: "antes",
     title: "Completo não é coerente",
     why: "Nota alta não quer dizer que os campos combinam: cada campo bom, e ainda assim sem volta segura.",
+    note: "Textos da CHG0031002 do demo; a ligação de cada tarefa com o retorno é um exemplo.",
     app: { href: "/changes/CHG0031002", label: "Ver no app: CHG0031002" },
     steps: [
       {
@@ -620,6 +647,7 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     title: "Ler o incidente",
     why: "Quando quebra, a resposta quase sempre já está no histórico. O difícil é achar o caso certo.",
+    note: "Chamado do demo; o resumo e os números são exemplos.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
@@ -651,6 +679,7 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     title: "Buscar e conferir",
     why: "Parecido não basta: primeiro buscar, depois conferir. Parecer não é o mesmo que servir.",
+    note: "Casos e contagens do demo; as semelhanças e os vereditos são exemplos.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
@@ -660,8 +689,8 @@ export const CHAPTERS: Chapter[] = [
         ms: 1500,
       },
       {
-        title: "O vetor mede a semelhança",
-        line: "Só entra quem passa de 0,80.",
+        title: "Os números medem a semelhança",
+        line: "De 0 a 1. Só entra quem passa de 0,80.",
         caption:
           "Camada 2: quanto mais perto de 1, mais parecido. Abaixo de 0,80 fica de fora.",
         ms: 1700,
@@ -680,6 +709,7 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     title: "Decidir e responder",
     why: "Decidir antes de escrever, e mostrar as fontes. Sugestão sem fonte é palpite.",
+    note: "Registros do demo; o texto da sugestão e a nota são exemplos.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
@@ -710,6 +740,7 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     title: "Agrupar as recorrências",
     why: "Muitos incidentes, poucas causas: os parecidos formam grupos, e grupo grande pede um Problema.",
+    note: "Mapa de exemplo, com os nomes de grupos do demo.",
     app: { href: "/recorrencias", label: "Ver no app: Grupos" },
     steps: [
       {
@@ -725,9 +756,10 @@ export const CHAPTERS: Chapter[] = [
         ms: 1500,
       },
       {
-        title: "O HDBSCAN acha os grupos e deixa o resto de fora",
-        line: "Caso isolado fica de fora.",
-        caption: "O HDBSCAN acha os grupos densos. Caso isolado fica de fora, em cinza.",
+        title: "Um algoritmo acha os grupos e deixa o resto de fora",
+        line: "Onde há muitos pontos juntos, há um grupo. Caso isolado fica de fora.",
+        caption:
+          "O algoritmo acha onde há muitos pontos juntos. Caso isolado fica cinza.",
         ms: 1500,
       },
       {
@@ -751,6 +783,7 @@ export const CHAPTERS: Chapter[] = [
     part: "ciclo",
     title: "O Problema fecha o ciclo",
     why: "A correção vira Mudança, e a resposta vira fonte.",
+    note: "Problema do demo; a semelhança mostrada é um exemplo.",
     app: { href: "/problemas/PRB0004105", label: "Ver no app: PRB0004105" },
     steps: [
       {
@@ -790,7 +823,7 @@ export function lessonSteps(ch: Chapter): AulaLessonStep[] {
 export function allCopy(): string[] {
   const out: string[] = [];
   for (const ch of CHAPTERS) {
-    out.push(ch.title, ch.why, ch.app.label);
+    out.push(ch.title, ch.why, ch.note, ch.app.label);
     for (const s of ch.steps) out.push(s.title, s.line, s.caption);
   }
   for (const p of Object.values(PARTS)) out.push(p.title, p.who);
