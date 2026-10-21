@@ -75,9 +75,10 @@ export function urgencyLabel(n: number): string {
 
 // ----- Time ------------------------------------------------------------------
 
-/** "há 12min" / "há 3h" / "há 5 dias" / "há 2 meses" from an ISO timestamp. */
+/** "agora" / "há 12min" / "há 3h" / "há 5 dias" / "há 2 meses" from an ISO timestamp. */
 export function relTime(iso: string): string {
   const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 1) return "agora";
   if (mins < 60) return `há ${mins}min`;
   const h = Math.round(mins / 60);
   if (h < 24) return `há ${h}h`;
@@ -136,7 +137,7 @@ export function mapSummary(s: IncidentSummary): IncidentRow {
     opened: dayDate(s.opened_at),
     isResolved: s.is_resolved,
     category: s.category,
-    tags: s.tags,
+    tags: meaningfulTags(s.tags),
   };
 }
 
@@ -233,7 +234,7 @@ export function mapDetail(d: IncidentDetail): IncidentRecord {
     opened: dayDate(d.opened_at, true),
     isResolved: state === "resolved",
     category: d.category,
-    tags: d.tags,
+    tags: meaningfulTags(d.tags),
     title: d.short_description,
     description: d.description,
     subcategory: d.subcategory,
@@ -354,8 +355,8 @@ export function enforceNumberedSteps(md: string): string {
  *
  * The backend already returns simple markdown with bracketed [INC…] citations.
  * We normalize the spacing and numbering for legibility, and — when it grounded
- * the answer but cited nothing inline — append the referenced incidents as a
- * closing "Fundamentado em …" line so the sources stay visible and clickable.
+ * the answer but cited nothing inline, append the cited records (never the
+ * whole context) as a closing "Fundamentado em …" line.
  */
 export function buildSuggestionMarkdown(text: string, referenced: string[]): string {
   const body = enforceNumberedSteps(normalizeSuggestionSpacing(text.trim()));
@@ -395,6 +396,8 @@ export interface CopilotResult {
   /** Suggestion as simple markdown (bold, lists, [INC…] citations), or null. */
   suggestion: string | null;
   referenced: string[];
+  /** Records the answer actually cites (the backend checked each one). */
+  cited: string[];
   noBase: boolean;
 }
 
@@ -410,10 +413,7 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
   const procedente = res.classification === "PROCEDENTE";
   const suggestion =
     procedente && res.suggestion
-      ? buildSuggestionMarkdown(res.suggestion, [
-          ...res.referenced_incidents,
-          ...(res.referenced_problems ?? []),
-        ])
+      ? buildSuggestionMarkdown(res.suggestion, res.citations.cited)
       : null;
   return {
     verdict: res.classification,
@@ -422,6 +422,7 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
     candidates,
     suggestion,
     referenced: res.referenced_incidents,
+    cited: res.citations.cited,
     // "No base yet" only when there is genuinely no usable suggestion — a parsed
     // suggestion (even one whose citations are inline) should never be dropped.
     noBase: procedente && suggestion === null,
@@ -431,4 +432,68 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
 /** A team name with "N1" explained once: the first line of support. */
 export function groupPlain(group: string): string {
   return /(^|-)N1$/.test(group) ? `${group} (primeiro atendimento)` : group;
+}
+
+/**
+ * Tags worth showing a reader. The dataset also carries bookkeeping tags (how
+ * a case was built or labelled for the demo); they mean nothing on screen.
+ */
+const INTERNAL_TAGS = new Set([
+  "demo",
+  "procedente",
+  "improcedente",
+  "borderline",
+  "ruido",
+  "dados-incompletos",
+  "suporte-interno",
+]);
+
+export function meaningfulTags(tags: readonly string[]): string[] {
+  return tags.filter((t) => !INTERNAL_TAGS.has(t.toLowerCase()));
+}
+
+// ----- Links of an incident ---------------------------------------------------
+
+/** The "Repetições" line of an incident: its group, or that it does not repeat. */
+export function recurrenceView(r: {
+  clusterId: number | null;
+  clusterLabel: string | null;
+  isOutlier: boolean | null;
+}): { label: string; href: string | null } | null {
+  if (r.isOutlier || (r.clusterId != null && r.clusterId < 0))
+    return { label: "Caso isolado (não se repete)", href: null };
+  if (!r.clusterLabel) return null;
+  return {
+    label: r.clusterLabel,
+    href: r.clusterId != null ? `/recorrencias?grupo=${r.clusterId}` : "/recorrencias",
+  };
+}
+
+/**
+ * Incidents of the same service, then of the same group. Isolated cases
+ * (cluster -1) are not a group: they never count as related to each other.
+ */
+export function relatedNumbers(
+  record: { number: string; service: string; clusterId: number | null },
+  summaries: readonly { number: string; cmdb_ci: string }[],
+  points: readonly { id: string; cluster_id: number }[],
+): string[] {
+  const ids = new Set<string>();
+  summaries.forEach((s) => {
+    if (s.number !== record.number && s.cmdb_ci === record.service) ids.add(s.number);
+  });
+  if (record.clusterId != null && record.clusterId >= 0) {
+    points.forEach((p) => {
+      if (p.id !== record.number && p.cluster_id === record.clusterId) ids.add(p.id);
+    });
+  }
+  return [...ids];
+}
+
+/** The Problem whose linked incidents include this one, if any. */
+export function linkedProblem<T extends { number: string; linked_incidents: string[] }>(
+  number: string,
+  problems: readonly T[],
+): T | null {
+  return problems.find((p) => p.linked_incidents.includes(number)) ?? null;
 }

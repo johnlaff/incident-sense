@@ -8,7 +8,13 @@ import type { SuggestResponse } from "./types";
 
 export const MAX_STEPS = 5;
 
-const CITE = /\[((?:INC|PRB)\d{4,})\]/g;
+// One id per bracket, or several split by commas: "[INC0052180, PRB0004105]".
+const ID = String.raw`(?:INC|PRB)\d{4,}`;
+const CITE = new RegExp(String.raw`\[(${ID}(?:\s*,\s*${ID})*)\]`, "g");
+const CITE_RUN = new RegExp(
+  String.raw`\s*\[${ID}(?:\s*,\s*${ID})*\](?:\s*,\s*\[${ID}(?:\s*,\s*${ID})*\])*`,
+  "g",
+);
 const STEP = /^\s*\d+[.)]\s+/;
 
 export interface AnswerStep {
@@ -27,13 +33,14 @@ export interface ParsedAnswer {
 
 function cites(text: string): string[] {
   const out: string[] = [];
-  for (const m of text.matchAll(CITE)) if (!out.includes(m[1])) out.push(m[1]);
+  for (const m of text.matchAll(CITE))
+    for (const id of m[1].split(/\s*,\s*/)) if (!out.includes(id)) out.push(id);
   return out;
 }
 
 function stripCites(text: string): string {
   return text
-    .replace(/\s*\[(?:INC|PRB)\d{4,}\](?:\s*,\s*\[(?:INC|PRB)\d{4,}\])*/g, "")
+    .replace(CITE_RUN, "")
     .replace(/\s+([.,;:])/g, "$1")
     .replace(/\*\*/g, "")
     .trim();
@@ -147,8 +154,63 @@ export function sourceExcerpt(
 
 /** Plain text of the answer, for Copiar and the resolution note. */
 export function answerPlain(a: ParsedAnswer): string {
+  // The records stay with the text: a note without them loses its grounds.
+  const src = (ids: string[]) => (ids.length ? ` [${ids.join(", ")}]` : "");
   const steps = a.steps.map(
-    (s, i) => `${i + 1}. ${s.title ? `${s.title}: ` : ""}${s.text}`,
+    (s, i) => `${i + 1}. ${s.title ? `${s.title}: ` : ""}${s.text}${src(s.cites)}`,
   );
-  return [a.oneLine, "", ...steps].join("\n");
+  return [`${a.oneLine}${src(a.oneLineCites)}`, "", ...steps].join("\n");
+}
+
+/**
+ * A step in two layers: the plain action to read first (its bold title, or
+ * the first sentence when it has none) and the technical rest, shown on
+ * request ("Ler o texto técnico").
+ */
+export function stepLayers(step: AnswerStep): { lead: string; rest: string } {
+  if (step.title) return { lead: step.title, rest: step.text.trim() };
+  const t = step.text.trim();
+  const m = t.match(/^[\s\S]*?[.!?](?=\s|$)/);
+  const lead = (m ? m[0] : t).trim();
+  return { lead, rest: t.slice(lead.length).trim() };
+}
+
+export type EmptyKind = "improcedente" | "rejected" | "below" | "unwritten";
+
+/**
+ * Why the card has no suggestion, in one line. "rejected" (cases passed the
+ * similarity floor and the AI ruled each one out) and "below" (none passed)
+ * are different stories; a customer request carries no confidence badge.
+ */
+export function emptyAnswer(res: SuggestResponse): {
+  kind: EmptyKind;
+  line: string;
+  confidence: boolean;
+} {
+  if (res.classification !== "PROCEDENTE")
+    return {
+      kind: "improcedente",
+      line: "Não é uma falha técnica: é um pedido do cliente.",
+      confidence: false,
+    };
+  if (res.context_ids.length > 0)
+    return {
+      kind: "unwritten",
+      line: "A IA achou casos que servem, mas não escreveu a sugestão desta vez.",
+      confidence: true,
+    };
+  const verdicts = res.retrieval.postfilter.verdicts;
+  if (verdicts.length > 0 && verdicts.every((v) => !v.kept)) {
+    const n = verdicts.length;
+    return {
+      kind: "rejected",
+      line: `${n} ${n === 1 ? "caso passou" : "casos passaram"} da semelhança mínima, mas a IA conferiu e nenhum trata da mesma causa.`,
+      confidence: true,
+    };
+  }
+  return {
+    kind: "below",
+    line: "Não achei casos parecidos o bastante para sugerir.",
+    confidence: true,
+  };
 }

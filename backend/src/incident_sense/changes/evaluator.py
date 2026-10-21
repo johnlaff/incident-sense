@@ -14,18 +14,21 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import threading
 import time
+import unicodedata
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from typing import Protocol
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from incident_sense.models.change import (
     EVALUATED_FIELDS,
     BackoutAdherence,
     Change,
+    Decision,
     EvaluationResponse,
     FieldScore,
     Rubric,
@@ -61,7 +64,12 @@ _SEMANTIC_SYSTEM = (
     "plano de retorno precisam ser coerentes entre si, e o plano de retorno precisa "
     "desfazer de fato o que a implementação altera (por exemplo: se a implementação "
     "muda estrutura de dados, reverter só a imagem do contêiner não basta). Compare "
-    "também o plano de retorno com as tarefas cadastradas. Responda apenas com JSON."
+    'também o plano de retorno com as tarefas cadastradas. Em "problems" entram '
+    "SOMENTE contradições reais: uma parte do pedido afirma ou faz algo que outra "
+    "parte desmente, ou o retorno deixa de desfazer algo que a implementação altera. "
+    "Sugestões de melhoria, detalhes que faltam e boas práticas não são contradições: "
+    'vão em "guidance". Se não houver contradição real, "problems" fica vazio. '
+    "Responda apenas com JSON."
 )
 
 SCOPE_TYPE = "Normal"
@@ -89,19 +97,146 @@ def content_hash(text: str) -> str:
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
 
 
+def _grade(value: object) -> object:
+    """Read a 0-10 grade the way models actually write it: "8,5", 85 (of 100)."""
+    if isinstance(value, str):
+        text = value.strip().replace(",", ".").rstrip("%").strip()
+        try:
+            value = float(text)
+        except ValueError:
+            return value
+    if isinstance(value, int | float) and 10 < value <= 100:
+        return value / 10
+    return value
+
+
+def _percent(value: object) -> object:
+    if isinstance(value, str):
+        text = value.strip().rstrip("%").replace(",", ".").strip()
+        try:
+            return round(float(text))
+        except ValueError:
+            return value
+    if isinstance(value, float):
+        return round(value)
+    return value
+
+
+def _plain(text: str) -> str:
+    """One line of plain text: no markdown emphasis or code ticks."""
+    return re.sub(r"\s+", " ", re.sub(r"\*\*|__|`", "", text)).strip()
+
+
+def _adherence_word(value: object) -> object:
+    """'NÃO_ADERENTE', 'Não aderente', 'parcial' -> the enum's spelling."""
+    if not isinstance(value, str):
+        return value
+    bare = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode()
+    return re.sub(r"[\s-]+", "_", bare.strip()).upper()
+
+
+def adherence_for(percent: int) -> BackoutAdherence:
+    """The label follows the number, so the two can never contradict."""
+    if percent >= 80:
+        return BackoutAdherence.ADERENTE
+    if percent >= 50:
+        return BackoutAdherence.PARCIAL
+    return BackoutAdherence.NAO_ADERENTE
+
+
 class _FieldOut(BaseModel):
     score: float = Field(ge=0, le=10)
     diagnosis: str
     guidance: str = ""
 
+    _normalize_score = field_validator("score", mode="before")(_grade)
+
 
 class _SemanticOut(BaseModel):
     consistency_score: float = Field(ge=0, le=10)
     problems: list[str] = Field(default_factory=list)
-    reasoning: str
-    guidance: str
+    reasoning: str = ""
+    guidance: str = ""
     backout_adherence: BackoutAdherence
     backout_adherence_percent: int = Field(ge=0, le=100)
+
+    _normalize_score = field_validator("consistency_score", mode="before")(_grade)
+    _normalize_percent = field_validator("backout_adherence_percent", mode="before")(_percent)
+    _normalize_word = field_validator("backout_adherence", mode="before")(_adherence_word)
+
+    @field_validator("problems", mode="before")
+    @classmethod
+    def _clean_points(cls, value: object) -> object:
+        if not isinstance(value, list):
+            return value
+        seen: dict[str, None] = {}
+        for item in value:
+            text = _plain(str(item))
+            if text:
+                seen.setdefault(text, None)
+        return list(seen)
+
+    def settled(self) -> _SemanticOut:
+        """One decimal on the score, and the label read from the percent."""
+        return self.model_copy(
+            update={
+                "consistency_score": round(self.consistency_score, 1),
+                "backout_adherence": adherence_for(self.backout_adherence_percent),
+                "reasoning": self.reasoning.strip(),
+                "guidance": self.guidance.strip(),
+            }
+        )
+
+
+def _fmt(n: float, places: int = 1) -> str:
+    return f"{n:.{places}f}".replace(".", ",")
+
+
+def decide(overall: float, threshold: float, semantic: SemanticAnalysis | None) -> Decision:
+    """The rule, once. Every view reads this instead of re-deriving it."""
+    avg = _fmt(overall, 2)
+    cut = _fmt(threshold)
+    if overall < threshold:
+        return Decision(
+            passes=False,
+            reason_code="average_below",
+            reason=f"A média ficou em {avg}, abaixo do mínimo de {cut}.",
+        )
+    if semantic is None:
+        return Decision(
+            passes=False,
+            reason_code="semantic_missing",
+            reason=(
+                f"A média passou do mínimo ({avg}), mas a conferência das partes do "
+                "pedido não voltou. Avalie de novo."
+            ),
+        )
+    coh = _fmt(semantic.consistency_score)
+    if semantic.consistency_score < threshold:
+        return Decision(
+            passes=False,
+            reason_code="coherence_below",
+            reason=(
+                f"A média passou ({avg}), mas as partes do pedido não combinam: "
+                f"coerência {coh}, abaixo de {cut}."
+            ),
+        )
+    if semantic.backout_adherence == BackoutAdherence.NAO_ADERENTE:
+        return Decision(
+            passes=False,
+            reason_code="backout_not_adherent",
+            reason=(
+                f"A média passou ({avg}), mas o plano de retorno não desfaz o que as tarefas fazem."
+            ),
+        )
+    return Decision(
+        passes=True,
+        reason_code="passes",
+        reason=f"Média {avg} e coerência {coh}, as duas a partir de {cut}.",
+    )
+
+
+_CACHE_MAX = 5000
 
 
 class EvaluationCache:
@@ -120,6 +255,9 @@ class EvaluationCache:
     def put_field(self, key: tuple[str, ...], value: _FieldOut) -> None:
         """Store the verdict for this field content."""
         with self._lock:
+            # Keyed per visitor now: keep it bounded, oldest first out.
+            if len(self._fields) >= _CACHE_MAX:
+                self._fields.pop(next(iter(self._fields)))
             self._fields[key] = value
 
     def get_semantic(self, key: tuple[str, ...]) -> _SemanticOut | None:
@@ -130,6 +268,9 @@ class EvaluationCache:
     def put_semantic(self, key: tuple[str, ...], value: _SemanticOut) -> None:
         """Store the semantic analysis for these contents."""
         with self._lock:
+            # Keyed per visitor now: keep it bounded, oldest first out.
+            if len(self._semantic) >= _CACHE_MAX:
+                self._semantic.pop(next(iter(self._semantic)))
             self._semantic[key] = value
 
 
@@ -160,12 +301,13 @@ def _semantic_prompt(change: Change, values: dict[str, str], backout: str) -> st
         f"Plano de retorno:\n{backout}\n\n"
         f"TAREFAS CADASTRADAS:\n{tasks or '(nenhuma)'}\n\n"
         'Responda com JSON: {"consistency_score": <0 a 10>, '
-        '"problems": ["<cada incoerência encontrada, uma frase>"], '
+        '"problems": ["<cada contradição real entre as partes, uma frase; '
+        'sugestões não entram aqui>"], '
         '"reasoning": "<duas ou três frases com o raciocínio>", '
-        '"guidance": "<o que o autor deve ajustar>", '
+        '"guidance": "<o que o autor deve ajustar, incluindo sugestões de melhoria>", '
         '"backout_adherence": "ADERENTE" | "PARCIAL" | "NAO_ADERENTE", '
-        '"backout_adherence_percent": <0 a 100, quanto do plano de retorno está '
-        "coberto pelas tarefas cadastradas>}"
+        '"backout_adherence_percent": <0 a 100, quanto do que as tarefas cadastradas '
+        "fazem o plano de retorno desfaz>}"
     )
 
 
@@ -175,12 +317,14 @@ _FIELD_MAX_TOKENS = 1000
 _SEMANTIC_MAX_TOKENS = 2000
 
 
-def _judge_field(llm: JudgeLLM, prompt: str) -> _FieldOut:
+def _judge_field(llm: JudgeLLM, prompt: str, count: Callable[[], None]) -> _FieldOut:
+    count()
     raw = llm.complete(_FIELD_SYSTEM, prompt, temperature=0.0, max_tokens=_FIELD_MAX_TOKENS)
     try:
         return _FieldOut.model_validate(extract_json(raw))
     except (ValueError, ValidationError):
         # One structural repair attempt, then an explicit "could not judge".
+        count()
         raw = llm.complete(
             _FIELD_SYSTEM,
             prompt + "\n\nResponda SOMENTE o JSON.",
@@ -190,11 +334,13 @@ def _judge_field(llm: JudgeLLM, prompt: str) -> _FieldOut:
         return _FieldOut.model_validate(extract_json(raw))
 
 
-def _judge_semantic(llm: JudgeLLM, prompt: str) -> _SemanticOut:
+def _judge_semantic(llm: JudgeLLM, prompt: str, count: Callable[[], None]) -> _SemanticOut:
+    count()
     raw = llm.complete(_SEMANTIC_SYSTEM, prompt, temperature=0.0, max_tokens=_SEMANTIC_MAX_TOKENS)
     try:
         return _SemanticOut.model_validate(extract_json(raw))
     except (ValueError, ValidationError):
+        count()
         raw = llm.complete(
             _SEMANTIC_SYSTEM,
             prompt + "\n\nResponda SOMENTE o JSON, com textos curtos.",
@@ -234,6 +380,7 @@ class ChangeEvaluator:
         *,
         overrides: dict[str, str] | None = None,
         backout_plan: str | None = None,
+        client_id: str = "",
     ) -> EvaluationResponse:
         """Evaluate ``change`` (with any edited field values) end to end."""
         started = self._clock()
@@ -258,11 +405,14 @@ class ChangeEvaluator:
         def score(rubric_field: RubricField) -> FieldScore:
             text = values[rubric_field.key]
             digest = content_hash(text)
-            key = (rubric.version, self._model, change.number, rubric_field.key, digest)
+            # Per visitor: a fresh visitor never sees someone else's reading as
+            # "reaproveitado"; the same visitor re-evaluating keeps the lock.
+            key = (client_id, rubric.version, self._model, change.number, rubric_field.key, digest)
             cached = self._cache.get_field(key)
             if cached is None:
-                self._count()
-                verdict = _judge_field(self._llm, _field_prompt(change, rubric_field, text))
+                verdict = _judge_field(
+                    self._llm, _field_prompt(change, rubric_field, text), self._count
+                )
                 self._cache.put_field(key, verdict)
             else:
                 verdict = cached
@@ -287,13 +437,25 @@ class ChangeEvaluator:
         semantic: SemanticAnalysis | None = None
         skipped: str | None = None
         if overall >= rubric.eligibility_threshold:
-            semantic = self._semantic(change, values, backout, scores)
+            semantic = self._semantic(change, values, backout, scores, client_id)
+            if semantic is None:
+                skipped = (
+                    "A IA não respondeu à conferência de coerência no formato esperado. "
+                    "Avalie de novo."
+                )
         else:
+            lowest = min(scores, key=lambda s: s.score)
+            vague = lowest.score < 5
             skipped = (
                 # Two places, like the overall itself: 7.96 must not read "8.0 abaixo de 8.0".
-                f"Nota {overall:.2f} abaixo de {rubric.eligibility_threshold:.1f}: o problema "
-                "ainda é campo vazio ou vago, e procurar contradições entre as partes do "
-                "pedido não ajuda o autor agora."
+                f"Nota {overall:.2f} abaixo de {rubric.eligibility_threshold:.1f}: "
+                + (
+                    "ainda há campo vazio ou vago, a começar por "
+                    if vague
+                    else "falta pouco; o campo que mais puxa a nota para baixo é "
+                )
+                + f"{lowest.label} ({lowest.score:.1f}). Procurar contradições entre as "
+                "partes do pedido não ajuda o autor agora."
             )
         return base.model_copy(
             update={
@@ -301,15 +463,22 @@ class ChangeEvaluator:
                 "overall": overall,
                 "semantic": semantic,
                 "semantic_skipped_reason": skipped,
+                "decision": decide(overall, rubric.eligibility_threshold, semantic),
                 "model_calls": self._calls,
                 "duration_ms": self._elapsed(started),
             }
         )
 
     def _semantic(
-        self, change: Change, values: dict[str, str], backout: str, scores: list[FieldScore]
-    ) -> SemanticAnalysis:
+        self,
+        change: Change,
+        values: dict[str, str],
+        backout: str,
+        scores: list[FieldScore],
+        client_id: str = "",
+    ) -> SemanticAnalysis | None:
         key = (
+            client_id,
             self._rubric.version,
             self._model,
             change.number,
@@ -319,9 +488,12 @@ class ChangeEvaluator:
         )
         cached = self._cache.get_semantic(key)
         if cached is None:
-            self._count()
             prompt = _semantic_prompt(change, values, backout)
-            verdict = _judge_semantic(self._llm, prompt)
+            try:
+                verdict = _judge_semantic(self._llm, prompt, self._count).settled()
+            except (ValueError, ValidationError):
+                # Only this part degrades; the field grades still stand.
+                return None
             self._cache.put_semantic(key, verdict)
         else:
             verdict = cached

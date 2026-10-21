@@ -883,7 +883,12 @@ a {
   line-height: 1.1;
   text-align: center;
 }
-.tab-item:has(.tab-label.two) {
-  gap: 1px;
-  padding-block: 2px;
+/* Every tab starts at the same height: icons in one row, and the first line
+   of every name on one baseline (the two-line name just runs one line lower). */
+.tabbar .tab-item {
+  justify-content: flex-start;
+  padding-top: 7px;
+}
+.tabbar .tab-label {
+  line-height: 1.15;
 }

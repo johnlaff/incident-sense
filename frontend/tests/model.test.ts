@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildQuery } from "@/lib/api";
 import {
+  meaningfulTags,
   buildSuggestionMarkdown,
   clusterColor,
   dsState,
@@ -228,5 +229,58 @@ describe("buildQuery", () => {
     expect(qs).toContain("state=open");
     expect(qs).toContain("service=PIX-Core");
     expect(qs).toContain("offset=50");
+  });
+});
+
+describe("meaningfulTags", () => {
+  it("hides the dataset's bookkeeping tags and keeps the rest in order", () => {
+    expect(meaningfulTags(["pix", "demo", "procedente", "timeout", "Ruido"])).toEqual([
+      "pix",
+      "timeout",
+    ]);
+  });
+});
+
+describe("sources are only the cited ones (auditoria P1-11)", () => {
+  it("does not invent a Fundamentado line when the answer cites nothing valid", async () => {
+    const { suggestFixture } = await import("./suggest-fixture");
+    const r = mapSuggest(
+      suggestFixture({
+        suggestion: "Reinicie o serviço.",
+        citations: { cited: [], flagged: [{ id: "INC0099999", action: "removida" }] },
+      }),
+    );
+    expect(r.suggestion).not.toContain("Fundamentado");
+    expect(r.cited).toEqual([]);
+  });
+  it("lists the cited records for the panel footer", async () => {
+    const { suggestFixture } = await import("./suggest-fixture");
+    expect(mapSuggest(suggestFixture()).cited).toEqual(["INC0051986", "PRB0004102"]);
+  });
+});
+
+describe("relTime (auditoria P2-12)", () => {
+  it("says agora for a note published this minute", async () => {
+    const { relTime } = await import("@/lib/model");
+    expect(relTime(new Date().toISOString())).toBe("agora");
+    expect(relTime(new Date(Date.now() - 5 * 60000).toISOString())).toBe("há 5min");
+  });
+});
+
+describe("answer-key tags stay off the screen (E2E P1-9)", () => {
+  it("drops procedente, borderline and friends from a record", () => {
+    const row = mapSummary({
+      number: "INC0053082",
+      short_description: "x",
+      cmdb_ci: "PIX-Core",
+      assignment_group: "g",
+      state: "New",
+      priority: 2,
+      opened_at: "2026-06-01T10:00:00Z",
+      is_resolved: false,
+      category: "Pagamentos",
+      tags: ["pix", "procedente", "borderline", "demo", "ruido", "dados-incompletos"],
+    } as IncidentSummary);
+    expect(row.tags).toEqual(["pix"]);
   });
 });

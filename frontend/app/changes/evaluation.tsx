@@ -18,6 +18,7 @@ import {
 
 import {
   DEFAULT_TIMING,
+  avgDelta,
   fmt,
   fmtDelta,
   fmtWeight,
@@ -26,8 +27,11 @@ import {
   overallOf,
   parseTime,
   reached,
+  decisionOf,
   verdictOf,
+  type GateState,
   type Step,
+  runningLine,
   type StepId,
   type WeightedAverage,
 } from "./sequence";
@@ -185,7 +189,7 @@ function ScoreChip({
   const cls = big ? "chg-overall-num" : "chg-score";
   return (
     <span
-      className={`${cls} ${finished ? (neutral ? "neutral" : band(score)) : "counting"}`}
+      className={`${cls} ${finished ? (neutral ? "neutral" : band(score, places)) : "counting"}`}
       data-on={run}
       role="img"
       aria-label={label}
@@ -225,7 +229,13 @@ export function FieldScoreChip({
   );
 }
 
-export function DeltaChip({ delta }: { delta: number | null }) {
+export function DeltaChip({
+  delta,
+  places = 1,
+}: {
+  delta: number | null;
+  places?: number;
+}) {
   if (delta === null) return null;
   const kind = delta > 0 ? "up" : delta < 0 ? "down" : "same";
   return (
@@ -234,10 +244,10 @@ export function DeltaChip({ delta }: { delta: number | null }) {
       aria-label={
         delta === 0
           ? "Nota igual à da avaliação anterior"
-          : `${delta > 0 ? "Subiu" : "Caiu"} ${fmt(Math.abs(delta))} desde a avaliação anterior`
+          : `${delta > 0 ? "Subiu" : "Caiu"} ${fmt(Math.abs(delta), places)} desde a avaliação anterior`
       }
     >
-      <span aria-hidden="true">{fmtDelta(delta)}</span>
+      <span aria-hidden="true">{fmtDelta(delta, places)}</span>
     </span>
   );
 }
@@ -251,10 +261,7 @@ export function RunningNote({ seconds, fields }: { seconds: number; fields: numb
   return (
     <p className="chg-running" role="status">
       <Icons.loader className="spin" />
-      <span>
-        A IA está lendo os {fields} campos em paralelo, no servidor. As notas chegam todas
-        juntas.
-      </span>
+      <span>{runningLine(fields)}</span>
       <span className="chg-elapsed" aria-label={`${seconds} segundos`}>
         {seconds} s
       </span>
@@ -304,7 +311,7 @@ export function PlaybackBar({
           </p>
           <button className="btn btn-ghost btn-sm" onClick={playback.replay}>
             <Icons.replay />
-            Rever passo a passo
+            Rever os passos
           </button>
         </>
       )}
@@ -333,6 +340,7 @@ export function Ledger({
   threshold,
   caption,
   why,
+  pending = null,
 }: {
   rows: LedgerRow[];
   avg: WeightedAverage | null;
@@ -348,6 +356,8 @@ export function Ledger({
    * the rows read worst first, each with a bar against the 8,0 line.
    */
   why?: Map<FieldKey, string> | null;
+  /** Fields edited since this result: their score is the old text's. */
+  pending?: Set<FieldKey> | null;
 }) {
   const byKey = new Map(avg?.segments.map((s) => [s.key, s]) ?? []);
   const totalWeight = rows.reduce((sum, r) => sum + r.weight, 0);
@@ -363,6 +373,12 @@ export function Ledger({
         {detail ? "Nota de cada campo, da pior para a melhor" : "Nota de cada campo"}
       </h3>
       {caption && <p className="chg-caption">{caption}</p>}
+      {!caption && (
+        <p className="chg-caption">
+          <b>Peso</b> é quanto o campo conta na média. Os pesos somam{" "}
+          <span className="num">{fmtWeight(totalWeight)}</span>.
+        </p>
+      )}
       <ol>
         {ordered.map((r, i) => {
           const seg = byKey.get(r.key);
@@ -370,10 +386,11 @@ export function Ledger({
           const below =
             (flagBelow || detail) && seg !== undefined && seg.score < threshold;
           const line = detail ? why?.get(r.key) : undefined;
+          const edited = pending?.has(r.key) ?? false;
           return (
             <li
               key={r.key}
-              className={`chg-led-row${below ? " flag" : ""}`}
+              className={`chg-led-row${below ? " flag" : ""}${edited ? " edited" : ""}`}
               data-on={run && seg !== undefined}
               style={{ "--i": i } as Vars}
             >
@@ -391,6 +408,7 @@ export function Ledger({
                       </span>
                     )}
                     {below && <span className="chg-below">abaixo de 8,0</span>}
+                    {edited && <span className="chg-edited">editado: reavalie</span>}
                   </span>
                   {detail && seg && (
                     <span
@@ -515,7 +533,7 @@ export function Average({
         {previousOverall !== null && onMedia && (
           <span className="chg-avg-before">
             antes {fmt(previousOverall, 2)}
-            <DeltaChip delta={Math.round((overall - previousOverall) * 10) / 10} />
+            <DeltaChip delta={avgDelta(overall, previousOverall)} places={2} />
           </span>
         )}
       </div>
@@ -607,27 +625,39 @@ export function Average({
         </p>
       </details>
 
-      {onGate && (
-        <p className={`chg-gate ${gate}`}>
-          {passed ? <LockOpen /> : <LockClosed />}
-          <span>
-            {passed ? (
-              <>
-                <b>Passou do mínimo de {cut}.</b> Por isso a IA também confere a coerência
-                entre os campos.
-              </>
-            ) : (
-              <>
-                <b>Abaixo do mínimo: a conferência de coerência não roda.</b>{" "}
-                {roundsToCut
-                  ? `${fmt(overall, 2)} ainda é menos que ${cut}.`
-                  : `Faltam ${fmt(result.threshold - overall, 2)} pontos para ${cut}.`}{" "}
-                Melhore os campos marcados.
-              </>
-            )}
-          </span>
-        </p>
-      )}
+      {onGate &&
+        (aula ? (
+          <p className={`chg-gate ${gate}`}>
+            {passed ? <LockOpen /> : <LockClosed />}
+            <span>
+              {passed ? (
+                <>
+                  <b>Pergunta 1: sim, chegou a {cut}.</b> Agora a IA confere se as partes
+                  do pedido combinam.
+                </>
+              ) : (
+                <>
+                  <b>Pergunta 1: não, ficou abaixo de {cut}.</b>{" "}
+                  {roundsToCut
+                    ? `${fmt(overall, 2)} ainda é menos que ${cut}.`
+                    : `Faltam ${fmt(result.threshold - overall, 2)} pontos para ${cut}.`}{" "}
+                  Melhore os campos de nota mais baixa.
+                </>
+              )}
+            </span>
+          </p>
+        ) : (
+          <p className="chg-gate neutral">
+            {passed ? <LockOpen /> : <LockClosed />}
+            <span>
+              {passed
+                ? "Daqui a IA passa para a pergunta 2: as partes do pedido combinam?"
+                : roundsToCut
+                  ? `${fmt(overall, 2)} ainda é menos que ${cut}. Os campos de nota mais baixa são os que mais ajudam a subir.`
+                  : `Faltam ${fmt(result.threshold - overall, 2)} pontos para ${cut}. Os campos de nota mais baixa são os que mais ajudam a subir.`}
+            </span>
+          </p>
+        ))}
     </div>
   );
 }
@@ -660,19 +690,23 @@ export function Coherence({
   motion: Motion;
 }) {
   const s = result.semantic;
-  const passed = gatePassed(result);
+  const passed = decisionOf(result)?.average.state === "pass";
   const onScores = reached(steps, index, "coerencia");
   const onProblems = reached(steps, index, "problemas");
 
   if (!passed || !s) {
     return (
-      <section className="card chg-semantic locked" aria-labelledby="sem-h">
+      <section
+        id="coerencia"
+        className="card chg-semantic locked"
+        aria-labelledby="sem-h"
+      >
         <header className="chg-sem-head">
           <LockClosed />
           <h2 id="sem-h">Coerência entre os campos</h2>
         </header>
         <p className="chg-sem-stop">
-          Abaixo do mínimo: a conferência de coerência não roda.
+          Não conferida: ela só roda quando a média chega ao mínimo.
         </p>
         {result.semantic_skipped_reason && (
           <p className="chg-muted">{plainReason(result.semantic_skipped_reason)}</p>
@@ -681,10 +715,11 @@ export function Coherence({
     );
   }
 
-  const finalOk = verdictOf(result)?.ok ?? false;
+  const combine = decisionOf(result)?.coherence.state === "pass";
   return (
     <section
-      className={`card chg-semantic open${finalOk ? "" : " blocked"}`}
+      id="coerencia"
+      className={`card chg-semantic open${combine ? "" : " blocked"}`}
       aria-labelledby="sem-h"
     >
       <header className="chg-sem-head">
@@ -722,16 +757,18 @@ export function Coherence({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={s.backout_adherence_percent}
-            aria-label="Aderência do plano de retorno às tarefas"
+            aria-label="Quanto do que as tarefas fazem o plano de retorno desfaz"
             style={{ "--pct": s.backout_adherence_percent } as Vars}
           >
             <span className="fill" />
           </span>
-          {/* A second, narrower fact than the 0 to 10 coherence: how much of
-              the backout plan shows up among the registered tasks. */}
+          {/* A second, narrower fact than the 0 to 10 coherence, the same one
+              the prompt asks for: how much of what the registered tasks do the
+              back-out plan undoes. */}
           <span>
-            <b className="mono">{s.backout_adherence_percent}%</b> do plano de retorno
-            aparece nas tarefas cadastradas
+            O plano de retorno desfaz{" "}
+            <b className="num">{s.backout_adherence_percent}%</b> do que as tarefas
+            cadastradas fazem
           </span>
         </div>
       </div>
@@ -741,11 +778,13 @@ export function Coherence({
         data-on={onProblems}
         style={{ "--n": Math.max(1, s.problems.length) } as Vars}
       >
-        <h3>Contradições</h3>
+        <h3>
+          {combine ? "Pontos de atenção (não impedem)" : "Onde as partes não combinam"}
+        </h3>
         {s.problems.length > 0 ? (
-          <ol className="chg-problems">
+          <ol className={`chg-problems${combine ? " soft" : ""}`}>
             {s.problems.map((p, i) => (
-              <li key={p} style={{ "--i": i } as Vars}>
+              <li key={`${i}-${p}`} style={{ "--i": i } as Vars}>
                 <span className="n" aria-hidden="true">
                   {i + 1}
                 </span>
@@ -753,15 +792,21 @@ export function Coherence({
               </li>
             ))}
           </ol>
-        ) : (
+        ) : combine ? (
           <p className="chg-none">
             <Icons.checkCircle />
             Nada se contradiz entre as partes do pedido.
           </p>
+        ) : (
+          <p>A IA não listou pontos, mas a nota de coerência ficou abaixo do mínimo.</p>
         )}
-        {s.problems.length > 0 && change ? <Excerpts change={change} /> : null}
-        <h3>Raciocínio</h3>
-        <p>{s.reasoning}</p>
+        {change && aboutBackout(s) ? <Excerpts change={change} /> : null}
+        {s.reasoning.trim() ? (
+          <>
+            <h3>Raciocínio</h3>
+            <p>{s.reasoning}</p>
+          </>
+        ) : null}
         {s.guidance.trim() ? (
           <>
             <h3>Orientação ao autor</h3>
@@ -774,49 +819,166 @@ export function Coherence({
 }
 
 /**
- * The last line of the reading: may this change go on to a person's approval?
- * The rubric only has the weighted-average cut; past it, any inconsistency the
- * AI points out holds the change back until the author fixes it.
+ * The two texts (tasks and back-out plan) help only when the reading is
+ * about them: the back-out plan falls short, or a point names it.
  */
-export function Verdict({ result }: { result: Evaluation }) {
-  const v = verdictOf(result);
-  if (!v) return null;
+function aboutBackout(s: NonNullable<Evaluation["semantic"]>): boolean {
   return (
-    <p className={`card chg-final ${v.ok ? "ok" : "no"}`} role="status">
-      {v.ok ? <Icons.checkCircle /> : <Icons.alert />}
-      <span>
-        <b>{v.title}.</b> {v.reason}
+    s.backout_adherence !== "ADERENTE" ||
+    s.problems.some((p) =>
+      /retorno|revers|reverte|desfa|rollback|backout|tarefa/i.test(p),
+    )
+  );
+}
+
+/** Where "Ver onde" takes the reader: the worst fields, or the coherence card. */
+const FAILING_TARGET = { average: ".chg-ledger", coherence: "#coerencia" } as const;
+
+function showFailing(where: keyof typeof FAILING_TARGET) {
+  const el = document.querySelector<HTMLElement>(FAILING_TARGET[where]);
+  if (!el) return;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  revealSubject(el, reduced);
+  el.setAttribute("tabindex", "-1");
+  el.focus({ preventScroll: true });
+}
+
+function GateRow({
+  n,
+  question,
+  value,
+  state,
+  note,
+  where,
+}: {
+  n: 1 | 2;
+  question: string;
+  value: string | null;
+  state: GateState;
+  note?: string;
+  where: keyof typeof FAILING_TARGET;
+}) {
+  const said = state === "pass" ? "sim" : state === "fail" ? "não" : "não conferido";
+  return (
+    <li className={`chg-q ${state}`}>
+      <span className="chg-q-text">
+        <span className="num">{n}.</span> {question}
       </span>
-    </p>
+      <span className="chg-q-answer">
+        {value !== null && <b className="num">{value}</b>}
+        {state === "pass" ? (
+          <Icons.checkCircle />
+        ) : state === "fail" ? (
+          <Icons.xCircle />
+        ) : null}
+        <span className={value !== null ? "sr-only" : "chg-q-skip"}>{said}</span>
+      </span>
+      {note && <span className="chg-q-note">{note}</span>}
+      {state === "fail" && (
+        <a
+          className="chg-q-where"
+          href={FAILING_TARGET[where]}
+          onClick={(e) => {
+            e.preventDefault();
+            showFailing(where);
+          }}
+        >
+          Ver onde
+        </a>
+      )}
+    </li>
   );
 }
 
 /**
- * The same answer, first thing in the reading (outside modo aula): the
- * verdict and its reason come before any number.
+ * The answer of the reading, as the rule itself: two questions, then the
+ * verdict. Outside modo aula it opens the result; in modo aula it closes it.
+ * The failing question is the only thing on the page drawn in red.
  */
-export function VerdictBanner({ result }: { result: Evaluation }) {
+export function Decision({
+  result,
+  closing = false,
+}: {
+  result: Evaluation;
+  /** Modo aula: the last block of the lesson, after the numbers. */
+  closing?: boolean;
+}) {
+  const d = decisionOf(result);
   const v = verdictOf(result);
-  if (!v) return null;
+  if (!d || !v) return null;
+  const cut = fmt(d.cut);
+  const c = d.coherence;
   return (
-    <div className={`chg-banner ${v.ok ? "ok" : "no"}`} role="status">
-      <p className="chg-banner-title">
-        {v.ok ? <Icons.checkCircle /> : <Icons.alert />}
-        {v.title}
-      </p>
-      <p className="chg-banner-reason">{v.reason}</p>
+    <section
+      className={`chg-banner ${v.ok ? "ok" : "no"}${closing ? " closing" : ""}`}
+      role="status"
+      aria-labelledby="decide-h"
+    >
+      <h2 id="decide-h" className="chg-decide-h">
+        Duas perguntas decidem
+      </h2>
+      <ol className="chg-gates">
+        <GateRow
+          n={1}
+          question={`A média passa de ${cut}?`}
+          value={fmt(d.average.value, 2)}
+          state={d.average.state}
+          where="average"
+        />
+        <GateRow
+          n={2}
+          question="As partes do pedido combinam?"
+          value={c.value === null ? null : fmt(c.value)}
+          state={c.state}
+          note={
+            c.state === "skipped"
+              ? d.average.state === "fail"
+                ? "Só é perguntado quando a 1 passa."
+                : "A conferência não rodou."
+              : c.adherence === "NAO_ADERENTE"
+                ? "O plano de retorno não desfaz o que a implementação muda."
+                : `Coerência de 0 a 10, mesmo corte de ${cut}.`
+          }
+          where="coherence"
+        />
+      </ol>
+      <div className="chg-outcome">
+        <svg
+          className="chg-outcome-arrow"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+          aria-hidden="true"
+        >
+          <path
+            d="M8 2v11M3.5 8.5 8 13l4.5-4.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <div>
+          <p className="chg-banner-title">
+            {v.ok ? <Icons.checkCircle /> : null}
+            {v.title}
+          </p>
+          <p className="chg-banner-reason">{v.reason}</p>
+        </div>
+      </div>
       <p className="chg-banner-human">
         <Icons.human />A IA recomenda, quem decide é uma pessoa.
       </p>
-    </div>
+    </section>
   );
 }
 
 /** What the coherence check compares, side by side on a wide screen. */
 function Excerpts({ change }: { change: Change }) {
   return (
-    <div className="chg-excerpts">
-      <h3>Os dois textos que a IA comparou</h3>
+    <details className="chg-excerpts">
+      <summary>Os dois textos que a IA comparou</summary>
       <div className="chg-excerpts-grid">
         <div>
           <p className="chg-excerpt-label">O que as tarefas fazem</p>
@@ -831,7 +993,7 @@ function Excerpts({ change }: { change: Change }) {
           <p className="chg-excerpt-text">{change.backout_plan}</p>
         </div>
       </div>
-    </div>
+    </details>
   );
 }
 
@@ -887,8 +1049,8 @@ const STEP_TARGET: Record<StepId, string> = {
   media: ".chg-scale",
   portao: ".chg-gate",
   coerencia: ".chg-sem-scores",
-  // The list of inconsistencies ends in the verdict line: show both.
-  problemas: ".chg-final",
+  // The list of points ends in the two questions and the verdict: show both.
+  problemas: ".chg-banner",
 };
 
 export function useFollowStep(
@@ -925,7 +1087,7 @@ export function useFollowStep(
     // Outside modo aula the page never scrolls on its own while the reader reads.
     if (!aula || stopped || id === null) return;
     // A closed gate ends the reading: its verdict is the subject.
-    const sel = id === "portao" && gateClosed ? ".chg-final" : STEP_TARGET[id];
+    const sel = id === "portao" && gateClosed ? ".chg-banner" : STEP_TARGET[id];
     // Wait one frame so a block that just mounted has its size.
     let cancel = () => {};
     const raf = requestAnimationFrame(() => {

@@ -44,7 +44,6 @@ export function GroupList({
         <h2>Grupos, do maior para o menor</h2>
         <span>casos</span>
       </div>
-      <p className="rx-list-note">Cada cor é a do grupo no mapa.</p>
       <ul>
         {data.groups.map((g, k) => {
           const m = matched.get(g.id) ?? g.size;
@@ -119,6 +118,7 @@ export function GroupDetail({
   group,
   filter,
   problems,
+  allProblems = [],
   promoted,
   onPromote,
   onOpenIncident,
@@ -128,6 +128,8 @@ export function GroupDetail({
   group: RecGroup | "outlier";
   filter: RecFilter;
   problems: ProblemSummary[];
+  /** Every Problem, to say which isolated case is already linked to one. */
+  allProblems?: ProblemSummary[];
   promoted: boolean;
   onPromote: () => void;
   onOpenIncident: (id: string) => void;
@@ -141,6 +143,10 @@ export function GroupDetail({
     .filter((inc) => matchesFilter(inc, filter));
   const verdict = isGroup ? verdictOf(group) : null;
   const maxSvc = isGroup ? Math.max(1, ...group.services.map((s) => s.count)) : 1;
+  const linkedTo = new Map<string, string>();
+  if (!isGroup)
+    for (const p of allProblems)
+      for (const n of p.linked_incidents) linkedTo.set(n, p.number);
 
   return (
     <section
@@ -203,6 +209,7 @@ export function GroupDetail({
             </p>
             <PromoteAction
               verdict={verdict}
+              groupSize={group.size}
               problems={problems}
               promoted={promoted}
               onPromote={onPromote}
@@ -211,8 +218,9 @@ export function GroupDetail({
         </>
       ) : (
         <p className="rx-reason">
-          Caso isolado é um incidente que não se parece o bastante com nenhum outro. Não
-          vira problema: não se repete o bastante para indicar um padrão.
+          Caso isolado é um incidente que não se parece o bastante com nenhum outro.
+          Sozinho ele não aponta um padrão, mas uma pessoa pode tê-lo ligado a um
+          Problema: esses aparecem marcados abaixo.
         </p>
       )}
 
@@ -227,7 +235,14 @@ export function GroupDetail({
                 onClick={() => onOpenIncident(inc.id)}
               >
                 <RecordTag number={inc.id} size="sm" />
-                <span className="rx-inc-d">{inc.short}</span>
+                <span className="rx-inc-d">
+                  {inc.short}
+                  {!isGroup && linkedTo.get(inc.id) ? (
+                    <span className="rx-inc-prb">
+                      Já ligado ao <span className="mono">{linkedTo.get(inc.id)}</span>
+                    </span>
+                  ) : null}
+                </span>
               </button>
             </li>
           ))}
@@ -255,11 +270,14 @@ export function GroupDetail({
  */
 export function PromoteAction({
   verdict,
+  groupSize,
   problems,
   promoted,
   onPromote,
 }: {
   verdict: ReturnType<typeof verdictOf> | null;
+  /** Incidents in the group, to set beside each Problem's own count. */
+  groupSize?: number;
   problems: ProblemSummary[];
   promoted: boolean;
   onPromote: () => void;
@@ -282,12 +300,24 @@ export function PromoteAction({
                 transitionTypes={["nav-forward"]}
               >
                 <RecordTag number={p.number} size="sm" />
-                <span className="rec-prb-title">{keepWhole(p.short_description)}</span>
+                <span className="rec-prb-title">
+                  {keepWhole(p.short_description)}
+                  <span className="rec-prb-n">
+                    {p.linked_incidents.length} incidentes ligados
+                  </span>
+                </span>
                 <Icons.chevronRight className="prb-go" />
               </Link>
             </li>
           ))}
         </ul>
+        {groupSize != null &&
+        problems.some((p) => p.linked_incidents.length !== groupSize) ? (
+          <p className="rec-prb-note">
+            O grupo junta os {groupSize} casos que a IA achou parecidos; o Problema lista
+            os que uma pessoa ligou a ele. Por isso os números podem ser diferentes.
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -295,7 +325,7 @@ export function PromoteAction({
     return (
       <p className="rx-done" role="status">
         <Icons.checkCircle size={16} />
-        Problema aberto para este grupo. Na demonstração, nada é gravado.
+        Problema aberto para este grupo. É só uma simulação: nenhum Problema é criado.
       </p>
     );
   }

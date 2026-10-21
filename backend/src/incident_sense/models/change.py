@@ -152,6 +152,23 @@ class SemanticAnalysis(BaseModel):
     reused: bool = False
 
 
+class Decision(BaseModel):
+    """The one answer every view shows: may this Change go on to approval?
+
+    Pode seguir = weighted average >= threshold AND consistency score (one
+    decimal) >= threshold AND the backout plan is not NAO_ADERENTE. The list of
+    points the AI wrote never decides by itself.
+    """
+
+    passes: bool
+    reason_code: str = Field(
+        description=(
+            "passes | average_below | coherence_below | backout_not_adherent | semantic_missing"
+        )
+    )
+    reason: str
+
+
 class ScopeVerdict(BaseModel):
     """Whether the Change is evaluated at all. Absence is not a low score."""
 
@@ -170,6 +187,9 @@ class EvaluationResponse(BaseModel):
     threshold: float
     semantic: SemanticAnalysis | None = None
     semantic_skipped_reason: str | None = None
+    decision: Decision | None = Field(
+        default=None, description="Null only when the Change is out of scope."
+    )
     model: str
     model_calls: int = Field(description="How many model calls this request made.")
     duration_ms: int

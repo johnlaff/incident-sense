@@ -10,7 +10,7 @@ import {
   type CSSProperties,
 } from "react";
 
-import { useAulaLesson, type AulaLessonStep } from "@/components/aula";
+import { useAulaLesson, useAulaStart, type AulaLessonStep } from "@/components/aula";
 import { useShell } from "@/components/app-shell";
 import { TechDetails } from "@/components/concepts";
 import { Icons } from "@/components/icons";
@@ -85,7 +85,10 @@ export default function RecurrencesPage() {
           ? `, todos no ${keepWhole(top.name)}`
           : `, ${Math.round(featured.topShare * 100)}% no ${keepWhole(top.name)}`
         : "";
-      last = `${featured.label}: ${featured.size} casos${where}. Vale abrir um problema.`;
+      // Until the Problems arrive, say only what the map knows.
+      last = problemList
+        ? `${featured.label}: ${featured.size} casos${where}. Vale abrir um problema.`
+        : `${featured.label}: ${featured.size} casos${where}.`;
       if (featuredProblems.length > 0) {
         const n = featuredProblems.length;
         last = `${featured.label}: ${featured.size} casos${where}. Já ${n === 1 ? "virou um problema" : `virou ${n} problemas`}.`;
@@ -110,12 +113,12 @@ export default function RecurrencesPage() {
       {
         title: "Nomear",
         caption:
-          "A IA dá um nome curto a cada grupo. O número diz quantos casos ele tem.",
+          "A IA dá um nome a cada grupo. Os nomes aparecem sob o mapa, com a cor de cada um.",
         durationMs: 900,
       },
       { title: "Problema", caption: last, durationMs: 600 },
     ];
-  }, [data, featured, featuredProblems.length]);
+  }, [data, featured, featuredProblems.length, problemList]);
 
   const lesson = useAulaLesson({
     id: "recorrencias",
@@ -190,6 +193,8 @@ export default function RecurrencesPage() {
     lesson.replay();
   }
 
+  useAulaStart("recorrencias", data ? replay : null);
+
   const mask = useMemo(() => {
     const m = new Uint8Array(data?.incidents.length ?? 0);
     data?.incidents.forEach((inc, i) => {
@@ -220,7 +225,7 @@ export default function RecurrencesPage() {
     return (
       <div className="card">
         <LoadError
-          title="Não foi possível carregar as recorrências"
+          title="Não foi possível carregar as repetições"
           error={clusters.error}
           onRetry={clusters.retry}
         />
@@ -248,7 +253,7 @@ export default function RecurrencesPage() {
       }
     >
       <div className="page-head">
-        <h1>Falhas que se repetem</h1>
+        <h1>Repetições: falhas que se repetem</h1>
         <span className="count">
           {data
             ? `${data.groups.length} grupos · ${data.incidents.length} incidentes`
@@ -402,6 +407,10 @@ export default function RecurrencesPage() {
               </li>
             ))}
           </ol>
+          <p className="rx-steps-key">
+            <i aria-hidden="true" />
+            Círculo tracejado: etapa feita pela IA
+          </p>
           {/* Nothing reserved when there is nothing to say: no blank gap. */}
           {showCaption || lesson.aula ? (
             <p className="rx-caption" aria-live="polite">
@@ -436,6 +445,7 @@ export default function RecurrencesPage() {
                 group={focusGroup ?? "outlier"}
                 filter={filter}
                 problems={focusGroup ? (problemsByGroup.get(focusGroup.id) ?? []) : []}
+                allProblems={problemList ?? []}
                 promoted={Boolean(promoted[String(focus)])}
                 onPromote={() => setPromoted((m) => ({ ...m, [String(focus)]: true }))}
                 onOpenIncident={openIncident}

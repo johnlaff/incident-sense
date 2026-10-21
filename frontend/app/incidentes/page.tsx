@@ -21,7 +21,7 @@ import {
   type IncidentRow,
   type PCode,
 } from "@/lib/model";
-import { keepWhole } from "@/lib/text";
+import { keepWhole, matchesQuery } from "@/lib/text";
 
 type Tab = "open" | "resolved" | "all";
 type SortKey = "num" | "desc" | "svc" | "state" | "priority" | "when";
@@ -105,11 +105,8 @@ export default function IncidentesPage() {
       if (tab === "resolved" && !x.isResolved) return false;
       if (service && x.service !== service) return false;
       if (priority && x.priority !== priority) return false;
-      if (query) {
-        const q = query.toLowerCase();
-        if (!`${x.number} ${x.short} ${x.service}`.toLowerCase().includes(q))
-          return false;
-      }
+      if (query && !matchesQuery(`${x.number} ${x.short} ${x.service}`, query))
+        return false;
       return true;
     });
     const dir = sortDir === "asc" ? 1 : -1;

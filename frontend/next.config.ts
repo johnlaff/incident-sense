@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   // Hide the on-screen Next.js indicator (the floating logo badge) — this is a
   // product UI, not a dev playground.
   devIndicators: false,
+  // The menu calls the page Repetições: its address answers to that name too.
+  async redirects() {
+    return [{ source: "/repeticoes", destination: "/recorrencias", permanent: false }];
+  },
 };
 
 export default nextConfig;

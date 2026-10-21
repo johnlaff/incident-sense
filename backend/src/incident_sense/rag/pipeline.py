@@ -17,11 +17,12 @@ reasoning is visible instead of hidden behind one answer.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, field_validator
 from qdrant_client import models as qm
 
 from incident_sense.config import Settings
@@ -396,6 +397,15 @@ class _ClassificationOut(BaseModel):
     classification: Classification
     justification: str = ""
 
+    @field_validator("classification", mode="before")
+    @classmethod
+    def _spelling(cls, value: object) -> object:
+        """'Procedente', 'improcedente ' -> the enum's spelling."""
+        if not isinstance(value, str):
+            return value
+        bare = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode()
+        return bare.strip().upper()
+
 
 def classify_with_reason(
     deps: RagDeps, incident: LoadedIncident, has_context: bool
@@ -422,10 +432,14 @@ def classify_with_reason(
         parsed = _ClassificationOut.model_validate(extract_json(raw))
         return parsed.classification, parsed.justification.strip()
     except (ValueError, ValidationError):
-        # On a parse failure, fall back to the retrieval signal: a real match
-        # suggests a real incident; otherwise stay conservative.
-        fallback = Classification.PROCEDENTE if has_context else Classification.IMPROCEDENTE
-        return fallback, "classificação inferida pela recuperação (resposta da IA inválida)"
+        # Never decide "not a failure" on an unreadable reply: that would send a
+        # real outage to self-service. Treat it as a real incident; without
+        # context there is still no suggestion.
+        del has_context
+        return (
+            Classification.PROCEDENTE,
+            "a IA não respondeu no formato esperado; tratado como incidente real",
+        )
 
 
 def classify(
@@ -594,7 +608,12 @@ def _plural(n: int, one: str, many: str) -> str:
 
 
 def run_suggestion(
-    request: SuggestRequest, deps: RagDeps, settings: Settings, *, model: str | None = None
+    request: SuggestRequest,
+    deps: RagDeps,
+    settings: Settings,
+    *,
+    model: str | None = None,
+    client_id: str = "",
 ) -> SuggestResponse:
     """Run the seven steps and assemble the transparent response."""
     steps: list[PipelineStep] = []
@@ -710,6 +729,18 @@ def run_suggestion(
     if generates:
         raw = generate_suggestion(deps, incident, kept_incidents, kept_problems)
         suggestion, citations = validate_citations(raw, context_ids)
+        suggestion = (suggestion or "").strip() or None
+    if generates and suggestion is None:
+        steps.append(
+            _step(
+                "sugerir",
+                6,
+                "Sugestão com fontes",
+                StepStatus.FALLBACK,
+                "A IA não escreveu a sugestão: nada a mostrar nem a publicar.",
+            )
+        )
+    elif generates:
         if citations.flagged:
             removed = sum(1 for f in citations.flagged if f.action == "removida")
             marked = len(citations.flagged) - removed
@@ -746,7 +777,8 @@ def run_suggestion(
         )
 
     # 7. Publication on the incident.
-    publication = _publish(deps, incident, suggestion, context_ids, model)
+    # The note claims only what the answer cites, never the whole context.
+    publication = _publish(deps, incident, suggestion, citations.cited, model, client_id)
     steps.append(
         _step(
             "publicar",
@@ -784,15 +816,23 @@ def _publish(
     suggestion: str | None,
     sources: list[str],
     model: str | None,
+    client_id: str = "",
 ) -> Publication:
     if suggestion is None:
         return Publication(published=False, decision="Nada a publicar: não houve sugestão.")
+    if not sources:
+        return Publication(
+            published=False,
+            decision="Nada publicado: a sugestão não cita nenhum caso do contexto.",
+        )
     if not incident.from_base or incident.number is None or deps.notes is None:
         return Publication(
             published=False,
             decision="Incidente fora da base: a sugestão fica só nesta resposta.",
         )
-    note = deps.notes.publish(incident.number, suggestion, sources=sources, model=model)
+    note = deps.notes.publish(
+        incident.number, suggestion, sources=sources, model=model, client_id=client_id
+    )
     return Publication(
         published=True,
         incident_number=incident.number,

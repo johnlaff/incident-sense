@@ -82,7 +82,7 @@ export const STOPS: Stop[] = [
         title:
           "Ajuste do pool de conexões do PIX-Core com o banco de liquidação (HikariCP de 40 para 80 conexões)",
         status: "Nova · Risco moderado",
-        note: "Bem preenchida: deve passar",
+        note: "Bem preenchida: vamos ver o que a IA diz",
         href: "/changes/CHG0031001?aula=1",
       },
       {

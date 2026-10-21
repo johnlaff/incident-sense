@@ -626,6 +626,8 @@ export interface LabelBox {
   h: number;
   /** True when the full name did not fit anywhere: show the count only. */
   compact: boolean;
+  /** Strict mode found no free spot: the legend under the map names it. */
+  hidden?: boolean;
 }
 
 function overlaps(
@@ -668,6 +670,14 @@ export function placeLabels(
     onDisk?: boolean;
     /** A box no name may cover (the tally pill in the corner). */
     avoid?: { x: number; y: number; w: number; h: number };
+    /**
+     * Never cover points: not its own group, not another one. A name with no
+     * free spot is hidden instead of shrunk onto the group.
+     */
+    strict?: boolean;
+    /** Loose points (isolated cases) a strict name must also stay clear of. */
+    points?: { x: number; y: number }[];
+    pointR?: number;
   } = {},
 ): LabelBox[] {
   const placed: LabelBox[] = [];
@@ -701,7 +711,7 @@ export function placeLabels(
       { x: d.cx - s.w / 2, y: d.cy + d.r * 0.62 },
     ];
     // Name on its own group reads best; the focused one moves off its points.
-    if (opts.onDisk && opts.full !== d.id) {
+    if (opts.onDisk && !opts.strict && opts.full !== d.id) {
       // Slid inward when the group touches the edge of the map.
       cands.unshift({
         x: Math.min(w - 4 - s.w, Math.max(4, d.cx - s.w / 2)),
@@ -736,10 +746,30 @@ export function placeLabels(
       if (box.x < 4 || box.y < 4 || box.x + box.w > w - 4 || box.y + box.h > h - 4)
         continue;
       if (opts.avoid && overlaps(opts.avoid, box)) continue;
-      if (placed.some((p) => overlaps(p, box))) continue;
+      if (placed.some((p) => !p.hidden && overlaps(p, box))) continue;
       if (others.some((o) => hitsDisk(box, o, 0.95))) continue;
+      if (
+        opts.strict &&
+        (hitsDisk(box, d, 1) || others.some((o) => hitsDisk(box, o, 1.05)))
+      )
+        continue;
+      if (opts.strict && opts.points) {
+        const m = (opts.pointR ?? 3) + 2;
+        const onPoint = opts.points.some(
+          (q) =>
+            q.x > box.x - m &&
+            q.x < box.x + box.w + m &&
+            q.y > box.y - m &&
+            q.y < box.y + box.h + m,
+        );
+        if (onPoint) continue;
+      }
       chosen = box;
       break;
+    }
+    if (!chosen && opts.strict) {
+      placed.push({ ...compactBox(d, s), hidden: true });
+      continue;
     }
     if (!chosen) {
       // No room for the name: the group shows its colour and count on itself
@@ -754,7 +784,7 @@ export function placeLabels(
             y: Math.min(h - 4 - base.h, Math.max(4, base.y + dy)),
           };
           if (opts.avoid && overlaps(opts.avoid, box)) continue;
-          if (!placed.some((p) => overlaps(p, box))) {
+          if (!placed.some((p) => !p.hidden && overlaps(p, box))) {
             chosen = box;
             break;
           }

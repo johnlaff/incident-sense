@@ -20,7 +20,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { useAulaLesson } from "./aula";
+import { useAulaLesson, useAulaStart } from "./aula";
 import {
   ConceptIcon,
   ConceptLabel,
@@ -32,9 +32,9 @@ import { Icons, type IconComponent } from "./icons";
 import { SuggestionMarkdown } from "./markdown";
 import { AnswerCard } from "./answer-card";
 import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
-import { buildSuggestionMarkdown } from "@/lib/model";
+import { buildSuggestionMarkdown, meaningfulTags } from "@/lib/model";
 import { formatSeconds, useElapsedSeconds, useIsPhone } from "@/lib/motion";
-import { showCardTop } from "@/lib/reveal";
+import { freeBand, scrollPos, toTop } from "@/lib/reveal";
 import {
   OUTCOME_LABEL,
   PIPELINE_STEPS,
@@ -120,6 +120,7 @@ export function PipelineTrace({
   const running = phase === "running";
   const shown = running ? null : result;
   const lesson = usePipelineLesson("pipeline", shown);
+  useAulaStart("pipeline", shown ? lesson.replay : null);
   const views = useMemo(() => (shown ? stepViews(shown) : null), [shown]);
   const beat = shown ? lesson.step : -1;
   const finished = lesson.done && !lesson.aula;
@@ -147,34 +148,35 @@ export function PipelineTrace({
     window.addEventListener(OPEN_STEP_EVENT, open);
     return () => window.removeEventListener(OPEN_STEP_EVENT, open);
   }, []);
-  // When an answer arrives, show its top once (never scrolling past the
-  // "Sugestão da IA" heading), then never again.
+  // When an answer arrives: if the reader scrolled while it ran, leave them
+  // there; if its card already shows, nothing moves; otherwise one scroll puts
+  // the top of the block ("Sugestão da IA") under the top bar. Never later.
+  const startPos = useRef<number | null>(null);
+  useEffect(() => {
+    if (running) startPos.current = scrollPos();
+  }, [running]);
   useEffect(() => {
     if (!answerFirst || !shown) return;
-    const el = answerRef.current;
-    if (!el) return;
+    const card = answerRef.current;
+    const head = headRef.current;
+    if (!card || !head) return;
+    const moved =
+      startPos.current !== null && Math.abs(scrollPos() - startPos.current) > 80;
+    startPos.current = null;
+    if (moved) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const id = requestAnimationFrame(() => showCardTop(el, headRef.current, reduced));
+    const id = requestAnimationFrame(() => {
+      const band = freeBand();
+      const top = card.getBoundingClientRect().top;
+      // The answer's own sentence must show, not only the card's label.
+      const one = card.querySelector(".ans-one") ?? card;
+      const end = one.getBoundingClientRect().bottom;
+      if (top >= band.top && end <= band.bottom) return;
+      // The answer is below the fold: its section title goes to the top.
+      toTop(head, reduced);
+    });
     return () => cancelAnimationFrame(id);
   }, [answerFirst, shown]);
-
-  function showInSearch(id: string) {
-    setHowOpen(true);
-    window.dispatchEvent(new CustomEvent(OPEN_STEP_EVENT, { detail: "buscar" }));
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        const row = document.getElementById(`src-${id}`);
-        if (!row) return;
-        const fold = row.closest("details");
-        if (fold) fold.open = true;
-        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        row.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
-        row.classList.remove("is-flash");
-        void row.offsetWidth;
-        row.classList.add("is-flash");
-      }),
-    );
-  }
 
   const legend = (
     <div className="pipe-legend" aria-label="Legenda">
@@ -272,7 +274,6 @@ export function PipelineTrace({
               result={shown}
               modelName={modelName}
               onCite={onCite}
-              onShowInSearch={showInSearch}
               onInsert={onInsert}
               onCopy={onCopy}
               onShowNotes={onShowNotes}
@@ -289,7 +290,7 @@ export function PipelineTrace({
             <Icons.chevronRight />
             <span>
               Como a IA chegou nisso
-              <span className="pipe-how-n">7 passos</span>
+              <span className="pipe-how-n">{PIPELINE_STEPS.length} passos</span>
             </span>
           </summary>
           <div className="pipe-how-body">
@@ -357,16 +358,9 @@ export function PipelineTrace({
 
 /**
  * While the server works. The server answers all at once at the end, so the
- * stages are listed as what happens, in order, without ticking any of them
- * off by the clock.
+ * seven steps (the same names as "Como a IA chegou nisso") are listed as what
+ * happens, in order, without ticking any of them off by the clock.
  */
-const PROGRESS_STAGES = [
-  "Lê o chamado",
-  "Busca incidentes e Problemas parecidos",
-  "Confere se cada caso serve",
-  "Escreve a sugestão citando os casos",
-];
-
 function RunProgress() {
   return (
     <div className="run-progress" role="status" aria-live="polite">
@@ -374,14 +368,16 @@ function RunProgress() {
         <Icons.loader size={14} className="spin" />
         Isso leva alguns segundos...
       </p>
-      <p className="run-progress-note">O que a IA faz, nesta ordem:</p>
+      <p className="run-progress-note">
+        O que a IA faz, nos {PIPELINE_STEPS.length} passos:
+      </p>
       <ol>
-        {PROGRESS_STAGES.map((label, i) => (
-          <li key={label}>
+        {PIPELINE_STEPS.map((def) => (
+          <li key={def.key}>
             <span className="run-progress-n mono" aria-hidden="true">
-              {i + 1}
+              {def.order}
             </span>
-            {label}
+            {def.title}
           </li>
         ))}
       </ol>
@@ -622,7 +618,7 @@ function StepDetail({
               <span>Uma sugestão para revisar, não uma ordem.</span>
             </div>
             <SuggestionMarkdown
-              source={buildSuggestionMarkdown(result.suggestion, result.context_ids)}
+              source={buildSuggestionMarkdown(result.suggestion, result.citations.cited)}
               onCite={onCite}
               flashCite={flashCite}
             />
@@ -676,7 +672,7 @@ function LoadedFields({ source }: { source: PipelineSource }) {
             <span className="loaded-k">{k}</span> {v || "não informada"}
           </span>
         ))}
-        {source.tags.map((t, i) => (
+        {meaningfulTags(source.tags).map((t, i) => (
           <span className="tag loaded-chip" key={t} style={{ "--i": i + 3 } as Style}>
             {t}
           </span>

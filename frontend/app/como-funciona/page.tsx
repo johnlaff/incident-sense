@@ -141,7 +141,12 @@ const CONTENT: Record<
       <Tasks key="t" />,
       <Coherence key="c" />,
     ],
-    source: <>As notas 9,04 e 4,0 saíram no ensaio e podem mudar com o modelo.</>,
+    source: (
+      <>
+        A média 8,87 saiu de uma avaliação real no app; a coerência 4,0, do ensaio. As
+        duas podem mudar um pouco com o modelo.
+      </>
+    ),
     details: (
       <Tech
         rows={[
@@ -155,7 +160,7 @@ const CONTENT: Record<
           ],
           [
             "Saída",
-            "Nota de coerência de 0 a 10, lista de incoerências, raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
+            "Nota de coerência de 0 a 10, pontos que a IA anotou (só os que se contradizem pesam na nota), raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
           ],
           [
             "Cache",
@@ -286,7 +291,7 @@ const CONTENT: Record<
           ],
           [
             "Casos isolados",
-            `No demo, ${CLUSTERS_DEMO.isolated} incidentes ficaram de fora de qualquer grupo. A maioria é suporte interno (projetor, ramal, ar-condicionado), que não se repete o bastante para virar recorrência.`,
+            `No demo, ${CLUSTERS_DEMO.isolated} incidentes ficaram de fora de qualquer grupo. A maioria é suporte interno (projetor, ramal, ar-condicionado), que não se repete o bastante para virar um grupo de repetições.`,
           ],
           [
             "Offline",
@@ -353,17 +358,15 @@ function Summary30({ reduced }: { reduced: boolean }) {
       <h2 id="cf-30-h">Em 30 segundos</h2>
       <ol>
         <li>
-          <b>Antes de ir ao ar, a Mudança:</b> antes de uma alteração entrar no sistema (o
-          deploy), a IA dá nota de 0 a 10 a cada parte do pedido e, com 8,0 ou mais,
-          confere se as partes combinam. <Cap n={1} reduced={reduced} />{" "}
-          <Cap n={2} reduced={reduced} />
+          <b>No incidente:</b> a IA resume o chamado e acha casos parecidos já resolvidos.
+          Parecido quer dizer com o mesmo sentido, mesmo escrito com outras palavras.
+          Depois sugere uma solução citando cada caso. <Cap n={3} reduced={reduced} />{" "}
+          <Cap n={4} reduced={reduced} /> <Cap n={5} reduced={reduced} />
         </li>
         <li>
-          <b>Depois, o incidente:</b> a IA resume o chamado e acha casos parecidos já
-          resolvidos. Parecido quer dizer com o mesmo sentido, mesmo escrito com outras
-          palavras. Depois sugere uma solução citando cada caso.{" "}
-          <Cap n={3} reduced={reduced} /> <Cap n={4} reduced={reduced} />{" "}
-          <Cap n={5} reduced={reduced} />
+          <b>Na Mudança, antes de ela ir ao ar:</b> a IA dá nota de 0 a 10 a cada parte do
+          pedido. Pode seguir quando a média e a coerência entre as partes chegam a 8,0.{" "}
+          <Cap n={1} reduced={reduced} /> <Cap n={2} reduced={reduced} />
         </li>
         <li>
           <b>O ciclo fecha:</b> incidentes que se repetem formam grupos, o grupo vira um
@@ -383,8 +386,9 @@ export default function HowItWorksPage() {
   const signals = useRef<Record<string, ChapterSignal>>({});
   const focusedRef = useRef(focused);
   // The hero's line already lists the seven chapters: the sticky pager only
-  // shows once that line has left the screen, so the index is never doubled.
-  const lifeRef = useRef<HTMLOListElement>(null);
+  // shows once that line (and the hint under it) has left the screen, so the
+  // index is never doubled and is already stuck when it appears.
+  const lifeRef = useRef<HTMLParagraphElement>(null);
   const [lifeShown, setLifeShown] = useState(true);
   useEffect(() => {
     const el = lifeRef.current;
@@ -489,7 +493,7 @@ export default function HowItWorksPage() {
         <Summary30 reduced={reduced} />
         {/* The line at the top: seven stops, one per chapter, same names as the
             index and the headings. */}
-        <ol className="cf-life" aria-label="Os sete capítulos" ref={lifeRef}>
+        <ol className="cf-life" aria-label="Os sete capítulos">
           {CHAPTERS.map((c, i) => (
             <li
               key={c.id}
@@ -512,7 +516,7 @@ export default function HowItWorksPage() {
             </li>
           ))}
         </ol>
-        <p className="cf-hint">
+        <p className="cf-hint" ref={lifeRef}>
           {aula ? (
             <>
               <Icons.board size={16} />
@@ -586,7 +590,8 @@ export default function HowItWorksPage() {
           </li>
           <li>
             <b>Não mexe em nada.</b> Não altera sistemas, não fecha chamados e não abre
-            Problemas sozinha. No demo, nada é gravado.
+            Problemas sozinha. No demo, a nota que ela deixa no incidente aparece só para
+            você, e some quando o servidor reinicia.
           </li>
           <li>
             <b>Não inventa fonte.</b> Só cita casos que a busca trouxe; uma citação de

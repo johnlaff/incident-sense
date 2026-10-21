@@ -99,22 +99,30 @@ export function scrollOnce(el: Element, reduced: boolean): void {
   scrollByDelta(el, d, !reduced);
 }
 
+/** Where the page is scrolled to now (the window, or <main> on desktop). */
+export function scrollPos(): number {
+  const main = document.querySelector<HTMLElement>(".main");
+  if (main && main.scrollHeight > main.clientHeight + 1) {
+    const oy = getComputedStyle(main).overflowY;
+    if (oy === "auto" || oy === "scroll") return main.scrollTop;
+  }
+  return window.scrollY;
+}
+
 /**
- * When an answer arrives: leave the page alone if the top of `card` already
- * shows, otherwise scroll just enough to show it, never past `heading` (the
- * section title stays on screen). One scroll, no re-checks.
+ * When a result arrives: leave the page alone while `el`'s top already shows
+ * in the free band; when it sits below the fold (or above the top), scroll
+ * once so the top of `el` lands just under the top bar. Never re-checks.
  */
-export function showCardTop(
-  card: Element,
-  heading: Element | null,
-  reduced: boolean,
-): void {
+/** Bring the top of `el` to the top of the free band, unconditionally. */
+export function toTop(el: Element, reduced: boolean): void {
+  const top = el.getBoundingClientRect().top;
+  scrollByDelta(el, top - freeBand().top, !reduced);
+}
+
+export function showTop(el: Element, reduced: boolean): void {
   const band = freeBand();
-  const top = card.getBoundingClientRect().top;
-  // Already visible with a few lines of it: nothing to do.
-  if (top >= band.top && top <= band.bottom - 120) return;
-  let d = top - (band.bottom - 160);
-  if (top < band.top) d = top - band.top;
-  if (heading) d = Math.min(d, heading.getBoundingClientRect().top - band.top);
-  scrollByDelta(card, d, !reduced);
+  const top = el.getBoundingClientRect().top;
+  if (top >= band.top - 2 && top <= band.bottom - 120) return;
+  scrollByDelta(el, top - band.top, !reduced);
 }

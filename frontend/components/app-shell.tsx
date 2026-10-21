@@ -35,9 +35,10 @@ import {
   mapDetail,
   pCode,
 } from "@/lib/model";
-import { isProblemNumber } from "@/lib/problems";
+import { useChanges } from "@/lib/changes";
+import { isProblemNumber, useProblems } from "@/lib/problems";
 import type { IncidentSummary } from "@/lib/types";
-import { keepWhole } from "@/lib/text";
+import { keepWhole, matchesQuery, searchKey } from "@/lib/text";
 
 type Theme = "light" | "dark";
 
@@ -546,7 +547,9 @@ function NotificationsMenu({
       <div className="notif-menu">
         <div className="nm-head">
           <span>Notificações</span>
-          <span className="nm-count">{notifs.length} novas</span>
+          <span className="nm-count">
+            {notifs.length} {notifs.length === 1 ? "aviso" : "avisos"}
+          </span>
         </div>
         {notifs.map(({ inc, icon: Icon, kind, title, sub }) => (
           <button
@@ -593,7 +596,7 @@ interface PaletteAction {
 
 interface PaletteIncident {
   id: string;
-  group: "Incidentes";
+  group: "Incidentes" | "Mudanças" | "Problemas";
   mono: true;
   title: string;
   sub: string;
@@ -623,6 +626,8 @@ function CommandPalette({
 }) {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
+  const { data: changes } = useChanges();
+  const { data: problems } = useProblems();
   const inputRef = useRef<HTMLInputElement>(null);
   const trapRef = useFocusTrap<HTMLDivElement>();
   useScrollLock();
@@ -659,15 +664,45 @@ function CommandPalette({
         run: () => onNavigate(n.href),
       })),
     ];
-    const ql = q.trim().toLowerCase();
+    const ql = searchKey(q);
     const acts = ql
-      ? actions.filter((a) => `${a.title} ${a.sub ?? ""}`.toLowerCase().includes(ql))
+      ? actions.filter((a) => matchesQuery(`${a.title} ${a.sub ?? ""}`, q))
       : actions;
+    // Mudanças and Problemas answer a typed query only: the empty palette
+    // keeps the incidents a person most likely wants.
+    const others: PaletteIncident[] = ql
+      ? [
+          ...(changes ?? [])
+            .filter((c) =>
+              matchesQuery(`${c.number} ${c.short_description} ${c.cmdb_ci}`, q),
+            )
+            .slice(0, 4)
+            .map((c) => ({
+              id: `c-${c.number}`,
+              group: "Mudanças" as const,
+              mono: true as const,
+              title: c.short_description,
+              sub: `${c.number} · ${c.cmdb_ci}`,
+              run: () => onNavigate(`/changes/${c.number}`),
+            })),
+          ...(problems ?? [])
+            .filter((p) =>
+              matchesQuery(`${p.number} ${p.short_description} ${p.cmdb_ci}`, q),
+            )
+            .slice(0, 4)
+            .map((p) => ({
+              id: `p-${p.number}`,
+              group: "Problemas" as const,
+              mono: true as const,
+              title: p.short_description,
+              sub: `${p.number} · ${p.cmdb_ci}`,
+              run: () => onNavigate(`/problemas/${p.number}`),
+            })),
+        ]
+      : [];
     const incs: PaletteIncident[] = items
       .filter((x) =>
-        !ql
-          ? true
-          : `${x.number} ${x.short_description} ${x.cmdb_ci}`.toLowerCase().includes(ql),
+        !ql ? true : matchesQuery(`${x.number} ${x.short_description} ${x.cmdb_ci}`, q),
       )
       .slice(0, ql ? 8 : 5)
       .map((x) => ({
@@ -678,8 +713,18 @@ function CommandPalette({
         sub: `${x.number} · ${x.cmdb_ci}`,
         run: () => onOpenIncident(x.number),
       }));
-    return [...acts, ...incs];
-  }, [q, items, theme, onSuggest, onToggleTheme, onNavigate, onOpenIncident]);
+    return [...acts, ...incs, ...others];
+  }, [
+    q,
+    items,
+    changes,
+    problems,
+    theme,
+    onSuggest,
+    onToggleTheme,
+    onNavigate,
+    onOpenIncident,
+  ]);
 
   useEffect(() => {
     setSel(0);
@@ -740,8 +785,8 @@ function CommandPalette({
             ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar incidentes, telas e ações"
-            aria-label="Buscar incidentes, telas e ações"
+            placeholder="Buscar incidentes, mudanças, problemas e telas"
+            aria-label="Buscar incidentes, mudanças, problemas e telas"
           />
           <button className="pal-close" onClick={onClose} aria-label="Fechar a busca">
             <span className="kbd">Esc</span>
@@ -766,7 +811,7 @@ function CommandPalette({
                     }}
                   >
                     <div className={`pal-ico${"mono" in item ? " mono" : ""}`}>
-                      {"mono" in item ? "INC" : <item.icon />}
+                      {"mono" in item ? item.sub.slice(0, 3) : <item.icon />}
                     </div>
                     <div className="pal-main">
                       <div className="pal-title">{item.title}</div>
@@ -896,7 +941,9 @@ function PeekDrawer({
                     ["Impacto", inc.impact],
                     ["Urgência", inc.urgency],
                     ["Aberto em", absDate(inc.openedAt)],
-                    inc.clusterLabel ? ["Recorrência", inc.clusterLabel] : null,
+                    inc.clusterLabel && !inc.isOutlier
+                      ? ["Repetições", inc.clusterLabel]
+                      : null,
                   ].filter(Boolean) as [string, string][]
                 ).map(([k, v]) => (
                   <div className="field" key={k}>

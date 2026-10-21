@@ -45,3 +45,27 @@ describe("api client", () => {
     expect((error as ApiError).status).toBe(0);
   });
 });
+
+describe("AI calls give up after a while (auditoria P1-14)", () => {
+  it("rejects with a PT-BR message when the AI takes too long", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: string, init: RequestInit) => {
+        expect(init.signal).toBeInstanceOf(AbortSignal);
+        return Promise.reject(new DOMException("timed out", "TimeoutError"));
+      }),
+    );
+    const error = await api
+      .evaluateChange("CHG0031001", { fields: {}, model: "m" })
+      .catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ApiError);
+    expect((error as ApiError).detail).toBe("A IA demorou demais. Tente de novo.");
+  });
+
+  it("sends a time limit with the analysis too", async () => {
+    const fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => "{}" });
+    vi.stubGlobal("fetch", fetch);
+    await api.suggest({ incident_number: "INC1" } as never);
+    expect(fetch.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+  });
+});

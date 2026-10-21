@@ -12,6 +12,7 @@ import { clusterColor } from "@/lib/model";
 import { Origin } from "./chapter";
 import {
   CANDIDATES,
+  CHG2_AVERAGE,
   CHG2_BACKOUT,
   CHG2_COHERENCE,
   CHG2_IMPLEMENTATION,
@@ -36,6 +37,7 @@ import {
   fingerprint,
   funnel,
   latencySummary,
+  REAL_EVAL_SECONDS,
   miniMap,
   queryText,
   rulerPos,
@@ -72,14 +74,14 @@ export function Weights() {
               <i className="cf-bar" />
             </span>
             <span className="cf-wt-v">
-              peso <b className="mono">{br(r.weight)}</b> de {br(TOTAL_WEIGHT)}
+              peso <b className="num">{br(r.weight)}</b> de {br(TOTAL_WEIGHT)}
             </span>
           </li>
         ))}
       </ul>
       <p className="cf-card-foot">
-        Pesos, não notas: somam <b className="mono">{br(TOTAL_WEIGHT)}</b>. A parte de
-        peso maior conta mais na média.
+        Pesos, não notas: somam <b className="num">{br(TOTAL_WEIGHT)}</b>. A parte de peso
+        maior conta mais na média.
       </p>
     </figure>
   );
@@ -101,7 +103,7 @@ export function Parallel() {
       </figcaption>
       <div className="cf-par-group">
         <p className="cf-par-k">
-          Juntas <b className="mono">{br(parallel)} s</b>
+          Juntas <b className="num">{br(parallel)} s</b>
         </p>
         <ul className="cf-par-lanes">
           {RUBRIC.map((r, i) => {
@@ -122,7 +124,7 @@ export function Parallel() {
       </div>
       <div className="cf-par-group">
         <p className="cf-par-k">
-          Uma depois da outra <b className="mono">{br(queue)} s</b>
+          Uma depois da outra <b className="num">{br(queue)} s</b>
         </p>
         <div className="cf-par-queue" aria-hidden="true">
           {RUBRIC.map((r, i) => {
@@ -147,7 +149,9 @@ export function Parallel() {
         </div>
       </div>
       <p className="cf-card-foot">
-        O tempo total fica perto do campo mais lento, não da soma.
+        O tempo total fica perto do campo mais lento, não da soma. Com a coerência, que
+        vem depois, a avaliação real levou cerca de{" "}
+        <span className="num">{REAL_EVAL_SECONDS} s</span>.
       </p>
     </figure>
   );
@@ -192,13 +196,13 @@ export function Average() {
             />
           ))}
           <span className="cf-gate-tick">
-            <span className="mono">{br(GATE)}</span>
+            <span className="num">{br(GATE)}</span>
           </span>
         </div>
         <span className="cf-pointer">
-          <b className="mono">{br(average, 2)}</b>
+          <b className="num">{br(average, 2)}</b>
         </span>
-        <div className="cf-scale-ticks mono" aria-hidden="true">
+        <div className="cf-scale-ticks num" aria-hidden="true">
           <span>0</span>
           <span>5</span>
           <span>10</span>
@@ -268,7 +272,7 @@ export function Gate() {
         <div className="cf-door" aria-hidden="true">
           <i className="cf-door-a" />
           <i className="cf-door-b" />
-          <span className="cf-door-k mono">{br(GATE)}</span>
+          <span className="cf-door-k num">{br(GATE)}</span>
         </div>
         {GATE_EXAMPLES.map((g, i) => {
           const pass = g.grade >= GATE;
@@ -279,7 +283,7 @@ export function Gate() {
               style={{ "--i": i, "--x": fix(g.grade / 10) } as Style}
             >
               <span className="cf-gate-dot" aria-hidden="true" />
-              <span className="cf-gate-txt mono">
+              <span className="cf-gate-txt num">
                 <span className="cf-sr">{g.number}: nota </span>
                 {g.approx ? "≈ " : ""}
                 {br(g.grade, g.approx ? 0 : 2)}
@@ -410,12 +414,15 @@ export function Coherence() {
         <Origin kind="ensaio" />
       </figcaption>
       <div className="cf-coh-rows">
-        <div className="cf-coh-row is-high" style={{ "--v": 0.904, "--i": 0 } as Style}>
+        <div
+          className="cf-coh-row is-high"
+          style={{ "--v": CHG2_AVERAGE / 10, "--i": 0 } as Style}
+        >
           <span className="cf-coh-l">Média ponderada</span>
           <span className="cf-bar-track" aria-hidden="true">
             <i className="cf-bar" />
           </span>
-          <b className="mono">9,04</b>
+          <b className="num">{br(CHG2_AVERAGE, 2)}</b>
         </div>
         <div
           className="cf-coh-row is-low"
@@ -425,7 +432,7 @@ export function Coherence() {
           <span className="cf-bar-track" aria-hidden="true">
             <i className="cf-bar" />
           </span>
-          <b className="mono">{br(CHG2_COHERENCE)}</b>
+          <b className="num">{br(CHG2_COHERENCE)}</b>
         </div>
       </div>
       <p className="cf-problem">
@@ -540,7 +547,7 @@ export function Vectorize() {
 // Chapter 4
 // ---------------------------------------------------------------------------
 
-/** Which cells of the 336-record grid share a tag (spread, deterministic). */
+/** Which cells of the record grid share a tag (spread, deterministic). */
 function tagCells(): boolean[] {
   const total = TAG_FUNNEL.incidents + TAG_FUNNEL.problems;
   const match = TAG_FUNNEL.matchIncidents + TAG_FUNNEL.matchProblems;
@@ -553,7 +560,6 @@ function tagCells(): boolean[] {
 
 export function TagFilter() {
   const cells = tagCells();
-  const total = cells.length;
   const match = TAG_FUNNEL.matchIncidents + TAG_FUNNEL.matchProblems;
   return (
     <figure className="cf-card cf-tagf">
@@ -564,7 +570,7 @@ export function TagFilter() {
       <div
         className="cf-grid"
         role="img"
-        aria-label={`${total} registros resolvidos; ${match} dividem uma tag com o incidente`}
+        aria-label={`${TAG_FUNNEL.incidents} incidentes resolvidos e ${TAG_FUNNEL.problems} Problemas; ${match} dividem uma tag com o incidente`}
       >
         {cells.map((hit, i) => (
           <i
@@ -575,7 +581,8 @@ export function TagFilter() {
         ))}
       </div>
       <p className="cf-count">
-        <b className="mono">{total}</b> registros resolvidos{" "}
+        <b className="mono">{TAG_FUNNEL.incidents}</b> incidentes resolvidos e{" "}
+        <b className="mono">{TAG_FUNNEL.problems}</b> Problemas{" "}
         <Icons.arrowRight size={14} /> <b className="mono">{match}</b> com{" "}
         {INCIDENT.tags.map((t, i) => (
           <span key={t}>
@@ -608,7 +615,7 @@ export function Ruler() {
       <div className="cf-ruler-plot" style={{ "--floor": floorX } as Style}>
         <div className="cf-ruler-out" aria-hidden="true" />
         <div className="cf-ruler-floor" aria-hidden="true">
-          <span className="mono">{br(RETRIEVAL.floor, 2)}</span>
+          <span className="num">{br(RETRIEVAL.floor, 2)}</span>
         </div>
         <ul className="cf-ruler-rows">
           {CANDIDATES.map((c, i) => {
@@ -627,13 +634,13 @@ export function Ruler() {
                 </span>
                 {/* The value sits in its own column: inside the plot it ran
                     into the 0,80 line and its neighbors on a phone. */}
-                <span className="cf-ruler-v mono">{br(c.sim, 2)}</span>
+                <span className="cf-ruler-v num">{br(c.sim, 2)}</span>
                 <span className="cf-sr">{pass ? "passou" : "abaixo do limiar"}</span>
               </li>
             );
           })}
         </ul>
-        <div className="cf-ruler-ticks mono" aria-hidden="true">
+        <div className="cf-ruler-ticks num" aria-hidden="true">
           <span>0,50</span>
           <span>1,00</span>
         </div>
@@ -784,7 +791,7 @@ export function Publish() {
           </span>
           <span className="cf-note-t">
             Sugestão de resolução, com 3 fontes citadas: PRB0004105, PRB0004104 e
-            INC0052226.
+            INC0052219.
           </span>
         </li>
         <li className="cf-note">
@@ -905,7 +912,7 @@ const LOOP = [
   { k: "chg", t: "Mudança" },
   { k: "dep", t: "Deploy" },
   { k: "inc", t: "Incidente" },
-  { k: "rec", t: "Recorrência" },
+  { k: "rec", t: "Repetição" },
   { k: "prb", t: "Problema" },
 ] as const;
 
@@ -922,7 +929,7 @@ export function Loop() {
       </p>
       <ol
         className="cf-ring"
-        aria-label="O ciclo: Mudança, deploy, incidente, recorrência, problema e de volta à Mudança"
+        aria-label="O ciclo: Mudança, deploy, incidente, repetição, problema e de volta à Mudança"
       >
         {LOOP.map((n, i) => (
           <li key={n.k} className={`cf-ring-n is-${n.k}`} style={{ "--i": i } as Style}>
@@ -959,7 +966,7 @@ export function BackToSearch() {
           <span className="cf-back-k">Encontra</span>
           <span>
             <RecordTag number={c.number} size="sm" ghost /> com{" "}
-            <b className="mono">{br(c.sim, 2)}</b>, mantido pela conferência.
+            <b className="num">{br(c.sim, 2)}</b>, mantido pela conferência.
           </span>
         </li>
         <li style={{ "--i": 2 } as Style}>

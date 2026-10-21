@@ -5,7 +5,7 @@
 // words, what it looked at, and the known Problem on top when there is one.
 // How it got there folds below, in the pipeline.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { ConceptIcon, ConceptLabel, RecordTag, TechDetails } from "./concepts";
 import { Icons } from "./icons";
@@ -13,11 +13,13 @@ import { SuggestionMarkdown } from "./markdown";
 import { useFocusTrap, useScrollLock } from "@/lib/a11y";
 import {
   analysedCounts,
+  emptyAnswer,
   answerPlain,
   closestHit,
   confidenceOf,
   parseSuggestion,
   sourceExcerpt,
+  stepLayers,
   type ParsedAnswer,
 } from "@/lib/answer";
 import { buildSuggestionMarkdown, markdownToPlain } from "@/lib/model";
@@ -31,7 +33,6 @@ export function AnswerCard({
   result,
   modelName,
   onCite,
-  onShowInSearch,
   onInsert,
   onCopy,
   onShowNotes,
@@ -40,8 +41,6 @@ export function AnswerCard({
   modelName: string;
   /** Opens the full record (drawer). */
   onCite: CiteHandler;
-  /** Opens the folded pipeline at this record's row in the search step. */
-  onShowInSearch: (id: string) => void;
   onInsert?: (text: string) => void;
   onCopy?: (text: string) => void;
   onShowNotes: () => void;
@@ -77,7 +76,7 @@ export function AnswerCard({
   );
 
   if (!result.suggestion) {
-    const improcedente = result.classification !== "PROCEDENTE";
+    const empty = emptyAnswer(result);
     const near = closestHit(result);
     return (
       <section className="ans is-empty" aria-labelledby="ans-h">
@@ -85,28 +84,25 @@ export function AnswerCard({
           <h3 id="ans-h" className="ans-title">
             <ConceptLabel concept="ai-out" />
           </h3>
-          <ConfidenceTag level="baixa" label="Sem evidência suficiente" />
+          {empty.confidence ? (
+            <ConfidenceTag level="baixa" label="Sem evidência suficiente" />
+          ) : null}
         </div>
-        {scope}
-        {improcedente ? (
-          <>
-            <p className="ans-one">Não é uma falha técnica: é um pedido do cliente.</p>
-            <p className="ans-note">
-              Por isso a IA não sugere uma correção. O melhor caminho é orientar o cliente
-              pelo autoatendimento.
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="ans-one">Não achei casos parecidos o bastante para sugerir.</p>
-            <p className="ans-note">
-              {near
-                ? `O mais próximo foi ${near.number}, com semelhança ${formatSim(near.similarity)}; o mínimo para usar um caso é ${formatSim(result.retrieval.vector.min_similarity)}.`
-                : "A busca não trouxe nenhum caso."}{" "}
-              Resolva manualmente e registre a solução: ela ajuda nos próximos casos.
-            </p>
-          </>
-        )}
+        {empty.kind === "improcedente" ? null : scope}
+        <p className="ans-one">{empty.line}</p>
+        <p className="ans-note">
+          {empty.kind === "improcedente"
+            ? "Por isso a IA não sugere uma correção. O melhor caminho é orientar o cliente pelo autoatendimento."
+            : empty.kind === "unwritten"
+              ? "Tente analisar de novo. Os casos aprovados estão em Como a IA chegou nisso."
+              : empty.kind === "rejected"
+                ? "O motivo de cada um está em Como a IA chegou nisso. Resolva manualmente e registre a solução: ela ajuda nos próximos casos."
+                : `${
+                    near
+                      ? `O mais próximo foi ${near.number}, com semelhança ${formatSim(near.similarity)}; o mínimo para usar um caso é ${formatSim(result.retrieval.vector.min_similarity)}.`
+                      : "A busca não trouxe nenhum caso."
+                  } Resolva manualmente e registre a solução: ela ajuda nos próximos casos.`}
+        </p>
         <HumanDecides result={result} onShowNotes={onShowNotes} />
         {sheet ? (
           <SourceSheet
@@ -155,43 +151,41 @@ export function AnswerCard({
       ) : (
         <div className="ans-block">
           <SuggestionMarkdown
-            source={buildSuggestionMarkdown(result.suggestion, result.context_ids)}
+            source={buildSuggestionMarkdown(result.suggestion, result.citations.cited)}
             onCite={(id) => setSheet(id)}
             flashCite={null}
           />
         </div>
       )}
 
-      <SourcesBlock
-        result={result}
-        onSource={(id) => setSheet(id)}
-        onShowInSearch={onShowInSearch}
-      />
+      <SourcesBlock result={result} onOpen={onCite} />
 
-      {onCopy || onInsert ? (
-        <div className="ans-actions">
-          {onCopy ? (
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => onCopy(plain)}
-            >
-              <Icons.copy />
-              Copiar
-            </button>
-          ) : null}
-          {onInsert ? (
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => onInsert(plain)}
-            >
-              <Icons.insert />
-              Usar como nota
-            </button>
-          ) : null}
-        </div>
-      ) : null}
+      <HumanDecides result={result} onShowNotes={onShowNotes}>
+        {onCopy || onInsert ? (
+          <div className="ans-actions">
+            {onCopy ? (
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => onCopy(plain)}
+              >
+                <Icons.copy />
+                Copiar
+              </button>
+            ) : null}
+            {onInsert ? (
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => onInsert(plain)}
+              >
+                <Icons.insert />
+                Usar como nota
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </HumanDecides>
 
       <div className="ans-vote" role="group" aria-labelledby="ans-vote-q">
         <span id="ans-vote-q" className="ans-vote-q">
@@ -228,8 +222,6 @@ export function AnswerCard({
           Gerado por <b>{modelName}</b>.
         </p>
       </TechDetails>
-
-      <HumanDecides result={result} onShowNotes={onShowNotes} />
 
       {sheet ? (
         <SourceSheet
@@ -274,11 +266,16 @@ function AnalysedLine({
   ].filter((h) => h.passed);
   const inc = counts.incidents === 1 ? "incidente parecido" : "incidentes parecidos";
   const prb = counts.problems === 1 ? "Problema" : "Problemas";
+  // Past the floor is not the same as used: the AI may rule some out.
+  const used = result.context_ids.length;
   return (
     <details className="ans-scope">
       <summary>
         <Icons.chevronRight />
         Analisei {counts.incidents} {inc} e {counts.problems} {prb}
+        {used > 0 && used < counts.incidents + counts.problems
+          ? `; ${used} ${used === 1 ? "serviu" : "serviram"}`
+          : ""}
       </summary>
       {hits.length ? (
         <ul>
@@ -311,6 +308,11 @@ function ParsedBlocks({
   parsed: ParsedAnswer;
   onSource: (id: string) => void;
 }) {
+  // Each step reads as its plain action first; the technical text behind it
+  // opens for all steps at once.
+  const [tech, setTech] = useState(false);
+  const layers = parsed.steps.map(stepLayers);
+  const hasTech = layers.some((l) => l.rest);
   return (
     <>
       <div className="ans-block">
@@ -326,17 +328,30 @@ function ParsedBlocks({
                 {i + 1}
               </span>
               <div>
-                <p>
-                  {s.title ? <b>{s.title}: </b> : null}
-                  {s.text}
+                <p className="ans-step-lead">
+                  {layers[i].lead}{" "}
+                  {s.cites.length ? (
+                    <StepSources ids={s.cites} onSource={onSource} />
+                  ) : null}
                 </p>
-                {s.cites.length ? (
-                  <StepSources ids={s.cites} onSource={onSource} />
+                {tech && layers[i].rest ? (
+                  <p className="ans-step-rest">{layers[i].rest}</p>
                 ) : null}
               </div>
             </li>
           ))}
         </ol>
+        {hasTech ? (
+          <button
+            type="button"
+            className="ans-tech-btn"
+            aria-expanded={tech}
+            onClick={() => setTech((v) => !v)}
+          >
+            <Icons.chevronRight />
+            {tech ? "Esconder o texto técnico" : "Ler o texto técnico"}
+          </button>
+        ) : null}
         {parsed.more ? (
           <p className="ans-note">
             A IA escreveu mais {parsed.more} {parsed.more === 1 ? "passo" : "passos"}; o
@@ -360,7 +375,7 @@ function StepSources({
   const [all, setAll] = useState(false);
   const shown = all ? ids : ids.slice(0, 1);
   return (
-    <div className="ans-step-src">
+    <span className="ans-step-src">
       <span className="ans-step-src-k">{ids.length > 1 ? "Fontes" : "Fonte"}</span>
       {shown.map((id) => (
         <button
@@ -383,43 +398,44 @@ function StepSources({
           +{ids.length - 1}
         </button>
       ) : null}
-    </div>
+    </span>
   );
 }
 
-/** "Com base em": every record the answer cites, with how similar it was. */
+/** "Com base em": every record the answer cites, with how similar it was.
+ *  One link per row opens the record itself. */
 function SourcesBlock({
   result,
-  onSource,
-  onShowInSearch,
+  onOpen,
 }: {
   result: SuggestResponse;
-  onSource: (id: string) => void;
-  onShowInSearch: (id: string) => void;
+  onOpen: CiteHandler;
 }) {
   const cited = result.citations.cited;
   if (!cited.length) return null;
   return (
     <div className="ans-block">
-      <h4 className="ans-label">Com base em</h4>
+      <h4 className="ans-label">
+        Com base em{" "}
+        <span className="ans-label-note">
+          (semelhança de 0 a 1: perto de 1, mais parecido)
+        </span>
+      </h4>
       <ul className="ans-sources">
         {cited.map((id) => {
           const { row, inContext } = citationSource(id, result);
           return (
             <li key={id}>
-              <div className="ans-src-main">
-                <button
-                  type="button"
-                  className="tag-btn"
-                  onClick={() => onSource(id)}
-                  aria-label={`Ver o trecho de ${id}`}
-                >
-                  <RecordTag number={id} size="sm" ghost={!id.startsWith("PRB")} />
-                </button>
+              <button
+                type="button"
+                className="ans-src-open"
+                onClick={(e) => onOpen(id, e.currentTarget)}
+              >
+                <span className="ans-src-link">Abrir {id}</span>
                 <span className="ans-src-what">
                   {row ? (
                     <>
-                      semelhança <b className="mono">{formatSim(row.sim)}</b>
+                      semelhança <b className="num">{formatSim(row.sim)}</b>
                       {row.outcome === "mantido-fallback"
                         ? ` · ${OUTCOME_LABEL[row.outcome]}`
                         : null}
@@ -430,24 +446,12 @@ function SourcesBlock({
                     "fora dos casos encontrados"
                   )}
                 </span>
-              </div>
-              {row ? (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm ans-src-go"
-                  onClick={() => onShowInSearch(id)}
-                >
-                  <Icons.arrowDown />
-                  Ver na busca
-                </button>
-              ) : null}
+                <Icons.chevronRight className="ans-src-go" />
+              </button>
             </li>
           );
         })}
       </ul>
-      <p className="ans-note">
-        Semelhança vai de 0 a 1: quanto mais perto de 1, mais o caso se parece com este.
-      </p>
     </div>
   );
 }
@@ -455,30 +459,26 @@ function SourcesBlock({
 function HumanDecides({
   result,
   onShowNotes,
+  children,
 }: {
   result: SuggestResponse;
   onShowNotes: () => void;
+  /** What the person can do with the answer (copy, use as a note). */
+  children?: ReactNode;
 }) {
   return (
     <div className="pipe-human ans-human">
       <ConceptIcon concept="human" />
-      <div>
-        <b>Agora é com você.</b>
-        <p>Confira as fontes e decida. A IA não resolve sozinha.</p>
+      <div className="ans-human-body">
+        <p>
+          <b>Agora é com você:</b> confira as fontes e decida. A IA não resolve sozinha.
+        </p>
+        {children}
         {result.publication.published ? (
-          <>
-            <p className="ans-note">
-              A IA também deixou esta sugestão como nota no histórico do incidente,
-              marcada como dela.
-            </p>
-            <button
-              className="btn btn-primary btn-sm pipe-notes-btn"
-              onClick={onShowNotes}
-            >
-              <Icons.list />
-              Ver a nota da IA
-            </button>
-          </>
+          <button type="button" className="ans-notes-link" onClick={onShowNotes}>
+            <Icons.list />
+            Ver a nota que a IA deixou no histórico
+          </button>
         ) : null}
       </div>
     </div>
@@ -522,7 +522,7 @@ function SourceSheet({
           <RecordTag number={id} />
           {ex?.similarity != null ? (
             <span className="src-sheet-sim">
-              semelhança <b className="mono">{formatSim(ex.similarity)}</b>
+              semelhança <b className="num">{formatSim(ex.similarity)}</b>
             </span>
           ) : null}
           <button

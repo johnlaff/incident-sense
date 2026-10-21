@@ -244,7 +244,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  max-width: 12.5em;
+  max-width: 17em;
   padding: 3px 9px 3px 8px;
   border: 1px solid var(--border-strong);
   border-radius: 10px;
@@ -1066,4 +1066,101 @@
   :root:not([data-aula]) .rx-side {
     order: -1;
   }
+}
+
+/* The colour key, next to the map, in the same names as the list. */
+.rx-legend {
+  padding: 4px 14px 0;
+  opacity: 0;
+  transition: opacity calc(var(--dur-explain) * var(--motion-scale)) var(--ease-out);
+}
+.rx-legend.on {
+  opacity: 1;
+}
+.rx-legend-note {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.rx-legend ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5em), 1fr));
+  gap: 0 14px;
+}
+.rx-legend li,
+.rx-legend button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink-body);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.rx-legend button {
+  width: 100%;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.rx-legend button:hover,
+.rx-legend button.sel {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rx-legend button.sel {
+  font-weight: 600;
+}
+.rx-legend button:focus-visible {
+  outline: 2px solid var(--focus, var(--primary));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.rx-legend li.iso .rx-label-dot {
+  background: var(--border-strong);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rx-legend {
+    transition: none;
+  }
+}
+/* What the dashed circles mean, under the steps. */
+.rx-steps-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.rx-steps-key i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--c-ai, var(--primary));
+}
+
+/* Group vs Problem: the two counts, and isolated cases already linked. */
+.rx-inc-prb,
+.rec-prb-n {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.rec-prb-note {
+  margin: 8px 0 0;
+  color: var(--ink-body);
+  font-size: 13px;
+  line-height: 1.5;
 }

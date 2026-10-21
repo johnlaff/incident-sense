@@ -38,7 +38,7 @@ _SYSTEM = (
 def _judge_prompt(new_incident: str, listing: str) -> str:
     return (
         f"NOVO incidente:\n{new_incident}\n\n"
-        f"Incidentes passados (número: descrição):\n{listing}\n\n"
+        f"Casos passados (número: título; descrição; como foi resolvido):\n{listing}\n\n"
         "Devolva um array JSON onde cada item tem as chaves: "
         '"number" (o número do passado), "relevant" (true/false) e '
         '"reason" (uma frase curta em português).'
@@ -104,11 +104,7 @@ class LLMPostFilter(BaseNodePostprocessor):
 
     def _judge(self, new_incident: str, nodes: list[NodeWithScore]) -> dict[str, tuple[bool, str]]:
         """Ask the LLM for a relevance verdict per candidate (one call)."""
-        listing = "\n".join(
-            f"- {node.node.metadata.get('number', '')}: "
-            f"{node.node.metadata.get('short_description', '')}"
-            for node in nodes
-        )
+        listing = "\n".join(_describe(node) for node in nodes)
         raw = self._llm.complete(
             _SYSTEM, _judge_prompt(new_incident, listing), temperature=0.0, max_tokens=900
         )
@@ -121,7 +117,35 @@ class LLMPostFilter(BaseNodePostprocessor):
         for item in items:
             if isinstance(item, dict) and "number" in item:
                 verdicts[str(item["number"])] = (
-                    bool(item.get("relevant", True)),
+                    _truthy(item.get("relevant", True)),
                     str(item.get("reason", "")),
                 )
         return verdicts
+
+
+def _clip(text: object, limit: int) -> str:
+    flat = " ".join(str(text or "").split())
+    return flat if len(flat) <= limit else flat[: limit - 1].rstrip() + "…"
+
+
+def _describe(node: NodeWithScore) -> str:
+    """One line per candidate with what it is about, not only its title.
+
+    With the title alone the judge dropped the class case's nearest neighbours as
+    "sem menção a token ou sessão" while their descriptions said exactly that.
+    """
+    meta = node.node.metadata
+    parts = [_clip(meta.get("short_description"), 160)]
+    if meta.get("description"):
+        parts.append(f"descrição: {_clip(meta.get('description'), 360)}")
+    fix = meta.get("resolution_notes") or meta.get("root_cause")
+    if fix:
+        parts.append(f"resolução: {_clip(fix, 240)}")
+    return f"- {meta.get('number', '')}: " + "; ".join(p for p in parts if p)
+
+
+def _truthy(value: object) -> bool:
+    """bool("false") is True: read what the model meant."""
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"true", "sim", "1", "yes", "verdadeiro"}

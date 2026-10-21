@@ -2188,11 +2188,12 @@
   font-weight: 600;
 }
 .ans-step-src {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin-top: 6px;
+  vertical-align: middle;
+  font-weight: 400;
 }
 .ans-step-src-k {
   font-size: 12px;
@@ -2218,20 +2219,39 @@
   gap: 6px;
 }
 .ans-sources li {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 12px;
   max-width: 520px;
-  padding: 6px 0;
   border-bottom: 1px solid var(--c-ai-line);
 }
-.ans-src-main {
+/* One link per source row: the whole row opens the record. */
+.ans-src-open {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.ans-src-link {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+}
+.ans-src-open:hover .ans-src-link {
+  text-decoration-color: currentColor;
+}
+.ans-src-open .ans-src-go {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
 }
 .ans-src-what {
   font-size: 13px;
@@ -2271,20 +2291,51 @@
   font-size: 13px;
   color: var(--muted);
 }
-.ans-human {
+/* "Agora é com você" closes the answer as a plain row, not a card in the
+   card. */
+.ans-human.pipe-human {
   margin-top: 0;
+  padding: 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--c-ai-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
-/* Phones: "Ver na busca" drops under its row instead of covering it. */
+.ans-step-lead {
+  font-weight: 600;
+  color: var(--ink);
+}
+.ans-steps .ans-step-rest {
+  margin-top: 4px;
+  font-size: 15px;
+}
+.ans-tech-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-body);
+  cursor: pointer;
+}
+.ans-tech-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: rotate var(--dur-state, 200ms) var(--ease-out);
+}
+.ans-tech-btn[aria-expanded="true"] svg {
+  rotate: 90deg;
+}
 @media (max-width: 559.98px) {
   .ans {
     padding: 14px;
-  }
-  .ans-sources li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .ans-src-go {
-    padding-left: 0;
   }
 }
 
@@ -2471,4 +2522,59 @@
 }
 .ans-actions:has(> .btn:only-child) {
   grid-template-columns: 1fr;
+}
+.ans-human-body {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+.ans-human-body > p {
+  margin: 0;
+}
+.ans-notes-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.ans-notes-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Phones: the whole answer fits in about a screen and a half. */
+@media (max-width: 767px) {
+  .ans-one {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .ans-steps {
+    gap: 10px;
+  }
+  .ans-steps p {
+    font-size: 14.5px;
+    line-height: 1.45;
+  }
+  .ans-human-body {
+    gap: 4px;
+  }
+  .ans-human-body > p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .ans-block {
+    gap: 6px;
+  }
 }

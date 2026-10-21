@@ -231,6 +231,12 @@ h3 {
   font-feature-settings: normal;
   font-variant-numeric: tabular-nums;
 }
+/* Decimal numbers ("13,5", "0,83", "9,04"): Inter with even-width digits.
+   In the mono face the comma takes a whole cell and reads "13 , 5". */
+.num {
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+}
 .muted {
   color: var(--muted);
 }
@@ -4182,6 +4188,11 @@ body {
 .record-actions .btn {
   justify-content: center;
 }
+/* The AI button takes the whole first row: the main action of the record. */
+.record-actions .record-ai {
+  grid-column: 1 / -1;
+  min-height: 44px;
+}
 .tabs {
   padding: 0 6px;
   overflow-x: auto;
@@ -4960,6 +4971,10 @@ body {
 .aula-ctrl .aula-skip {
   padding-inline: 8px;
 }
+.aula-ctrl > * {
+  flex: none;
+}
+
 .aula-btn {
   border-color: var(--border);
   width: 40px;
@@ -4982,6 +4997,44 @@ body {
 }
 .aula-ctrl .aula-next {
   height: 40px;
+}
+/* The welcome sheet closes from its top right corner. */
+.aula-welcome {
+  padding-right: 48px;
+}
+.aula-bar .aula-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+/* Phones: "Ir ao fim" moves up to the counter's line (top right). */
+.aula-bar {
+  position: relative;
+}
+.aula-skip-top {
+  display: none;
+}
+@media (max-width: 767.98px) {
+  .aula-ctrl .aula-skip {
+    display: none;
+  }
+  .aula-skip-top {
+    display: block;
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    min-height: 32px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-body);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
 }
 
 /* Content scrolls clear of the strip. */
@@ -5141,4 +5194,12 @@ body {
   ::view-transition-group(*) {
     animation-duration: 0s !important;
   }
+}
+
+/* Not-found and error pages: the state block, centred in the content area. */
+.page-state {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  padding: 24px 16px;
 }

@@ -10,6 +10,8 @@ import { appHref } from "@/app/como-funciona/chapter";
 import {
   CANDIDATES,
   CHAPTERS,
+  CHG2_AVERAGE,
+  REAL_EVAL_SECONDS,
   CHG2_BACKOUT,
   CHG2_TASKS,
   CLUSTERS_DEMO,
@@ -127,18 +129,37 @@ describe("dados do demo", () => {
 });
 
 describe("a conta", () => {
-  it("averages the example grades to the 9,04 of the rehearsal", () => {
-    const { segments, average } = weightedSegments(EXAMPLE_GRADES);
-    expect(average).toBe(9.04);
-    expect(segments.at(-1)!.start + segments.at(-1)!.share).toBeCloseTo(9.037, 3);
+  it("averages the grades to the 8,87 the app shows for CHG0031002 (E2E P0-3)", () => {
+    const { average } = weightedSegments(EXAMPLE_GRADES);
+    expect(average).toBe(8.87);
+    expect(average).toBe(CHG2_AVERAGE);
   });
 
-  it("parallel calls take the slowest, a queue takes the sum", () => {
-    expect(latencySummary()).toEqual({ parallel: 1.9, queue: 8.8 });
+  it("parallel calls take the slowest, under the real 8 s with coherence", () => {
+    const { parallel, queue } = latencySummary();
+    expect(parallel).toBe(6.2);
+    expect(parallel).toBeLessThan(REAL_EVAL_SECONDS);
+    expect(queue).toBeGreaterThan(REAL_EVAL_SECONDS);
   });
 
-  it("funnels 7 to 6 to 4", () => {
-    expect(funnel()).toEqual({ found: 7, passed: 6, kept: 4 });
+  it("chapter 1 opens the Change it shows", () => {
+    expect(CHAPTERS[0].app.href).toBe("/changes/CHG0031002");
+  });
+
+  it("chapter 4 uses the real neighbours of INC0052233 (E2E P0-2)", () => {
+    expect(CANDIDATES.map((c) => c.number)).toEqual([
+      "INC0052219",
+      "INC0052228",
+      "INC0052273",
+      "INC0052202",
+      "INC0052209",
+      "PRB0004105",
+      "PRB0004104",
+    ]);
+  });
+
+  it("funnels 7 to 7 to 7, like the app", () => {
+    expect(funnel()).toEqual({ found: 7, passed: 7, kept: 7 });
     expect(CANDIDATES.filter((c) => c.kind === "incidente").length).toBeLessThanOrEqual(
       RETRIEVAL.incidentTopK,
     );

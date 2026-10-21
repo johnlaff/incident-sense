@@ -76,28 +76,38 @@ export const GATE = 8;
 export const TOTAL_WEIGHT = RUBRIC.reduce((s, r) => s + r.weight, 0);
 
 /**
- * ILUSTRATIVO: one grade per field for CHG0031002, chosen so the weighted
- * average is the 9,04 the Change got in the rehearsal (ENSAIO).
+ * REAL: the grades CHG0031002 got in the app on 21/10/2026 (auditoria E2E),
+ * so the explainer and the screen show the same 8,87. A new model run can
+ * move a field by half a point.
  */
 export const EXAMPLE_GRADES: Record<string, number> = {
-  implementation_plan: 9.2,
-  validation_plan: 9,
-  objective: 9.4,
-  benefits: 8.6,
-  test_justification: 9.2,
-  short_description: 9,
-  prerequisites: 8.6,
+  implementation_plan: 8.5,
+  validation_plan: 8.5,
+  objective: 9.5,
+  benefits: 9,
+  test_justification: 9,
+  short_description: 8.5,
+  prerequisites: 9.5,
 };
 
-/** ILUSTRATIVO: seconds each judge call took, to show parallel versus queue. */
+/** REAL: the weighted average of EXAMPLE_GRADES, as the app shows it. */
+export const CHG2_AVERAGE = 8.87;
+
+/** REAL: the whole evaluation of CHG0031002 in the app, coherence included. */
+export const REAL_EVAL_SECONDS = 8;
+
+/**
+ * ILUSTRATIVO: seconds each judge call took, to show parallel versus queue.
+ * The slowest is under REAL_EVAL_SECONDS: the coherence check runs after.
+ */
 export const EXAMPLE_LATENCY: Record<string, number> = {
-  implementation_plan: 1.9,
-  validation_plan: 1.7,
-  objective: 1.1,
-  benefits: 1,
-  test_justification: 1.4,
-  short_description: 0.8,
-  prerequisites: 0.9,
+  implementation_plan: 6.2,
+  validation_plan: 5.6,
+  objective: 3.6,
+  benefits: 3.3,
+  test_justification: 4.6,
+  short_description: 2.6,
+  prerequisites: 3,
 };
 
 export interface Segment extends RubricRow {
@@ -149,19 +159,19 @@ export function br(value: number, places = 1): string {
   });
 }
 
-/** ENSAIO: the two Changes the gate splits in the demo script. */
+/** REAL: the two Changes the gate splits, with the averages the app gave. */
 export const GATE_EXAMPLES = [
   {
     number: "CHG0031003",
     title: "Ajuste no sistema",
-    grade: 1,
-    approx: true,
+    grade: 1.17,
+    approx: false,
     verdict: "Para aqui: os campos ainda estão vazios ou genéricos.",
   },
   {
     number: "CHG0031002",
     title: "Boleto-Service 3.8.0",
-    grade: 9.04,
+    grade: CHG2_AVERAGE,
     approx: false,
     verdict: "Segue para a análise de coerência.",
   },
@@ -318,12 +328,58 @@ export interface Candidate {
   reason: string;
 }
 
+/**
+ * The real neighbours of INC0052233 in the demo data (the app finds the same
+ * seven): five incidents and two Problems, all about the JWT format changed
+ * by a deploy. Similarities are rounded examples; the reasons quote each
+ * record's own resolution.
+ */
 export const CANDIDATES: Candidate[] = [
+  {
+    number: "INC0052219",
+    kind: "incidente",
+    title: "Usuários impossibilitados de acessar o app após atualização",
+    sim: 0.97,
+    verdict: "mantido",
+    reason: "Mesma causa: a validação do token mudou no deploy. Resolvido com rollback.",
+  },
+  {
+    number: "INC0052228",
+    kind: "incidente",
+    title: "Clientes enfrentam erro de login após deploy no app",
+    sim: 0.96,
+    verdict: "mantido",
+    reason: "O deploy mudou o formato do token JWT, como aqui.",
+  },
+  {
+    number: "INC0052273",
+    kind: "incidente",
+    title: "Dificuldade para logar no app após novo deploy",
+    sim: 0.96,
+    verdict: "mantido",
+    reason: "Mesmo sintoma e mesma correção: rollback e validação compatível.",
+  },
+  {
+    number: "INC0052202",
+    kind: "incidente",
+    title: "Dificuldades de login relatadas após update do app",
+    sim: 0.95,
+    verdict: "mantido",
+    reason: "Token com formato novo depois do deploy, com a solução registrada.",
+  },
+  {
+    number: "INC0052209",
+    kind: "incidente",
+    title: "Problemas de login após implementação de novo deploy",
+    sim: 0.95,
+    verdict: "mantido",
+    reason: "A versão anterior do app não aceitava o token novo: mesma causa.",
+  },
   {
     number: "PRB0004105",
     kind: "problema",
     title: "Sessões ativas inválidas após deploy mantêm clientes presos na tela de login",
-    sim: 0.91,
+    sim: 0.93,
     verdict: "mantido",
     reason: "Mesma causa: sessão aberta antes do deploy recebe token inválido.",
   },
@@ -331,49 +387,9 @@ export const CANDIDATES: Candidate[] = [
     number: "PRB0004104",
     kind: "problema",
     title: "Mudança no formato do token JWT quebra o login de versões antigas do app",
-    sim: 0.88,
+    sim: 0.9,
     verdict: "mantido",
-    reason: "Token inválido depois de deploy: ajuda a descartar ou confirmar a causa.",
-  },
-  {
-    number: "INC0052226",
-    kind: "incidente",
-    title: "Login falha com erro de token após atualização do app",
-    sim: 0.87,
-    verdict: "mantido",
-    reason: "Mesmo erro de token, com a resolução registrada.",
-  },
-  {
-    number: "INC0052177",
-    kind: "incidente",
-    title: "Problemas de login: token inválido após update",
-    sim: 0.85,
-    verdict: "mantido",
-    reason: "Mesmo sintoma e mesma correção.",
-  },
-  {
-    number: "INC0052273",
-    kind: "incidente",
-    title: "Dificuldade para logar no app após novo deploy",
-    sim: 0.83,
-    verdict: "descartado",
-    reason: "Parece igual, mas a resolução foi limpar o cache de um aparelho só.",
-  },
-  {
-    number: "INC0052223",
-    kind: "incidente",
-    title: "Problemas de sessão após atualização do app mobile",
-    sim: 0.81,
-    verdict: "descartado",
-    reason: "Fala de sessão, mas sem erro de token: não ajuda neste caso.",
-  },
-  {
-    number: "INC0052286",
-    kind: "incidente",
-    title: "Erro de login temporário em usuários do app mobile",
-    sim: 0.76,
-    verdict: "abaixo",
-    reason: "",
+    reason: "Token inválido depois de deploy: ajuda a confirmar a causa.",
   },
 ];
 
@@ -404,7 +420,7 @@ export const SUGGESTION: { text: string; cite?: string; removed?: boolean }[] = 
   { text: " e conferir se o formato do token mudou nesta versão " },
   { text: "", cite: "PRB0004104" },
   { text: ". Depois, pedir novo login aos clientes afetados " },
-  { text: "", cite: "INC0052226" },
+  { text: "", cite: "INC0052219" },
   { text: " e acompanhar a taxa de erro de token " },
   { text: "", cite: "INC0051234", removed: true },
   { text: "." },
@@ -533,9 +549,9 @@ export const PROBLEM = {
 export type PartKey = "antes" | "depois" | "ciclo";
 
 export const PARTS: Record<PartKey, { title: string; who: string }> = {
-  antes: { title: "Antes do deploy", who: "Parte do Solange" },
-  depois: { title: "Depois do deploy", who: "Parte do João" },
-  ciclo: { title: "O ciclo fecha", who: "Os dois juntos" },
+  antes: { title: "Antes do deploy", who: "baseado no artigo de Solange, palestrante" },
+  depois: { title: "Depois do deploy", who: "baseado no artigo de João, palestrante" },
+  ciclo: { title: "O ciclo fecha", who: "baseado nos dois artigos" },
 };
 
 export interface StoryStep {
@@ -568,8 +584,8 @@ export const CHAPTERS: Chapter[] = [
     part: "antes",
     title: "A nota da Mudança",
     why: "Antes de subir, a Mudança ganha uma nota. Ninguém revisa mil Mudanças por dia à mão.",
-    note: "Pesos e corte vêm do demo; as notas por campo e os tempos são exemplos.",
-    app: { href: "/changes/CHG0031001", label: "Ver no app: CHG0031001" },
+    note: "Pesos e corte vêm do demo; as notas são de uma avaliação real da CHG0031002; os tempos são exemplos.",
+    app: { href: "/changes/CHG0031002", label: "Ver no app: CHG0031002" },
     steps: [
       {
         title: "Sete campos, cada um com um peso",
@@ -600,7 +616,8 @@ export const CHAPTERS: Chapter[] = [
       {
         title: "Com 8,0 ou mais, abre a próxima análise",
         line: "Abaixo disso, falta preencher campo.",
-        caption: "Com 8,0 ou mais a porta abre e a IA confere se os campos combinam.",
+        caption:
+          "Com 8,0 ou mais a porta abre e a IA confere se os campos combinam, no mesmo corte.",
         ms: 1500,
       },
     ],
@@ -634,9 +651,9 @@ export const CHAPTERS: Chapter[] = [
       },
       {
         title: "Coerência baixa, com o porquê",
-        line: "O autor vê o que ajustar antes de subir.",
+        line: "Coerência abaixo de 8,0: não segue, e o autor vê o que ajustar.",
         caption:
-          "Completo não é coerente: a nota de coerência cai e o autor sabe o que ajustar.",
+          "Coerência abaixo de 8,0: a Mudança não segue, e o autor sabe o que ajustar.",
         ms: 1400,
       },
     ],
@@ -679,7 +696,7 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     title: "Buscar e conferir",
     why: "Parecido não basta: primeiro buscar, depois conferir. Parecer não é o mesmo que servir.",
-    note: "Casos e contagens do demo; as semelhanças e os vereditos são exemplos.",
+    note: "Casos e contagens do demo, os mesmos que o app acha; as semelhanças são arredondadas.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {
@@ -697,8 +714,9 @@ export const CHAPTERS: Chapter[] = [
       },
       {
         title: "Uma IA confere cada candidato",
-        line: "Ela descarta o que só parece igual.",
-        caption: "Camada 3: parecer não basta. A IA descarta o que não ajuda neste caso.",
+        line: "Ela descarta o que só parece igual. Aqui, os 7 servem.",
+        caption:
+          "Camada 3: a IA lê cada caso e descarta o que só parece igual. Aqui, os 7 servem.",
         ms: 1600,
       },
     ],
@@ -738,7 +756,7 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-6",
     n: 6,
     part: "depois",
-    title: "Agrupar as recorrências",
+    title: "Agrupar as repetições",
     why: "Muitos incidentes, poucas causas: os parecidos formam grupos, e grupo grande pede um Problema.",
     note: "Mapa de exemplo, com os nomes de grupos do demo.",
     app: { href: "/recorrencias", label: "Ver no app: Repetições" },

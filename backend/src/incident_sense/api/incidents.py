@@ -9,7 +9,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from incident_sense.data.repository import IncidentRepository, StateGroup, build_repository
 from incident_sense.data.work_notes import WorkNotesStore, get_work_notes_store
@@ -51,8 +51,14 @@ def list_incidents(
 
 
 @router.get("/incidents/{number}", response_model=IncidentDetail)
-def get_incident(number: str, repo: RepoDep, notes: NotesDep) -> IncidentDetail:
+def get_incident(
+    number: str,
+    repo: RepoDep,
+    notes: NotesDep,
+    x_client_id: Annotated[str | None, Header(max_length=64)] = None,
+) -> IncidentDetail:
     """Return an incident's full record (cluster and published work notes), or 404."""
+    number = number.strip().upper()
     incident = repo.get(number)
     if incident is None:
         raise HTTPException(
@@ -60,5 +66,5 @@ def get_incident(number: str, repo: RepoDep, notes: NotesDep) -> IncidentDetail:
             detail=f"Incidente {number} não encontrado.",
         )
     detail = IncidentDetail.from_incident(incident, repo.get_cluster(number))
-    detail.published_notes = notes.list(number)
+    detail.published_notes = notes.list(number, client_id=x_client_id or "")
     return detail

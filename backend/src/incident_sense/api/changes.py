@@ -11,7 +11,8 @@ from collections.abc import Callable
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import openai
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from incident_sense.changes.evaluator import ChangeEvaluator, EvaluationCache, JudgeLLM
 from incident_sense.changes.repository import ChangeRepository, load_changes
@@ -71,10 +72,11 @@ RepoDep = Annotated[ChangeRepository, Depends(get_change_repository)]
 
 
 def _get(repo: ChangeRepository, number: str) -> Change:
+    number = number.strip().upper()
     change = repo.get(number)
     if change is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Change {number} não encontrada."
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Mudança {number} não encontrada."
         )
     return change
 
@@ -108,6 +110,7 @@ def evaluate_change(
     repo: RepoDep,
     cache: Annotated[EvaluationCache, Depends(get_evaluation_cache)],
     judge_for: Annotated[JudgeFactory, Depends(get_judge_factory)],
+    x_client_id: Annotated[str | None, Header(max_length=64)] = None,
 ) -> EvaluationResponse:
     """Score the seven fields, then run the semantic analysis if eligible."""
     change = _get(repo, number)
@@ -115,11 +118,31 @@ def evaluate_change(
     evaluator = ChangeEvaluator(judge_for(model), model=model, rubric=load_rubric(), cache=cache)
     try:
         return evaluator.evaluate(
-            change, overrides=request.fields, backout_plan=request.backout_plan
+            change,
+            overrides=request.fields,
+            backout_plan=request.backout_plan,
+            client_id=x_client_id or "",
         )
+    except openai.APIStatusError as exc:
+        log.error("evaluate_failed", error=str(exc), status=exc.status_code)
+        if exc.status_code in (402, 429):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="A IA está sem cota agora. Tente de novo mais tarde.",
+            ) from exc
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Não foi possível avaliar a mudança agora. Tente de novo em instantes.",
+        ) from exc
+    except openai.APITimeoutError as exc:
+        log.error("evaluate_timeout", error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="A IA demorou demais para responder. Tente de novo.",
+        ) from exc
     except Exception as exc:  # noqa: BLE001 - surface a clean, localized error.
         log.error("evaluate_failed", error=str(exc), error_type=type(exc).__name__)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Não foi possível avaliar a Change agora. Tente de novo em instantes.",
+            detail="Não foi possível avaliar a mudança agora. Tente de novo em instantes.",
         ) from exc
