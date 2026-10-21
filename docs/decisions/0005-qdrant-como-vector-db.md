@@ -1,6 +1,6 @@
 # ADR 0005 — Qdrant como banco vetorial
 
-- Status: Aceito
+- Status: Aceito (Qdrant em memória no [ADR 0015](0015-uma-chave-e-demo-publica-gratuita.md); filtro por tags no lugar do pré-filtro no [ADR 0016](0016-pipeline-de-incidentes-em-sete-etapas.md))
 - Data: 2026-06-22
 
 ## Contexto

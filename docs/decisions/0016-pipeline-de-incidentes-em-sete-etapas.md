@@ -37,6 +37,8 @@ incident-sense é a reprodução open source dele com dados sintéticos.
 - A base commitada ainda embute o texto cru; a consulta já usa o resumo. Até o
   re-embedding (`scripts/reembed.py`, precisa de chave), o limiar 0,8 corta mais
   do que cortaria em produção. Ver [rag-flow.md](../rag-flow.md).
+  **Atualização (2026-10-19):** o re-embedding foi feito no PR #95
+  (`summary_embeddings.npz` e `problem_embeddings.npz` commitados).
 - O contrato de `POST /api/suggest` cresceu (campos novos); os campos antigos
   continuam presentes.
 - Notas publicadas somem quando a API reinicia, o que é aceitável para o demo.

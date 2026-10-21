@@ -2,7 +2,7 @@
 
 # 🛰️ incident-sense
 
-**Estação de trabalho ITSM com copiloto de IA — sugere resoluções _fundamentadas_ e revela _problemas recorrentes_ sobre os incidentes de um banco fictício.**
+**Estação de trabalho ITSM com uma IA que mostra o trabalho: dá nota aos pedidos de mudança antes do deploy, sugere resoluções _fundamentadas_ depois dele e revela as _falhas que se repetem_, sobre os incidentes de um banco fictício.**
 
 [![backend-ci](https://github.com/johnlaff/incident-sense/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/johnlaff/incident-sense/actions/workflows/backend-ci.yml)
 [![frontend-ci](https://github.com/johnlaff/incident-sense/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/johnlaff/incident-sense/actions/workflows/frontend-ci.yml)
@@ -12,49 +12,80 @@
 
 <sub>🌐 <b>Português</b> · <a href="README.en.md">English</a></sub>
 
+**Demo ao vivo:** [incident-sense.joaoaraxaiba.workers.dev](https://incident-sense.joaoaraxaiba.workers.dev) · **API:** [incident-sense-api.onrender.com](https://incident-sense-api.onrender.com/api/health)
+
 </div>
 
 ---
 
-Quando um banco grande tem um problema de TI — o Pix parando, o app recusando
-login, o boleto não saindo — o analista de plantão se faz **duas perguntas**, e
-perde tempo nas duas:
+O incident-sense é a demonstração da palestra **"Depois do Deploy"** (TechWeek
+UFU, 22/10/2026). Ele reproduz, com dados sintéticos, dois artigos sobre IA na
+operação de TI de um banco:
+
+- **Antes do deploy** (artigo do Solange): uma IA juíza dá nota ao pedido de
+  mudança (Change) campo a campo e confere se as partes contam a mesma história.
+- **Depois do deploy** (artigo do João): para cada incidente, a IA busca casos
+  parecidos já resolvidos, decide se o chamado é procedente e sugere uma
+  resolução citando as fontes.
+
+Quando um banco grande tem um problema de TI (o Pix parando, o app recusando
+login, o boleto não saindo), o analista de plantão se faz duas perguntas:
 
 1. **Já resolvemos isso antes? Como?** A resposta está num chamado antigo
    parecido, perdido em meio a milhares.
-2. **Isso está virando recorrência?** Vários incidentes parecidos podem ser, na
-   verdade, o **mesmo** problema de fundo — e ninguém percebe no meio do volume.
+2. **Isso está se repetindo?** Vários incidentes parecidos podem ser o
+   **mesmo** problema de fundo, e ninguém percebe no meio do volume.
 
-O **incident-sense** responde as duas, numa interface **fiel ao ServiceNow** —
-mas com um copiloto que **mostra o trabalho** em vez de pedir confiança cega.
+O incident-sense responde as duas numa interface no estilo de um ITSM, com uma
+IA que **mostra cada etapa** em vez de pedir confiança cega. Quem decide é
+sempre uma pessoa.
 
 > [!NOTE]
 > Tudo roda sobre dados **sintéticos** de um banco **fictício** ("Banco
-> Meridiano"). Nenhum dado real, nenhuma empresa real — é um projeto de
-> portfólio _clean-room_.
+> Meridiano"). Nenhum dado real, nenhuma empresa real: é um projeto
+> _clean-room_.
 
 ## ✨ O que ele faz
 
-| | |
-|---|---|
-| 🤖 **Sugestão de resolução (RAG)** | Para um incidente novo, o **assistente da IA** recupera chamados **resolvidos** semelhantes e redige uma resolução fundamentada. |
-| 🔎 **Rastreabilidade real** | Cada sugestão **cita** os incidentes em que se baseou — e você **abre cada citação ali mesmo** para conferir se a solução veio de fato deles. Sem caixa-preta. |
-| 🗺️ **Detecção de recorrência (clustering)** | Agrupa os incidentes por causa raiz num **mapa animado**, com nomes de grupo gerados por IA, e permite **promover um grupo a problema**. |
-| ⌨️ **Workspace de verdade** | Navegue por todos os 431 incidentes, filtre, ordene, abra um registro — tema claro/escuro, **⌘K** para tudo, navegação por teclado. |
+| Tela | Onde | O que mostra |
+| --- | --- | --- |
+| **Incidentes** | `/incidentes` | Os 431 incidentes, com filtros na URL e paginação. No detalhe, a aba **Análise da IA** repassa as sete etapas do pipeline com o que cada uma decidiu, e as **Notas de trabalho** recebem a sugestão publicada. |
+| **Perguntar à IA** | botão no detalhe do incidente | O **assistente da IA**. A primeira pergunta roda a análise completa (`POST /api/suggest`); as seguintes vão para `POST /api/incidents/{n}/ask`, que responde usando só o incidente e os casos que a análise manteve, cita as fontes e nunca publica nota. |
+| **Repetições** | `/recorrencias` (ou `/repeticoes`) | "Falhas que se repetem": o mapa dos 431 incidentes vira grupos em cinco passos (9 grupos e 78 casos isolados), com ranking, filtros por serviço e mês e os Problemas de cada grupo. |
+| **Problemas** | `/problemas` | Os 10 Problemas (PRB) com causa raiz, contorno, solução definitiva e incidentes ligados. Toda menção a um PRB abre a prévia. |
+| **Mudanças** | `/changes` | 18 Changes sintéticas. A IA juíza dá nota de 0 a 10 a cada um dos 7 campos contra uma grade versionada e, com média a partir de 8,0, confere a coerência entre as partes. O veredito vem pronto do backend no campo `decision`. Campo que não mudou reaproveita a nota (trava de conteúdo); **"Avaliar de novo, sem reaproveitar"** manda tudo de novo ao modelo. |
+| **Como a IA funciona** | `/como-funciona` | O processo ponta a ponta em sete capítulos animados, da nota da Mudança ao Problema que fecha o ciclo. |
+| **Modo aula** | `?aula=1`, botão "Modo aula" no topo, ou `/aula` | Cada tela avança passo a passo, com legenda, por toque, setas ou passador de slides. `/aula` traz o roteiro da demo. |
 
-## 🎬 Demo
+## 🎬 Telas
 
-**Recorrências** — os incidentes voam para seus grupos por causa raiz, com rótulos gerados pela IA:
+**Análise da IA no incidente:** a resposta vem primeiro, com o Erro conhecido, os passos numerados e as fontes clicáveis.
 
-<div align="center"><img src="docs/assets/recurrences.webp" alt="Mapa de recorrências animado: os pontos se agrupam por causa raiz e um cluster é selecionado para inspeção" width="720"></div>
+<div align="center"><img src="docs/assets/incidente-analise.webp" alt="Aba Análise da IA do INC0052233: resposta com o erro conhecido PRB0004105, frase de diagnóstico e passos sugeridos citando as fontes" width="900"></div>
 
-**Assistente da IA**: resume, busca, classifica e sugere uma resolução, **citando** as fontes (clicáveis):
+**Assistente da IA ("Perguntar à IA"):** a sugestão com as fontes e, abaixo, uma pergunta de acompanhamento.
 
-<div align="center"><img src="docs/assets/aurora.webp" alt="Assistente da IA gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="440"></div>
+<div align="center"><img src="docs/assets/assistente.webp" alt="Painel do assistente da IA aberto sobre o incidente, com a sugestão, as fontes consultadas e a resposta a uma pergunta de acompanhamento" width="900"></div>
+
+**Mudanças:** nota por campo, média ponderada e as duas perguntas que decidem se a Change segue.
+
+<div align="center"><img src="docs/assets/mudanca.webp" alt="Avaliação da CHG0031002: campos com notas entre 8,6 e 9,4, média 9,04 e coerência 4,0, com o veredito Não segue" width="900"></div>
+
+**Repetições:** grupos de incidentes parecidos e casos isolados.
+
+<div align="center"><img src="docs/assets/repeticoes.webp" alt="Tela Repetições: mapa com 9 grupos e 78 casos isolados e o ranking dos grupos do maior para o menor" width="900"></div>
+
+**Como a IA funciona:** o resumo de 30 segundos e os sete capítulos.
+
+<div align="center"><img src="docs/assets/como-funciona.webp" alt="Página Como a IA funciona com o resumo em 30 segundos e o índice dos sete capítulos" width="900"></div>
+
+> As capturas foram feitas no site publicado sem disparar chamadas de IA: a
+> avaliação é a de exemplo do repositório (`frontend/tests/evaluation-fixture.json`)
+> e a sugestão é uma resposta real da API gravada antes e repassada no navegador.
 
 ## 🚀 Comece em um comando
 
-**Pré-requisito:** Docker. Só isso.
+**Pré-requisito:** Docker.
 
 ```bash
 git clone https://github.com/johnlaff/incident-sense.git
@@ -63,92 +94,121 @@ cp .env.example .env      # adicione sua chave da OpenRouter
 docker compose up         # abra http://localhost:3000
 ```
 
-O dataset e os resultados de clustering já vêm **commitados**, então o mapa de
-recorrência funciona **na hora**, offline. Só a sugestão interativa (RAG) faz
-chamadas de IA ao vivo (custo de centavos).
+O dataset, os vetores e o resultado do agrupamento já vêm **commitados**, então
+a navegação, os Problemas e as Repetições funcionam na hora, offline. Só a
+análise do incidente, as perguntas ao assistente e a avaliação de Mudanças
+chamam a IA ao vivo (custo de centavos).
 
 > [!TIP]
-> Sem as chaves no `.env`, o mapa de clusters e toda a navegação funcionam
-> normalmente; o copiloto apenas mostra uma mensagem amigável pedindo as chaves.
+> Sem a chave no `.env`, toda a navegação funciona; as rotas de IA respondem
+> com uma mensagem clara (503) pedindo a chave.
+
+Sem Docker: `make setup`, depois `make api` e `make web` em dois terminais. Com
+`QDRANT_URL=:memory:` no `.env`, o Qdrant roda dentro da API e não é preciso
+subir servidor. Veja [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 🌐 Publique de graça
 
-A demo pública roda em dois serviços gratuitos: a API no **Render** e o site na
-**Cloudflare** (Workers, via OpenNext). Uma única chave da OpenRouter cobre chat e embeddings, e o Qdrant
-roda em memória dentro da API, semeado com os vetores commitados.
+A demo pública roda em dois serviços gratuitos. Uma única chave da OpenRouter
+cobre chat e embeddings, e o Qdrant roda em memória dentro da API, semeado com
+os vetores commitados.
 
-1. **API:** [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/johnlaff/incident-sense)
+1. **API no Render (plano Free).** [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/johnlaff/incident-sense)
    cria o serviço a partir do [`render.yaml`](render.yaml). O único campo a
    preencher é `OPENROUTER_API_KEY`.
-2. **Site:** cadastre os segredos `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID`
-   no repositório e a variável `NEXT_PUBLIC_API_URL` com a URL da API. O workflow
-   [`frontend-deploy`](.github/workflows/frontend-deploy.yml) publica a cada push
-   em `main`. Para publicar da sua máquina: `cd frontend && npm run cf:deploy`.
-3. Ajuste `FRONTEND_ORIGIN` no Render para a URL do site.
+2. **Deploy contínuo da API.** Cadastre o deploy hook do serviço como o segredo
+   `RENDER_DEPLOY_HOOK_URL`. O workflow
+   [`backend-deploy`](.github/workflows/backend-deploy.yml) chama o hook a cada
+   push em `main` que mexe em `backend/` ou no `render.yaml`, e faz um ping em
+   `/api/health` a cada 10 minutos para a instância gratuita não dormir. Sem o
+   segredo, o passo de deploy é pulado.
+3. **Site na Cloudflare Workers (OpenNext).** Cadastre os segredos
+   `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID` e a variável
+   `NEXT_PUBLIC_API_URL` com a URL da API. O workflow
+   [`frontend-deploy`](.github/workflows/frontend-deploy.yml) publica a cada
+   push em `main` que mexe em `frontend/`. Da sua máquina:
+   `cd frontend && npm run cf:deploy`.
+4. Ajuste `FRONTEND_ORIGIN` no Render para a URL do site (lista separada por
+   vírgula).
 
-As rotas que chamam modelos têm limite por pessoa, por rede e um teto diário
-(`AI_MAX_PER_CLIENT`, `AI_MAX_PER_IP`, `AI_MAX_PER_DAY`), para que uma plateia
-inteira use a demo sem custo descontrolado. No plano gratuito a API dorme depois
-de 15 minutos parada e leva cerca de um minuto para acordar: abra o site alguns
-minutos antes de apresentar.
+As rotas que chamam modelos têm limite por visitante (`X-Client-Id`), por rede
+e um teto diário (`AI_MAX_PER_CLIENT`, `AI_MAX_PER_IP`, `AI_MAX_PER_DAY`), para
+que uma plateia inteira use a demo sem custo descontrolado. Cada chamada ao
+provedor desiste em 20 s, sem nova tentativa, e o site desiste em 90 s com um
+aviso em português.
 
 ## 🧠 Como funciona
 
-### Sugestão de resolução — RAG fundamentado
+### Incidentes: sete etapas e uma decisão
 
-RAG (_Retrieval-Augmented Generation_, "geração aumentada por recuperação")
-significa que a IA **não inventa** a resposta: ela primeiro **busca** casos reais
-parecidos e só então **redige** a sugestão a partir deles. Cada chamado novo
-passa por seis etapas, e a resposta sempre carrega a fonte:
+RAG (_Retrieval-Augmented Generation_) significa que a IA não inventa a
+resposta: primeiro **busca** casos reais parecidos e só então **redige** a
+sugestão a partir deles. `POST /api/suggest` segue o artigo etapa por etapa:
 
-A própria tela **Como funciona** anima esse pipeline ao vivo — o resumo do incidente percorre as seis etapas:
+1. **Carregar** o incidente (categoria, subcategoria, empresa e tags).
+2. **Resumir** por IA: o resumo, nunca o texto cru, é a consulta.
+3. **Transformar em números:** embedding do resumo com categoria, subcategoria
+   e empresa (`text-embedding-3-large`, 3072 dimensões).
+4. **Buscar e conferir** em três camadas: tags semânticas (onde procurar),
+   vetor com cosseno mínimo 0,8 e top-K 5 em incidentes e 10 em Problemas (o
+   que parece) e pós-filtro por LLM que lê título, descrição e resolução de cada
+   caso (o que serve). Se o pós-filtro falhar, volta a lista original.
+5. **Contexto** com o que passou, e a **decisão de procedência**: chamado
+   improcedente (autoatendimento, senha) ou procedente sem contexto não gera
+   sugestão.
+6. **Sugerir** com fontes: cada `[INC…]` e `[PRB…]` citado é conferido contra o
+   contexto; o que estiver fora é removido ou sinalizado.
+7. **Publicar** a sugestão nas notas de trabalho do incidente, visíveis só para
+   o visitante que pediu a análise.
 
-<div align="center"><img src="docs/assets/howitworks-rag.webp" alt="Animação do pipeline RAG: o chamado flui por resumir, vetorizar, buscar vizinhos resolvidos, pós-filtro, classificar e sugerir com citações" width="900"></div>
+Detalhes em [docs/rag-flow.md](docs/rag-flow.md).
 
-O passo **6** é o que evita ruído: o critério é se o chamado é **um incidente de
-verdade**. Um pedido como _"esqueci minha senha"_ vira **improcedente**
-(autoatendimento, não uma falha de sistema), em vez de receber uma resolução
-técnica forçada. A sugestão sai em linguagem **didática** (siglas explicadas) e o
-modelo de IA é **trocável** no seletor do assistente da IA. Detalhes em
-[docs/rag-flow.md](docs/rag-flow.md).
+### Mudanças: IA juíza com veredito único
 
-### Detecção de recorrência — clustering
+`POST /api/changes/{number}/evaluate` dá nota a cada campo num prompt próprio,
+em paralelo, calcula a média ponderada pelos pesos da grade (soma 13,5) e, a
+partir de 8,0, confere a coerência entre as partes e o plano de retorno contra
+as tarefas. O backend devolve `decision` (`passes`, `reason_code`, `failed`,
+`reason`): a Change pode seguir quando a média e a coerência chegam a 8,0, não
+há contradição real e o plano de retorno não é `NAO_ADERENTE`. Todas as telas
+leem só esse campo. Detalhes em
+[docs/architecture.md](docs/architecture.md#3-avaliação-de-mudanças).
 
-Os mesmos vetores que medem semelhança também revelam **grupos**. Reduzimos os
-incidentes a um mapa 2D (UMAP), agrupamos os próximos por causa raiz (HDBSCAN) e
-deixamos um LLM **nomear** cada grupo. O resultado é pré-computado e versionado,
-então o mapa abre instantâneo e idêntico para todos.
+### Repetições: agrupamento
 
-<div align="center"><img src="docs/assets/howitworks-clustering.webp" alt="Animação do clustering: pontos espalhados se aproximam por semelhança e formam grupos por causa raiz, enquanto os casos isolados ficam de fora" width="900"></div>
-
-Detalhes em [docs/clustering-flow.md](docs/clustering-flow.md).
+Os mesmos vetores que medem semelhança também revelam grupos. O HDBSCAN agrupa
+os embeddings normalizados, o que não tem vizinhança densa fica como caso
+isolado, um LLM dá nome a cada grupo e o UMAP 2D só desenha o mapa. O resultado
+é pré-computado e versionado. Detalhes em
+[docs/clustering-flow.md](docs/clustering-flow.md).
 
 ## 🏗️ Arquitetura
 
 <div align="center">
-  <img src="docs/assets/architecture-pt.svg" alt="Arquitetura: o analista usa o workspace Next.js, que chama a API FastAPI; a API usa Qdrant para busca vetorial, o clusters.json pré-computado para recorrências, e OpenRouter/OpenAI para LLM e embeddings" />
+  <img src="docs/assets/architecture-pt.svg" alt="Arquitetura: o visitante usa o site Next.js na Cloudflare Workers, que chama a API FastAPI no Render; a API usa o Qdrant em memória semeado com os dados commitados e a OpenRouter para chat e embeddings; o GitHub Actions publica o site e a API e mantém a API acordada" />
 </div>
 
 | Camada | Stack |
 | --- | --- |
-| **Frontend** | Next.js 16 (App Router) · React 19 · TypeScript estrito · Tailwind v4 · Motion · react-markdown |
-| **Backend** | Python 3.12 · FastAPI · LlamaIndex · Pydantic · structlog |
-| **IA** | OpenRouter: `openai/text-embedding-3-large` (embeddings) e Claude Haiku 5.5, GPT-6 Luna, Gemini 3.8 Flash, DeepSeek V4.1 Flash e Qwen 3.7 Flash (chat) |
-| **Dados** | Qdrant (busca vetorial) · BERTopic + UMAP + HDBSCAN (clustering) |
-| **Infra** | Docker Compose · Render + Cloudflare Workers (demo pública gratuita) · GitHub Actions (CI) · imagens multi-stage não-root |
+| **Frontend** | Next.js 16 (App Router) · React 19 · TypeScript estrito · Tailwind v4 · Motion · react-markdown · regl-scatterplot |
+| **Backend** | Python 3.12 · FastAPI · LlamaIndex · Pydantic v2 · structlog |
+| **IA** | OpenRouter com uma chave: `openai/text-embedding-3-large` (embeddings) e Claude Haiku 5.5 (padrão), GPT-6 Luna, Gemini 3.8 Flash, DeepSeek V4.1 Flash e Qwen 3.7 Flash (chat, trocáveis no seletor de modelo) |
+| **Dados** | Qdrant (em memória na demo, servidor no Docker Compose) · BERTopic + HDBSCAN + UMAP (agrupamento offline) |
+| **Infra** | Render Free (API) · Cloudflare Workers via OpenNext (site) · GitHub Actions (CI, deploy, ping, release para o GHCR) · Docker Compose |
 
 ## 📁 Estrutura
 
 ```text
 incident-sense/
-├── backend/      # FastAPI: RAG, clustering servido, browse de incidentes
-│   ├── src/incident_sense/   # api, rag, data, models
-│   └── data/                 # dataset + embeddings + clusters (commitados)
-├── frontend/     # Next.js: workspace, assistente da IA, mapa de recorrências
-│   ├── app/                  # rotas (incidentes, detalhe, recorrências, …)
-│   ├── components/           # shell, ícones, primitivas de UI
-│   └── lib/                  # cliente de API tipado + camada de mapeamento
-└── docs/         # arquitetura, fluxos e ADRs
+├── backend/      # FastAPI: incidentes, ask, Changes, Problemas, agrupamento servido
+│   ├── src/incident_sense/   # api, rag, changes, data, models, guard
+│   └── data/                 # incidentes, problemas, changes, vetores e clusters (commitados)
+├── frontend/     # Next.js: incidentes, assistente, Repetições, Mudanças, Como a IA funciona, aula
+│   ├── app/                  # rotas
+│   ├── components/           # shell, conceitos, assistente, modo aula
+│   └── lib/                  # cliente de API tipado e modelos de tela
+├── contracts/    # fixtures do contrato de streaming lidas pelos dois lados
+└── docs/         # arquitetura, fluxos, diagramas e ADRs
 ```
 
 ## 🛠️ Desenvolvimento
@@ -163,14 +223,14 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md) para todos os comandos.
 
 ## 📚 Aprofunde
 
-- [docs/architecture.md](docs/architecture.md) — visão geral e stack
-- [docs/rag-flow.md](docs/rag-flow.md) — o fluxo de sugestão (RAG)
-- [docs/clustering-flow.md](docs/clustering-flow.md) — a detecção de recorrência
-- [docs/data-generation.md](docs/data-generation.md) — como os dados sintéticos são gerados
-- [docs/decisions/](docs/decisions/) — ADRs (por que LlamaIndex, BERTopic, Qdrant…)
+- [docs/architecture.md](docs/architecture.md): visão geral, rotas, hospedagem e avaliação de Mudanças
+- [docs/rag-flow.md](docs/rag-flow.md): o pipeline de incidentes e as perguntas ao assistente
+- [docs/clustering-flow.md](docs/clustering-flow.md): as Repetições
+- [docs/data-generation.md](docs/data-generation.md): como os dados sintéticos são gerados
+- [docs/decisions/](docs/decisions/): ADRs
+- [CHANGELOG.md](CHANGELOG.md): o que mudou em cada versão
 
 ## 📄 Licença
 
-Código sob a licença [**MIT**](LICENSE) — livre para estudar, usar e adaptar. Os
-dados são **sintéticos e fictícios**: nenhuma informação real é usada ou
-distribuída.
+Código sob a licença [**MIT**](LICENSE). Os dados são **sintéticos e
+fictícios**: nenhuma informação real é usada ou distribuída.
