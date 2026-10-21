@@ -160,8 +160,8 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
           <ProblemDefinition className="prb-head-def" />
           {problemState(problem.state).tone === "known" ? (
             <p className="prb-terms prb-head-def">
-              <b>Erro conhecido:</b> a causa já foi achada e há um contorno para usar até a
-              correção definitiva chegar.
+              <b>Erro conhecido:</b> a causa já foi achada e há um contorno para usar até
+              a correção definitiva chegar.
             </p>
           ) : null}
         </div>

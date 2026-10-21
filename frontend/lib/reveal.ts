@@ -79,3 +79,13 @@ export function revealSubject(
   );
   return () => timers.forEach((t) => window.clearTimeout(t));
 }
+
+/**
+ * One scroll, no re-checks: put the top of `el` just under the top bar. Used
+ * when an answer arrives, so the page moves once and then stays put.
+ */
+export function scrollOnce(el: Element, reduced: boolean): void {
+  const band = freeBand();
+  const d = el.getBoundingClientRect().top - band.top;
+  scrollByDelta(el, d, !reduced);
+}

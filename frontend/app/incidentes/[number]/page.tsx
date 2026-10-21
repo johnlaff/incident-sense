@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, ViewTransition } from "react";
 
 import { ConceptLabel, RecordTag, TechDetails } from "@/components/concepts";
+import { scrollOnce } from "@/lib/reveal";
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
 import {
@@ -524,6 +525,14 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                       onClick={() => {
                         setTab("analise");
                         if (suggest.phase !== "running") void suggest.run();
+                        // The new tab opens at its top, so its first line (or an
+                        // error) is never cut off by the old scroll position.
+                        requestAnimationFrame(() => {
+                          const tabs = document.querySelector<HTMLElement>(
+                            '[role="tablist"][aria-label="Seções do incidente"]',
+                          );
+                          if (tabs) scrollOnce(tabs, reduced);
+                        });
                       }}
                     >
                       <Icons.aiSpark />
@@ -613,6 +622,8 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
               onCite={peek}
               flashCite={flashCite}
               onShowNotes={showNotes}
+              onInsert={doInsert}
+              onCopy={doCopy}
             />
           ) : tab === "atividade" ? (
             <section className="section" aria-labelledby="h-act">

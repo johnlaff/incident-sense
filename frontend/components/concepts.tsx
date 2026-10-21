@@ -298,7 +298,5 @@ export function KindLine({ className = "" }: { className?: string }) {
 
 /** Says once, at the top of the first screen, that nothing here is real. */
 export function DemoNote() {
-  return (
-    <p className="demo-note">Demo com dados fictícios do Banco Meridiano.</p>
-  );
+  return <p className="demo-note">Demo com dados fictícios do Banco Meridiano.</p>;
 }

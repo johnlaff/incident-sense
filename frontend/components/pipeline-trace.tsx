@@ -30,9 +30,11 @@ import {
 } from "./concepts";
 import { Icons, type IconComponent } from "./icons";
 import { SuggestionMarkdown } from "./markdown";
+import { AnswerCard } from "./answer-card";
 import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
 import { buildSuggestionMarkdown } from "@/lib/model";
 import { formatSeconds, useElapsedSeconds, useIsPhone } from "@/lib/motion";
+import { scrollOnce } from "@/lib/reveal";
 import {
   OUTCOME_LABEL,
   PIPELINE_STEPS,
@@ -98,6 +100,8 @@ export function PipelineTrace({
   onCite,
   flashCite,
   onShowNotes,
+  onInsert,
+  onCopy,
 }: {
   phase: RunPhase;
   result: SuggestResponse | null;
@@ -110,6 +114,8 @@ export function PipelineTrace({
   onCite: CiteHandler;
   flashCite: string | null;
   onShowNotes: () => void;
+  onInsert?: (text: string) => void;
+  onCopy?: (text: string) => void;
 }) {
   const running = phase === "running";
   const shown = running ? null : result;
@@ -129,18 +135,182 @@ export function PipelineTrace({
     current?.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
   }, [beat, lesson.aula]);
 
+  // Outside modo aula the answer comes first and the seven steps fold below
+  // it, under "Como a IA chegou nisso". Modo aula keeps the step-by-step lesson.
+  const answerFirst = !lesson.aula;
+  const [howOpen, setHowOpen] = useState(false);
+  const answerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // "Ver na busca" (and any citation) opens the folded steps first.
+    const open = () => setHowOpen(true);
+    window.addEventListener(OPEN_STEP_EVENT, open);
+    return () => window.removeEventListener(OPEN_STEP_EVENT, open);
+  }, []);
+  // When an answer arrives, bring its top into view once, then never again.
+  useEffect(() => {
+    if (!answerFirst || !shown) return;
+    const el = answerRef.current;
+    if (!el) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const id = requestAnimationFrame(() => scrollOnce(el, reduced));
+    return () => cancelAnimationFrame(id);
+  }, [answerFirst, shown]);
+
+  function showInSearch(id: string) {
+    setHowOpen(true);
+    window.dispatchEvent(new CustomEvent(OPEN_STEP_EVENT, { detail: "buscar" }));
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const row = document.getElementById(`src-${id}`);
+        if (!row) return;
+        const fold = row.closest("details");
+        if (fold) fold.open = true;
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        row.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+        row.classList.remove("is-flash");
+        void row.offsetWidth;
+        row.classList.add("is-flash");
+      }),
+    );
+  }
+
+  const legend = (
+    <div className="pipe-legend" aria-label="Legenda">
+      <ConceptLabel concept="ai-step">Passo da IA</ConceptLabel>
+      <ConceptLabel concept="gate">Regra de sim ou não</ConceptLabel>
+      <ConceptLabel concept="ai-out" />
+      <ConceptLabel concept="human">Você decide</ConceptLabel>
+    </div>
+  );
+
+  const steps = (
+    <ol
+      ref={listRef}
+      className={`pipe${shown ? "" : " pipe-outline"}${running ? " is-running" : ""}`}
+      aria-label="Etapas do pipeline"
+      aria-busy={running}
+    >
+      {PIPELINE_STEPS.map((def) => {
+        const view = views?.find((v) => v.key === def.key) ?? null;
+        const at: Reveal = view ? stepReveal(def.key, beat) : "hidden";
+        // Once the replay is over nothing is "being played": the last step
+        // reads as done, like its "Concluída" chip (modo aula keeps it lit
+        // while the narrator is on it).
+        const reveal: Reveal = at === "current" && finished ? "done" : at;
+        return (
+          <StepItem
+            key={def.key}
+            def={def}
+            view={reveal === "hidden" ? null : view}
+            reveal={reveal}
+            stopped={stoppedAfterGate(views, def.key, beat)}
+          >
+            {view && reveal !== "hidden" && shown ? (
+              answerFirst && (def.key === "sugerir" || def.key === "publicar") ? (
+                <p className="pipe-gate-why">
+                  {def.key === "sugerir"
+                    ? "A resposta está no topo desta aba."
+                    : "A decisão fica com você, no topo desta aba."}
+                </p>
+              ) : (
+                <StepDetail
+                  step={def.key}
+                  result={shown}
+                  source={source}
+                  beat={beat}
+                  modelName={modelName}
+                  onCite={onCite}
+                  flashCite={flashCite}
+                  onShowNotes={onShowNotes}
+                />
+              )
+            ) : null}
+          </StepItem>
+        );
+      })}
+    </ol>
+  );
+
+  if (answerFirst) {
+    return (
+      <div className="section pipe-section">
+        <div className="pipe-head">
+          <div className="pipe-head-text">
+            <h2>Sugestão da IA</h2>
+            <p className="pipe-lede">
+              A IA procura casos parecidos que já foram resolvidos e sugere uma solução,
+              citando cada um. Quem decide é você.
+            </p>
+          </div>
+          <button className="btn btn-ai" onClick={onRun} disabled={running}>
+            {running ? <Icons.loader className="spin" /> : <Icons.aiSpark />}
+            {running ? "Analisando" : result ? "Analisar de novo" : "Analisar com a IA"}
+          </button>
+        </div>
+
+        {phase === "error" ? (
+          <div className="pipe-alert" role="alert">
+            <Icons.alert />
+            <div>
+              <b>A análise não terminou.</b> {error}
+            </div>
+          </div>
+        ) : null}
+
+        {running ? <RunProgress startedAt={startedAt} /> : null}
+
+        {shown ? (
+          <div ref={answerRef} className="ans-wrap">
+            <AnswerCard
+              result={shown}
+              modelName={modelName}
+              onCite={onCite}
+              onShowInSearch={showInSearch}
+              onInsert={onInsert}
+              onCopy={onCopy}
+              onShowNotes={onShowNotes}
+            />
+          </div>
+        ) : null}
+
+        <details
+          className="pipe-how"
+          open={howOpen}
+          onToggle={(e) => setHowOpen((e.currentTarget as HTMLDetailsElement).open)}
+        >
+          <summary>
+            <Icons.chevronRight />
+            <span>
+              {shown ? "Como a IA chegou nisso" : "Como a IA chega numa sugestão"}
+              <span className="pipe-how-n">7 passos</span>
+            </span>
+          </summary>
+          <div className="pipe-how-body">
+            {legend}
+            {shown && durationMs != null ? (
+              <RunStatus
+                running={false}
+                startedAt={startedAt}
+                durationMs={durationMs}
+                replaying={false}
+                aula={false}
+                onSkip={lesson.skip}
+              />
+            ) : null}
+            {steps}
+          </div>
+        </details>
+      </div>
+    );
+  }
+
   return (
     <div className="section pipe-section">
       <div className="pipe-head">
         <div className="pipe-head-text">
           <h2>Como a IA chegou na sugestão</h2>
           <p className="pipe-lede">Sete passos da máquina. No fim, quem decide é você.</p>
-          <div className="pipe-legend" aria-label="Legenda">
-            <ConceptLabel concept="ai-step">Passo da IA</ConceptLabel>
-            <ConceptLabel concept="gate">Portão de sim ou não</ConceptLabel>
-            <ConceptLabel concept="ai-out" />
-            <ConceptLabel concept="human">Você decide</ConceptLabel>
-          </div>
+          {legend}
         </div>
         <button className="btn btn-ai" onClick={onRun} disabled={running}>
           {/* The one control to run it again: a new run, in AI violet. The
@@ -168,43 +338,45 @@ export function PipelineTrace({
         onSkip={lesson.skip}
       />
 
-      <ol
-        ref={listRef}
-        className={`pipe${shown ? "" : " pipe-outline"}${running ? " is-running" : ""}`}
-        aria-label="Etapas do pipeline"
-        aria-busy={running}
-      >
-        {PIPELINE_STEPS.map((def) => {
-          const view = views?.find((v) => v.key === def.key) ?? null;
-          const at: Reveal = view ? stepReveal(def.key, beat) : "hidden";
-          // Once the replay is over nothing is "being played": the last step
-          // reads as done, like its "Concluída" chip (modo aula keeps it lit
-          // while the narrator is on it).
-          const reveal: Reveal = at === "current" && finished ? "done" : at;
-          return (
-            <StepItem
-              key={def.key}
-              def={def}
-              view={reveal === "hidden" ? null : view}
-              reveal={reveal}
-              stopped={stoppedAfterGate(views, def.key, beat)}
-            >
-              {view && reveal !== "hidden" && shown ? (
-                <StepDetail
-                  step={def.key}
-                  result={shown}
-                  source={source}
-                  beat={beat}
-                  modelName={modelName}
-                  onCite={onCite}
-                  flashCite={flashCite}
-                  onShowNotes={onShowNotes}
-                />
-              ) : null}
-            </StepItem>
-          );
-        })}
+      {steps}
+    </div>
+  );
+}
+
+/** While the server works: the usual stages, ticked by elapsed time. */
+const PROGRESS_STAGES: { at: number; label: string }[] = [
+  { at: 0, label: "Lendo o chamado" },
+  { at: 1, label: "Buscando incidentes e Problemas parecidos" },
+  { at: 3, label: "Conferindo se cada caso serve" },
+  { at: 5, label: "Escrevendo a sugestão com as fontes" },
+];
+
+function RunProgress({ startedAt }: { startedAt: number | null }) {
+  const seconds = useElapsedSeconds(startedAt);
+  const current = PROGRESS_STAGES.reduce((acc, s, i) => (seconds >= s.at ? i : acc), 0);
+  return (
+    <div className="run-progress" role="status" aria-live="polite">
+      <ol>
+        {PROGRESS_STAGES.map((s, i) => (
+          <li
+            key={s.label}
+            className={i < current ? "is-done" : i === current ? "is-now" : undefined}
+          >
+            {i < current ? (
+              <Icons.check size={14} sw={3} />
+            ) : i === current ? (
+              <Icons.loader size={14} className="spin" />
+            ) : (
+              <span className="run-progress-dot" aria-hidden="true" />
+            )}
+            {s.label}
+          </li>
+        ))}
       </ol>
+      <p className="run-progress-note">
+        <span className="mono">{seconds} s</span> · etapas de costume: o servidor devolve
+        tudo junto no fim.
+      </p>
     </div>
   );
 }
