@@ -97,7 +97,23 @@ def is_small_talk(question: str) -> bool:
     return not bare or bool(_GREETING.match(bare))
 
 
-def _hello(number: str) -> str:
+def _hello(number: str, memory: AnalysisMemory | None) -> str:
+    """A greeting that offers only what the analysis has (logica-5 P2-4)."""
+    if memory is not None and memory.classification != "PROCEDENTE":
+        return (
+            f"Oi! Posso responder perguntas sobre o {number}: o veredito da análise e o "
+            'motivo dele. Por exemplo: "Por que não é um incidente?"'
+        )
+    if memory is not None and not memory.suggestion:
+        return (
+            f"Oi! Posso responder perguntas sobre o {number}: o veredito da análise e por "
+            'que ela não trouxe uma sugestão. Por exemplo: "O que faltou para sugerir?"'
+        )
+    if memory is None:
+        return (
+            f"Oi! Posso responder perguntas sobre o {number} e a análise da IA: o veredito, "
+            "a sugestão quando houver e os casos parecidos que ela usou."
+        )
     return (
         f"Oi! Posso responder perguntas sobre o {number}: a resolução sugerida, por que "
         "a IA escolheu esses casos, ou o que cada caso parecido fez. Por exemplo: "
@@ -199,16 +215,22 @@ def ask(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Incidente {number} não encontrado.",
         )
-    if is_small_talk(request.question):
-        return AskResponse(kind="off_topic", answer=_hello(number))
-
     # The analysis the person is looking at, as the server ran it: the browser
     # never says which cases count (logica-4 P1-2, P2-13).
     memory = analyses.get(client_key(http), number)
+    if is_small_talk(request.question):
+        return AskResponse(kind="off_topic", answer=_hello(number, memory))
     if memory is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Analise o incidente primeiro: a pergunta parte da análise da IA.",
+        )
+    # Another tab ran a newer analysis: answer about the one on this page only
+    # after the page re-syncs (logica-5 P2-2).
+    if request.analysis_id and memory.id and request.analysis_id != memory.id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A análise mudou em outra aba: a IA analisa de novo antes de responder.",
         )
 
     settings = get_settings()

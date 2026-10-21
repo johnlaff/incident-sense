@@ -7,6 +7,7 @@ clear 503 instead of a stack trace.
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import replace
 from typing import Annotated
 
@@ -107,10 +108,12 @@ def remember(store: AnalysisStore, client_id: str, response: SuggestResponse) ->
     for p in response.problems:
         if p.number in kept and p.postfilter_reason:
             reasons[p.number] = p.postfilter_reason
+    response.analysis_id = uuid.uuid4().hex
     store.put(
         client_id,
         response.incident_number,
         AnalysisMemory(
+            id=response.analysis_id,
             classification=str(response.classification),
             justification=response.decision.justification,
             suggestion=response.suggestion,

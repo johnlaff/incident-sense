@@ -233,6 +233,9 @@ def test_running_the_analysis_again_keeps_one_note_and_remembers_it(client: Test
     assert memory.kept == ["INC0000001"]
     assert memory.suggestion == "Reinicie o worker [INC0000001]."
     assert memory.reasons == {"INC0000001": "mesma causa"}
+    # logica-5 P2-2: each analysis has an id, the page sends it back.
+    assert first["analysis_id"] and second["analysis_id"] != first["analysis_id"]
+    assert memory.id == second["analysis_id"]
 
     # The follow-up then reads the suggestion this analysis showed.
     ask_llm = _wire(client, json.dumps({"kind": "answer", "answer": "Reinicie o worker."}))

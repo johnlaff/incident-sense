@@ -23,7 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Protocol
 
 import openai
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
 from incident_sense.models.change import (
     EVALUATED_FIELDS,
@@ -66,12 +66,14 @@ _SEMANTIC_SYSTEM = (
     "desfazer de fato o que a implementação altera (por exemplo: se a implementação "
     "muda estrutura de dados, reverter só a imagem do contêiner não basta). Compare "
     'também o plano de retorno com as tarefas cadastradas. Em "problems" entram '
-    "SOMENTE contradições reais: uma parte do pedido afirma ou faz algo que outra "
-    "parte desmente, ou o retorno deixa de desfazer algo que a implementação altera. "
-    "Sugestões de melhoria, detalhes que faltam e boas práticas não são contradições: "
-    'vão em "guidance". Se não houver contradição real, responda "problems": [] '
-    '(lista vazia); nunca escreva itens como "Nenhuma contradição encontrada", '
-    '"N/A" ou "não há". '
+    "SOMENTE contradições reais entre DUAS partes: uma parte do pedido afirma ou faz "
+    "algo que outra parte desmente, ou o retorno deixa de desfazer algo que a "
+    'implementação altera. Cada item é um objeto com as duas partes em "campos" '
+    "(objetivo, descrição resumida, benefícios, pré-requisitos, implementação, "
+    'validação, testes, retorno, tarefas) e uma frase em "descricao". '
+    "Sugestões de melhoria, detalhes que faltam, boas práticas e observações sobre "
+    'uma parte só não são contradições: vão em "guidance". Se não houver '
+    'contradição real, responda "problems": [] (lista vazia). '
     "Responda apenas com JSON."
 )
 
@@ -172,39 +174,91 @@ def _points(value: object) -> object:
 
 
 _NONE_WORDS = re.compile(r"^(n ?a|none|nenhum|nenhuma|nada|vazio|sem|nao se aplica|nao ha)$")
-# A filler denies that any contradiction exists, as a whole phrase: a negation,
-# then the word for a contradiction, then only filler words. "Nenhuma tarefa
-# cobre o problema..." names something real, so it is kept (logica-4 P2-5).
-_FILLER_TAIL = (
-    r"(?:\s+(?:encontrad\w*|identificad\w*|detectad\w*|apontad\w*|relevante\w*|real|reais|"
-    r"aparente\w*|significativ\w*|grave\w*|entre|as|os|partes|do|da|de|dos|das|pedido|campos|"
-    r"neste|nesta|nos|nas|no|na|change|mudanca|foi|foram|a|apontar|dign\w*|nota|aqui))*"
-)
-_SAYS_NONE = re.compile(
-    r"^(?:nao ha|nao houve|nao foi encontrad\w*|nao foram encontrad\w*|nao foi identificad\w*|"
-    r"nao foram identificad\w*|nao existem?|nao se identificou|nenhum|nenhuma|sem|nada de)"
-    r"\s+(?:outr[ao]s?\s+)?"
-    r"(?:contradic\w*|inconsistenc\w*|problemas?|divergenc\w*|conflitos?|incoerenc\w*|"
-    r"pontos?|ressalvas?)" + _FILLER_TAIL + r"$"
-)
 _NOTHING_TO_SAY = re.compile(
-    r"^(?:nada a (?:apontar|declarar|destacar|relatar|acrescentar)|tudo certo|tudo ok)$"
+    r"^(?:nada a (?:apontar|declarar|destacar|relatar|acrescentar)|tudo certo|tudo ok)\b"
 )
+# A denial: a negation whose object is the contradiction itself ("Não foram
+# identificadas contradições", "Nenhuma inconsistência entre..."). Only
+# auxiliary words may sit between the two, so "Nenhuma tarefa cobre..." is
+# not one: its negation falls on "tarefa".
+_DENIAL = re.compile(
+    r"^(?:nao|nenhum\w*|sem|nada|inexist\w*)"
+    r"(?:\s+(?:ha|houve|havia|existe\w*|foi|foram|se|eu|identifi\w*|encontr\w*|detect\w*|"
+    r"aponta\w*|observ\w*|verifi\w*|constat\w*|nota\w*|vejo|vi|nenhum\w*|qualquer|"
+    r"outr\w*|um|uma|de|real|reais|evidente\w*|aparente\w*))*"
+    r"\s+(?:contradic|inconsistenc|divergenc|conflit|incoerenc|problema|ponto|ressalva|"
+    r"discrepanc|incompatib)"
+)
+
+# The parts of a Change a contradiction can be between, by the words that name
+# them. A contradiction is between two parts; one part alone is a remark.
+_PARTS: dict[str, re.Pattern[str]] = {
+    part: re.compile(pattern)
+    for part, pattern in {
+        "objetivo": r"\bobjetivo",
+        "descricao": r"\bdescricao resumida|\btitulo\b",
+        "beneficios": r"\bbeneficio",
+        "prerequisitos": r"\bpre ?requisito",
+        "implementacao": (
+            r"\bimplementa\w*|\bimplanta\w*|\bplano\b(?! de (?:retorno|validacao|testes?))"
+        ),
+        "validacao": r"\bvalidac\w*",
+        "testes": r"\btestes?\b|\bjustificativa",
+        "retorno": r"\bretorno|\brollback|\bbackout|\breversao\b",
+        "tarefas": r"\btarefas?\b",
+    }.items()
+}
+
+
+def _bare(text: str) -> str:
+    """Lowercase ASCII words only, for matching."""
+    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+    return " ".join(re.sub(r"[^a-z0-9 ]+", " ", ascii_text).split())
 
 
 def _says_nothing(text: str) -> bool:
-    """Tell a filler item ("Nenhuma contradição encontrada.", "N/A", "-") apart.
+    """A filler item ("Nenhuma contradição encontrada.", "N/A", "-")."""
+    bare = _bare(text)
+    return (
+        not bare
+        or bool(_NONE_WORDS.match(bare))
+        or bool(_NOTHING_TO_SAY.match(bare))
+        or bool(_DENIAL.match(bare))
+    )
 
-    A list filled out of politeness says there is no contradiction, so its
-    items are not one. Only a phrase that, whole, denies a contradiction is a
-    filler; a short sentence that names something missing is a real point.
+
+def parts_named(text: str) -> set[str]:
+    """The Change parts a text names ("o retorno e as tarefas" -> both)."""
+    bare = _bare(text)
+    return {part for part, pattern in _PARTS.items() if pattern.search(bare)}
+
+
+def classify_point(item: object) -> tuple[str, str]:
+    """Sort one item of "problems" into ("contradiction" | "note" | "none", text).
+
+    The model answers ``{"campos": [two parts], "descricao": "..."}`` per
+    contradiction. A contradiction is between two parts of the Change, so an
+    item counts only when it names at least two distinct parts and does not
+    deny that a contradiction exists. Older plain strings go through the same
+    rule. Anything else is a remark for the author ("note"); a denial or an
+    empty item is nothing ("none"). Making the rule structural, instead of
+    listing filler phrasings, is what stops polite fillers from failing a
+    Change (logica-3 P1-B, logica-4 P2-5, logica-5 P1-2).
     """
-    bare = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
-    bare = re.sub(r"[^a-z0-9 ]+", " ", bare)
-    bare = " ".join(bare.split())
-    if not bare or _NONE_WORDS.match(bare) or _NOTHING_TO_SAY.match(bare):
-        return True
-    return bool(_SAYS_NONE.match(bare))
+    named: set[str] = set()
+    if isinstance(item, dict):
+        text = _plain(
+            str(item.get("descricao") or item.get("description") or item.get("texto") or "")
+        )
+        fields = item.get("campos") or item.get("fields") or []
+        for field in [fields] if isinstance(fields, str) else list(fields):
+            named |= parts_named(str(field))
+    else:
+        text = _plain("" if item is None else str(item))
+    if _says_nothing(text):
+        return "none", ""
+    named |= parts_named(text)
+    return ("contradiction" if len(named) >= 2 else "note"), text
 
 
 def _plain(text: str) -> str:
@@ -260,18 +314,31 @@ class _SemanticOut(BaseModel):
     _normalize_word = field_validator("backout_adherence", mode="before")(_adherence_word)
     _normalize_text = field_validator("reasoning", "guidance", mode="before")(_text)
 
-    @field_validator("problems", mode="before")
+    @model_validator(mode="before")
     @classmethod
-    def _clean_points(cls, value: object) -> object:
-        value = _points(value)
-        if not isinstance(value, list):
-            return value
-        seen: dict[str, None] = {}
-        for item in value:
-            text = _plain(str(item))
-            if text and not _says_nothing(text):
-                seen.setdefault(text, None)
-        return list(seen)
+    def _sort_points(cls, data: object) -> object:
+        """Keep the real contradictions; remarks go to the guidance."""
+        if not isinstance(data, dict):
+            return data
+        items = _points(data.get("problems"))
+        if not isinstance(items, list):
+            return data
+        kept: dict[str, None] = {}
+        notes: dict[str, None] = {}
+        for item in items:
+            kind, text = classify_point(item)
+            if kind == "contradiction":
+                kept.setdefault(text, None)
+            elif kind == "note":
+                notes.setdefault(text, None)
+        guidance = _text(data.get("guidance"))
+        guidance = guidance if isinstance(guidance, str) else ""
+        extra = " ".join(n if n.endswith(".") else f"{n}." for n in notes)
+        return {
+            **data,
+            "problems": list(kept),
+            "guidance": f"{guidance.strip()} {extra}".strip() if extra else guidance,
+        }
 
     def settled(self) -> _SemanticOut:
         """One decimal on the score, and the label read from the percent."""
@@ -475,8 +542,9 @@ def _semantic_prompt(change: Change, values: dict[str, str], backout: str) -> st
         f"Plano de retorno:\n{backout}\n\n"
         f"TAREFAS CADASTRADAS:\n{tasks or '(nenhuma)'}\n\n"
         'Responda com JSON: {"consistency_score": <0 a 10>, '
-        '"problems": ["<cada contradição real entre as partes, uma frase; '
-        'sugestões não entram aqui; sem contradição real, []>"], '
+        '"problems": [{"campos": ["<parte>", "<outra parte>"], '
+        '"descricao": "<a contradição entre as duas, uma frase>"}] '
+        "(sem contradição real, []), "
         '"reasoning": "<duas ou três frases com o raciocínio>", '
         '"guidance": "<o que o autor deve ajustar, incluindo sugestões de melhoria>", '
         '"backout_adherence_percent": <0 a 100, quanto do que as tarefas cadastradas '

@@ -175,7 +175,11 @@ SEMANTIC = {
     "CHG0031002": {
         "consistency_score": 4.0,
         "problems": [
-            "O plano de retorno não desfaz a alteração da tabela nem a migração dos dados."
+            {
+                "campos": ["implementação", "retorno"],
+                "descricao": "O plano de retorno não desfaz a alteração da tabela nem a "
+                "migração dos dados.",
+            }
         ],
         "reasoning": "A implementação muda dados; o retorno só troca a imagem.",
         "guidance": "Inclua a reversão da migração no plano de retorno.",

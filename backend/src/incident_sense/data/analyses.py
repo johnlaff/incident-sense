@@ -20,6 +20,7 @@ MAX_ANALYSES = 5000
 class AnalysisMemory(BaseModel):
     """What a follow-up needs from one analysis."""
 
+    id: str = Field(default="", description="This analysis; the page sends it back.")
     classification: str
     justification: str = ""
     suggestion: str | None = None
