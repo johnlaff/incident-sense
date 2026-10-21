@@ -927,7 +927,7 @@ export function Loop() {
           </li>
         ))}
         <li className="cf-ring-back" style={{ "--i": 5 } as Style}>
-          <Icons.replay size={14} />
+          <Icons.retry size={14} />
           <span>nova Mudança, mesmo juiz</span>
         </li>
       </ol>

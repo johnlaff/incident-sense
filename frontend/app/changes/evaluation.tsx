@@ -304,7 +304,7 @@ export function PlaybackBar({
           </p>
           <button className="btn btn-ghost btn-sm" onClick={playback.replay}>
             <Icons.replay />
-            {instant ? "Ver passo a passo" : "Repassar"}
+            Rever passo a passo
           </button>
         </>
       )}
@@ -755,7 +755,7 @@ export function Coherence({
         ) : (
           <p className="chg-none">
             <Icons.checkCircle />
-            Nenhuma incoerência apontada.
+            Nada se contradiz entre as partes do pedido.
           </p>
         )}
         {s.problems.length > 0 && change ? <Excerpts change={change} /> : null}

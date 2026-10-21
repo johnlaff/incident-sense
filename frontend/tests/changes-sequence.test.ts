@@ -193,7 +193,7 @@ describe("buildSteps", () => {
     expect(steps[0].ms).toBe(6 * t.stagger + t.count + t.hold);
     expect(steps[1].ms).toBe(6 * t.term + t.explain * 2 + t.hold);
     expect(steps[4].ms).toBe(t.problem + t.hold);
-    expect(steps[4].caption).toContain("Nenhuma incoerência");
+    expect(steps[4].caption).toContain("Nada se contradiz");
   });
 });
 
@@ -237,7 +237,7 @@ describe("verdictOf", () => {
   it("says no past the cut when coherence found a problem", () => {
     const v = verdictOf(fixture.CHG0031002 as unknown as Evaluation);
     expect(v?.ok).toBe(false);
-    expect(v?.reason).toContain("1 incoerência");
+    expect(v?.reason).toContain("1 ponto em que as partes do pedido se contradizem");
   });
   it("says yes past the cut with no inconsistency", () => {
     const v = verdictOf(fixture.CHG0031001 as unknown as Evaluation);

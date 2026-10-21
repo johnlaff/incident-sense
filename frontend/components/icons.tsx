@@ -114,6 +114,13 @@ export const Icons = {
       <path d="M9 18.1 10 14H4.2a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 5.6 3H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3l-4 8a3 3 0 0 1-4-3.9Z" />
     </>,
   ),
+  /** Try again, reopen, go around: a turning arrow. */
+  retry: icon(
+    <>
+      <path d="M3 2v6h6" />
+      <path d="M21 12A9 9 0 0 0 6 5.3L3 8" />
+    </>,
+  ),
   /** Play it again: a circle of arrow around a play triangle. */
   replay: icon(
     <>

@@ -135,7 +135,7 @@ export function LoadError({
       title={title}
       action={
         <button className="btn btn-outline btn-sm" onClick={onRetry}>
-          <Icons.replay />
+          <Icons.retry />
           Tentar de novo
         </button>
       }

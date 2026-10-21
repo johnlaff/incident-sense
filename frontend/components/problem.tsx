@@ -59,7 +59,7 @@ export function ProblemChain({
     },
     {
       key: "workaround",
-      icon: Icons.replay,
+      icon: Icons.retry,
       label: "Contorno",
       hint: "O que fazer na hora para o serviço voltar.",
       text: problem.workaround,

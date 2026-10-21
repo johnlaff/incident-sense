@@ -204,7 +204,7 @@ export default function DetailPage() {
           action={
             <div className="state-actions">
               <button className="btn btn-outline btn-sm" onClick={retry}>
-                <Icons.replay />
+                <Icons.retry />
                 Tentar de novo
               </button>
               <Link href="/incidentes" className="btn btn-ghost btn-sm">
@@ -475,7 +475,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 {assignee ? "Atribuído" : "Atribuir"}
               </button>
               <button className="btn btn-primary btn-sm" onClick={doResolve}>
-                {localState === "resolved" ? <Icons.replay /> : <Icons.human />}
+                {localState === "resolved" ? <Icons.retry /> : <Icons.human />}
                 {localState === "resolved" ? "Reabrir" : "Resolver"}
               </button>
             </div>
@@ -1171,7 +1171,7 @@ function CopilotFab({
         {errMsg}
         <div className="imp-actions">
           <button className="btn btn-outline btn-sm" onClick={run}>
-            <Icons.replay />
+            <Icons.retry />
             Tentar de novo
           </button>
         </div>
