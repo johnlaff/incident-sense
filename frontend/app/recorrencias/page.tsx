@@ -110,7 +110,7 @@ export default function RecurrencesPage() {
       {
         title: "Nomear",
         caption:
-          "A IA dá um nome curto a cada grupo. O número diz quantos casos ele tem.",
+          "A IA dá um nome a cada grupo. Os nomes aparecem sob o mapa, com a cor de cada um.",
         durationMs: 900,
       },
       { title: "Problema", caption: last, durationMs: 600 },
@@ -248,7 +248,7 @@ export default function RecurrencesPage() {
       }
     >
       <div className="page-head">
-        <h1>Falhas que se repetem</h1>
+        <h1>Repetições: falhas que se repetem</h1>
         <span className="count">
           {data
             ? `${data.groups.length} grupos · ${data.incidents.length} incidentes`
@@ -402,6 +402,10 @@ export default function RecurrencesPage() {
               </li>
             ))}
           </ol>
+          <p className="rx-steps-key">
+            <i aria-hidden="true" />
+            Círculo tracejado: etapa feita pela IA
+          </p>
           {/* Nothing reserved when there is nothing to say: no blank gap. */}
           {showCaption || lesson.aula ? (
             <p className="rx-caption" aria-live="polite">

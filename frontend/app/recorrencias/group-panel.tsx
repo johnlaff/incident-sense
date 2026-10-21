@@ -44,7 +44,6 @@ export function GroupList({
         <h2>Grupos, do maior para o menor</h2>
         <span>casos</span>
       </div>
-      <p className="rx-list-note">Cada cor é a do grupo no mapa.</p>
       <ul>
         {data.groups.map((g, k) => {
           const m = matched.get(g.id) ?? g.size;

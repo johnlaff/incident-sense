@@ -20,7 +20,6 @@ import {
   computeLayout,
   placeLabels,
   shortDate,
-  shortName,
   toneVars,
   type LabelBox,
   type RecData,
@@ -178,16 +177,26 @@ export function RecMap({
         // Short names on every group; on a wide map the focused one says it all.
         compactAll: false,
         onDisk: true,
-        full: typeof focus === "number" && layout.w >= 560 ? focus : null,
+        // Names sit beside their group, never on points; no room, no name
+        // (the legend under the map names every colour).
+        strict: true,
+        points: data.incidents.flatMap((inc, i) =>
+          inc.isOutlier
+            ? [{ x: layout.grouped[i * 2], y: layout.grouped[i * 2 + 1] }]
+            : [],
+        ),
+        pointR: layout.pointR,
+        full: null,
         // Clear of the "9 grupos · 78 casos isolados" pill in the corner.
         avoid: { x: 0, y: 0, w: 240, h: 38 },
       }),
     );
   }, [layout, data, focus]);
-  const narrow = (size?.w ?? 999) < 560;
-  const fullId = typeof focus === "number" && !narrow ? focus : null;
 
   const labelById = useMemo(() => new Map(labels.map((l) => [l.id, l])), [labels]);
+  // Names on the map only when every group gets one clear of all points;
+  // half the groups named would read as "the others do not matter".
+  const allFit = labels.length > 0 && labels.every((l) => !l.hidden);
 
   function local(e: ReactPointerEvent) {
     const r = boxRef.current?.getBoundingClientRect();
@@ -310,6 +319,7 @@ export function RecMap({
             const box = labelById.get(g.id);
             const m = matched.get(g.id) ?? g.size;
             const dim = (focus != null && focus !== g.id) || m === 0;
+            const off = !allFit || !box || box.hidden;
             return (
               <button
                 key={g.id}
@@ -323,11 +333,11 @@ export function RecMap({
                   {
                     ...toneVars(g.tone),
                     "--i": k,
-                    translate: box ? `${box.x}px ${box.y}px` : "-9999px 0",
+                    translate: !off ? `${box.x}px ${box.y}px` : "-9999px 0",
                   } as CSSProperties
                 }
-                tabIndex={stage >= 3 ? 0 : -1}
-                aria-hidden={stage >= 3 ? undefined : true}
+                tabIndex={stage >= 3 && !off ? 0 : -1}
+                aria-hidden={stage >= 3 && !off ? undefined : true}
                 aria-pressed={focus === g.id}
                 aria-label={`${g.label}: ${m === g.size ? g.size : `${m} de ${g.size}`} incidentes`}
                 title={g.label}
@@ -337,10 +347,7 @@ export function RecMap({
                 }}
               >
                 <span className="rx-label-dot" aria-hidden="true" />
-                <span className="rx-label-name">
-                  {fullId === g.id ? g.label : shortName(g.label)}
-                </span>
-                <span className="rx-label-short">{shortName(g.label)}</span>
+                <span className="rx-label-name">{g.label}</span>
                 <span className="rx-label-n">
                   {m === g.size ? g.size : `${m}/${g.size}`}
                 </span>
@@ -350,6 +357,34 @@ export function RecMap({
         </div>
 
         {card && !docked ? card : null}
+      </div>
+      {/* The colour key sits with the map, in the list's own names. */}
+      <div className={`rx-legend${stage >= 3 ? " on" : ""}`}>
+        <p className="rx-legend-note">Cada cor é um grupo da lista:</p>
+        <ul>
+          {data.groups.map((g) => (
+            <li key={g.id}>
+              <button
+                type="button"
+                className={`rx-tone${focus === g.id ? " sel" : ""}`}
+                style={toneVars(g.tone) as CSSProperties}
+                aria-pressed={focus === g.id}
+                tabIndex={stage >= 3 ? 0 : -1}
+                onClick={() => {
+                  setPinned(null);
+                  onFocus(focus === g.id ? null : g.id);
+                }}
+              >
+                <span className="rx-label-dot" aria-hidden="true" />
+                {g.label}
+              </button>
+            </li>
+          ))}
+          <li className="iso">
+            <span className="rx-label-dot" aria-hidden="true" />
+            Casos isolados
+          </li>
+        </ul>
       </div>
       {card && docked ? card : null}
     </>
