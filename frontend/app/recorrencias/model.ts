@@ -272,6 +272,49 @@ export function reasonFor(g: RecGroup, totalWeeks: number, problems = 0): string
   return `${span} parecidos. Pedem uma investigação de causa.`;
 }
 
+// ----- Plain words per group -------------------------------------------------
+
+/** One or two words for the map, where the full name covers other groups. */
+const SHORT_NAMES: Record<string, string> = {
+  "Timeout em pagamentos Pix com débito": "Pix",
+  "Recusas de cartão por antifraude": "Cartão",
+  "Falha de login no app após atualização": "Login no app",
+  "Lentidão e erros no Internet Banking": "Banking",
+  "Falha na geração de boletos": "Boletos",
+  "Divergência entre saldo e extrato": "Saldo e extrato",
+  "Consumidor Kafka travado por mensagem malformada": "Kafka",
+  "Falhas nas APIs do Open Finance": "Open Finance",
+  "Problemas em projetores e cafeteiras": "Projetores",
+};
+
+export function shortName(label: string): string {
+  return SHORT_NAMES[label] ?? label.split(/\s+/).slice(0, 2).join(" ");
+}
+
+/** "mar a jun", or "só em abr" when the group fits in one month. */
+export function windowOf(g: RecGroup): string | null {
+  if (!g.firstAt || !g.lastAt) return null;
+  const a = monthLabel(g.firstAt.slice(0, 7));
+  const b = monthLabel(g.lastAt.slice(0, 7));
+  return a === b ? `só em ${a}` : `${a} a ${b}`;
+}
+
+/** How much of the group is one service: "todos no PIX-Core", "92% no X". */
+export function purityOf(g: RecGroup): string | null {
+  const top = g.services[0];
+  if (!top) return null;
+  if (top.count === g.size) return `todos no ${keepWhole(top.name)}`;
+  if (g.topShare >= 0.8)
+    return `${Math.round(g.topShare * 100)}% no ${keepWhole(top.name)}`;
+  return `espalhado em ${g.services.length} serviços`;
+}
+
+/** Why these cases sit together, in plain words. */
+export function whyTogether(g: RecGroup): string {
+  const topic = g.label.charAt(0).toLowerCase() + g.label.slice(1);
+  return `A IA juntou estes casos porque os textos são parecidos: falam de ${topic}.`;
+}
+
 // ----- Geometry ----------------------------------------------------------------
 
 export interface Disk {
@@ -619,15 +662,22 @@ export function placeLabels(
   sizes: Map<number, { w: number; h: number; cw: number; ch?: number }>,
   w: number,
   h: number,
-  opts: { compactAll?: boolean; full?: number | null; onDisk?: boolean } = {},
+  opts: {
+    compactAll?: boolean;
+    full?: number | null;
+    onDisk?: boolean;
+    /** A box no name may cover (the tally pill in the corner). */
+    avoid?: { x: number; y: number; w: number; h: number };
+  } = {},
 ): LabelBox[] {
   const placed: LabelBox[] = [];
   const compactBox = (d: Disk, s: { h: number; cw: number; ch?: number }): LabelBox => {
     const ch = s.ch ?? s.h;
     return {
       id: d.id,
-      x: d.cx - s.cw / 2,
-      y: d.cy - ch / 2,
+      // Inside the map even when the group touches its edge.
+      x: Math.min(w - 4 - s.cw, Math.max(4, d.cx - s.cw / 2)),
+      y: Math.min(h - 4 - ch, Math.max(4, d.cy - ch / 2)),
       w: s.cw,
       h: ch,
       compact: true,
@@ -672,6 +722,7 @@ export function placeLabels(
       const box = { id: d.id, x: c.x, y: c.y, w: s.w, h: s.h, compact: false };
       if (box.x < 4 || box.y < 4 || box.x + box.w > w - 4 || box.y + box.h > h - 4)
         continue;
+      if (opts.avoid && overlaps(opts.avoid, box)) continue;
       if (placed.some((p) => overlaps(p, box))) continue;
       // Centered on its own group it cannot be mistaken; only another core blocks it.
       const centered = opts.onDisk && opts.full !== d.id && k === 0;
@@ -685,6 +736,38 @@ export function placeLabels(
       if (cost < bestCost) {
         bestCost = cost;
         chosen = box;
+      }
+    }
+    // Crowded: any spot clear of the other names, even over a group's rim.
+    if (!chosen) {
+      for (const c of cands) {
+        const box = { id: d.id, x: c.x, y: c.y, w: s.w, h: s.h, compact: false };
+        if (box.x < 4 || box.y < 4 || box.x + box.w > w - 4 || box.y + box.h > h - 4)
+          continue;
+        if (opts.avoid && overlaps(opts.avoid, box)) continue;
+        if (placed.some((p) => overlaps(p, box))) continue;
+        chosen = box;
+        break;
+      }
+    }
+    if (!chosen) {
+      // Last resort on the group itself, nudged off any name already there.
+      const base = compactBox(d, s);
+      const step = base.h + 4;
+      for (const dy of [0, -step, step, -2 * step, 2 * step]) {
+        for (const dx of [0, -base.w / 2, base.w / 2]) {
+          const box = {
+            ...base,
+            x: Math.min(w - 4 - base.w, Math.max(4, base.x + dx)),
+            y: Math.min(h - 4 - base.h, Math.max(4, base.y + dy)),
+          };
+          if (opts.avoid && overlaps(opts.avoid, box)) continue;
+          if (!placed.some((p) => overlaps(p, box))) {
+            chosen = box;
+            break;
+          }
+        }
+        if (chosen) break;
       }
     }
     placed.push(chosen ?? compactBox(d, s));

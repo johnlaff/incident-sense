@@ -20,6 +20,7 @@ import {
   computeLayout,
   placeLabels,
   shortDate,
+  shortName,
   toneVars,
   type LabelBox,
   type RecData,
@@ -161,15 +162,12 @@ export function RecMap({
       el.classList.remove("compact");
     });
     labelRefs.current.forEach((el, id) => {
-      const name = el.querySelector<HTMLElement>(".rx-label-name");
       const w = el.offsetWidth;
-      const n = el.querySelector<HTMLElement>(".rx-label-n");
-      sizes.set(id, {
-        w,
-        h: el.offsetHeight,
-        cw: w - (name?.offsetWidth ?? 0) - 4,
-        ch: (n?.offsetHeight ?? 16) + 8,
-      });
+      const h = el.offsetHeight;
+      // The fallback still names the group: its short name and count.
+      el.classList.add("compact");
+      sizes.set(id, { w, h, cw: el.offsetWidth, ch: el.offsetHeight });
+      el.classList.remove("compact");
     });
     had.forEach((el) => el.classList.add("compact"));
     setLabels(
@@ -177,12 +175,17 @@ export function RecMap({
         // A focused group keeps its name; the others shrink to their counts.
         // On a phone the focused one stays a count too: a full name there
         // covers the groups around it, and the caption already names it.
-        compactAll: layout.w < 560 || typeof focus === "number",
+        // Short names on every group; on a wide map the focused one says it all.
+        compactAll: false,
         onDisk: true,
         full: typeof focus === "number" && layout.w >= 560 ? focus : null,
+        // Clear of the "9 grupos · 78 casos isolados" pill in the corner.
+        avoid: { x: 0, y: 0, w: 240, h: 38 },
       }),
     );
   }, [layout, data, focus]);
+  const narrow = (size?.w ?? 999) < 560;
+  const fullId = typeof focus === "number" && !narrow ? focus : null;
 
   const labelById = useMemo(() => new Map(labels.map((l) => [l.id, l])), [labels]);
 
@@ -225,8 +228,10 @@ export function RecMap({
       ? data.groups.find((g) => g.id === preview.clusterId)
       : null;
 
+  // A tapped point opens its card under the map, never over it.
+  const docked = pinned != null;
   let cardStyle: CSSProperties | undefined;
-  if (pp && size) {
+  if (pp && size && !docked) {
     const cw = Math.min(280, size.w - 24);
     const left = Math.min(size.w - cw - 12, Math.max(12, pp.x - cw / 2));
     const above = pp.y > size.h * 0.5;
@@ -235,109 +240,118 @@ export function RecMap({
       : { left, width: cw, top: pp.y + 14 };
   }
 
-  return (
-    <div className="rx-map" ref={boxRef}>
-      <canvas
-        ref={canvasRef}
-        className="rx-canvas"
-        role="img"
-        aria-label={`Mapa com ${data.incidents.length} incidentes em ${data.groups.length} grupos. A lista de grupos ao lado tem os mesmos dados.`}
-        onPointerMove={onMove}
-        onPointerLeave={() => setHover(null)}
-        onPointerUp={onTap}
-      />
-      <p
-        className={`rx-tally${stage >= 2 ? " on" : ""}`}
-        aria-hidden={stage >= 2 ? undefined : true}
+  const card =
+    preview && (docked || cardStyle) ? (
+      <div
+        className={`rx-peek${docked ? " pinned docked" : ""}${group ? " rx-tone" : " rx-iso"}`}
+        style={
+          {
+            ...(cardStyle ?? {}),
+            ...(group ? toneVars(group.tone) : { "--hue": 265 }),
+          } as CSSProperties
+        }
+        role={docked ? "dialog" : "tooltip"}
+        aria-label={`${preview.id}: ${preview.short}`}
       >
-        <b>{data.groups.length}</b> grupos densos · <b>{data.outliers.length}</b>{" "}
-        {data.outliers.length === 1 ? "caso isolado" : "casos isolados"}
-      </p>
-      <div className={`rx-labels${stage >= 3 ? " on" : ""}`}>
-        {data.groups.map((g, k) => {
-          const box = labelById.get(g.id);
-          const m = matched.get(g.id) ?? g.size;
-          const dim = (focus != null && focus !== g.id) || m === 0;
-          return (
-            <button
-              key={g.id}
-              type="button"
-              ref={(el) => {
-                if (el) labelRefs.current.set(g.id, el);
-                else labelRefs.current.delete(g.id);
-              }}
-              className={`rx-label rx-tone${box?.compact ? " compact" : ""}${dim ? " dim" : ""}${focus === g.id ? " sel" : ""}`}
-              style={
-                {
-                  ...toneVars(g.tone),
-                  "--i": k,
-                  translate: box ? `${box.x}px ${box.y}px` : "-9999px 0",
-                } as CSSProperties
-              }
-              tabIndex={stage >= 3 ? 0 : -1}
-              aria-hidden={stage >= 3 ? undefined : true}
-              aria-pressed={focus === g.id}
-              aria-label={`${g.label}: ${m === g.size ? g.size : `${m} de ${g.size}`} incidentes`}
-              title={g.label}
-              onClick={() => {
-                setPinned(null);
-                onFocus(focus === g.id ? null : g.id);
-              }}
-            >
-              <span className="rx-label-dot" aria-hidden="true" />
-              <span className="rx-label-name">{g.label}</span>
-              <span className="rx-label-n">
-                {m === g.size ? g.size : `${m}/${g.size}`}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {preview && cardStyle ? (
-        <div
-          className={`rx-peek${pinned != null ? " pinned" : ""}${group ? " rx-tone" : " rx-iso"}`}
-          style={
-            {
-              ...cardStyle,
-              ...(group ? toneVars(group.tone) : { "--hue": 265 }),
-            } as CSSProperties
-          }
-          role={pinned != null ? "dialog" : "tooltip"}
-          aria-label={`${preview.id}: ${preview.short}`}
-        >
-          <div className="rx-peek-top">
-            <RecordTag number={preview.id} size="sm" />
-            <span className="rx-peek-p">{PRIORITY_LABEL[pCode(preview.priority)]}</span>
-            {pinned != null ? (
-              <button
-                type="button"
-                className="rx-peek-x"
-                aria-label="Fechar prévia"
-                onClick={() => setPinned(null)}
-              >
-                <Icons.close size={14} />
-              </button>
-            ) : null}
-          </div>
-          <p className="rx-peek-d">{preview.short}</p>
-          <div className="rx-peek-meta">
-            {preview.service ? <span>{keepWhole(preview.service)}</span> : null}
-            {preview.openedAt ? <span>{shortDate(preview.openedAt)}</span> : null}
-            <span className="rx-peek-g">{group ? group.label : "Caso isolado"}</span>
-          </div>
-          {pinned != null ? (
+        <div className="rx-peek-top">
+          <RecordTag number={preview.id} size="sm" />
+          <span className="rx-peek-p">{PRIORITY_LABEL[pCode(preview.priority)]}</span>
+          {docked ? (
             <button
               type="button"
-              className="btn btn-outline btn-sm rx-peek-open"
-              onClick={() => onOpenIncident(preview.id)}
+              className="rx-peek-x"
+              aria-label="Fechar prévia"
+              onClick={() => setPinned(null)}
             >
-              Abrir incidente
-              <Icons.arrowRight />
+              <Icons.close size={14} />
             </button>
           ) : null}
         </div>
-      ) : null}
-    </div>
+        <p className="rx-peek-d">{preview.short}</p>
+        <div className="rx-peek-meta">
+          {preview.service ? <span>{keepWhole(preview.service)}</span> : null}
+          {preview.openedAt ? <span>{shortDate(preview.openedAt)}</span> : null}
+          <span className="rx-peek-g">{group ? group.label : "Caso isolado"}</span>
+        </div>
+        {docked ? (
+          <button
+            type="button"
+            className="btn btn-outline btn-sm rx-peek-open"
+            onClick={() => onOpenIncident(preview.id)}
+          >
+            Abrir incidente
+            <Icons.arrowRight />
+          </button>
+        ) : null}
+      </div>
+    ) : null;
+
+  return (
+    <>
+      <div className="rx-map" ref={boxRef}>
+        <canvas
+          ref={canvasRef}
+          className="rx-canvas"
+          role="img"
+          aria-label={`Mapa com ${data.incidents.length} incidentes em ${data.groups.length} grupos. A lista de grupos ao lado tem os mesmos dados.`}
+          onPointerMove={onMove}
+          onPointerLeave={() => setHover(null)}
+          onPointerUp={onTap}
+        />
+        <p
+          className={`rx-tally${stage >= 2 ? " on" : ""}`}
+          aria-hidden={stage >= 2 ? undefined : true}
+        >
+          <b>{data.groups.length}</b> grupos · <b>{data.outliers.length}</b>{" "}
+          {data.outliers.length === 1 ? "caso isolado" : "casos isolados"}
+        </p>
+        <div className={`rx-labels${stage >= 3 ? " on" : ""}`}>
+          {data.groups.map((g, k) => {
+            const box = labelById.get(g.id);
+            const m = matched.get(g.id) ?? g.size;
+            const dim = (focus != null && focus !== g.id) || m === 0;
+            return (
+              <button
+                key={g.id}
+                type="button"
+                ref={(el) => {
+                  if (el) labelRefs.current.set(g.id, el);
+                  else labelRefs.current.delete(g.id);
+                }}
+                className={`rx-label rx-tone${box?.compact ? " compact" : ""}${dim ? " dim" : ""}${focus === g.id ? " sel" : ""}`}
+                style={
+                  {
+                    ...toneVars(g.tone),
+                    "--i": k,
+                    translate: box ? `${box.x}px ${box.y}px` : "-9999px 0",
+                  } as CSSProperties
+                }
+                tabIndex={stage >= 3 ? 0 : -1}
+                aria-hidden={stage >= 3 ? undefined : true}
+                aria-pressed={focus === g.id}
+                aria-label={`${g.label}: ${m === g.size ? g.size : `${m} de ${g.size}`} incidentes`}
+                title={g.label}
+                onClick={() => {
+                  setPinned(null);
+                  onFocus(focus === g.id ? null : g.id);
+                }}
+              >
+                <span className="rx-label-dot" aria-hidden="true" />
+                <span className="rx-label-name">
+                  {fullId === g.id ? g.label : shortName(g.label)}
+                </span>
+                <span className="rx-label-short">{shortName(g.label)}</span>
+                <span className="rx-label-n">
+                  {m === g.size ? g.size : `${m}/${g.size}`}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {card && !docked ? card : null}
+      </div>
+      {card && docked ? card : null}
+    </>
   );
 }

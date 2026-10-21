@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import { useAulaLesson, type AulaLessonStep } from "@/components/aula";
 import { useShell } from "@/components/app-shell";
@@ -128,8 +135,17 @@ export default function RecurrencesPage() {
   const [filter, setFilter] = useState<RecFilter>({ service: null, month: null });
   const [promoted, setPromoted] = useState<Record<string, boolean>>({});
 
+  // Outside modo aula the map opens already grouped and still, with nothing
+  // picked: the ranked list beside it is the answer. "Reproduzir" (or a step)
+  // plays the grouping on request.
+  const [handPlayed, setHandPlayed] = useState(false);
+  const instant = !lesson.aula && !handPlayed;
+  const { skip, aula: inAula, done: lessonDone } = lesson;
+  useEffect(() => {
+    if (data && !inAula && !handPlayed && !lessonDone) skip();
+  }, [data, inAula, handPlayed, lessonDone, skip]);
+
   // ?grupo=<id> (from an incident) opens on the end state, that group focused.
-  const { skip } = lesson;
   useEffect(() => {
     if (!data) return;
     const grupo = new URLSearchParams(window.location.search).get("grupo");
@@ -139,23 +155,38 @@ export default function RecurrencesPage() {
   }, [data, skip]);
 
   const step = lesson.step;
+  // Only the lesson in modo aula opens the featured group on its own.
   const focus: Focus = picked
     ? picked.focus
-    : step >= LAST
+    : lesson.aula && step >= LAST
       ? (data?.featuredId ?? null)
       : null;
   const stage = step <= 0 ? 0 : Math.min(3, step);
   // A group picked by hand needs the groups drawn.
   const effectiveStage = picked && picked.focus != null && stage < 2 ? 3 : stage;
 
+  // On a phone the list sits above the map: when a tap on the map swaps it
+  // for a group's detail, keep the map where the finger left it.
+  const stageRef = useRef<HTMLDivElement>(null);
+  const anchor = useRef<number | null>(null);
   function choose(f: Focus) {
     // A tap mid-lesson outside modo aula ends the show and keeps the choice.
     if (!lesson.aula && !lesson.done) lesson.skip();
+    anchor.current = stageRef.current?.getBoundingClientRect().top ?? null;
     setPicked({ focus: f });
   }
+  useLayoutEffect(() => {
+    const before = anchor.current;
+    anchor.current = null;
+    const now = stageRef.current?.getBoundingClientRect().top;
+    if (before == null || now == null) return;
+    const shift = now - before;
+    if (Math.abs(shift) > 1) window.scrollBy({ top: shift, behavior: "instant" });
+  }, [picked]);
 
   function replay() {
     setPicked(null);
+    setHandPlayed(true);
     lesson.replay();
   }
 
@@ -224,14 +255,20 @@ export default function RecurrencesPage() {
             : "Carregando…"}
         </span>
       </div>
-      <p className="page-lede">
-        Recorrências: incidentes que se repetem formam grupos. Cada ponto é um incidente.
-        Grupo grande pede um{" "}
-        <Link className="prb-inline-link" href="/problemas">
-          problema
-        </Link>
-        : a investigação da causa.
-      </p>
+      <div className="page-lede rx-lede">
+        <p>
+          Incidentes que se repetem formam grupos. Grupo grande pede um{" "}
+          <Link className="prb-inline-link" href="/problemas">
+            problema
+          </Link>
+          : a investigação da causa.
+        </p>
+        <p className="rx-terms">
+          <b>Grupo</b>: casos com texto parecido, que a IA juntou.
+          <br />
+          <b>Caso isolado</b>: incidente que não se parece o bastante com nenhum outro.
+        </p>
+      </div>
       <WakeNotice show={clusters.slow || list.slow} />
 
       <div className="rx-layout">
@@ -303,7 +340,7 @@ export default function RecurrencesPage() {
             ) : null}
           </div>
 
-          <div className="rx-stage">
+          <div className="rx-stage" ref={stageRef}>
             {data ? (
               <RecMap
                 data={data}
@@ -311,7 +348,7 @@ export default function RecurrencesPage() {
                 focus={focus}
                 mask={mask}
                 matched={matched}
-                reduced={reduced}
+                reduced={reduced || instant}
                 onFocus={choose}
                 onOpenIncident={openIncident}
               />
@@ -335,6 +372,11 @@ export default function RecurrencesPage() {
             ) : null}
           </div>
 
+          <p className="rx-map-key">
+            Cada ponto é um incidente. Perto quer dizer parecido: a posição mostra
+            semelhança, e os eixos não têm unidade.
+          </p>
+
           <ol className="rx-steps" aria-label="Etapas da demonstração">
             {steps.map((s, i) => (
               <li key={s.title}>
@@ -350,6 +392,7 @@ export default function RecurrencesPage() {
                   disabled={!data}
                   onClick={() => {
                     setPicked(null);
+                    setHandPlayed(true);
                     lesson.goTo(i);
                   }}
                 >
@@ -359,9 +402,12 @@ export default function RecurrencesPage() {
               </li>
             ))}
           </ol>
-          <p className="rx-caption" aria-live="polite">
-            {showCaption ? current.caption : " "}
-          </p>
+          {/* Nothing reserved when there is nothing to say: no blank gap. */}
+          {showCaption || lesson.aula ? (
+            <p className="rx-caption" aria-live="polite">
+              {showCaption ? current.caption : " "}
+            </p>
+          ) : null}
 
           <div className="rx-foot">
             <TechDetails summary="Como o mapa foi feito">

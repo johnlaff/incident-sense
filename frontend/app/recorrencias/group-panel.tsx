@@ -12,9 +12,12 @@ import type { Focus } from "./map-engine";
 import { GroupTimeline } from "./timeline";
 import {
   matchesFilter,
+  purityOf,
   reasonFor,
   toneVars,
   verdictOf,
+  whyTogether,
+  windowOf,
   type RecData,
   type RecFilter,
   type RecGroup,
@@ -38,12 +41,13 @@ export function GroupList({
   return (
     <div className="rx-list">
       <div className="rx-list-head">
-        <h2>Grupos</h2>
+        <h2>Falhas que mais se repetem</h2>
         <span>casos</span>
       </div>
       <ul>
         {data.groups.map((g, k) => {
           const m = matched.get(g.id) ?? g.size;
+          const sub = [windowOf(g), purityOf(g)].filter(Boolean).join(" · ");
           return (
             <li key={g.id}>
               <button
@@ -64,6 +68,7 @@ export function GroupList({
                 <span className="rx-row-n">
                   {m === g.size ? g.size : `${m} de ${g.size}`}
                 </span>
+                {sub ? <span className="rx-row-sub">{sub}</span> : null}
                 <span className="rx-row-bar" aria-hidden="true">
                   <span className="rx-row-all" />
                   <span className="rx-row-m" />
@@ -88,6 +93,7 @@ export function GroupList({
           >
             <span className="rx-row-name">Casos isolados</span>
             <span className="rx-row-n">{data.outliers.length}</span>
+            <span className="rx-row-sub">não se parecem o bastante com nenhum outro</span>
             <span className="rx-row-bar" aria-hidden="true">
               <span className="rx-row-all" />
             </span>
@@ -150,8 +156,11 @@ export function GroupDetail({
       </h2>
       <p className="rx-detail-n">
         <b>{isGroup ? group.size : data.outliers.length}</b> incidentes
+        {isGroup && windowOf(group) ? <span> · {windowOf(group)}</span> : null}
+        {isGroup && purityOf(group) ? <span> · {purityOf(group)}</span> : null}
         {rows.length !== members.length ? <span> · {rows.length} no filtro</span> : null}
       </p>
+      {isGroup ? <p className="rx-why">{whyTogether(group)}</p> : null}
 
       {isGroup ? (
         <>
@@ -198,8 +207,8 @@ export function GroupDetail({
         </>
       ) : (
         <p className="rx-reason">
-          Casos isolados não viram problema: não se repetem o bastante para indicar um
-          padrão.
+          Caso isolado é um incidente que não se parece o bastante com nenhum outro. Não
+          vira problema: não se repete o bastante para indicar um padrão.
         </p>
       )}
 
