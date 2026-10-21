@@ -10524,7 +10524,7 @@
     "cmdb_ci": "PIX-Core",
     "assignment_group": "Service-Desk-N1",
     "empresa": "Banco Meridiano",
-    "priority": 2,
+    "priority": 1,
     "impact": 1,
     "urgency": 1,
     "state": "New",

@@ -4238,7 +4238,7 @@
       "cluster_label": "Timeout em pagamentos Pix com débito",
       "is_outlier": false,
       "short_description": "Pix confirmado para o cliente mas sem comprovante há 2h",
-      "priority": 2
+      "priority": 1
     },
     {
       "id": "INC0053083",

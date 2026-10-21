@@ -179,7 +179,15 @@ def test_running_the_analysis_again_keeps_one_note_and_remembers_it(client: Test
             "opened_at": "2026-06-15T09:00:00",
         }
     )
-    repo = IncidentRepository([incident])
+    resolved = incident.model_copy(
+        update={
+            "number": "INC0000001",
+            "short_description": "Pix pendente",
+            "state": "Resolved",
+            "resolution_notes": "Reiniciado o worker de conciliação.",
+        }
+    )
+    repo = IncidentRepository([incident, resolved])
     notes = WorkNotesStore()
     texts = iter(["Reprocesse a conciliação [INC0000001].", "Reinicie o worker [INC0000001]."])
 
@@ -225,3 +233,36 @@ def test_running_the_analysis_again_keeps_one_note_and_remembers_it(client: Test
     assert memory.kept == ["INC0000001"]
     assert memory.suggestion == "Reinicie o worker [INC0000001]."
     assert memory.reasons == {"INC0000001": "mesma causa"}
+
+    # The follow-up then reads the suggestion this analysis showed.
+    ask_llm = _wire(client, json.dumps({"kind": "answer", "answer": "Reinicie o worker."}))
+    r = client.post(
+        "/api/incidents/INC0099999/ask",
+        json={"question": "Qual é o primeiro passo?", "context_ids": []},
+        headers=headers,
+    )
+    assert r.status_code == 200
+    user = ask_llm.calls[0][1]
+    assert "SUGESTÃO JÁ MOSTRADA" in user
+    assert "Reinicie o worker [INC0000001]." in user
+    assert "mesma causa" in user
+
+
+def test_embedding_step_writes_the_size_the_way_the_captions_do(monkeypatch) -> None:
+    """E2E-4 P2-12: "3.072", like every caption, never "3072"."""
+    import test_incident_pipeline as tip
+
+    monkeypatch.setattr(tip.RecordingEmbeddings, "embed", lambda self, text: [0.0] * 3072)
+    response, _ = tip._run()
+    embedding = next(s for s in response.steps if s.id == "embedding")
+    assert "Vetor de 3.072 dimensões" in embedding.decision
+
+
+def test_the_two_pix_and_login_demos_share_the_same_priority() -> None:
+    """E2E-4 P2-11: same Impacto and Urgência, same priority on screen."""
+    import json
+    from pathlib import Path
+
+    rows = json.loads((Path(__file__).parents[1] / "data" / "incidents.json").read_text())
+    demo = {r["number"]: r for r in rows if r["number"] in {"INC0052233", "INC0053082"}}
+    assert {(r["impact"], r["urgency"], r["priority"]) for r in demo.values()} == {(1, 1, 1)}
