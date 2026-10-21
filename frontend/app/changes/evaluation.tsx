@@ -288,7 +288,7 @@ export function PlaybackBar({
         <>
           <p>
             <span className="chg-playbar-count">
-              Etapa {Math.max(1, playback.index + 1)} de {steps.length}
+              Passo {Math.max(1, playback.index + 1)} de {steps.length}
             </span>
             <span>{step.title}</span>
           </p>

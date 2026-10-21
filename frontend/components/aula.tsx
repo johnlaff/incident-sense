@@ -50,7 +50,7 @@ export interface AulaLessonStep {
   title: string;
   /** Plain PT-BR caption, up to ~90 characters, no em dashes. */
   caption: string;
-  /** Counter shown before the caption; defaults to "Etapa n de total". */
+  /** Counter shown before the caption; defaults to "Passo n de total". */
   counter?: string;
   /**
    * How long this step plays out before the next one, outside modo aula
@@ -72,6 +72,8 @@ interface LessonSnapshot {
   next: () => void;
   prev: () => void;
   togglePlay: () => void;
+  /** Jump to the lesson's last step ("Pular"). */
+  skip: () => void;
 }
 
 interface AulaContextValue {
@@ -320,8 +322,9 @@ export function useAulaLesson({
       next,
       prev,
       togglePlay,
+      skip,
     });
-  }, [id, run, state, steps, next, prev, togglePlay, publish]);
+  }, [id, run, state, steps, next, prev, togglePlay, skip, publish]);
   useEffect(() => () => retire(id), [id, retire]);
 
   return {
@@ -340,7 +343,7 @@ export function useAulaLesson({
   };
 }
 
-/** The fixed caption strip: "Etapa 4 de 7", the caption and the controls. */
+/** The fixed caption strip: "Passo 4 de 7", the caption and the controls. */
 function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
   const ref = useRef<HTMLDivElement>(null);
   const current = lesson.steps[lesson.step];
@@ -369,7 +372,7 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
       <div className="aula-bar" ref={ref} role="region" aria-label="Modo aula">
         <div className="aula-text" aria-live="polite" aria-atomic="true">
           <span className="aula-count">
-            {current.counter ?? `Etapa ${lesson.step + 1} de ${lesson.total}`}
+            {current.counter ?? `Passo ${lesson.step + 1} de ${lesson.total}`}
           </span>
           <span className="aula-caption">{current.caption}</span>
         </div>
@@ -379,8 +382,8 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
             className="icon-btn aula-btn"
             onClick={lesson.prev}
             disabled={lesson.step <= 0}
-            aria-label="Etapa anterior"
-            title="Etapa anterior (seta para a esquerda ou PageUp)"
+            aria-label="Passo anterior"
+            title="Passo anterior (seta para a esquerda ou PageUp)"
           >
             <Icons.arrowLeft />
           </button>
@@ -400,15 +403,25 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
               <Icons.arrowRight />
             </Link>
           ) : (
-            <button
-              type="button"
-              className="btn btn-primary btn-sm aula-next"
-              onClick={lesson.next}
-              title="Próxima etapa (seta para a direita, espaço ou PageDown)"
-            >
-              Próxima etapa
-              <Icons.arrowRight />
-            </button>
+            <>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm aula-skip"
+                onClick={lesson.skip}
+                title="Pular para o último passo"
+              >
+                Pular
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm aula-next"
+                onClick={lesson.next}
+                title="Próximo passo (seta para a direita, espaço ou PageDown)"
+              >
+                Próximo passo
+                <Icons.arrowRight />
+              </button>
+            </>
           )}
         </div>
       </div>

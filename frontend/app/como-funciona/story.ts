@@ -814,7 +814,7 @@ export function lessonSteps(ch: Chapter): AulaLessonStep[] {
   return ch.steps.map((s, i) => ({
     title: s.title,
     caption: s.caption,
-    counter: `Capítulo ${ch.n} · ${i + 1} de ${ch.steps.length}`,
+    counter: `Capítulo ${ch.n} · Passo ${i + 1} de ${ch.steps.length}`,
     durationMs: s.ms,
   }));
 }
