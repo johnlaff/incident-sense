@@ -18,13 +18,13 @@
 
 ---
 
-O incident-sense é a demonstração da palestra **"Depois do Deploy"** (TechWeek
-UFU, 22/10/2026). Ele reproduz, com dados sintéticos, dois artigos sobre IA na
-operação de TI de um banco:
+O incident-sense é uma demonstração ao vivo, feita para apresentações e aulas.
+Ele reproduz, com dados sintéticos, duas referências sobre IA na operação de TI
+de um banco:
 
-- **Antes do deploy** (artigo do Solange): uma IA juíza dá nota ao pedido de
+- **Antes do deploy** (Freitas Neto, 2026): uma IA juíza dá nota ao pedido de
   mudança (Change) campo a campo e confere se as partes contam a mesma história.
-- **Depois do deploy** (artigo do João): para cada incidente, a IA busca casos
+- **Depois do deploy** (Ferreira, 2026): para cada incidente, a IA busca casos
   parecidos já resolvidos, decide se o chamado é procedente e sugere uma
   resolução citando as fontes.
 
@@ -143,7 +143,7 @@ aviso em português.
 
 RAG (_Retrieval-Augmented Generation_) significa que a IA não inventa a
 resposta: primeiro **busca** casos reais parecidos e só então **redige** a
-sugestão a partir deles. `POST /api/suggest` segue o artigo etapa por etapa:
+sugestão a partir deles. `POST /api/suggest` segue Ferreira (2026) etapa por etapa:
 
 1. **Carregar** o incidente (categoria, subcategoria, empresa e tags).
 2. **Resumir** por IA: o resumo, nunca o texto cru, é a consulta.
@@ -229,6 +229,13 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md) para todos os comandos.
 - [docs/data-generation.md](docs/data-generation.md): como os dados sintéticos são gerados
 - [docs/decisions/](docs/decisions/): ADRs
 - [CHANGELOG.md](CHANGELOG.md): o que mudou em cada versão
+
+## 📖 Referências
+
+- FERREIRA, João Lucas Assunção Fonseca. _Sugestão de resolução de incidentes
+  com IA_. out. 2026.
+- FREITAS NETO, Solange Brasileiro de. _Como um LLM avalia texto escrito por
+  humano_. out. 2026.
 
 ## 📄 Licença
 

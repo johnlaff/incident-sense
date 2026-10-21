@@ -6,7 +6,7 @@
 
 ## Contexto
 
-O incident-sense vira demonstração ao vivo em palestras: a plateia abre o site
+O incident-sense vira demonstração ao vivo em apresentações e aulas: a plateia abre o site
 no celular e dispara análises reais. Isso exige uma publicação sem custo fixo,
 fácil de repetir por quem fizer fork, e com o custo das chamadas de IA limitado.
 Os ADRs 0004 e 0006 assumiam execução local com duas chaves (OpenAI para

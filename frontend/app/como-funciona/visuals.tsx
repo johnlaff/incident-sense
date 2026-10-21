@@ -265,7 +265,7 @@ export function Gate() {
     <figure className="cf-card cf-gate">
       <figcaption className="cf-card-head">
         <span>A trava de elegibilidade</span>
-        <Origin kind="ensaio" />
+        <Origin kind="referencia" />
       </figcaption>
       <div className="cf-gate-axis" style={{ "--gate": GATE / 10 } as Style}>
         <div className="cf-gate-line" aria-hidden="true" />
@@ -411,7 +411,7 @@ export function Coherence() {
     <figure className="cf-card cf-coh">
       <figcaption className="cf-card-head">
         <span>CHG0031002 · duas notas</span>
-        <Origin kind="ensaio" />
+        <Origin kind="referencia" />
       </figcaption>
       <div className="cf-coh-rows">
         <div

@@ -242,14 +242,14 @@ export function stepLetter(i: number): string {
 
 /**
  * Small label that says where a value comes from. Only "fora do demo" shows on
- * the visual itself; demo, rehearsal and example values are named once per
+ * the visual itself; demo, reference-run and example values are named once per
  * chapter, in its note (story.ts), so the chips do not crowd every picture.
  */
 export function Origin({
   kind,
   children,
 }: {
-  kind: "demo" | "ilustrativo" | "ensaio" | "fora";
+  kind: "demo" | "ilustrativo" | "referencia" | "fora";
   children?: ReactNode;
 }) {
   if (kind !== "fora") return null;

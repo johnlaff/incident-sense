@@ -5,7 +5,7 @@
 
 ## Contexto
 
-A palestra "Depois do Deploy" começa antes do deploy, com o artigo do Solange
+A demonstração começa antes do deploy, com a referência de Freitas Neto (2026)
 sobre a qualidade do preenchimento das requisições de mudança (Changes). O
 incident-sense só tratava incidentes. Era preciso mostrar a avaliação de forma
 que a plateia visse como a nota se forma e por que a análise de coerência roda

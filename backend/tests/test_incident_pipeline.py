@@ -1,4 +1,4 @@
-"""The incident suggestion pipeline as described in João's article.
+"""The incident suggestion pipeline as described in Ferreira (2026).
 
 Seven steps (load, AI summary, embedding of the summary with categoria,
 subcategoria and empresa, three-layer retrieval, context, suggestion with

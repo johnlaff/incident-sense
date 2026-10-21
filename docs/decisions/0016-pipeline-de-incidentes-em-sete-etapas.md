@@ -7,13 +7,13 @@
 
 O fluxo de sugestão tinha seis passos próprios do demo (resumir, embed,
 pré-filtro por metadados, busca, pós-filtro, classificar) e limiares
-ilustrativos (cosseno 0,4, top-K 5). O artigo técnico do João sobre sugestão de
-resolução de incidentes descreve um pipeline de produção diferente, e o
+ilustrativos (cosseno 0,4, top-K 5). A referência técnica sobre sugestão de
+resolução de incidentes (Ferreira, 2026) descreve um pipeline de produção diferente, e o
 incident-sense é a reprodução open source dele com dados sintéticos.
 
 ## Decisão
 
-- O fluxo segue as sete etapas do artigo: carregar, resumo por IA, embedding do
+- O fluxo segue as sete etapas da referência: carregar, resumo por IA, embedding do
   resumo com categoria, subcategoria e empresa, recuperação em três camadas,
   contexto, decisão de procedência, sugestão com fontes e publicação no
   incidente.

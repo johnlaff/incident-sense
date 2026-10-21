@@ -18,13 +18,12 @@
 
 ---
 
-incident-sense is the demo for the talk **"Depois do Deploy"** ("After the
-Deploy", TechWeek UFU, 2026-10-22). It reproduces, on synthetic data, two
-articles about AI in a bank's IT operations:
+incident-sense is a live demo, built for presentations and classes. It
+reproduces, on synthetic data, two references on AI in a bank's IT operations:
 
-- **Before the deploy** (Solange's article): an AI judge grades a change
+- **Before the deploy** (Freitas Neto, 2026): an AI judge grades a change
   request field by field and checks that the parts tell the same story.
-- **After the deploy** (João's article): for each incident, the AI finds
+- **After the deploy** (Ferreira, 2026): for each incident, the AI finds
   similar resolved cases, decides whether the ticket is a real incident and
   suggests a resolution that cites its sources.
 
@@ -143,7 +142,7 @@ message in Portuguese.
 
 RAG (_Retrieval-Augmented Generation_) means the AI does not invent the answer:
 it first **retrieves** similar real cases and only then **writes** the
-suggestion from them. `POST /api/suggest` follows the article step by step:
+suggestion from them. `POST /api/suggest` follows Ferreira (2026) step by step:
 
 1. **Load** the incident (category, subcategory, company and tags).
 2. **Summarize** with AI: the summary, never the raw text, is the query.
@@ -230,6 +229,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) (PT-BR) for every command.
 - [docs/data-generation.md](docs/data-generation.md): how the synthetic data is generated
 - [docs/decisions/](docs/decisions/): ADRs
 - [CHANGELOG.md](CHANGELOG.md): what changed in each version
+
+## 📖 References
+
+- FERREIRA, João Lucas Assunção Fonseca. _Sugestão de resolução de incidentes
+  com IA_ (Suggesting incident resolutions with AI). Oct. 2026.
+- FREITAS NETO, Solange Brasileiro de. _Como um LLM avalia texto escrito por
+  humano_ (How an LLM grades human-written text). Oct. 2026.
 
 ## 📄 License
 

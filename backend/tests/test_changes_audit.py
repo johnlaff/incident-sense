@@ -366,7 +366,7 @@ def test_fraction_percent_is_read_as_percent(client: TestClient) -> None:
 
 
 def test_fresh_bypasses_the_content_lock(client: TestClient) -> None:
-    """P1-N4: a rehearsal in the same browser never freezes the live demo."""
+    """P1-N4: a practice run in the same browser never freezes the live demo."""
     cache = EvaluationCache()
     judge = _Scripted(_semantic())
     _wire(client, judge, cache)

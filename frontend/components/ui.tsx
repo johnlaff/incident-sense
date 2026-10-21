@@ -99,7 +99,7 @@ export function StateBlock({
 
 /**
  * Shown while a request is still pending after a few seconds. The public demo's
- * API sleeps when idle, so the first visitor of a talk waits up to a minute;
+ * API sleeps when idle, so the first visitor of a live demo waits up to a minute;
  * saying so (and that the screen fills itself in) beats a silent skeleton.
  */
 export function WakeNotice({ show }: { show: boolean }) {

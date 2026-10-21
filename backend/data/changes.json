@@ -119,7 +119,7 @@
       }
     ],
     "scenario": "incoerente",
-    "scenario_note": "Caso clássico do artigo: a implementação altera schema e migra dados, mas o retorno só reverte a imagem do contêiner, sem desfazer colunas nem dados.",
+    "scenario_note": "Caso clássico da referência: a implementação altera schema e migra dados, mas o retorno só reverte a imagem do contêiner, sem desfazer colunas nem dados.",
     "plain_summary": {
       "implementation_plan": "Numa madrugada, a emissão de boletos é pausada, a tabela ganha colunas novas e 1,9 milhão de boletos são convertidos.",
       "validation_plan": "Acompanha-se a conversão e, no fim, a contagem de boletos tem de bater; depois, boletos de teste são pagos.",

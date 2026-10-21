@@ -9,6 +9,15 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ### Alterado
 
+- O repositório e a demo não citam mais nenhum evento: o texto fala em
+  demonstração ao vivo, apresentações e aulas.
+- As fontes viram referências no padrão autor-data, como "(Ferreira, 2026)", com
+  a lista completa em "Referências" na tela Como a IA funciona e nos READMEs. Sai
+  a linha de créditos com os nomes de quem apresenta.
+- Os valores de "ensaio" passam a ser de uma execução real de referência.
+
+### Alterado
+
 - **Perguntas partem da análise guardada no servidor**: `/api/suggest` guarda,
   por visitante e incidente, o veredito, a justificativa, a sugestão mostrada e
   os casos mantidos com o motivo de cada um. `/ask` responde a partir disso,
@@ -43,7 +52,7 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [1.1.0] - 2026-10-21
 
-Versão da palestra "Depois do Deploy" (TechWeek UFU, 22/10/2026). Tudo o que
+Versão pronta para demonstração ao vivo em apresentações e aulas. Tudo o que
 mudou na API é aditivo: rotas e campos novos, nenhum removido ou renomeado.
 
 ### Adicionado
@@ -59,7 +68,7 @@ mudou na API é aditivo: rotas e campos novos, nenhum removido ou renomeado.
   (`passes`, `reason_code`, `failed`, `reason`) e todas as telas leem só ele.
   Portas: média e coerência a partir de 8,0, nenhuma contradição real e plano
   de retorno não `NAO_ADERENTE`; campo sem nota vira `field_missing`.
-- **Pipeline de incidentes em sete etapas**, como no artigo do João: carregar,
+- **Pipeline de incidentes em sete etapas**, como em Ferreira (2026): carregar,
   resumo por IA, embedding do resumo com categoria, subcategoria e empresa,
   recuperação em três camadas (tags semânticas, vetor com cosseno mínimo 0,8 e
   top-K 5/10, pós-filtro por LLM com volta à lista original), contexto, decisão
@@ -102,7 +111,7 @@ mudou na API é aditivo: rotas e campos novos, nenhum removido ou renomeado.
   alcançável, e a resposta vem primeiro: uma frase, passos numerados, fontes
   clicáveis, confiança em palavras e o Erro conhecido no topo.
 - Vetores do RAG regerados a partir dos resumos (`summary_embeddings.npz`,
-  `problem_embeddings.npz`), como no artigo.
+  `problem_embeddings.npz`), como em Ferreira (2026).
 - O agrupamento roda o HDBSCAN nos embeddings normalizados e deixa o ruído como
   casos isolados (9 grupos e 78 casos isolados); o UMAP 2D só desenha o mapa.
 - Notas de trabalho, trava de conteúdo e cota valem por visitante.

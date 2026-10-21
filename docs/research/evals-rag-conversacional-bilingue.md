@@ -231,7 +231,7 @@ Ragas oferece versões com e sem LLM de
 [context precision](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/)
 e [context recall](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_recall/).
 As variantes baseadas em IDs são especialmente adequadas a PRs determinísticos.
-O artigo do sistema descreve a avaliação orientada a referências e sem referências
+O artigo que apresenta o Ragas descreve a avaliação orientada a referências e sem referências
 ([EACL 2024](https://aclanthology.org/2024.eacl-demo.16/)).
 
 [RAGChecker](https://arxiv.org/abs/2408.08067) decompõe o resultado por claims e
