@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAula, useAulaLesson } from "@/components/aula";
 import { TechDetails } from "@/components/concepts";
 import { Icons } from "@/components/icons";
+import { revealSubject } from "@/lib/reveal";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
 import { PARTS, lessonSteps, type Chapter } from "./story";
@@ -112,35 +113,25 @@ export function ChapterView({
     });
   }, [chapter.id, idx, total, started, lesson.done, onSignal]);
 
-  // In aula, keep the current step in view.
+  // In aula, bring the current step into the free band before its caption
+  // is read: below the top bar (and the shared visual, when it sticks on a
+  // phone), above the caption strip and the tab bar.
   const rowsRef = useRef<(HTMLLIElement | null)[]>([]);
   useEffect(() => {
-    if (!aula || !started || idx < 0 || idx >= total) return;
+    // Only the chapter on screen follows its step: a chapter left behind must
+    // not pull the page back to itself.
+    if (!aula || !focused || !started || idx < 0 || idx >= total) return;
     const el = rowsRef.current[idx];
     if (!el) return;
-    const r = el.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const bar = parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue("--aula-bar-h") || "0",
-    );
-    // On phones the shared visual (the map) sticks under the index: the
-    // step has to show below it, not behind it.
     const stage = el.closest(".cf-ch")?.querySelector<HTMLElement>(".cf-stage");
-    const stuck = stage && getComputedStyle(stage).position === "sticky";
-    const top = stuck ? stage.getBoundingClientRect().bottom + 12 : 64;
-    if (r.top < top || r.bottom > vh - bar - 16) {
-      if (stuck) {
-        const main = el.closest<HTMLElement>(".main");
-        const scroller =
-          main && main.scrollHeight > main.clientHeight
-            ? main
-            : document.scrollingElement;
-        scroller?.scrollBy({ top: r.top - top, behavior: reduced ? "auto" : "smooth" });
-      } else {
-        el.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
-      }
-    }
-  }, [aula, started, idx, total, reduced]);
+    // It covers the steps only when stacked above them (up to 1100px wide);
+    // beside them on a wide screen it is out of the way.
+    const stacked = window.matchMedia("(max-width: 1100px)").matches;
+    const stuck =
+      stacked && stage && getComputedStyle(stage).position === "sticky" ? stage : null;
+    // Otherwise the sticky chapter pager is what covers the top.
+    return revealSubject(el, reduced, stuck ?? document.querySelector(".cf-index"));
+  }, [aula, focused, started, idx, total, reduced]);
 
   function play() {
     if (runKey === null) setRunKey(1);

@@ -555,6 +555,14 @@
 .cf-row[data-s="ahead"] .cf-vis {
   opacity: 0.4;
 }
+/* Phones: no fade. A row the lesson has not reached stays fully legible
+   (4.5:1) while you scroll past it; the hollow letter mark says it is next. */
+@media (max-width: 767.98px) {
+  .cf-row[data-s="ahead"] .cf-row-text,
+  .cf-row[data-s="ahead"] .cf-vis {
+    opacity: 1;
+  }
+}
 .cf-vis {
   transition: opacity var(--dur-move, 320ms) var(--ease-out);
 }

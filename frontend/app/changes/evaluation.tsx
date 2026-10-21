@@ -6,6 +6,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 
 import { Icons } from "@/components/icons";
+import { revealSubject } from "@/lib/reveal";
 import {
   ADHERENCE_LABEL,
   band,
@@ -803,12 +804,15 @@ export function useFollowStep(
   index: number,
   runKey: string,
   reduced: boolean,
+  { aula = false, gateClosed = false }: { aula?: boolean; gateClosed?: boolean } = {},
 ): void {
   const [stoppedFor, setStoppedFor] = useState<string | null>(null);
-  const stopped = stoppedFor === runKey;
+  // In modo aula the keys drive the lesson, so a key press never stops the
+  // follow, and the subject always comes into view before the caption.
+  const stopped = stoppedFor === runKey && !aula;
 
   useEffect(() => {
-    if (stopped) return;
+    if (stopped || aula) return;
     const stop = () => setStoppedFor(runKey);
     const opts = { passive: true, once: true } as const;
     window.addEventListener("wheel", stop, opts);
@@ -819,15 +823,24 @@ export function useFollowStep(
       window.removeEventListener("touchmove", stop);
       window.removeEventListener("keydown", stop);
     };
-  }, [runKey, stopped]);
+  }, [runKey, stopped, aula]);
 
+  // A lesson in modo aula ends as soon as its last step shows: keep following
+  // that last step instead of dropping it.
+  const at = aula ? Math.min(index, steps.length - 1) : index;
+  const id = at >= 0 && at < steps.length ? steps[at].id : null;
   useEffect(() => {
-    if (stopped || index < 0 || index >= steps.length) return;
-    const el = document.querySelector(STEP_TARGET[steps[index].id]);
+    if (stopped || id === null) return;
+    // A closed gate ends the reading: its verdict is the subject.
+    const sel = id === "portao" && gateClosed ? ".chg-final" : STEP_TARGET[id];
     // Wait one frame so a block that just mounted has its size.
-    const id = requestAnimationFrame(() =>
-      el?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" }),
-    );
-    return () => cancelAnimationFrame(id);
-  }, [index, steps, stopped, reduced]);
+    let cancel = () => {};
+    const raf = requestAnimationFrame(() => {
+      cancel = revealSubject(document.querySelector(sel), reduced);
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      cancel();
+    };
+  }, [id, at, stopped, reduced, gateClosed]);
 }
