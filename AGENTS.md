@@ -4,9 +4,8 @@ Concise map and conventions for coding agents (and humans in a hurry).
 
 ## What this is
 
-`incident-sense`: the demo for the talk "Depois do Deploy" (TechWeek UFU,
-2026-10-22), an ITSM-style workspace for a **fictional** bank's IT ops with
-three capabilities: an LLM judge that grades Change requests (before the
+`incident-sense`: a live demo for presentations and classes, an ITSM-style
+workspace for a **fictional** bank's IT ops with three capabilities: an LLM judge that grades Change requests (before the
 deploy), RAG resolution suggestion with follow-up questions (after the deploy)
 and recurrence detection (clustering). All data is synthetic; the bank ("Banco
 Meridiano") is fictional.
@@ -68,7 +67,8 @@ Backend directly: `cd backend && uv run pytest|ruff check .|mypy src`.
   `rag/clients.py` and the tests).
 - Conventional Commits. **No AI attribution anywhere** (commits, docs, comments).
 - Copy and docs: PT-BR, no em dashes, only the fictional "Banco Meridiano".
-  Solange (author of the Change article) is a man: "o Solange".
+  Sources are cited as references: (Ferreira, 2026) and (Freitas Neto, 2026);
+  never by first name, and never with an event or talk name.
 - Secrets only in `.env` (gitignored); `.env.example` holds placeholders.
 - The committed `data/` artifacts are the source of truth; the clustering view is
   served offline from them.
@@ -79,7 +79,7 @@ Backend directly: `cd backend && uv run pytest|ruff check .|mypy src`.
   (`uv sync --all-extras`); the API runtime and tests don't need them.
 - The chat provider (OpenRouter default) may not support JSON mode; structured
   output is done via prompted JSON + pydantic validation.
-- The suggestion flow follows the seven steps of João's article (load, AI
+- The suggestion flow follows the seven steps of the reference pipeline (Ferreira, 2026) (load, AI
   summary, embedding of summary + categoria/subcategoria/empresa, three-layer
   retrieval, context, procedência gate, suggestion with validated sources,
   publication as a work note). See `docs/rag-flow.md` and ADR 0016.
@@ -89,7 +89,7 @@ Backend directly: `cd backend && uv run pytest|ruff check .|mypy src`.
 - Retrieval floor/top-K are settings (`RETRIEVAL_MIN_SIMILARITY` 0.8,
   `INCIDENT_TOP_K` 5, `PROBLEM_TOP_K` 10). Problems (`data/problems.json`) live
   in their own Qdrant collection. The RAG collection is seeded from
-  `summary_embeddings.npz` (summary + fields, as in the article) and Problems
+  `summary_embeddings.npz` (summary + fields, as in the reference) and Problems
   from `problem_embeddings.npz`; `embeddings.npz` (raw text) only feeds
   clustering. The post-filter reads title, description and resolution.
 - The model picker is real: `POST /api/suggest`, `/ask` and
