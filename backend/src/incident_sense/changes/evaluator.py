@@ -563,7 +563,7 @@ class ChangeEvaluator:
                 )
         else:
             lowest = min(judged, key=lambda s: s.score or 0.0)
-            vague = lowest.score < 5
+            vague = (lowest.score or 0.0) < 5
             skipped = (
                 # Two places, like the overall itself: 7.96 must not read "8.0 abaixo de 8.0".
                 f"Nota {overall:.2f} abaixo de {rubric.eligibility_threshold:.1f}: "
