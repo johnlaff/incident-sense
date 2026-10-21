@@ -286,7 +286,7 @@ const CONTENT: Record<
           ],
           [
             "Casos isolados",
-            `No demo, ${CLUSTERS_DEMO.isolated} incidentes ficaram de fora de qualquer grupo. A maioria é suporte interno (projetor, ramal, ar-condicionado), que não se repete o bastante para virar recorrência.`,
+            `No demo, ${CLUSTERS_DEMO.isolated} incidentes ficaram de fora de qualquer grupo. A maioria é suporte interno (projetor, ramal, ar-condicionado), que não se repete o bastante para virar um grupo de repetições.`,
           ],
           [
             "Offline",
@@ -585,7 +585,8 @@ export default function HowItWorksPage() {
           </li>
           <li>
             <b>Não mexe em nada.</b> Não altera sistemas, não fecha chamados e não abre
-            Problemas sozinha. No demo, nada é gravado.
+            Problemas sozinha. No demo, a nota que ela deixa no incidente aparece só para
+            você, e some quando o servidor reinicia.
           </li>
           <li>
             <b>Não inventa fonte.</b> Só cita casos que a busca trouxe; uma citação de

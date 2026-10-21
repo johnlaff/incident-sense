@@ -13,6 +13,7 @@ import { SuggestionMarkdown } from "./markdown";
 import { useFocusTrap, useScrollLock } from "@/lib/a11y";
 import {
   analysedCounts,
+  emptyAnswer,
   answerPlain,
   closestHit,
   confidenceOf,
@@ -75,7 +76,7 @@ export function AnswerCard({
   );
 
   if (!result.suggestion) {
-    const improcedente = result.classification !== "PROCEDENTE";
+    const empty = emptyAnswer(result);
     const near = closestHit(result);
     return (
       <section className="ans is-empty" aria-labelledby="ans-h">
@@ -83,28 +84,25 @@ export function AnswerCard({
           <h3 id="ans-h" className="ans-title">
             <ConceptLabel concept="ai-out" />
           </h3>
-          <ConfidenceTag level="baixa" label="Sem evidência suficiente" />
+          {empty.confidence ? (
+            <ConfidenceTag level="baixa" label="Sem evidência suficiente" />
+          ) : null}
         </div>
-        {scope}
-        {improcedente ? (
-          <>
-            <p className="ans-one">Não é uma falha técnica: é um pedido do cliente.</p>
-            <p className="ans-note">
-              Por isso a IA não sugere uma correção. O melhor caminho é orientar o cliente
-              pelo autoatendimento.
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="ans-one">Não achei casos parecidos o bastante para sugerir.</p>
-            <p className="ans-note">
-              {near
-                ? `O mais próximo foi ${near.number}, com semelhança ${formatSim(near.similarity)}; o mínimo para usar um caso é ${formatSim(result.retrieval.vector.min_similarity)}.`
-                : "A busca não trouxe nenhum caso."}{" "}
-              Resolva manualmente e registre a solução: ela ajuda nos próximos casos.
-            </p>
-          </>
-        )}
+        {empty.kind === "improcedente" ? null : scope}
+        <p className="ans-one">{empty.line}</p>
+        <p className="ans-note">
+          {empty.kind === "improcedente"
+            ? "Por isso a IA não sugere uma correção. O melhor caminho é orientar o cliente pelo autoatendimento."
+            : empty.kind === "unwritten"
+              ? "Tente analisar de novo. Os casos aprovados estão em Como a IA chegou nisso."
+              : empty.kind === "rejected"
+                ? "O motivo de cada um está em Como a IA chegou nisso. Resolva manualmente e registre a solução: ela ajuda nos próximos casos."
+                : `${
+                    near
+                      ? `O mais próximo foi ${near.number}, com semelhança ${formatSim(near.similarity)}; o mínimo para usar um caso é ${formatSim(result.retrieval.vector.min_similarity)}.`
+                      : "A busca não trouxe nenhum caso."
+                  } Resolva manualmente e registre a solução: ela ajuda nos próximos casos.`}
+        </p>
         <HumanDecides result={result} onShowNotes={onShowNotes} />
         {sheet ? (
           <SourceSheet
@@ -153,7 +151,7 @@ export function AnswerCard({
       ) : (
         <div className="ans-block">
           <SuggestionMarkdown
-            source={buildSuggestionMarkdown(result.suggestion, result.context_ids)}
+            source={buildSuggestionMarkdown(result.suggestion, result.citations.cited)}
             onCite={(id) => setSheet(id)}
             flashCite={null}
           />
@@ -268,11 +266,16 @@ function AnalysedLine({
   ].filter((h) => h.passed);
   const inc = counts.incidents === 1 ? "incidente parecido" : "incidentes parecidos";
   const prb = counts.problems === 1 ? "Problema" : "Problemas";
+  // Past the floor is not the same as used: the AI may rule some out.
+  const used = result.context_ids.length;
   return (
     <details className="ans-scope">
       <summary>
         <Icons.chevronRight />
         Analisei {counts.incidents} {inc} e {counts.problems} {prb}
+        {used > 0 && used < counts.incidents + counts.problems
+          ? `; ${used} ${used === 1 ? "serviu" : "serviram"}`
+          : ""}
       </summary>
       {hits.length ? (
         <ul>

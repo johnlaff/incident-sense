@@ -193,7 +193,7 @@ function ProblemRecord({ problem }: { problem: ProblemDetail }) {
               ))}
               {problem.cluster_label ? (
                 <div className="field full">
-                  <dt>Recorrência</dt>
+                  <dt>Repetições</dt>
                   <dd className="val">
                     <Link
                       className="rec-link"

@@ -1149,3 +1149,18 @@
   border-radius: 50%;
   border: 1.5px dashed var(--c-ai, var(--primary));
 }
+
+/* Group vs Problem: the two counts, and isolated cases already linked. */
+.rx-inc-prb,
+.rec-prb-n {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.rec-prb-note {
+  margin: 8px 0 0;
+  color: var(--ink-body);
+  font-size: 13px;
+  line-height: 1.5;
+}

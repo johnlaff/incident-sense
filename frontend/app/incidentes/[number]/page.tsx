@@ -28,10 +28,14 @@ import {
 import { activate, useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { api } from "@/lib/api";
 import { useAllIncidents, useClusters, useIncident } from "@/lib/incidents";
+import { useProblems } from "@/lib/problems";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import {
   absDate,
   buildSuggestionMarkdown,
+  linkedProblem,
+  recurrenceView,
+  relatedNumbers,
   groupPlain,
   mapDetail,
   mapSuggest,
@@ -373,29 +377,29 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
   const { data: all } = useAllIncidents();
   const { data: clustersData } = useClusters();
 
-  const related = useMemo<RelatedRow[]>(() => {
+  const { data: problemList } = useProblems();
+  const problem = useMemo(
+    () => linkedProblem(record.number, problemList ?? []),
+    [record.number, problemList],
+  );
+  const recurrence = recurrenceView(record);
+
+  const { related, relatedTotal } = useMemo(() => {
     const summaries = all?.items ?? [];
     const byNumber = new Map(summaries.map((s) => [s.number, s]));
-    const ids = new Set<string>();
-    summaries.forEach((s) => {
-      if (s.number !== record.number && s.cmdb_ci === record.service) ids.add(s.number);
-    });
-    if (record.clusterId != null && clustersData) {
-      clustersData.points.forEach((p) => {
-        if (p.id !== record.number && p.cluster_id === record.clusterId) ids.add(p.id);
-      });
-    }
-    return [...ids]
+    const found = relatedNumbers(record, summaries, clustersData?.points ?? [])
       .map((id) => byNumber.get(id))
-      .filter((s): s is NonNullable<typeof s> => Boolean(s))
-      .slice(0, 6)
-      .map((s) => ({
+      .filter((s): s is NonNullable<typeof s> => Boolean(s));
+    return {
+      relatedTotal: found.length,
+      related: found.slice(0, 6).map<RelatedRow>((s) => ({
         number: s.number,
         short: s.short_description,
         service: s.cmdb_ci,
         state: dsStateFromSummary(s.state),
-      }));
-  }, [all, clustersData, record.number, record.service, record.clusterId]);
+      })),
+    };
+  }, [all, clustersData, record]);
 
   function doAssign() {
     const next = assignee ? null : "João Ferreira (você)";
@@ -450,7 +454,11 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     { id: "detalhes", label: "Detalhes" },
     { id: "analise", label: "Análise da IA" },
     { id: "atividade", label: "Atividade", count: activity.length },
-    { id: "relacionados", label: "Vínculos", count: related.length },
+    {
+      id: "relacionados",
+      label: "Vínculos",
+      count: relatedTotal + (problem ? 1 : 0),
+    },
   ];
 
   return (
@@ -577,21 +585,30 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                       <dd className="val">{f.id ? keepWhole(f.value) : f.value}</dd>
                     </div>
                   ))}
-                  {record.clusterLabel ? (
+                  {problem ? (
                     <div className="field full">
-                      <dt>Recorrência</dt>
+                      <dt>Problema</dt>
                       <dd className="val">
-                        <Link
-                          className="rec-link"
-                          href={
-                            record.clusterId != null
-                              ? `/recorrencias?grupo=${record.clusterId}`
-                              : "/recorrencias"
-                          }
-                        >
-                          {record.clusterLabel}
+                        <Link className="rec-link" href={`/problemas/${problem.number}`}>
+                          <span className="mono">{problem.number}</span>{" "}
+                          {problem.short_description}
                           <Icons.chevronRight size={14} />
                         </Link>
+                      </dd>
+                    </div>
+                  ) : null}
+                  {recurrence ? (
+                    <div className="field full">
+                      <dt>Repetições</dt>
+                      <dd className="val">
+                        {recurrence.href ? (
+                          <Link className="rec-link" href={recurrence.href}>
+                            {recurrence.label}
+                            <Icons.chevronRight size={14} />
+                          </Link>
+                        ) : (
+                          recurrence.label
+                        )}
                       </dd>
                     </div>
                   ) : null}
@@ -665,7 +682,28 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
             </section>
           ) : (
             <section className="section" aria-labelledby="h-rel">
-              <h2 id="h-rel">Incidentes do mesmo serviço ou do mesmo grupo</h2>
+              {problem ? (
+                <>
+                  <h2 id="h-rel">Problema ligado</h2>
+                  <div className="related">
+                    <Link className="rel-row" href={`/problemas/${problem.number}`}>
+                      <span className="num">
+                        <RecordTag number={problem.number} size="sm" />
+                      </span>
+                      <span className="rdesc">{problem.short_description}</span>
+                      <span className="svc mono">{keepWhole(problem.cmdb_ci)}</span>
+                    </Link>
+                  </div>
+                </>
+              ) : null}
+              <h2 id={problem ? undefined : "h-rel"}>
+                Incidentes do mesmo serviço ou do mesmo grupo
+              </h2>
+              {relatedTotal > related.length ? (
+                <p className="rel-empty">
+                  Mostrando {related.length} de {relatedTotal}.
+                </p>
+              ) : null}
               {related.length ? (
                 <div className="related">
                   {related.map((r) => (
@@ -685,7 +723,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 </div>
               ) : (
                 <p className="rel-empty">
-                  Nenhum outro incidente no mesmo serviço ou na mesma recorrência.
+                  Nenhum outro incidente no mesmo serviço ou no mesmo grupo de repetições.
                 </p>
               )}
             </section>
@@ -1125,7 +1163,11 @@ function CopilotFab({
                   flashCite={flashCite}
                 />
                 <div className="sugg-foot">
-                  <p>Fundamentado em casos resolvidos.</p>
+                  <p>
+                    {result.cited.length > 0
+                      ? `Fundamentado em ${joinPt(result.cited)}.`
+                      : "Sem fonte citada: confira antes de usar."}
+                  </p>
                   <TechDetails summary="Detalhes técnicos">
                     <p>
                       Gerado por <b>{curModel.name}</b>.
@@ -1389,4 +1431,11 @@ function MiniSearch({
       ) : null}
     </div>
   );
+}
+
+/** "A, B e C". */
+function joinPt(items: string[]): string {
+  return items.length <= 1
+    ? (items[0] ?? "")
+    : `${items.slice(0, -1).join(", ")} e ${items[items.length - 1]}`;
 }

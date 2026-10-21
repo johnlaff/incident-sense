@@ -905,7 +905,7 @@ const LOOP = [
   { k: "chg", t: "Mudança" },
   { k: "dep", t: "Deploy" },
   { k: "inc", t: "Incidente" },
-  { k: "rec", t: "Recorrência" },
+  { k: "rec", t: "Repetição" },
   { k: "prb", t: "Problema" },
 ] as const;
 
@@ -922,7 +922,7 @@ export function Loop() {
       </p>
       <ol
         className="cf-ring"
-        aria-label="O ciclo: Mudança, deploy, incidente, recorrência, problema e de volta à Mudança"
+        aria-label="O ciclo: Mudança, deploy, incidente, repetição, problema e de volta à Mudança"
       >
         {LOOP.map((n, i) => (
           <li key={n.k} className={`cf-ring-n is-${n.k}`} style={{ "--i": i } as Style}>

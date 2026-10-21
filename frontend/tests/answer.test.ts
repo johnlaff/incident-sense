@@ -42,3 +42,13 @@ describe("parseSuggestion", () => {
     );
   });
 });
+
+describe("comma citations (auditoria P1-6)", () => {
+  it("reads both ids in one bracket and hides the bracket", () => {
+    const parsed = parseSuggestion(
+      "Sessões antigas com token inválido [PRB0004105].\n\n1. **Expirar sessões antigas**: forçar a renovação do token [INC0052180, PRB0004105]\n2. **Avisar**: avisar o cliente [INC0052181]",
+    );
+    expect(parsed?.steps[0].cites).toEqual(["INC0052180", "PRB0004105"]);
+    expect(parsed?.steps[0].text).toBe("forçar a renovação do token");
+  });
+});

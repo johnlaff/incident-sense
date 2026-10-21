@@ -739,7 +739,7 @@ export const CHAPTERS: Chapter[] = [
     id: "cap-6",
     n: 6,
     part: "depois",
-    title: "Agrupar as recorrências",
+    title: "Agrupar as repetições",
     why: "Muitos incidentes, poucas causas: os parecidos formam grupos, e grupo grande pede um Problema.",
     note: "Mapa de exemplo, com os nomes de grupos do demo.",
     app: { href: "/recorrencias", label: "Ver no app: Repetições" },

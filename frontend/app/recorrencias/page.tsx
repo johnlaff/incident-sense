@@ -85,7 +85,10 @@ export default function RecurrencesPage() {
           ? `, todos no ${keepWhole(top.name)}`
           : `, ${Math.round(featured.topShare * 100)}% no ${keepWhole(top.name)}`
         : "";
-      last = `${featured.label}: ${featured.size} casos${where}. Vale abrir um problema.`;
+      // Until the Problems arrive, say only what the map knows.
+      last = problemList
+        ? `${featured.label}: ${featured.size} casos${where}. Vale abrir um problema.`
+        : `${featured.label}: ${featured.size} casos${where}.`;
       if (featuredProblems.length > 0) {
         const n = featuredProblems.length;
         last = `${featured.label}: ${featured.size} casos${where}. Já ${n === 1 ? "virou um problema" : `virou ${n} problemas`}.`;
@@ -115,7 +118,7 @@ export default function RecurrencesPage() {
       },
       { title: "Problema", caption: last, durationMs: 600 },
     ];
-  }, [data, featured, featuredProblems.length]);
+  }, [data, featured, featuredProblems.length, problemList]);
 
   const lesson = useAulaLesson({
     id: "recorrencias",
@@ -222,7 +225,7 @@ export default function RecurrencesPage() {
     return (
       <div className="card">
         <LoadError
-          title="Não foi possível carregar as recorrências"
+          title="Não foi possível carregar as repetições"
           error={clusters.error}
           onRetry={clusters.retry}
         />
@@ -442,6 +445,7 @@ export default function RecurrencesPage() {
                 group={focusGroup ?? "outlier"}
                 filter={filter}
                 problems={focusGroup ? (problemsByGroup.get(focusGroup.id) ?? []) : []}
+                allProblems={problemList ?? []}
                 promoted={Boolean(promoted[String(focus)])}
                 onPromote={() => setPromoted((m) => ({ ...m, [String(focus)]: true }))}
                 onOpenIncident={openIncident}

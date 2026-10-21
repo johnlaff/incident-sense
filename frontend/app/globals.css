@@ -5195,3 +5195,11 @@ body {
     animation-duration: 0s !important;
   }
 }
+
+/* Not-found and error pages: the state block, centred in the content area. */
+.page-state {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  padding: 24px 16px;
+}

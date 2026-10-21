@@ -896,7 +896,9 @@ function PeekDrawer({
                     ["Impacto", inc.impact],
                     ["Urgência", inc.urgency],
                     ["Aberto em", absDate(inc.openedAt)],
-                    inc.clusterLabel ? ["Recorrência", inc.clusterLabel] : null,
+                    inc.clusterLabel && !inc.isOutlier
+                      ? ["Repetições", inc.clusterLabel]
+                      : null,
                   ].filter(Boolean) as [string, string][]
                 ).map(([k, v]) => (
                   <div className="field" key={k}>

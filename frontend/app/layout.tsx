@@ -26,7 +26,7 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Incident Sense · Banco Meridiano",
   description:
-    "Estação de trabalho ITSM com copiloto de IA: sugestão de resolução (RAG) fundamentada e detecção de recorrências, sobre incidentes de um banco fictício.",
+    "Estação de trabalho ITSM com copiloto de IA: sugestão de resolução (RAG) fundamentada e detecção de falhas que se repetem, sobre incidentes de um banco fictício.",
 };
 
 // viewport-fit=cover lets the app draw under the iOS notch and home indicator;

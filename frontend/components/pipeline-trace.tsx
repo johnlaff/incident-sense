@@ -615,7 +615,7 @@ function StepDetail({
               <span>Uma sugestão para revisar, não uma ordem.</span>
             </div>
             <SuggestionMarkdown
-              source={buildSuggestionMarkdown(result.suggestion, result.context_ids)}
+              source={buildSuggestionMarkdown(result.suggestion, result.citations.cited)}
               onCite={onCite}
               flashCite={flashCite}
             />
