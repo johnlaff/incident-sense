@@ -389,11 +389,18 @@ export interface CopilotCandidate {
   resolution: string | null;
 }
 
+/** One record the answer stands on: a past incident or a Problem. */
+export interface CopilotSource extends CopilotCandidate {
+  kind: "incidente" | "problema";
+}
+
 export interface CopilotResult {
   verdict: Classification;
   summary: string;
   neighbors: number;
   candidates: CopilotCandidate[];
+  /** Every source the analysis looked at, incidents then Problems (E2E-3 P1-3). */
+  sources: CopilotSource[];
   /** Suggestion as simple markdown (bold, lists, [INC…] citations), or null. */
   suggestion: string | null;
   referenced: string[];
@@ -413,6 +420,18 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
     reason: c.postfilter_reason ?? null,
     resolution: c.resolution_notes ?? null,
   }));
+  const sources: CopilotSource[] = [
+    ...candidates.map((c) => ({ ...c, kind: "incidente" as const })),
+    ...(res.problems ?? []).map((p) => ({
+      id: p.number,
+      desc: p.short_description,
+      sim: p.similarity,
+      keep: p.survived_postfilter,
+      reason: p.postfilter_reason ?? null,
+      resolution: p.workaround || null,
+      kind: "problema" as const,
+    })),
+  ];
   const procedente = res.classification === "PROCEDENTE";
   const suggestion =
     procedente && res.suggestion
@@ -423,6 +442,7 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
     summary: `“${res.summarized_query}”`,
     neighbors: candidates.length,
     candidates,
+    sources,
     suggestion,
     referenced: res.referenced_incidents,
     cited: res.citations.cited,

@@ -1,6 +1,8 @@
 import type { Change, ChangeSummary, EvaluateBody, Evaluation, Rubric } from "./changes";
 import type { ProblemDetail, ProblemSummary } from "./problems";
 import type {
+  AskBody,
+  AskResponse,
   ClustersResponse,
   Health,
   IncidentDetail,
@@ -100,9 +102,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       .json()
       .then((body: { detail?: string }) => body.detail)
       .catch(() => undefined);
+    // A framework default in English ("Internal Server Error") is not a
+    // sentence for the reader (E2E-3 P2-17).
+    const plain =
+      detail &&
+      !/^(Internal Server Error|Not Found|Bad Gateway|Service Unavailable|Gateway Timeout)$/i.test(
+        detail,
+      );
     throw new ApiError(
       response.status,
-      detail ?? `O servidor respondeu com erro ${response.status}.`,
+      plain
+        ? detail
+        : `O servidor respondeu com erro ${response.status}. Tente de novo em instantes.`,
     );
   }
   return JSON.parse(withAccents(await response.text())) as T;
@@ -133,6 +144,12 @@ export const api = {
   getClusters: () => request<ClustersResponse>("/api/clusters"),
   suggest: (body: SuggestRequest) =>
     request<SuggestResponse>("/api/suggest", {
+      method: "POST",
+      body: JSON.stringify(body),
+      signal: aiSignal(),
+    }),
+  askIncident: (number: string, body: AskBody) =>
+    request<AskResponse>(`/api/incidents/${encodeURIComponent(number)}/ask`, {
       method: "POST",
       body: JSON.stringify(body),
       signal: aiSignal(),

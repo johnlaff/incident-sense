@@ -26,7 +26,8 @@ import {
   WakeNotice,
 } from "@/components/ui";
 import { activate, useFocusTrap, useScrollLock } from "@/lib/a11y";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
+import { askNote, followUpBody, inputHint, joinPt } from "@/lib/followup";
 import { useAllIncidents, useClusters, useIncident } from "@/lib/incidents";
 import { useProblems } from "@/lib/problems";
 import { usePrefersReducedMotion } from "@/lib/motion";
@@ -58,7 +59,7 @@ import {
   stepViews,
 } from "@/lib/pipeline";
 import { funnel } from "@/lib/ruler";
-import type { SuggestResponse, WorkNote } from "@/lib/types";
+import type { AskResponse, SuggestResponse, WorkNote } from "@/lib/types";
 import { AssistantFab } from "@/components/assistant-fab";
 import { SuggestionMarkdown } from "@/components/markdown";
 import { isSuggestResponse, suggestErrorMessage } from "@/lib/suggest-guard";
@@ -879,6 +880,11 @@ function CopilotFab({
   const [srcOpen, setSrcOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [lastMessage, setLastMessage] = useState("Sugerir resolução para este incidente");
+  // Questions typed after the analysis: each one is a follow-up answered from
+  // the incident and the cases the analysis kept, never a new analysis.
+  const [turns, setTurns] = useState<FollowUp[]>([]);
+  // A question typed before any analysis waits for it, then is asked.
+  const [pending, setPending] = useState<string | null>(null);
   const msgsRef = useRef<HTMLDivElement>(null);
   const trapRef = useFocusTrap<HTMLDivElement>(open);
   // On phones the panel is a full-height sheet; keep the record from scrolling under it.
@@ -914,15 +920,51 @@ function CopilotFab({
     await suggest.run();
   }
 
-  // Send a written message: echo it as the user's bubble, then run the grounded
-  // pipeline (the demo always answers from real resolved incidents).
+  async function ask(question: string, id = Date.now()) {
+    const analysis = suggest.response;
+    if (!analysis) return;
+    setTurns((all) => [
+      ...all.filter((t) => t.id !== id),
+      { id, question, state: "running", res: null, error: null },
+    ]);
+    try {
+      const res = await api.askIncident(
+        record.number,
+        followUpBody(analysis, question, model),
+      );
+      setTurns((all) => all.map((t) => (t.id === id ? { ...t, state: "done", res } : t)));
+    } catch (e) {
+      const error =
+        e instanceof ApiError ? e.detail : "Não foi possível responder agora.";
+      setTurns((all) =>
+        all.map((t) => (t.id === id ? { ...t, state: "error", error } : t)),
+      );
+    }
+  }
+
+  // A written message is a question. With an analysis on screen it is a
+  // follow-up about it (one light call, nothing published); before one, the
+  // analysis runs first and the question is asked right after (E2E-3 P1-2).
   function submit() {
     const text = draft.trim();
     if (!text || phase === "running") return;
-    setLastMessage(text);
+    if (turns.some((t) => t.state === "running")) return;
     setDraft("");
-    run();
+    if (phase === "done" && suggest.response) {
+      void ask(text);
+      return;
+    }
+    setPending(text);
+    askDefault();
   }
+
+  // The analysis that a typed question started has landed: ask it now.
+  useEffect(() => {
+    if (pending === null || phase === "running") return;
+    if (phase === "done" && suggest.response) void ask(pending);
+    setPending(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, pending]);
 
   function askDefault() {
     setLastMessage("Sugerir resolução para este incidente");
@@ -949,7 +991,7 @@ function CopilotFab({
       : null;
     if (current) current.scrollIntoView({ block: "start", behavior: "auto" });
     else box.scrollTop = box.scrollHeight;
-  }, [phase, beat, why, open, srcOpen, lesson.aula]);
+  }, [phase, beat, why, open, srcOpen, lesson.aula, turns]);
 
   const started = phase !== "idle";
 
@@ -1017,7 +1059,7 @@ function CopilotFab({
     </div>
   );
 
-  const sourcesBlock = result?.candidates.length ? (
+  const sourcesBlock = result?.sources.length ? (
     <div className="sources cop-reveal reveal-3">
       <button
         className={`src-toggle${srcOpen ? " open" : ""}`}
@@ -1025,7 +1067,7 @@ function CopilotFab({
       >
         <Icons.list size={15} />
         <span className="src-tt">Fontes que a IA consultou</span>
-        <span className="src-count">{result.candidates.length}</span>
+        <span className="src-count">{result.sources.length}</span>
         <Icons.chevronDown size={14} />
       </button>
       {srcOpen ? (
@@ -1033,15 +1075,19 @@ function CopilotFab({
           <div className="src-hint">
             Abra um caso para conferir. O número é a similaridade, de 0 a 1.
           </div>
-          {result.candidates.map((c) => (
+          {result.sources.map((c) => (
             <div
               key={c.id}
               className={`cand${c.keep ? "" : " dropped"}`}
+              data-kind={c.kind}
               title={c.reason ?? ""}
               {...activate(() => peek(c.id), `${c.id} · ${c.desc}`)}
             >
               <span className="num">{c.id}</span>
-              <span className="cdesc">{c.desc}</span>
+              <span className="cdesc">
+                {c.kind === "problema" ? "Problema: " : ""}
+                {c.desc}
+              </span>
               <span className="sim" title="Similaridade semântica, de 0 a 1">
                 {formatSim(c.sim)}
               </span>
@@ -1260,7 +1306,8 @@ function CopilotFab({
               <div className="bubble-ai">
                 Posso sugerir uma resolução para o <b className="mono">{record.number}</b>
                 , com base em incidentes parecidos que já foram resolvidos. Sempre mostro
-                as fontes para você conferir.
+                as fontes para você conferir. Depois, respondo dúvidas sobre a sugestão e
+                os casos, sem publicar nada.
               </div>
             </div>
             {!started ? (
@@ -1283,6 +1330,20 @@ function CopilotFab({
                     {results}
                   </div>
                 </div>
+                {turns.map((t) => (
+                  <FollowUpTurn
+                    key={t.id}
+                    turn={t}
+                    onCite={peek}
+                    flashCite={flashCite}
+                    onRetry={() => void ask(t.question, t.id)}
+                  />
+                ))}
+                {pending ? (
+                  <div className="msg-row me">
+                    <div className="bubble-user">{pending}</div>
+                  </div>
+                ) : null}
               </>
             )}
           </div>
@@ -1291,7 +1352,7 @@ function CopilotFab({
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Escreva uma mensagem para a IA…"
+              placeholder={inputHint(phase === "done" && Boolean(suggest.response))}
               aria-label="Mensagem para a IA"
               onKeyDown={(e) => {
                 if (e.key === "Enter") submit();
@@ -1303,6 +1364,65 @@ function CopilotFab({
           </div>
         </div>
       ) : null}
+    </>
+  );
+}
+
+interface FollowUp {
+  id: number;
+  question: string;
+  state: "running" | "done" | "error";
+  res: AskResponse | null;
+  error: string | null;
+}
+
+/** One typed question and its grounded answer. Nothing here is published. */
+function FollowUpTurn({
+  turn,
+  onCite,
+  flashCite,
+  onRetry,
+}: {
+  turn: FollowUp;
+  onCite: (n: string, el?: HTMLElement) => void;
+  flashCite: string | null;
+  onRetry: () => void;
+}) {
+  const note = turn.res ? askNote(turn.res) : null;
+  return (
+    <>
+      <div className="msg-row me">
+        <div className="bubble-user">{turn.question}</div>
+      </div>
+      <div className="msg-row ai" aria-live="polite">
+        <span className="msg-av">
+          <Icons.aiSpark size={15} />
+        </span>
+        <div className={`bubble-ai followup is-${turn.res?.kind ?? turn.state}`}>
+          {turn.state === "running" ? (
+            <span className="followup-wait">
+              Lendo o incidente e os casos desta análise…
+            </span>
+          ) : turn.state === "error" ? (
+            <>
+              <p>{turn.error}</p>
+              <button className="btn btn-outline btn-sm" onClick={onRetry}>
+                <Icons.retry />
+                Tentar de novo
+              </button>
+            </>
+          ) : turn.res ? (
+            <>
+              <SuggestionMarkdown
+                source={turn.res.answer}
+                onCite={onCite}
+                flashCite={flashCite}
+              />
+              {note ? <p className="followup-note">{note}</p> : null}
+            </>
+          ) : null}
+        </div>
+      </div>
     </>
   );
 }
@@ -1369,11 +1489,4 @@ function MiniSearch({
       ) : null}
     </div>
   );
-}
-
-/** "A, B e C". */
-function joinPt(items: string[]): string {
-  return items.length <= 1
-    ? (items[0] ?? "")
-    : `${items.slice(0, -1).join(", ")} e ${items[items.length - 1]}`;
 }
