@@ -5068,10 +5068,13 @@ body {
 ::view-transition-new(.from-left) {
   animation: vt-in-left var(--dur-move) var(--spring-calm) both;
 }
+/* The page being left disappears at once: only the incoming page moves, so
+   the old list and the new page never show on top of each other. */
 ::view-transition-old(.to-left),
 ::view-transition-old(.to-right),
 ::view-transition-old(.fade) {
-  animation: vt-out calc(var(--dur-move) * var(--exit-factor)) var(--ease-exit) both;
+  animation: none;
+  opacity: 0;
 }
 ::view-transition-new(.fade) {
   animation: vt-fade-in var(--dur-state) var(--ease-out) both;
@@ -5083,6 +5086,15 @@ body {
 }
 .peek-num {
   view-transition-name: peek-num;
+}
+/* The phone tab bar paints above a page sliding in, never under it. */
+.tabbar {
+  view-transition-name: tabbar;
+}
+::view-transition-group(tabbar),
+::view-transition-old(tabbar),
+::view-transition-new(tabbar) {
+  animation: none;
 }
 @keyframes vt-in-right {
   from {
@@ -5096,11 +5108,6 @@ body {
     transform: translateX(-60px);
   }
 }
-@keyframes vt-out {
-  to {
-    opacity: 0;
-  }
-}
 @keyframes vt-fade-in {
   from {
     opacity: 0;
@@ -5111,7 +5118,8 @@ body {
     animation: vt-fade-in 160ms var(--ease-out) both !important;
   }
   ::view-transition-old(*) {
-    animation: vt-out 120ms var(--ease-exit) both !important;
+    animation: none !important;
+    opacity: 0;
   }
   ::view-transition-group(*) {
     animation-duration: 0s !important;
