@@ -41,9 +41,10 @@ export function GroupList({
   return (
     <div className="rx-list">
       <div className="rx-list-head">
-        <h2>Falhas que mais se repetem</h2>
+        <h2>Grupos, do maior para o menor</h2>
         <span>casos</span>
       </div>
+      <p className="rx-list-note">Cada cor é a do grupo no mapa.</p>
       <ul>
         {data.groups.map((g, k) => {
           const m = matched.get(g.id) ?? g.size;
@@ -64,7 +65,10 @@ export function GroupList({
                 aria-pressed={focus === g.id}
                 onClick={() => onFocus(focus === g.id ? null : g.id)}
               >
-                <span className="rx-row-name">{g.label}</span>
+                <span className="rx-row-name">
+                  <span className="rx-dot" aria-hidden="true" />
+                  {g.label}
+                </span>
                 <span className="rx-row-n">
                   {m === g.size ? g.size : `${m} de ${g.size}`}
                 </span>

@@ -440,7 +440,7 @@ export const MINI_GROUPS: MiniGroup[] = [
   {
     id: 0,
     label: "Timeout em pagamentos Pix com débito",
-    short: "Pix",
+    short: "Pix lento",
     cx: 0.72,
     cy: 0.4,
     n: 11,
@@ -448,7 +448,7 @@ export const MINI_GROUPS: MiniGroup[] = [
   {
     id: 4,
     label: "Falha na geração de boletos",
-    short: "Boletos",
+    short: "Boleto com falha",
     cx: 0.6,
     cy: 0.8,
     n: 9,
