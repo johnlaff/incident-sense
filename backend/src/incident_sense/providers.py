@@ -52,10 +52,14 @@ def make_chat_client(settings: Settings) -> OpenAI:
             "OPENROUTER_API_KEY is not set. The chat LLM requires a key; "
             "copy .env.example to .env and fill it in."
         )
+    # The SDK default is a 600 s read and two retries: a slow provider would keep
+    # "Avaliando" spinning for minutes in front of the audience.
     return OpenAI(
         api_key=settings.openrouter_api_key,
         base_url=settings.llm_base_url,
         default_headers=_OPENROUTER_HEADERS,
+        timeout=30,
+        max_retries=1,
     )
 
 

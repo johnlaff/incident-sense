@@ -90,9 +90,14 @@
    "reused": false
   },
   "semantic_skipped_reason": null,
+  "decision": {
+   "passes": true,
+   "reason_code": "passes",
+   "reason": "Média 8,62 e coerência 8,5, as duas a partir de 8,0."
+  },
   "model": "anthropic/claude-haiku-5.5",
   "model_calls": 8,
-  "duration_ms": 3
+  "duration_ms": 2
  },
  "CHG0031002": {
   "number": "CHG0031002",
@@ -187,6 +192,11 @@
    "reused": false
   },
   "semantic_skipped_reason": null,
+  "decision": {
+   "passes": false,
+   "reason_code": "coherence_below",
+   "reason": "A média passou (9,04), mas as partes do pedido não combinam: coerência 4,0, abaixo de 8,0."
+  },
   "model": "anthropic/claude-haiku-5.5",
   "model_calls": 8,
   "duration_ms": 3
@@ -273,9 +283,14 @@
   "overall": 3.13,
   "threshold": 8.0,
   "semantic": null,
-  "semantic_skipped_reason": "Nota 3.13 abaixo de 8.0: o problema ainda é campo vazio ou vago, e procurar contradições entre as partes do pedido não ajuda o autor agora.",
+  "semantic_skipped_reason": "Nota 3.13 abaixo de 8.0: ainda há campo vazio ou vago, a começar por Justificativa dos testes (2.0). Procurar contradições entre as partes do pedido não ajuda o autor agora.",
+  "decision": {
+   "passes": false,
+   "reason_code": "average_below",
+   "reason": "A média ficou em 3,13, abaixo do mínimo de 8,0."
+  },
   "model": "anthropic/claude-haiku-5.5",
   "model_calls": 7,
-  "duration_ms": 2
+  "duration_ms": 4
  }
 }
