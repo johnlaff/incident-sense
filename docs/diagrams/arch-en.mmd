@@ -1,8 +1,10 @@
 %%{init: {"theme":"base","flowchart":{"diagramPadding":18,"nodeSpacing":48,"rankSpacing":95,"htmlLabels":true},"themeVariables":{"fontFamily":"ui-sans-serif, system-ui, sans-serif","fontSize":"15px","primaryColor":"#eef0fb","primaryBorderColor":"#7b6fe0","primaryTextColor":"#2a2740","lineColor":"#a79fda","secondaryColor":"#f4f5f9","tertiaryColor":"#ffffff","edgeLabelBackground":"#f8f8fb"}}}%%
 flowchart LR
-  U(["Analyst"]) --> W["Next.js 16<br/>ITSM workspace"]
-  W -->|"HTTP · JSON"| API["FastAPI<br/>/api/incidents<br/>/api/suggest<br/>/api/clusters"]
-  API -->|"vector search"| Q[("Qdrant")]
-  API -->|"recurrences"| P["clusters.json<br/>precomputed"]
-  API -->|"LLM"| OR["OpenRouter"]
-  API -->|"embeddings"| OA["OpenAI"]
+  U(["Visitor<br/>browser with X-Client-Id"]) --> W["Cloudflare Workers<br/>Next.js 16 via OpenNext"]
+  W -->|"HTTPS · JSON"| API["Render Free · FastAPI<br/>/api/incidents · /api/suggest<br/>/api/incidents/{n}/ask<br/>/api/changes · /api/problems<br/>/api/clusters · /api/health"]
+  API -->|"vector search"| Q[("In-memory Qdrant<br/>resolved incidents<br/>and problems")]
+  API -->|"reads at boot"| D["Committed data<br/>incidents · problems · changes<br/>vectors · clusters.json"]
+  D -.->|"seeds"| Q
+  API -->|"chat and embeddings<br/>one key"| OR["OpenRouter<br/>Claude Haiku 5.5 and others<br/>text-embedding-3-large"]
+  GH["GitHub Actions"] -.->|"frontend-deploy"| W
+  GH -.->|"backend-deploy: deploy hook<br/>and ping every 10 min"| API
