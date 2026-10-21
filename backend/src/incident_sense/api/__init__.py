@@ -6,6 +6,7 @@ sub-router here so the wiring stays in one place.
 
 from fastapi import APIRouter
 
+from .ask import router as ask_router
 from .changes import router as changes_router
 from .clusters import router as clusters_router
 from .health import router as health_router
@@ -19,6 +20,7 @@ api_router.include_router(incidents_router)
 api_router.include_router(problems_router)
 api_router.include_router(clusters_router)
 api_router.include_router(suggest_router)
+api_router.include_router(ask_router)
 api_router.include_router(changes_router)
 
 __all__ = ["api_router"]

@@ -584,7 +584,7 @@ export const CHAPTERS: Chapter[] = [
     part: "antes",
     title: "A nota da Mudança",
     why: "Antes de subir, a Mudança ganha uma nota. Ninguém revisa mil Mudanças por dia à mão.",
-    note: "Pesos e corte vêm do demo; as notas são de uma avaliação real da CHG0031002; os tempos são exemplos.",
+    note: "Pesos e corte vêm do demo; as notas são de uma avaliação real da CHG0031002; ao vivo elas podem mudar um pouco; os tempos são exemplos.",
     app: { href: "/changes/CHG0031002", label: "Ver no app: CHG0031002" },
     steps: [
       {
@@ -685,7 +685,7 @@ export const CHAPTERS: Chapter[] = [
         title: "Transformar em números",
         line: "Textos de sentido parecido viram números parecidos.",
         caption:
-          "O resumo vira 3072 números. Textos com sentido parecido viram números parecidos.",
+          "O resumo vira 3.072 números. Textos com sentido parecido viram números parecidos.",
         ms: 1600,
       },
     ],

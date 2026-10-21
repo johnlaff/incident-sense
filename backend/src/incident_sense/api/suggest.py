@@ -65,6 +65,12 @@ def suggest(
         return run_suggestion(request, deps, settings, model=chosen, client_id=client_key(http))
     except HTTPException:
         raise
+    except openai.APITimeoutError as exc:
+        log.error("suggest_failed", error=str(exc), error_type="timeout")
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="A IA demorou demais para responder. Tente de novo.",
+        ) from exc
     except openai.APIStatusError as exc:
         log.error("suggest_failed", error=str(exc), status=exc.status_code)
         if exc.status_code in (402, 429):

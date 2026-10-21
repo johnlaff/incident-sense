@@ -117,6 +117,8 @@ export interface EvaluationDecision {
   passes: boolean;
   reason_code: DecisionReason;
   reason: string;
+  /** Every gate that held the Change back, in order. Older servers omit it. */
+  failed?: DecisionReason[];
 }
 
 export interface Evaluation {
@@ -209,11 +211,14 @@ export const STATE_HINT: Record<string, string> = {
 
 /**
  * The state in plain words. Once the AI answered, a new Change says so, so the
- * header never reads "não analisada" above a verdict.
+ * header never reads "não analisada" above a verdict. Short, so the badge fits
+ * a 360 px phone (bugs-logica-3 P0-A).
  */
 export function stateHint(state: string, verdict: string | null): string {
-  if (state === "New" && verdict)
-    return `avaliada pela IA (${verdict.toLowerCase()}), aguardando uma pessoa`;
+  if (state === "New" && verdict) {
+    const said = `a IA diz ${verdict.toLowerCase()}`;
+    return verdict === "Pode seguir" ? `${said}, falta aprovar` : said;
+  }
   return STATE_HINT[state] ?? "";
 }
 
@@ -269,12 +274,25 @@ export interface EvalMark {
   edited?: boolean;
   /** The verdict's title, as the detail shows it ("Não segue ainda"). */
   title?: string;
+  /** A field had no grade: the average is partial and does not decide. */
+  partial?: boolean;
 }
 
 /** The list badge's words: the detail's own title, or the older marks' rule. */
 export function markLabel(mark: EvalMark): string {
   if (mark.title) return mark.title;
   return (mark.ok ?? mark.passed) ? "Pode seguir" : "Não segue";
+}
+
+/**
+ * "Pode seguir · 8,62". A partial average (a field without a grade) is not
+ * the Change's grade, so the badge shows only the verdict.
+ */
+export function markText(mark: EvalMark): string {
+  if (mark.partial) return markLabel(mark);
+  const score =
+    mark.overall === null ? "sem nota" : mark.overall.toFixed(2).replace(".", ",");
+  return `${markLabel(mark)} · ${score}`;
 }
 
 const EVAL_KEY = "is-evaluated";

@@ -116,7 +116,8 @@ function keyTarget(el: EventTarget | null): KeyTarget {
   );
   // The palette and the peek drawer own the keyboard while open.
   const modal = document.querySelector(".palette, .drawer") !== null;
-  return { editable, pressable, arrowWidget, modal };
+  const aulaToggle = Boolean(node?.closest(".aula-toggle"));
+  return { editable, pressable, arrowWidget, modal, aulaToggle };
 }
 
 /**
@@ -254,8 +255,18 @@ export function AulaProvider({ children }: { children: ReactNode }) {
       if (move === "next") lesson.next();
       else lesson.prev();
     }
+    // Space on a focused button clicks it on keyup: on the topbar switch that
+    // click would end the lesson, so it is swallowed there.
+    function onKeyUp(e: KeyboardEvent) {
+      if ((e.key === " " || e.key === "Spacebar") && keyTarget(e.target).aulaToggle)
+        e.preventDefault();
+    }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKeyUp);
+    };
   }, [aula]);
 
   const value = useMemo<AulaContextValue>(
@@ -562,6 +573,13 @@ export function useAulaLesson({
 function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
   const ref = useBarRoom();
   const current = lesson.steps[lesson.step];
+  // Turned on from the topbar switch: the keyboard moves to the lesson, so
+  // Space and Enter drive "Próximo" (E2E-3 P1-4).
+  useEffect(() => {
+    const focused = document.activeElement;
+    if (!focused?.closest(".aula-toggle")) return;
+    ref.current?.querySelector<HTMLElement>(".aula-next")?.focus({ preventScroll: true });
+  }, [ref]);
 
   if (!current) return null;
   const last = lesson.step >= lesson.total - 1;

@@ -247,3 +247,20 @@ def test_suggest_publishes_on_the_incident_work_notes(client: TestClient) -> Non
     detail = client.get("/api/incidents/INC0099999").json()
     (note,) = detail["published_notes"]
     assert note["text"] == body["suggestion"] == "Reprocesse a conciliação [INC0000001]."
+
+
+def test_suggest_timeout_is_a_504_that_says_so(client: TestClient) -> None:
+    """logica-3 P2-11: a slow provider is not the generic 502."""
+    import httpx
+    import openai
+
+    class _SlowLLM(_FakeLLM):
+        def complete(self, system: str, user: str, **_: object) -> str:
+            raise openai.APITimeoutError(request=httpx.Request("POST", "https://ia.example"))
+
+    client.app.dependency_overrides[get_rag_deps] = lambda: RagDeps(
+        llm=_SlowLLM(), embeddings=_FakeEmbeddings(), retriever=_FakeRetriever()
+    )
+    response = client.post("/api/suggest", json={"short_description": "x", "description": "y"})
+    assert response.status_code == 504
+    assert "demorou demais" in response.json()["detail"]

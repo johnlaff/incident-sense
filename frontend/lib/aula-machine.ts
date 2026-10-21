@@ -97,6 +97,12 @@ export interface KeyTarget {
   arrowWidget: boolean;
   /** A modal (palette, drawer) owns the keyboard. */
   modal: boolean;
+  /**
+   * The topbar "Modo aula" switch. Focus stays there after a click, and Space
+   * on it would switch the lesson off in front of the room: Space advances
+   * instead, as the "Próximo" hint promises (E2E-3 P1-4). Enter still toggles.
+   */
+  aulaToggle?: boolean;
 }
 
 /**
@@ -118,7 +124,7 @@ export function aulaKeyAction(
       return "prev";
     case " ":
     case "Spacebar":
-      if (target.pressable) return null;
+      if (target.pressable && !target.aulaToggle) return null;
       return mods.shift ? "prev" : "next";
     case "ArrowRight":
       return target.arrowWidget ? null : "next";

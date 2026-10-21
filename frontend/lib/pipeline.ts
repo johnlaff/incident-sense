@@ -253,7 +253,7 @@ export const BEATS: Beat[] = [
     title: "Transformar em números",
     counter: "Etapa 3 de 7",
     caption:
-      "O resumo vira 3072 números. Textos com sentido parecido viram números parecidos.",
+      "O resumo vira 3.072 números. Textos com sentido parecido viram números parecidos.",
   },
   {
     step: "buscar",
@@ -368,7 +368,7 @@ const OUTCOME_CAPTION: Record<
 };
 
 /**
- * The beats of this run. The 3 in "3072 números" comes from the run when the
+ * The beats of this run. The 3.072 in "3.072 números" comes from the run when the
  * server reports it; steps 6 and 7 follow the classification and whether a
  * note was actually published.
  */
@@ -382,7 +382,7 @@ export function beatsFor(
     if (outcome !== "suggested" && (b.step === "sugerir" || b.step === "publicar"))
       return { ...b, caption: OUTCOME_CAPTION[outcome][b.step] };
     if (b.step === "numeros" && dims)
-      return { ...b, caption: b.caption.replace("3072", dims.toLocaleString("pt-BR")) };
+      return { ...b, caption: b.caption.replace("3.072", dims.toLocaleString("pt-BR")) };
     if (b.layer === "vetor")
       return { ...b, caption: b.caption.replace("0,80", formatSim(minSimilarity)) };
     return b;

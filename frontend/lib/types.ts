@@ -190,6 +190,22 @@ export interface SuggestResponse {
   publication: Publication;
 }
 
+/** A follow-up question about an analysis (POST /api/incidents/{n}/ask). */
+export interface AskBody {
+  question: string;
+  /** The kept ids of the analysis: the only sources the answer may cite. */
+  context_ids: string[];
+  model?: string;
+}
+
+/** One follow-up answer. It is never published on the incident. */
+export interface AskResponse {
+  kind: "answer" | "not_in_cases" | "off_topic";
+  answer: string;
+  citations: CitationCheck;
+  context_ids: string[];
+}
+
 export interface Health {
   status: string;
   version: string;

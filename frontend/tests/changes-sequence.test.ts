@@ -131,7 +131,7 @@ describe("formula and formatting", () => {
     expect(scoreDelta(8, undefined)).toBeNull();
     expect(fmtDelta(1.2)).toBe("+1,2");
     expect(fmtDelta(-0.4)).toBe("−0,4");
-    expect(fmtDelta(0)).toBe("0,0");
+    expect(fmtDelta(0)).toBe("igual");
   });
 
   it("parses CSS time tokens", () => {

@@ -2673,6 +2673,23 @@ body {
   line-height: 1.55;
   max-width: 86%;
 }
+/* A follow-up answer: the words, then what it stands on (E2E-3 P1-2). */
+.bubble-ai.followup > :first-child {
+  margin-top: 0;
+}
+.bubble-ai.followup .followup-wait {
+  color: var(--muted);
+}
+.bubble-ai.followup .followup-note {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+}
+.bubble-ai.followup .btn {
+  margin-top: 8px;
+}
 .bubble-ai.wide {
   max-width: 100%;
   flex: 1;
@@ -5040,6 +5057,14 @@ body {
   .aula-ctrl .aula-skip {
     display: none;
   }
+  /* "Próximo capítulo" next to "Anterior" and "Reproduzir" fits 360 px only
+     with the tighter gap (E2E-3 P2-2). */
+  .aula-ctrl {
+    gap: 4px;
+  }
+  .aula-btn.aula-play {
+    padding: 0 10px 0 8px;
+  }
   .aula-skip-top {
     display: block;
     position: absolute;
@@ -5070,10 +5095,13 @@ body {
   scroll-padding-bottom: calc(var(--aula-bar-h, 0px) + 32px);
 }
 
-/* Phone: the FAB rises above the strip; the assistant sheet keeps its input
-   clear and the strip drops to the bottom edge while the sheet is open. */
+/* While the aula bar is shown the assistant button steps aside, at every
+   width: a 185 px pill next to (or above) the bar either hides behind it or
+   covers what the lesson points at (bugs-logica-3 P1-A, P2-1). The assistant
+   sheet keeps its input clear and, on a phone, the strip drops to the bottom
+   edge while the sheet is open. */
 :root[data-aula-bar] .cop-fab {
-  translate: 0 calc(-1 * (var(--aula-bar-h, 0px) + 8px));
+  display: none;
 }
 @media (max-width: 767px) {
   body:has(.cop-panel) .aula-bar-wrap {
@@ -5087,7 +5115,7 @@ body {
 @media (min-width: 768px) {
   .aula-bar-wrap {
     left: calc(60px + 24px);
-    right: 100px;
+    right: 24px;
     bottom: 20px;
   }
   .aula-bar {
@@ -5098,9 +5126,6 @@ body {
   }
   .aula-ctrl {
     flex: none;
-  }
-  :root[data-aula-bar] .cop-fab {
-    translate: none;
   }
   /* With the assistant panel open, the strip becomes the panel's own footer. */
   body:has(.cop-panel) .aula-bar-wrap {

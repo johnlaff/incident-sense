@@ -53,6 +53,8 @@ import {
   buildSteps,
   decisionOf,
   firstSentence,
+  missingFields,
+  nextDirty,
   rerunHint,
   sentFields,
   fmtWeight,
@@ -184,10 +186,13 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const [readWith, setReadWith] = useState<string | null>(null);
   // A result reopened from this tab (the list counts it as evaluated).
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  // The text the current result was read with: editing back to it is no edit.
+  const [resultEdits, setResultEdits] = useState<Partial<Record<FieldKey, string>>>({});
   useEffect(() => {
     const saved = readSavedEvaluation(change);
     if (!saved) return;
     setEdits(saved.edits);
+    setResultEdits(saved.edits);
     if (MODELS.some((m) => m.id === saved.model)) setModel(saved.model);
     setReadWith(saved.model);
     setResult(saved.result);
@@ -305,6 +310,8 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const inScope = result ? result.scope.in_scope : isInScope(change);
   const rerun = {
     dirty: dirty.size,
+    // A field the AI did not grade goes back to it even with the same text.
+    failed: result?.fields.filter((f) => !isScored(f) && !dirty.has(f.key)).length ?? 0,
     modelChanged: result !== null && readWith !== null && readWith !== model,
     total: EVALUATED_FIELDS.length,
   };
@@ -345,6 +352,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       }
       setPrevious(result);
       setResult(res);
+      setResultEdits(edits);
       setReadWith(model);
       setSavedAt(null);
       // /changes marks the Changes evaluated in this session, and the page
@@ -356,6 +364,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
         ok: decisionOf(res)?.ok ?? false,
         title: verdictOf(res)?.title,
         edited,
+        partial: missingFields(res).length > 0,
       });
       saveEvaluation(change, { edits, model, result: res, at: Date.now() });
       setMotion(readMotion());
@@ -395,7 +404,8 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       else copy[key] = next;
       return copy;
     });
-    if (next !== valueOf(key)) setDirty((prev) => new Set(prev).add(key));
+    if (next !== valueOf(key))
+      setDirty((prev) => nextDirty(prev, key, next, resultEdits[key] ?? change[key]));
     setEditing(null);
   }
 
