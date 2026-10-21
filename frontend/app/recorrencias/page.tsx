@@ -289,7 +289,7 @@ export default function RecurrencesPage() {
                 className="btn btn-ghost btn-sm"
                 onClick={lesson.skip}
               >
-                Pular
+                Pular para o fim
               </button>
             ) : null}
             <div className="rx-grow" />

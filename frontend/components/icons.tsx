@@ -114,10 +114,12 @@ export const Icons = {
       <path d="M9 18.1 10 14H4.2a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 5.6 3H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3l-4 8a3 3 0 0 1-4-3.9Z" />
     </>,
   ),
+  /** Play it again: a circle of arrow around a play triangle. */
   replay: icon(
     <>
-      <path d="M3 2v6h6" />
-      <path d="M21 12A9 9 0 0 0 6 5.3L3 8" />
+      <path d="M20.5 12a8.5 8.5 0 1 1-2.5-6" />
+      <path d="M18.5 2.5V6.5H14.5" />
+      <path d="M10 8.8v6.4l5-3.2-5-3.2Z" />
     </>,
   ),
   assign: icon(

@@ -444,7 +444,7 @@ export function RunStatus({
       </span>
       {replaying && !aula ? (
         <button type="button" className="btn btn-ghost btn-sm run-btn" onClick={onSkip}>
-          Pular
+          Pular para o fim
         </button>
       ) : !replaying && onReplay ? (
         <button type="button" className="btn btn-ghost btn-sm run-btn" onClick={onReplay}>

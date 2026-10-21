@@ -113,6 +113,46 @@ function keyTarget(el: EventTarget | null): KeyTarget {
   return { editable, pressable, arrowWidget, modal };
 }
 
+/**
+ * Keep what the reader is looking at in place while modo aula switches: the
+ * layout under it changes (the strip goes, lessons fold), so note the element
+ * at the top of the screen and, once the new layout is in, scroll it back to
+ * the same height. Returns the function that does the putting back.
+ */
+function holdScroll(): () => void {
+  const topbar = document.querySelector(".topbar");
+  const y = (topbar ? topbar.getBoundingClientRect().bottom : 0) + 12;
+  const main = document.querySelector<HTMLElement>(".main");
+  const x = main ? main.getBoundingClientRect().left + 24 : 24;
+  const chain: { el: Element; top: number }[] = [];
+  for (
+    let el = document.elementFromPoint(x, y);
+    el && el !== main && el !== document.body;
+    el = el.parentElement
+  ) {
+    chain.push({ el, top: el.getBoundingClientRect().top });
+  }
+  return () => {
+    const put = () => {
+      const kept = chain.find((c) => c.el.isConnected && c.el.getClientRects().length);
+      if (!kept) return;
+      const d = kept.el.getBoundingClientRect().top - kept.top;
+      if (Math.abs(d) < 2) return;
+      const box =
+        main &&
+        main.scrollHeight > main.clientHeight + 1 &&
+        getComputedStyle(main).overflowY !== "visible"
+          ? main
+          : null;
+      if (box) box.scrollBy({ top: d, behavior: "auto" });
+      else window.scrollBy({ top: d, behavior: "auto" });
+    };
+    // After React commits the new layout, and once more after it settles.
+    requestAnimationFrame(() => requestAnimationFrame(put));
+    window.setTimeout(put, 250);
+  };
+}
+
 export function AulaProvider({ children }: { children: ReactNode }) {
   const [aula, setAulaState] = useState(false);
   const [lessons, setLessons] = useState<LessonSnapshot[]>([]);
@@ -125,6 +165,7 @@ export function AulaProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setAula = useCallback((on: boolean) => {
+    const restore = holdScroll();
     setAulaState(on);
     if (on) document.documentElement.setAttribute("data-aula", "");
     else document.documentElement.removeAttribute("data-aula");
@@ -133,6 +174,7 @@ export function AulaProvider({ children }: { children: ReactNode }) {
     } catch {
       /* private mode: the switch still works for this page */
     }
+    restore();
   }, []);
   const toggle = useCallback(() => setAula(!aula), [aula, setAula]);
 
@@ -389,12 +431,19 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
           </button>
           <button
             type="button"
-            className="icon-btn aula-btn"
+            className="icon-btn aula-btn aula-play"
             onClick={lesson.togglePlay}
-            aria-label={lesson.playing ? "Pausar" : "Reproduzir tudo"}
-            title={lesson.playing ? "Pausar" : "Reproduzir tudo"}
+            aria-label={
+              lesson.playing ? "Pausar" : "Tocar sozinho: os passos seguem sem clicar"
+            }
+            title={
+              lesson.playing ? "Pausar" : "Tocar sozinho: os passos seguem sem clicar"
+            }
           >
             {lesson.playing ? <Icons.pause /> : <Icons.play />}
+            <span className="aula-btn-t" aria-hidden="true">
+              {lesson.playing ? "Pausar" : "Tocar"}
+            </span>
           </button>
           {last ? (
             // The lesson is over: the next useful step is the next stop.
@@ -408,17 +457,18 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
                 type="button"
                 className="btn btn-ghost btn-sm aula-skip"
                 onClick={lesson.skip}
-                title="Pular para o último passo"
+                title="Pular os passos que faltam e ir ao último"
               >
-                Pular
+                Ir ao fim
               </button>
               <button
                 type="button"
                 className="btn btn-primary btn-sm aula-next"
                 onClick={lesson.next}
                 title="Próximo passo (seta para a direita, espaço ou PageDown)"
+                aria-label="Próximo passo"
               >
-                Próximo passo
+                Próximo
                 <Icons.arrowRight />
               </button>
             </>
@@ -448,7 +498,10 @@ export function AulaToggle() {
       <Icons.board />
       {aula ? (
         <span className="aula-toggle-t" aria-hidden="true">
-          Modo aula ligado<span className="aula-toggle-off"> · Desligar</span>
+          <span className="aula-toggle-long">
+            Modo aula ligado<span className="aula-toggle-off"> · Desligar</span>
+          </span>
+          <span className="aula-toggle-short">Sair da aula</span>
         </span>
       ) : (
         <span className="aula-toggle-t" aria-hidden="true">

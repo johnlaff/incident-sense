@@ -4954,10 +4954,27 @@ body {
 .aula-ctrl .aula-next {
   margin-left: auto;
 }
+.aula-ctrl .btn {
+  white-space: nowrap;
+}
+.aula-ctrl .aula-skip {
+  padding-inline: 8px;
+}
 .aula-btn {
   border-color: var(--border);
   width: 40px;
   height: 40px;
+}
+.aula-btn.aula-play {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-body);
 }
 .aula-btn:disabled {
   opacity: 0.45;
