@@ -255,7 +255,7 @@ export const INCIDENT = {
   subcategory: "App Mobile",
   empresa: "Banco Meridiano",
   tags: ["app-mobile", "login", "deploy"],
-  workNote: "Acionado Maria Eduarda (Sustentacao-Canais-Digitais) para análise.",
+  workNote: "Acionado Maria Eduarda (Sustentação-Canais-Digitais) para análise.",
 } as const;
 
 /** ILUSTRATIVO: a summary like the one the model writes. */

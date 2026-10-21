@@ -419,18 +419,29 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
 /** Topbar switch. The label shows from the labelled rail up. */
 export function AulaToggle() {
   const { aula, toggle } = useAula();
+  // Off it reads "Modo aula"; on it says so and how to leave, so the mode never
+  // stays on unnoticed from one page to the next.
   return (
     <button
       type="button"
       className={`icon-btn aula-toggle${aula ? " on" : ""}`}
       onClick={toggle}
       aria-pressed={aula}
+      aria-label={aula ? "Modo aula ligado. Desligar" : "Modo aula"}
       title={
         aula ? "Desligar o modo aula" : "Ligar o modo aula: passo a passo, com legendas"
       }
     >
       <Icons.board />
-      <span className="aula-toggle-t">Modo aula</span>
+      {aula ? (
+        <span className="aula-toggle-t" aria-hidden="true">
+          Modo aula ligado<span className="aula-toggle-off"> · Desligar</span>
+        </span>
+      ) : (
+        <span className="aula-toggle-t" aria-hidden="true">
+          Modo aula
+        </span>
+      )}
     </button>
   );
 }
