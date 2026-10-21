@@ -100,10 +100,10 @@ StepId = Literal[
 
 
 class PipelineStep(BaseModel):
-    """One step of the article's pipeline and what it decided."""
+    """One step of the reference pipeline and what it decided."""
 
     id: StepId
-    order: int = Field(description="Step number in the article (1 to 7).")
+    order: int = Field(description="Step number in the reference pipeline (1 to 7).")
     title: str
     status: StepStatus
     decision: str = Field(description="What this step decided, in PT-BR.")

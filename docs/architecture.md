@@ -101,8 +101,8 @@ casos, diz quando eles não respondem e nunca publica nota. Detalhes em
 
 ### 3. Avaliação de Mudanças
 
-`POST /api/changes/{number}/evaluate` é um LLM-como-juiz que segue o artigo do
-Solange. A lógica está em `backend/src/incident_sense/changes/evaluator.py` e a
+`POST /api/changes/{number}/evaluate` é um LLM-como-juiz que segue Freitas Neto
+(2026). A lógica está em `backend/src/incident_sense/changes/evaluator.py` e a
 grade em `changes/rubrica.toml` (versão `2026-10-19`, pesos somando 13,5, corte
 8,0).
 

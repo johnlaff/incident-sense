@@ -1,4 +1,4 @@
-"""The incident resolution-suggestion pipeline, as in João's article.
+"""The incident resolution-suggestion pipeline, as in Ferreira (2026).
 
 Seven steps, one small function each (mock-friendly, independently testable):
 

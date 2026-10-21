@@ -562,7 +562,7 @@ class ChangeEvaluator:
         """Evaluate ``change`` (with any edited field values) end to end.
 
         ``fresh`` skips the content lock (every part goes back to the model) and
-        stores the new reading, so a rehearsal never freezes the live demo.
+        stores the new reading, so a practice run never freezes the live demo.
         """
         started = self._clock()
         rubric = self._rubric

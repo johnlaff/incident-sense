@@ -7,7 +7,7 @@
 ## Contexto
 
 O ADR 0015 colocou a demo pública em serviços gratuitos. Na prática apareceram
-três atritos antes da palestra: o site começou no Netlify, que exigia um desvio
+três atritos antes da primeira demonstração ao vivo: o site começou no Netlify, que exigia um desvio
 no `next.config.ts`; a API no Render só atualizava com um clique em "Deploy
 latest commit"; e a instância gratuita dorme depois de 15 minutos parada e leva
 cerca de um minuto para acordar, justamente quando a plateia abre o site.
@@ -39,7 +39,7 @@ https://incident-sense-api.onrender.com (API).
   da demonstração" e a nova tentativa automática continuam para o caso de o
   ping falhar.
 - O ping consome minutos de GitHub Actions e horas da instância gratuita; é
-  aceitável para uma demo, e basta desligar o cron depois da palestra.
+  aceitável para uma demo, e basta desligar o cron quando a demo não estiver em uso.
 - O Next.js precisa ficar numa versão aceita pelo OpenNext (16.4.2 ou mais).
 
 ## Alternativas consideradas

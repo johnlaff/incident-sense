@@ -21,7 +21,7 @@ describe("/aula picks", () => {
   const changes = new Map(data("changes.json").map((r) => [r.number as string, r]));
   const picks = STOPS.flatMap((s) => s.picks ?? []);
 
-  it("covers the records of the talk", () => {
+  it("covers the records of the lesson script", () => {
     expect(picks.map((p) => p.number)).toEqual([
       "INC0052233",
       "CHG0031001",

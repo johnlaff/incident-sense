@@ -773,7 +773,7 @@
   border-style: dashed;
   border-color: var(--border-strong);
 }
-.cf-origin.is-ensaio svg {
+.cf-origin.is-referencia svg {
   fill: var(--cf-mid);
   stroke: var(--cf-mid);
 }
@@ -2249,9 +2249,22 @@
   font-weight: 600;
 }
 
-/* Who made the talk: last, under the footer. */
-.cf-credit {
-  margin: 8px 0 0;
+/* The references, last and quiet, under the footer. */
+.cf-refs {
+  margin: 12px 0 0;
   font-size: 13px;
   color: var(--muted);
+}
+.cf-refs h2 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-body);
+}
+.cf-refs ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
 }

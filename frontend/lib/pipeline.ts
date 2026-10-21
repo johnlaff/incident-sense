@@ -1,5 +1,5 @@
-// View model for the incident suggestion pipeline (the seven steps of João's
-// article; the procedência gate is step 5). Pure functions, so the screen never
+// View model for the incident suggestion pipeline (the seven steps of the
+// reference, Ferreira (2026); the procedência gate is step 5). Pure functions, so the screen never
 // reads raw wire fields and the mapping is unit-tested.
 //
 // One vocabulary everywhere (pipeline, assistant panel, Como funciona):

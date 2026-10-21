@@ -5,7 +5,7 @@
 // Every value is marked by where it comes from:
 //  - DEMO: copied from the committed demo data or config (backend/data,
 //    rubrica.toml, config.py) and checked by tests/como-funciona-story.test.ts;
-//  - ENSAIO: what the demo returned in the talk rehearsal (roteiro-de-fala.md),
+//  - REFERÊNCIA: what the demo returned in a real reference run with the model,
 //    which can change with the model;
 //  - ILUSTRATIVO: made up to explain the idea, and labelled so on screen.
 // Pure module: no React, no DOM.
@@ -13,18 +13,48 @@
 import type { AulaLessonStep } from "@/components/aula";
 
 // ---------------------------------------------------------------------------
-// Sources (the speakers' articles; cited by author and date only, the
-// publisher stays out of the demo)
+// References, cited the usual way: author and year in the text, the full
+// entry (ABNT style) in the "Referências" list. The publisher stays out.
 // ---------------------------------------------------------------------------
 
+export interface Reference {
+  /** Surname as cited in the text: "Ferreira (2026)". */
+  author: string;
+  year: number;
+  /** The full entry, split so the title can be set in italics. */
+  entry: { author: string; title: string; date: string };
+}
+
 export const SOURCES = {
-  solange: {
-    label: "Artigo do Solange (08/10/2026)",
+  incidentes: {
+    author: "Ferreira",
+    year: 2026,
+    entry: {
+      author: "FERREIRA, João Lucas Assunção Fonseca.",
+      title: "Sugestão de resolução de incidentes com IA",
+      date: "out. 2026.",
+    },
   },
-  joao: {
-    label: "Artigo do João (09/10/2026)",
+  mudancas: {
+    author: "Freitas Neto",
+    year: 2026,
+    entry: {
+      author: "FREITAS NETO, Solange Brasileiro de.",
+      title: "Como um LLM avalia texto escrito por humano",
+      date: "out. 2026.",
+    },
   },
-} as const;
+} as const satisfies Record<string, Reference>;
+
+/** The reference list, in alphabetical order of the entries. */
+export const REFERENCES: Reference[] = Object.values(SOURCES).sort((a, b) =>
+  a.entry.author.localeCompare(b.entry.author, "pt-BR"),
+);
+
+/** The full entry as plain text: "FERREIRA, João Lucas … out. 2026." */
+export function referenceText(r: Reference): string {
+  return `${r.entry.author} ${r.entry.title}. ${r.entry.date}`;
+}
 
 // ---------------------------------------------------------------------------
 // Chapter 1: the Change gets a grade (DEMO rubric, ILUSTRATIVO field grades)
@@ -248,7 +278,7 @@ export const COVERAGE_LABEL: Record<Coverage, string> = {
   operacao: "passo de operação",
 };
 
-/** ENSAIO: coherence grade CHG0031002 got in the rehearsal. */
+/** REFERÊNCIA: coherence grade CHG0031002 got in a real reference run. */
 export const CHG2_COHERENCE = 4;
 
 // ---------------------------------------------------------------------------
@@ -549,9 +579,9 @@ export const PROBLEM = {
 export type PartKey = "antes" | "depois" | "ciclo";
 
 export const PARTS: Record<PartKey, { title: string; who: string }> = {
-  antes: { title: "Antes do deploy", who: "baseado no artigo de Solange, palestrante" },
-  depois: { title: "Depois do deploy", who: "baseado no artigo de João, palestrante" },
-  ciclo: { title: "O ciclo fecha", who: "baseado nos dois artigos" },
+  antes: { title: "Antes do deploy", who: "com base em Freitas Neto (2026)" },
+  depois: { title: "Depois do deploy", who: "com base em Ferreira (2026)" },
+  ciclo: { title: "O ciclo fecha", who: "com base nas duas referências" },
 };
 
 export interface StoryStep {

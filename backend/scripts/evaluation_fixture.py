@@ -5,10 +5,10 @@ data, real rubric, real evaluator (weights, rounding, threshold, semantic gate).
 Only the model call is replaced by a stub judge that answers with the readings
 below, written by hand for each field of each Change, so no LLM is called.
 
-The readings are not talk facts. They describe what the field text says, and the
+The readings are not facts about a real bank. They describe what the field text says, and the
 grades follow the story the app already tells: CHG0031001 is the well-filled one
 (/aula calls it well filled), CHG0031002 passes the fields but fails the semantic
-check (rehearsal grades from como-funciona, 9,04 with coherence 4) and
+check (reference-run grades from como-funciona, 9,04 with coherence 4) and
 CHG0031003 is the vague one that stops at the gate.
 
 Usage:

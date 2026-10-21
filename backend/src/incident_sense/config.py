@@ -5,7 +5,7 @@ directly. Values come from environment variables (and a local ``.env`` during
 development); secrets are never hard-coded.
 
 The retrieval parameters (cosine floor 0.8, top-K 5 for incidents and 10 for
-Problems) are the public values from João's article on the bank's pipeline.
+Problems) are the public values of the reference pipeline (Ferreira, 2026).
 They are configuration, not constants: precision and coverage are product
 decisions.
 """
@@ -133,7 +133,7 @@ class Settings(BaseSettings):
 
     @property
     def summary_embeddings_path(self) -> Path:
-        """Optional incident vectors built as the article builds the query.
+        """Optional incident vectors built as the reference builds the query.
 
         Written by ``scripts/reembed.py --incidents`` (summary + categoria,
         subcategoria, empresa). When present, the RAG collection is seeded from

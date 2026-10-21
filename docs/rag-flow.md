@@ -6,9 +6,8 @@ sugerir uma resolução com fontes e publicá-la de volta no incidente. Depois, 
 assistente da IA responde perguntas sobre essa análise.
 
 O fluxo reproduz, com dados sintéticos do fictício **Banco Meridiano**, o
-pipeline descrito no artigo "Sugestão de resolução de incidentes com IA", de
-João Lucas Assunção Fonseca Ferreira (outubro de 2026), apresentado na palestra
-"Depois do Deploy". Os parâmetros públicos do artigo (cosseno mínimo 0,8, top-K
+pipeline descrito em Ferreira (2026), _Sugestão de resolução de incidentes com
+IA_. Os parâmetros públicos dessa referência (cosseno mínimo 0,8, top-K
 5 em incidentes e top-K 10 em Problemas) são os padrões da configuração.
 
 O endpoint é `POST /api/suggest`. Cada etapa é uma função pequena e testável em
@@ -34,7 +33,7 @@ flowchart TD
 Na tela, as etapas aparecem com nomes simples: Carregar, Resumir, Transformar
 em números, Buscar e conferir, Classificar, Sugerir e Publicar.
 
-1. **Carregar.** Com `number`, o incidente é lido da base (no artigo, do ITSM).
+1. **Carregar.** Com `number`, o incidente é lido da base (na referência, do ITSM).
    Categoria, subcategoria, empresa e tags vêm do registro. Sem número, valem os
    campos da requisição e a empresa padrão é `Banco Meridiano`.
 2. **Resumo por IA.** O LLM resume o chamado em uma ou duas frases e escolhe tags
@@ -142,7 +141,7 @@ contorno, solução definitiva, tags e os incidentes que explica
 
 ## Vetores da base
 
-A base é vetorizada do mesmo jeito que a consulta, como no artigo: resumo +
+A base é vetorizada do mesmo jeito que a consulta, como em Ferreira (2026): resumo +
 categoria, subcategoria e empresa.
 
 - `summary_embeddings.npz`: os 326 incidentes resolvidos (resumo + campos).
@@ -182,7 +181,7 @@ candidato, removendo esses falsos positivos antes de sugerir.
 ### Limiar e top-K são configuração
 
 Precisão e cobertura são decisões de produto, não constantes de código. Os
-padrões vêm do artigo e podem ser ajustados por variável de ambiente
+padrões vêm de Ferreira (2026) e podem ser ajustados por variável de ambiente
 (`RETRIEVAL_MIN_SIMILARITY`, `INCIDENT_TOP_K`, `PROBLEM_TOP_K`).
 
 ### Raciocínio oculto desligado

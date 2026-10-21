@@ -1,7 +1,7 @@
-"""Re-embed the knowledge base the way the article says the query is built.
+"""Re-embed the knowledge base the way the reference (Ferreira, 2026) builds the query.
 
 The committed incident vectors embed the raw ``short_description`` and
-``description`` (they were built for clustering). The article's query is the
+``description`` (they were built for clustering). The reference's query is the
 AI summary plus categoria, subcategoria and empresa, so the base should be
 embedded the same way. This needs a gateway key, so it is an offline step:
 

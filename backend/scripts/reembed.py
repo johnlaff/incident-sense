@@ -1,4 +1,4 @@
-"""CLI: re-embed the knowledge base as the article builds the query (needs a key).
+"""CLI: re-embed the knowledge base as Ferreira (2026) builds the query (needs a key).
 
     uv run python scripts/reembed.py --incidents   # summary + categoria/subcategoria/empresa
     uv run python scripts/reembed.py --problems    # real Problem embeddings

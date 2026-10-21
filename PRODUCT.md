@@ -8,11 +8,10 @@ product
 
 Two audiences, one interface:
 
-- **Talk attendees** ("Depois do Deploy", TechWeek UFU, Uberlândia,
-  2026-10-22) ranging from first-semester students to working professionals,
-  watching a live demo projected on a screen, opening the site on their phones
-  during the talk (lesson mode, `?aula=1`) and later exploring the repo
-  themselves.
+- **Live-demo audiences** (presentations and classes) ranging from
+  first-semester students to working professionals, watching the demo projected
+  on a screen, opening the site on their phones during the presentation (lesson
+  mode, `?aula=1`) and later exploring the repo themselves.
 - **Technical recruiters and senior engineers** evaluating this as a portfolio
   piece.
 
@@ -25,12 +24,12 @@ questions).
 ## Product Purpose
 
 A clean-room **simulation of a bank's ITSM** (ServiceNow-like) that follows two
-articles end to end:
+references end to end (see "References" in the README):
 
-- **Before the deploy** (Solange's article): an LLM judge grades each field of
+- **Before the deploy** (Freitas Neto, 2026): an LLM judge grades each field of
   a Change against a versioned rubric, and only above 8.0 checks whether the
   parts tell the same story. The backend returns one verdict; a person approves.
-- **After the deploy** (João's article): the analyst opens an incident and the
+- **After the deploy** (Ferreira, 2026): the analyst opens an incident and the
   embedded AI assistant runs a seven-step pipeline to a **grounded resolution
   suggestion** (RAG), published as a work note; follow-up questions are answered
   from the kept cases only.

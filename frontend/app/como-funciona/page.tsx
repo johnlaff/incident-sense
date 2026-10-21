@@ -1,7 +1,7 @@
 "use client";
 
-// "Como a IA funciona": the whole lifecycle after the deploy, as the talk "Depois
-// do Deploy" tells it and as the demo does it. Seven chapters: the Change
+// "Como a IA funciona": the whole lifecycle after the deploy, as the references
+// describe it and as the demo does it. Seven chapters: the Change
 // graded before it ships, the incident after it breaks (seven steps), the
 // recurrences that become a Problem, and the Problem that closes the loop.
 
@@ -20,6 +20,7 @@ import {
   EMBEDDING,
   GATE,
   PARTS,
+  REFERENCES,
   RETRIEVAL,
   RUBRIC_VERSION,
   SOURCES,
@@ -67,9 +68,23 @@ function Tech({ rows }: { rows: [string, ReactNode][] }) {
   );
 }
 
-function Cite({ who }: { who: keyof typeof SOURCES }) {
-  const s = SOURCES[who];
-  return <cite className="cf-cite-link">{s.label}</cite>;
+/**
+ * An author-year citation: "(Ferreira, 2026)", or "Ferreira (2026)" when the
+ * author is part of the sentence. The full entry is in "Referências".
+ */
+function Cite({
+  src,
+  narrative = false,
+}: {
+  src: keyof typeof SOURCES;
+  narrative?: boolean;
+}) {
+  const s = SOURCES[src];
+  return (
+    <cite className="cf-cite-link">
+      {narrative ? `${s.author} (${s.year})` : `(${s.author}, ${s.year})`}
+    </cite>
+  );
 }
 
 const CONTENT: Record<
@@ -91,7 +106,7 @@ const CONTENT: Record<
     ],
     source: (
       <>
-        Pico de 1.084 Mudanças em um dia, segundo o <Cite who="solange" />.
+        Pico de 1.084 Mudanças em um dia <Cite src="mudancas" />.
       </>
     ),
     details: (
@@ -116,7 +131,7 @@ const CONTENT: Record<
           ],
           [
             "Paralelo",
-            "No demo, uma thread por campo (ThreadPoolExecutor em Python). No banco, Virtual Threads do Java 21, segundo o artigo.",
+            "No demo, uma thread por campo (ThreadPoolExecutor em Python). No banco, Virtual Threads do Java 21 (Freitas Neto, 2026).",
           ],
           [
             "Trava de conteúdo",
@@ -143,8 +158,8 @@ const CONTENT: Record<
     ],
     source: (
       <>
-        A média 8,87 saiu de uma avaliação real no app; a coerência 4,0, do ensaio. As
-        duas podem mudar um pouco com o modelo.
+        A média 8,87 saiu de uma avaliação real no app; a coerência 4,0, de uma execução
+        real de referência. As duas podem mudar um pouco com o modelo.
       </>
     ),
     details: (
@@ -208,8 +223,8 @@ const CONTENT: Record<
     visuals: [<TagFilter key="t" />, <Ruler key="r" />, <PostFilter key="p" />],
     source: (
       <>
-        O mínimo de 0,80 e quantos casos a busca traz (o top-K) vêm do <Cite who="joao" />
-        .
+        O mínimo de 0,80 e quantos casos a busca traz (o top-K) vêm de{" "}
+        <Cite src="incidentes" narrative />.
       </>
     ),
     details: (
@@ -270,8 +285,8 @@ const CONTENT: Record<
     source: (
       <>
         No demo: {CLUSTERS_DEMO.incidents} incidentes, {CLUSTERS_DEMO.groups} grupos,{" "}
-        {CLUSTERS_DEMO.isolated} isolados. O exemplo de 200 em 5 grupos é do{" "}
-        <Cite who="joao" />.
+        {CLUSTERS_DEMO.isolated} isolados. O exemplo de 200 em 5 grupos é de{" "}
+        <Cite src="incidentes" narrative />.
       </>
     ),
     details: (
@@ -287,7 +302,7 @@ const CONTENT: Record<
           ],
           [
             "Densidade mínima",
-            "O artigo usa 4 no banco: é uma decisão de negócio. No demo, o tamanho mínimo é um parâmetro do script de pré-cálculo.",
+            "Ferreira (2026) usa 4 no banco: é uma decisão de negócio. No demo, o tamanho mínimo é um parâmetro do script de pré-cálculo.",
           ],
           [
             "Casos isolados",
@@ -626,9 +641,16 @@ export default function HowItWorksPage() {
           Banco Meridiano é fictício e os dados são sintéticos. A IA sugere; a pessoa
           analista decide.
         </p>
-        <p className="cf-credit">
-          Solange e João, os palestrantes, escreveram os artigos que inspiraram esta demo.
-        </p>
+        <section className="cf-refs" aria-labelledby="cf-refs-h">
+          <h2 id="cf-refs-h">Referências</h2>
+          <ul>
+            {REFERENCES.map((r) => (
+              <li key={r.entry.author}>
+                {r.entry.author} <i>{r.entry.title}</i>. {r.entry.date}
+              </li>
+            ))}
+          </ul>
+        </section>
       </footer>
     </div>
   );
