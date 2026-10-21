@@ -176,6 +176,10 @@ class Decision(BaseModel):
         )
     )
     reason: str
+    failed: list[str] = Field(
+        default_factory=list,
+        description="Every gate that held the Change back, in order; reason_code is the first.",
+    )
 
 
 class ScopeVerdict(BaseModel):

@@ -22,6 +22,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from typing import Protocol
 
+import openai
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from incident_sense.models.change import (
@@ -68,7 +69,9 @@ _SEMANTIC_SYSTEM = (
     "SOMENTE contradições reais: uma parte do pedido afirma ou faz algo que outra "
     "parte desmente, ou o retorno deixa de desfazer algo que a implementação altera. "
     "Sugestões de melhoria, detalhes que faltam e boas práticas não são contradições: "
-    'vão em "guidance". Se não houver contradição real, "problems" fica vazio. '
+    'vão em "guidance". Se não houver contradição real, responda "problems": [] '
+    '(lista vazia); nunca escreva itens como "Nenhuma contradição encontrada", '
+    '"N/A" ou "não há". '
     "Responda apenas com JSON."
 )
 
@@ -98,12 +101,17 @@ def content_hash(text: str) -> str:
 
 
 _NUMBER = re.compile(r"-?\d+(?:[.,]\d+)?")
+# A short word before the number ("Nota: 9", "nota 8,5"), never a sentence.
+_LABEL = re.compile(r"^[^\W\d_]{1,12}\s*:?\s*$")
 
 
 def _first_number(text: str) -> float | None:
-    """The leading number of "8,5", "9/10", "9.0 (bom)" or "80%"."""
+    """The leading number of "8,5", "9/10", "9.0 (bom)", "80%" or "Nota: 9"."""
     match = _NUMBER.search(text)
-    if match is None or text.strip()[: match.start()].strip():
+    if match is None:
+        return None
+    before = text.strip()[: text.strip().find(match.group(0))].strip()
+    if before and not _LABEL.match(before):
         return None
     return float(match.group(0).replace(",", "."))
 
@@ -128,15 +136,23 @@ def _grade(value: object) -> object:
 
 
 def _percent(value: object) -> object:
-    """Read "80%", 80.4 or 0.8 (a fraction) as a whole percent."""
+    """Read "80%", 80.4, 0.8 or 1.0 as a whole percent.
+
+    One rule, by how the number is written: a decimal number in (0, 1] is a
+    fraction (0.8 -> 80, 1.0 -> 100); an integer or anything with "%" is
+    already a percent (1 -> 1, "1%" -> 1).
+    """
     if isinstance(value, str):
-        number = _first_number(value)
+        text = value.strip()
+        number = _first_number(text)
         if number is None:
             return value
+        if "%" in text or not re.search(r"[.,]", text):
+            return round(number)
         value = number
     if isinstance(value, bool) or not isinstance(value, int | float):
         return value
-    if isinstance(value, float) and 0 < value < 1:
+    if isinstance(value, float) and 0 < value <= 1:
         value = value * 100
     return round(value)
 
@@ -153,6 +169,33 @@ def _points(value: object) -> object:
     if isinstance(value, str):
         return [value]
     return value
+
+
+_NONE_WORDS = re.compile(r"^(n ?a|none|nenhum|nenhuma|nada|vazio|sem|nao se aplica|nao ha)$")
+_SAYS_NONE = re.compile(
+    r"^(nenhum|nenhuma|nao ha|nao foram|nao foi|nao existe|nao existem|sem|nada)\b"
+)
+_ABOUT_CONTRADICTION = re.compile(
+    r"contradi|problema|inconsisten|divergen|conflito|incoeren|ponto|ressalva"
+)
+
+
+def _says_nothing(text: str) -> bool:
+    """Tell a filler item ("Nenhuma contradição encontrada.", "N/A", "-") apart.
+
+    A list filled out of politeness says there is no contradiction, so its
+    items are not one.
+    """
+    bare = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+    bare = re.sub(r"[^a-z0-9 ]+", " ", bare)
+    bare = " ".join(bare.split())
+    if not bare or _NONE_WORDS.match(bare):
+        return True
+    return (
+        bool(_SAYS_NONE.match(bare))
+        and bool(_ABOUT_CONTRADICTION.search(bare))
+        and len(bare.split()) <= 10
+    )
 
 
 def _plain(text: str) -> str:
@@ -217,7 +260,7 @@ class _SemanticOut(BaseModel):
         seen: dict[str, None] = {}
         for item in value:
             text = _plain(str(item))
-            if text:
+            if text and not _says_nothing(text):
                 seen.setdefault(text, None)
         return list(seen)
 
@@ -241,24 +284,58 @@ def _plural(n: int, one: str, many: str) -> str:
     return f"{n} {one if n == 1 else many}"
 
 
+# Why the coherence check did not come back, in the words every view shows.
+SEMANTIC_ERRORS = {
+    "timeout": "a IA demorou demais para responder",
+    "quota": "a IA está sem cota agora",
+    "format": "a IA não respondeu no formato esperado",
+}
+
+
+def semantic_error_kind(exc: BaseException) -> str:
+    """Timeout, quota or a reply off the format: each one is said plainly."""
+    if isinstance(exc, openai.APITimeoutError):
+        return "timeout"
+    if isinstance(exc, openai.APIStatusError) and exc.status_code in (402, 429):
+        return "quota"
+    return "format"
+
+
 def decide(
     overall: float,
     threshold: float,
     semantic: SemanticAnalysis | None,
     missing: list[str] | None = None,
+    *,
+    best: float | None = None,
+    semantic_error: str | None = None,
 ) -> Decision:
     """The rule, once. Every view reads this instead of re-deriving it.
 
-    Order: a field the AI could not read, the average, the coherence check that
-    did not come back, the coherence score, real contradictions, the backout.
+    Order: a field the AI could not read (unless even a 10 there could not
+    lift the average to the cut: then the average decides), the average, the
+    coherence check that did not come back, then gate 2. Gate 2 names every
+    part that fails (coherence, contradictions, back-out plan); the reason
+    code is the first of them and ``failed`` lists them all.
     """
     avg = _fmt(overall, 2)
     cut = _fmt(threshold)
     if missing:
         names = ", ".join(missing)
+        if best is not None and best < threshold:
+            return Decision(
+                passes=False,
+                reason_code="average_below",
+                failed=["average_below"],
+                reason=(
+                    f"Mesmo com nota 10 em {names}, a média chegaria no máximo a "
+                    f"{_fmt(best, 2)}, abaixo do mínimo de {cut}."
+                ),
+            )
         return Decision(
             passes=False,
             reason_code="field_missing",
+            failed=["field_missing"],
             reason=(
                 f"A IA não conseguiu avaliar {'o campo' if len(missing) == 1 else 'os campos'} "
                 f"{names}. Sem essa nota não há veredito: avalie de novo."
@@ -268,47 +345,47 @@ def decide(
         return Decision(
             passes=False,
             reason_code="average_below",
+            failed=["average_below"],
             reason=f"A média ficou em {avg}, abaixo do mínimo de {cut}.",
         )
     if semantic is None:
+        why = SEMANTIC_ERRORS.get(semantic_error or "format", SEMANTIC_ERRORS["format"])
+        again = "Tente de novo mais tarde." if semantic_error == "quota" else "Avalie de novo."
         return Decision(
             passes=False,
             reason_code="semantic_missing",
+            failed=["semantic_missing"],
             reason=(
                 f"A média passou do mínimo ({avg}), mas a conferência das partes do "
-                "pedido não voltou. Avalie de novo."
+                f"pedido não voltou: {why}. {again}"
             ),
         )
     coh = _fmt(semantic.consistency_score)
+    failed: list[str] = []
+    parts: list[str] = []
     if semantic.consistency_score < threshold:
-        return Decision(
-            passes=False,
-            reason_code="coherence_below",
-            reason=(
-                f"A média passou ({avg}), mas as partes do pedido não combinam: "
-                f"coerência {coh}, abaixo de {cut}."
-            ),
-        )
+        failed.append("coherence_below")
+        parts.append(f"as partes do pedido não combinam: coerência {coh}, abaixo de {cut}")
     if semantic.problems:
+        failed.append("contradictions")
         count = _plural(len(semantic.problems), "contradição", "contradições")
-        return Decision(
-            passes=False,
-            reason_code="contradictions",
-            reason=(
-                f"A média ({avg}) e a coerência ({coh}) passaram, mas a IA encontrou "
-                f"{count} entre as partes do pedido."
-            ),
-        )
+        parts.append(f"a IA encontrou {count} entre as partes do pedido")
     if semantic.backout_adherence == BackoutAdherence.NAO_ADERENTE:
+        failed.append("backout_not_adherent")
         pct = semantic.backout_adherence_percent
+        parts.append(
+            f"o plano de retorno desfaz só {pct}% do que as tarefas fazem "
+            f"(abaixo de {PARTIAL_FROM}% a mudança não segue)"
+        )
+    if failed:
+        lead = (
+            f"A média passou ({avg}), mas "
+            if "coherence_below" in failed
+            else f"A média ({avg}) e a coerência ({coh}) passaram, mas "
+        )
+        joined = parts[0] if len(parts) == 1 else "; ".join(parts[:-1]) + "; e " + parts[-1]
         return Decision(
-            passes=False,
-            reason_code="backout_not_adherent",
-            reason=(
-                f"A média ({avg}) e a coerência ({coh}) passaram, mas o plano de retorno "
-                f"desfaz só {pct}% do que as tarefas fazem; abaixo de {PARTIAL_FROM}% a "
-                "mudança não segue."
-            ),
+            passes=False, reason_code=failed[0], failed=failed, reason=f"{lead}{joined}."
         )
     return Decision(
         passes=True,
@@ -383,7 +460,7 @@ def _semantic_prompt(change: Change, values: dict[str, str], backout: str) -> st
         f"TAREFAS CADASTRADAS:\n{tasks or '(nenhuma)'}\n\n"
         'Responda com JSON: {"consistency_score": <0 a 10>, '
         '"problems": ["<cada contradição real entre as partes, uma frase; '
-        'sugestões não entram aqui>"], '
+        'sugestões não entram aqui; sem contradição real, []>"], '
         '"reasoning": "<duas ou três frases com o raciocínio>", '
         '"guidance": "<o que o autor deve ajustar, incluindo sugestões de melhoria>", '
         '"backout_adherence_percent": <0 a 100, quanto do que as tarefas cadastradas '
@@ -546,7 +623,17 @@ class ChangeEvaluator:
             / sum(s.weight for s in judged),
             2,
         )
+        # The highest average still within reach: a 10 in every missing field.
+        best = round(
+            (
+                sum(s.score * s.weight for s in judged if s.score is not None)
+                + 10 * sum(s.weight for s in scores if s.score is None)
+            )
+            / sum(s.weight for s in scores),
+            2,
+        )
         semantic: SemanticAnalysis | None = None
+        semantic_error: str | None = None
         skipped: str | None = None
         if missing:
             skipped = (
@@ -555,12 +642,13 @@ class ChangeEvaluator:
                 + ". Avalie de novo."
             )
         elif overall >= rubric.eligibility_threshold:
-            semantic = self._semantic(change, values, backout, scores, client_id, fresh)
+            semantic, semantic_error = self._semantic(
+                change, values, backout, scores, client_id, fresh
+            )
             if semantic is None:
-                skipped = (
-                    "A IA não respondeu à conferência de coerência no formato esperado. "
-                    "Avalie de novo."
-                )
+                kind = semantic_error or "format"
+                again = "Tente de novo mais tarde." if kind == "quota" else "Avalie de novo."
+                skipped = f"Não conferida: {SEMANTIC_ERRORS[kind]}. {again}"
         else:
             lowest = min(judged, key=lambda s: s.score or 0.0)
             vague = (lowest.score or 0.0) < 5
@@ -581,7 +669,14 @@ class ChangeEvaluator:
                 "overall": overall,
                 "semantic": semantic,
                 "semantic_skipped_reason": skipped,
-                "decision": decide(overall, rubric.eligibility_threshold, semantic, missing),
+                "decision": decide(
+                    overall,
+                    rubric.eligibility_threshold,
+                    semantic,
+                    missing,
+                    best=best if missing else None,
+                    semantic_error=semantic_error,
+                ),
                 "model_calls": self._calls,
                 "duration_ms": self._elapsed(started),
             }
@@ -595,7 +690,8 @@ class ChangeEvaluator:
         scores: list[FieldScore],
         client_id: str = "",
         fresh: bool = False,
-    ) -> SemanticAnalysis | None:
+    ) -> tuple[SemanticAnalysis | None, str | None]:
+        """The coherence check, or None and why it did not come back."""
         key = (
             client_id,
             self._rubric.version,
@@ -610,13 +706,13 @@ class ChangeEvaluator:
             prompt = _semantic_prompt(change, values, backout)
             try:
                 verdict = _judge_semantic(self._llm, prompt, self._count).settled()
-            except Exception:  # noqa: BLE001 - only this part degrades.
-                # The field grades still stand; the decision says "avalie de novo".
-                return None
+            except Exception as exc:  # noqa: BLE001 - only this part degrades.
+                # The field grades still stand; the decision says why and what to do.
+                return None, semantic_error_kind(exc)
             self._cache.put_semantic(key, verdict)
         else:
             verdict = cached
-        return SemanticAnalysis(**verdict.model_dump(), reused=cached is not None)
+        return SemanticAnalysis(**verdict.model_dump(), reused=cached is not None), None
 
     def _elapsed(self, started: float) -> int:
         return int((self._clock() - started) * 1000)

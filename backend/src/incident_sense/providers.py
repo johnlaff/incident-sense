@@ -38,10 +38,14 @@ def make_embedding_client(settings: Settings) -> OpenAI:
             "OPENROUTER_API_KEY is not set. Embeddings require it; "
             "copy .env.example to .env and fill it in."
         )
+    # Same short deadline as the chat client: the suggestion embeds the query
+    # first, and the SDK default (600 s, two retries) would outlast the front.
     return OpenAI(
         api_key=settings.openrouter_api_key,
         base_url=settings.embedding_base_url,
         default_headers=_OPENROUTER_HEADERS,
+        timeout=20,
+        max_retries=0,
     )
 
 
