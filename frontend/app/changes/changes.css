@@ -1046,6 +1046,21 @@ a.chg-row:focus-visible {
   border-radius: 999px;
   clip-path: inset(0 calc(100% - var(--pct) * 1%) 0 0 round 999px);
 }
+/* The 50% line: below it the back-out plan holds the change back. */
+.chg-adh-cut {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: calc(var(--at) * 1%);
+  width: 1px;
+  background: var(--ink-body);
+}
+.chg-score.empty.failed {
+  width: auto;
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
 .chg-adh-meter.ADERENTE .fill {
   background: var(--success);
 }
@@ -1961,4 +1976,23 @@ a.chg-row:focus-visible {
 .chg-edited {
   color: var(--ink-body);
   font-weight: 600;
+}
+.chg-fresh {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  margin-top: 8px;
+}
+/* The AI's prose: Inter throughout (mono is for numbers), no extra margins. */
+.prose-md code {
+  font-family: inherit;
+  font-size: inherit;
+  background: none;
+  padding: 0;
+}
+.prose-md > :first-child {
+  margin-top: 0;
+}
+.prose-md > :last-child {
+  margin-bottom: 0;
 }

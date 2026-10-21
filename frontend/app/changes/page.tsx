@@ -11,6 +11,7 @@ import {
   STATE_LABEL,
   TYPE_HINT,
   TYPE_LABEL,
+  markLabel,
   plainTitle,
   readEvalMarks,
   useChanges,
@@ -206,7 +207,7 @@ function EvaluatedBadge({ mark }: { mark: EvalMark }) {
       }
     >
       {ok ? <Icons.check /> : <Icons.alert />}
-      {ok ? "Pode seguir" : "Não segue"} · {score}
+      {markLabel(mark)} · {score}
       {mark.edited && " (com edições)"}
     </span>
   );

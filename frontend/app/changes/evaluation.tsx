@@ -6,9 +6,11 @@
 import { useEffect, useState, type CSSProperties } from "react";
 
 import { Icons } from "@/components/icons";
+import { ProseMarkdown } from "@/components/markdown";
 import { revealSubject } from "@/lib/reveal";
 import {
   ADHERENCE_LABEL,
+  PARTIAL_FROM,
   band,
   nota,
   type Change,
@@ -27,7 +29,9 @@ import {
   overallOf,
   parseTime,
   reached,
+  coherenceNote,
   decisionOf,
+  missingFields,
   verdictOf,
   type GateState,
   type Step,
@@ -257,11 +261,19 @@ export function DeltaChip({
  *  a real clock, and the structure of what is being judged.
  * ------------------------------------------------------------------ */
 
-export function RunningNote({ seconds, fields }: { seconds: number; fields: number }) {
+export function RunningNote({
+  seconds,
+  fields,
+  mayReuse = false,
+}: {
+  seconds: number;
+  fields: number;
+  mayReuse?: boolean;
+}) {
   return (
     <p className="chg-running" role="status">
       <Icons.loader className="spin" />
-      <span>{runningLine(fields)}</span>
+      <span>{runningLine(fields, { mayReuse })}</span>
       <span className="chg-elapsed" aria-label={`${seconds} segundos`}>
         {seconds} s
       </span>
@@ -341,6 +353,7 @@ export function Ledger({
   caption,
   why,
   pending = null,
+  failed = null,
 }: {
   rows: LedgerRow[];
   avg: WeightedAverage | null;
@@ -358,6 +371,8 @@ export function Ledger({
   why?: Map<FieldKey, string> | null;
   /** Fields edited since this result: their score is the old text's. */
   pending?: Set<FieldKey> | null;
+  /** Fields the AI could not judge in this result: no grade to show. */
+  failed?: Set<FieldKey> | null;
 }) {
   const byKey = new Map(avg?.segments.map((s) => [s.key, s]) ?? []);
   const totalWeight = rows.reduce((sum, r) => sum + r.weight, 0);
@@ -387,6 +402,7 @@ export function Ledger({
             (flagBelow || detail) && seg !== undefined && seg.score < threshold;
           const line = detail ? why?.get(r.key) : undefined;
           const edited = pending?.has(r.key) ?? false;
+          const noGrade = (failed?.has(r.key) ?? false) && avg !== null;
           return (
             <li
               key={r.key}
@@ -409,6 +425,7 @@ export function Ledger({
                     )}
                     {below && <span className="chg-below">abaixo de 8,0</span>}
                     {edited && <span className="chg-edited">editado: reavalie</span>}
+                    {noGrade && <span className="chg-edited">a IA não avaliou</span>}
                   </span>
                   {detail && seg && (
                     <span
@@ -436,6 +453,8 @@ export function Ledger({
                       />
                       {run && !seg.reused && <DeltaChip delta={seg.delta} />}
                     </>
+                  ) : noGrade ? (
+                    <span className="chg-score empty failed">sem nota</span>
                   ) : prev !== undefined ? (
                     <span className="chg-score stale" aria-label="Aguardando a nova nota">
                       {nota(prev)}
@@ -482,6 +501,10 @@ export function Average({
   const at = (id: StepId) => reached(steps, index, id);
   const onMedia = at("media");
   const onGate = at("portao");
+  // Once the lesson moved past the average, its count lands at once: the
+  // next caption never sits next to a number still counting (P2-N5).
+  const fast = skipped || onGate;
+  const missing = missingFields(result);
   // Same number as the formula's result: one source for headline, bar and gate.
   const overall = overallOf(result) ?? 0;
   const passed = gatePassed(result);
@@ -492,7 +515,7 @@ export function Average({
   const n = avg.segments.length;
   const terms = formulaTerms(avg);
   const before = new Map(previousAvg?.segments.map((s) => [s.key, s]) ?? []);
-  const landDelay = skipped ? 0 : (n - 1) * motion.term + motion.explain;
+  const landDelay = fast ? 0 : (n - 1) * motion.term + motion.explain;
   const cut = nota(result.threshold);
   // 7,96 reads as "8,0" once rounded, yet it is below the cut: say so.
   const roundsToCut = !passed && nota(overall) === cut;
@@ -511,7 +534,11 @@ export function Average({
       }
     >
       <h3>Média ponderada</h3>
-      <p className="chg-caption">Campos mais importantes pesam mais.</p>
+      <p className="chg-caption">
+        {missing.length > 0
+          ? `A IA não conseguiu avaliar ${missing.join(", ")}: a média é dos outros ${n} campos e não decide.`
+          : "Campos mais importantes pesam mais."}
+      </p>
 
       <div className="chg-avg-head">
         <ScoreChip
@@ -520,7 +547,7 @@ export function Average({
           from={previousOverall ?? 0}
           run={onMedia}
           delay={landDelay}
-          dur={skipped ? 0 : motion.count}
+          dur={fast ? 0 : motion.count}
           places={2}
           neutral={passed && !finalOk}
           label={`Média ponderada ${fmt(overall, 2)} de 10`}
@@ -625,7 +652,16 @@ export function Average({
         </p>
       </details>
 
-      {onGate &&
+      {onGate && missing.length > 0 ? (
+        <p className="chg-gate neutral">
+          <LockClosed />
+          <span>
+            Sem a nota de {missing.join(", ")}, a pergunta 1 fica sem resposta. Avalie de
+            novo.
+          </span>
+        </p>
+      ) : (
+        onGate &&
         (aula ? (
           <p className={`chg-gate ${gate}`}>
             {passed ? <LockOpen /> : <LockClosed />}
@@ -657,7 +693,8 @@ export function Average({
                   : `Faltam ${fmt(result.threshold - overall, 2)} pontos para ${cut}. Os campos de nota mais baixa são os que mais ajudam a subir.`}
             </span>
           </p>
-        ))}
+        ))
+      )}
     </div>
   );
 }
@@ -690,7 +727,9 @@ export function Coherence({
   motion: Motion;
 }) {
   const s = result.semantic;
-  const passed = decisionOf(result)?.average.state === "pass";
+  const d = decisionOf(result);
+  const passed = d?.average.state === "pass";
+  const note = coherenceNote(result);
   const onScores = reached(steps, index, "coerencia");
   const onProblems = reached(steps, index, "problemas");
 
@@ -705,17 +744,17 @@ export function Coherence({
           <LockClosed />
           <h2 id="sem-h">Coerência entre os campos</h2>
         </header>
-        <p className="chg-sem-stop">
-          Não conferida: ela só roda quando a média chega ao mínimo.
-        </p>
-        {result.semantic_skipped_reason && (
+        <p className="chg-sem-stop">{note?.line}</p>
+        {/* The average's own reason names the field to fix; the other cases
+            already say it all in the line above. */}
+        {d?.code === "average_below" && result.semantic_skipped_reason && (
           <p className="chg-muted">{plainReason(result.semantic_skipped_reason)}</p>
         )}
       </section>
     );
   }
 
-  const combine = decisionOf(result)?.coherence.state === "pass";
+  const combine = d?.coherence.state === "pass";
   return (
     <section
       id="coerencia"
@@ -761,6 +800,11 @@ export function Coherence({
             style={{ "--pct": s.backout_adherence_percent } as Vars}
           >
             <span className="fill" />
+            <span
+              className="chg-adh-cut"
+              style={{ "--at": PARTIAL_FROM } as Vars}
+              aria-hidden="true"
+            />
           </span>
           {/* A second, narrower fact than the 0 to 10 coherence, the same one
               the prompt asks for: how much of what the registered tasks do the
@@ -768,7 +812,8 @@ export function Coherence({
           <span>
             O plano de retorno desfaz{" "}
             <b className="num">{s.backout_adherence_percent}%</b> do que as tarefas
-            cadastradas fazem
+            cadastradas fazem. Abaixo de <span className="num">{PARTIAL_FROM}%</span>, a
+            mudança não segue.
           </span>
         </div>
       </div>
@@ -778,11 +823,9 @@ export function Coherence({
         data-on={onProblems}
         style={{ "--n": Math.max(1, s.problems.length) } as Vars}
       >
-        <h3>
-          {combine ? "Pontos de atenção (não impedem)" : "Onde as partes não combinam"}
-        </h3>
+        <h3>{note?.title}</h3>
         {s.problems.length > 0 ? (
-          <ol className={`chg-problems${combine ? " soft" : ""}`}>
+          <ol className="chg-problems">
             {s.problems.map((p, i) => (
               <li key={`${i}-${p}`} style={{ "--i": i } as Vars}>
                 <span className="n" aria-hidden="true">
@@ -795,22 +838,23 @@ export function Coherence({
         ) : combine ? (
           <p className="chg-none">
             <Icons.checkCircle />
-            Nada se contradiz entre as partes do pedido.
+            {note?.line}
           </p>
         ) : (
-          <p>A IA não listou pontos, mas a nota de coerência ficou abaixo do mínimo.</p>
+          <p>{note?.line}</p>
         )}
+        {s.problems.length > 0 && d?.code === "contradictions" && <p>{note?.line}</p>}
         {change && aboutBackout(s) ? <Excerpts change={change} /> : null}
         {s.reasoning.trim() ? (
           <>
             <h3>Raciocínio</h3>
-            <p>{s.reasoning}</p>
+            <ProseMarkdown source={s.reasoning} />
           </>
         ) : null}
         {s.guidance.trim() ? (
           <>
             <h3>Orientação ao autor</h3>
-            <p>{s.guidance}</p>
+            <ProseMarkdown source={s.guidance} />
           </>
         ) : null}
       </div>
@@ -832,7 +876,11 @@ function aboutBackout(s: NonNullable<Evaluation["semantic"]>): boolean {
 }
 
 /** Where "Ver onde" takes the reader: the worst fields, or the coherence card. */
-const FAILING_TARGET = { average: ".chg-ledger", coherence: "#coerencia" } as const;
+const FAILING_TARGET = {
+  fields: ".chg-ledger",
+  average: ".chg-ledger",
+  coherence: "#coerencia",
+} as const;
 
 function showFailing(where: keyof typeof FAILING_TARGET) {
   const el = document.querySelector<HTMLElement>(FAILING_TARGET[where]);
@@ -921,8 +969,13 @@ export function Decision({
         <GateRow
           n={1}
           question={`A média passa de ${cut}?`}
-          value={fmt(d.average.value, 2)}
+          value={d.average.state === "skipped" ? null : fmt(d.average.value, 2)}
           state={d.average.state}
+          note={
+            d.code === "field_missing"
+              ? `Falta a nota de ${missingFields(result).join(", ")}.`
+              : undefined
+          }
           where="average"
         />
         <GateRow
@@ -932,12 +985,14 @@ export function Decision({
           state={c.state}
           note={
             c.state === "skipped"
-              ? d.average.state === "fail"
-                ? "Só é perguntado quando a 1 passa."
-                : "A conferência não rodou."
-              : c.adherence === "NAO_ADERENTE"
-                ? "O plano de retorno não desfaz o que a implementação muda."
-                : `Coerência de 0 a 10, mesmo corte de ${cut}.`
+              ? d.code === "semantic_missing"
+                ? "A conferência não voltou. Avalie de novo."
+                : "Só é perguntado quando a 1 passa."
+              : d.code === "backout_not_adherent"
+                ? `O plano de retorno desfaz só ${result.semantic?.backout_adherence_percent ?? 0}% das tarefas; o mínimo é ${PARTIAL_FROM}%.`
+                : d.code === "contradictions"
+                  ? "A IA encontrou contradição entre as partes do pedido."
+                  : `Coerência de 0 a 10, mesmo corte de ${cut}.`
           }
           where="coherence"
         />
@@ -1091,7 +1146,10 @@ export function useFollowStep(
     // Wait one frame so a block that just mounted has its size.
     let cancel = () => {};
     const raf = requestAnimationFrame(() => {
-      cancel = revealSubject(document.querySelector(sel), reduced);
+      // A step whose block is not on screen (the check did not come back)
+      // shows the verdict instead.
+      const el = document.querySelector(sel) ?? document.querySelector(".chg-banner");
+      cancel = revealSubject(el, reduced);
     });
     return () => {
       cancelAnimationFrame(raf);

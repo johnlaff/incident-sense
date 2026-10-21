@@ -10,15 +10,16 @@ import { StateBlock, WakeNotice } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import {
   EVALUATED_FIELDS,
-  STATE_HINT,
   STATE_LABEL,
   TYPE_HINT,
   TYPE_LABEL,
   isEvaluation,
+  isScored,
   markEvaluated,
   plainTitle,
   readSavedEvaluation,
   saveEvaluation,
+  stateHint,
   useChange,
   useRubric,
   type Change,
@@ -58,6 +59,7 @@ import {
   gatePassed,
   overallOf,
   reached,
+  verdictOf,
   weightedSegments,
   type StepId,
 } from "../sequence";
@@ -89,6 +91,11 @@ export default function ChangeDetailPage({
   if (change.errorStatus === 404) {
     return (
       <div className="chg-page">
+        <nav className="crumbs" aria-label="Trilha">
+          <Link href="/changes">Mudanças</Link>
+          <span aria-hidden="true">/</span>
+          <span className="mono">{number.toUpperCase()}</span>
+        </nav>
         <StateBlock
           icon={Icons.search}
           title="Mudança não encontrada"
@@ -196,12 +203,22 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   // While a re-evaluation runs, the ledger shows the current scores greyed out;
   // once it lands, the counters start from the scores before it.
   const currentScores = useMemo(
-    () => new Map<FieldKey, number>(result?.fields.map((f) => [f.key, f.score]) ?? []),
+    () =>
+      new Map<FieldKey, number>(
+        result?.fields.filter(isScored).map((f) => [f.key, f.score]) ?? [],
+      ),
     [result],
   );
   const previousScores = useMemo(
-    () => new Map<FieldKey, number>(previous?.fields.map((f) => [f.key, f.score]) ?? []),
+    () =>
+      new Map<FieldKey, number>(
+        previous?.fields.filter(isScored).map((f) => [f.key, f.score]) ?? [],
+      ),
     [previous],
+  );
+  const failedFields = useMemo(
+    () => new Set<FieldKey>(result?.fields.filter((f) => !isScored(f)).map((f) => f.key)),
+    [result],
   );
 
   const steps = useMemo(
@@ -281,6 +298,8 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const showResult = phase !== "running" && result !== null && avg !== null;
   const at = (id: StepId) => showResult && reached(steps, playback.index, id);
   const gateClosed = at("portao") && result !== null && !gatePassed(result);
+  // Modo aula ends on the verdict, whatever the last step is (P1-N2).
+  const atLast = showResult && steps.length > 0 && playback.index >= steps.length - 1;
 
   const asideRef = useTallSticky();
   const inScope = result ? result.scope.in_scope : isInScope(change);
@@ -294,17 +313,31 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   const valueOf = (key: FieldKey) => edits[key] ?? change[key];
 
   // The header's "Modo aula" plays the verdict step by step, or runs the
-  // evaluation when there is none yet.
+  // evaluation when there is none yet. Nothing while one runs: a second
+  // request would spend the quota twice (P2-N6).
   useAulaStart(
     "mudanca",
-    result ? playback.replay : inScope ? () => void evaluate() : null,
+    phase === "running"
+      ? null
+      : result
+        ? playback.replay
+        : inScope
+          ? () => void evaluate()
+          : null,
   );
+  // The run in flight skips the content lock ("Avaliar de novo").
+  const [freshRun, setFreshRun] = useState(false);
 
-  async function evaluate() {
+  async function evaluate(fresh = false) {
     setPhase("running");
+    setFreshRun(fresh);
     setErrMsg(null);
     try {
-      const res = await api.evaluateChange(change.number, { fields: edits, model });
+      const res = await api.evaluateChange(change.number, {
+        fields: edits,
+        model,
+        ...(fresh ? { fresh: true } : {}),
+      });
       if (!isEvaluation(res)) {
         setErrMsg("A avaliação voltou incompleta. Tente de novo.");
         setPhase("error");
@@ -321,6 +354,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
         overall: overallOf(res),
         passed: gatePassed(res),
         ok: decisionOf(res)?.ok ?? false,
+        title: verdictOf(res)?.title,
         edited,
       });
       saveEvaluation(change, { edits, model, result: res, at: Date.now() });
@@ -376,6 +410,18 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
     gateClosed,
   });
   const notasStep = steps.find((s) => s.id === "notas");
+  // The header reads the same verdict as the banner (E2E P0-2).
+  const headerHint = stateHint(
+    change.state,
+    result && !stale && phase !== "running" ? (verdictOf(result)?.title ?? null) : null,
+  );
+  // Everything came back from the lock in this tab's first result: say so,
+  // and offer a reading that skips it (P1-N4).
+  const allReused =
+    result !== null &&
+    result.fields.length > 0 &&
+    result.fields.every((f) => f.reused) &&
+    previous === null;
   const whyByField = useMemo(
     () =>
       new Map<FieldKey, string>(
@@ -405,7 +451,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           <span className="badge chg-state">
             <span className="dot" />
             {STATE_LABEL[change.state] ?? change.state}
-            {STATE_HINT[change.state] ? `: ${STATE_HINT[change.state]}` : ""}
+            {headerHint ? `: ${headerHint}` : ""}
           </span>
           <span className="badge chg-risk">
             <span className="dot" />
@@ -466,7 +512,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 )}
                 <button
                   className="btn btn-ai chg-go-btn"
-                  onClick={evaluate}
+                  onClick={() => void evaluate()}
                   disabled={phase === "running"}
                 >
                   {phase === "running" ? (
@@ -498,10 +544,33 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     </select>
                   </label>
                 </TechDetails>
+                {result && phase !== "running" && (
+                  <div className="chg-fresh">
+                    {allReused && (
+                      <p className="chg-hint">
+                        Este navegador já tinha avaliado este texto: as notas foram
+                        reaproveitadas, sem chamar a IA.
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => void evaluate(true)}
+                    >
+                      <Icons.retry />
+                      Avaliar de novo, sem reaproveitar
+                    </button>
+                  </div>
+                )}
                 {phase === "running" && (
                   <RunningNote
                     seconds={elapsed}
-                    fields={sentFields({ ...rerun, first: !result })}
+                    fields={
+                      freshRun
+                        ? EVALUATED_FIELDS.length
+                        : sentFields({ ...rerun, first: !result })
+                    }
+                    mayReuse={!result && !freshRun}
                   />
                 )}
                 {result && phase !== "running" && rerunHint(rerun) && (
@@ -555,22 +624,25 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   }
                   why={showResult && !lesson.aula ? whyByField : null}
                   pending={stale ? dirty : null}
+                  failed={showResult ? failedFields : null}
                 />
               )}
 
             {showResult && overallOf(result) !== null && at("notas") && (
-              <Average
-                key={`avg-${epoch}`}
-                result={result}
-                avg={avg}
-                previousAvg={previousAvg}
-                previousOverall={previous ? overallOf(previous) : null}
-                index={playback.index}
-                steps={steps}
-                skipped={playback.skipped}
-                motion={motion}
-                aula={lesson.aula}
-              />
+              <div className="chg-stale-wrap" data-stale={stale}>
+                <Average
+                  key={`avg-${epoch}`}
+                  result={result}
+                  avg={avg}
+                  previousAvg={previousAvg}
+                  previousOverall={previous ? overallOf(previous) : null}
+                  index={playback.index}
+                  steps={steps}
+                  skipped={playback.skipped}
+                  motion={motion}
+                  aula={lesson.aula}
+                />
+              </div>
             )}
 
             {showResult && overallOf(result) !== null && (
@@ -591,22 +663,26 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           </section>
 
           {showResult && result.scope.in_scope && at("portao") && (
-            <Coherence
-              key={`sem-${epoch}`}
-              result={result}
-              change={change}
-              index={playback.index}
-              steps={steps}
-              skipped={playback.skipped}
-              motion={motion}
-            />
+            <div className="chg-stale-wrap" data-stale={stale}>
+              <Coherence
+                key={`sem-${epoch}`}
+                result={result}
+                change={change}
+                index={playback.index}
+                steps={steps}
+                skipped={playback.skipped}
+                motion={motion}
+              />
+            </div>
           )}
 
           {showResult &&
             lesson.aula &&
             result.scope.in_scope &&
-            (gateClosed || at("problemas")) && (
-              <Decision key={`ver-${epoch}`} result={result} closing />
+            (gateClosed || atLast) && (
+              <div className="chg-stale-wrap" data-stale={stale}>
+                <Decision key={`ver-${epoch}`} result={result} closing />
+              </div>
             )}
         </aside>
 
@@ -622,7 +698,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             const i = order.get(f.key) ?? 0;
             const seg = avg?.segments.find((s) => s.key === f.key);
             const below =
-              gateClosed && score !== undefined && score.score < result!.threshold;
+              gateClosed &&
+              score !== undefined &&
+              score.score !== null &&
+              score.score < result!.threshold;
             const foldable =
               score !== undefined && !isDirty && editing !== f.key && phase !== "running";
             const folded = foldable && !openFields.has(f.key);
@@ -660,14 +739,19 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   </div>
                   {phase === "running" && inScope ? (
                     <span className="chg-score pending">Em avaliação</span>
-                  ) : score && !isDirty ? (
+                  ) : score && !isDirty && score.score === null ? (
+                    <span className="chg-score empty failed">sem nota</span>
+                  ) : score && !isDirty && score.score !== null ? (
                     <span className="chg-field-score" key={`sc-${epoch}`}>
                       {at("notas") && !score.reused && (
                         <DeltaChip delta={seg?.delta ?? null} />
                       )}
                       <FieldScoreChip
                         score={score.score}
-                        from={previous?.fields.find((p) => p.key === f.key)?.score}
+                        from={
+                          previous?.fields.find((p) => p.key === f.key)?.score ??
+                          undefined
+                        }
                         reused={score.reused}
                         run={at("notas")}
                         order={i}
@@ -728,7 +812,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                       <p className="chg-guidance">
                         <Icons.lightbulb />
                         <span>
-                          {score.score < (result?.threshold ?? 8) && (
+                          {(score.score ?? 0) < (result?.threshold ?? 8) && (
                             <b>O que subiria a nota: </b>
                           )}
                           {score.guidance}
