@@ -21,6 +21,9 @@ import {
 import {
   DEFAULT_TIMING,
   avgDelta,
+  bestAverage,
+  gate2Note,
+  gate2Value,
   fmt,
   fmtDelta,
   fmtWeight,
@@ -511,7 +514,16 @@ export function Average({
   // Green only when the whole reading says yes: past the cut, a blocked
   // coherence check keeps the line neutral and the verdict carries the color.
   const finalOk = verdictOf(result)?.ok ?? false;
-  const gate = passed ? (finalOk ? "open" : "neutral") : "closed";
+  // A field without a grade leaves question 1 unanswered: nothing drawn as
+  // passed or failed, unless even a 10 there could not reach the cut.
+  const unanswered = decisionOf(result)?.code === "field_missing";
+  const gate = passed
+    ? finalOk
+      ? "open"
+      : "neutral"
+    : unanswered
+      ? "neutral"
+      : "closed";
   const n = avg.segments.length;
   const terms = formulaTerms(avg);
   const before = new Map(previousAvg?.segments.map((s) => [s.key, s]) ?? []);
@@ -536,7 +548,9 @@ export function Average({
       <h3>Média ponderada</h3>
       <p className="chg-caption">
         {missing.length > 0
-          ? `A IA não conseguiu avaliar ${missing.join(", ")}: a média é dos outros ${n} campos e não decide.`
+          ? unanswered
+            ? `A IA não conseguiu avaliar ${missing.join(", ")}: a média é dos outros ${n} campos e não decide.`
+            : `A IA não conseguiu avaliar ${missing.join(", ")}, mas nem com nota 10 a média chegaria a ${cut}.`
           : "Campos mais importantes pesam mais."}
       </p>
 
@@ -549,7 +563,7 @@ export function Average({
           delay={landDelay}
           dur={fast ? 0 : motion.count}
           places={2}
-          neutral={passed && !finalOk}
+          neutral={(passed && !finalOk) || unanswered}
           label={`Média ponderada ${fmt(overall, 2)} de 10`}
         />
         <span className="chg-overall-label">
@@ -653,11 +667,12 @@ export function Average({
       </details>
 
       {onGate && missing.length > 0 ? (
-        <p className="chg-gate neutral">
+        <p className={`chg-gate ${gate}`}>
           <LockClosed />
           <span>
-            Sem a nota de {missing.join(", ")}, a pergunta 1 fica sem resposta. Avalie de
-            novo.
+            {unanswered
+              ? `Sem a nota de ${missing.join(", ")}, a pergunta 1 fica sem resposta. Avalie de novo.`
+              : `Mesmo com nota 10 em ${missing.join(", ")}, a média chegaria no máximo a ${fmt(bestAverage(result), 2)}: a pergunta 1 já é não.`}
           </span>
         </p>
       ) : (
@@ -772,6 +787,7 @@ export function Coherence({
         <div className="chg-sem-tile">
           <ScoreChip
             score={s.consistency_score}
+            neutral={!combine && !d?.failed.includes("coherence_below")}
             run={onScores}
             delay={0}
             dur={skipped ? 0 : motion.count}
@@ -974,26 +990,18 @@ export function Decision({
           note={
             d.code === "field_missing"
               ? `Falta a nota de ${missingFields(result).join(", ")}.`
-              : undefined
+              : missingFields(result).length > 0
+                ? `Mesmo com nota 10 em ${missingFields(result).join(", ")}, no máximo ${fmt(bestAverage(result), 2)}.`
+                : undefined
           }
           where="average"
         />
         <GateRow
           n={2}
           question="As partes do pedido combinam?"
-          value={c.value === null ? null : fmt(c.value)}
+          value={gate2Value(result, d)}
           state={c.state}
-          note={
-            c.state === "skipped"
-              ? d.code === "semantic_missing"
-                ? "A conferência não voltou. Avalie de novo."
-                : "Só é perguntado quando a 1 passa."
-              : d.code === "backout_not_adherent"
-                ? `O plano de retorno desfaz só ${result.semantic?.backout_adherence_percent ?? 0}% das tarefas; o mínimo é ${PARTIAL_FROM}%.`
-                : d.code === "contradictions"
-                  ? "A IA encontrou contradição entre as partes do pedido."
-                  : `Coerência de 0 a 10, mesmo corte de ${cut}.`
-          }
+          note={gate2Note(result, d)}
           where="coherence"
         />
       </ol>

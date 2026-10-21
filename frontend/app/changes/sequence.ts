@@ -210,20 +210,48 @@ export interface ChangeDecision {
   };
   /** The gate that holds the change back, if any. */
   failing: "fields" | "average" | "coherence" | null;
+  /** Every rule that held it back, in the backend's order; reason_code first. */
+  failed: DecisionReason[];
   /** Fields under the cut, lowest first, even when the change may go on. */
   low: ScoredField[];
 }
 
+/**
+ * The highest average a new reading could still give: a 10 in every field the
+ * AI did not grade. Below the cut, the missing grade cannot change the answer.
+ */
+export function bestAverage(ev: Evaluation): number {
+  const total = ev.fields.reduce((sum, f) => sum + f.weight, 0);
+  if (total === 0) return 0;
+  const sum = ev.fields.reduce(
+    (acc, f) => acc + (isScored(f) ? f.score : 10) * f.weight,
+    0,
+  );
+  return round2(sum / total);
+}
+
+/** A field is missing and even a 10 there could not lift the average to the cut. */
+function unreachable(ev: Evaluation): boolean {
+  return missingFields(ev).length > 0 && bestAverage(ev) < ev.threshold;
+}
+
+/** Gate 2's failing parts, in the order evaluator.decide names them. */
+function localGate2(s: SemanticAnalysis, cut: number): DecisionReason[] {
+  const out: DecisionReason[] = [];
+  if (Math.round(s.consistency_score * 10) / 10 < cut) out.push("coherence_below");
+  if (s.problems.length > 0) out.push("contradictions");
+  if (s.backout_adherence === "NAO_ADERENTE") out.push("backout_not_adherent");
+  return out;
+}
+
 /** The rule of evaluator.decide, for old payloads and fixtures without it. */
-function localCode(ev: Evaluation, value: number): DecisionReason {
-  if (missingFields(ev).length > 0) return "field_missing";
-  if (value < ev.threshold) return "average_below";
+function localFailed(ev: Evaluation, value: number): DecisionReason[] {
+  if (unreachable(ev)) return ["average_below"];
+  if (missingFields(ev).length > 0) return ["field_missing"];
+  if (value < ev.threshold) return ["average_below"];
   const s = ev.semantic;
-  if (!s) return "semantic_missing";
-  if (Math.round(s.consistency_score * 10) / 10 < ev.threshold) return "coherence_below";
-  if (s.problems.length > 0) return "contradictions";
-  if (s.backout_adherence === "NAO_ADERENTE") return "backout_not_adherent";
-  return "passes";
+  if (!s) return ["semantic_missing"];
+  return localGate2(s, ev.threshold);
 }
 
 const GATE2_FAILS: DecisionReason[] = [
@@ -247,7 +275,15 @@ export function decisionOf(ev: Evaluation): ChangeDecision | null {
     .filter((f) => f.score < cut)
     .sort((a, b) => a.score - b.score);
   const s = ev.semantic;
-  const code = ev.decision?.reason_code ?? localCode(ev, value);
+  const failed: DecisionReason[] = ev.decision
+    ? (ev.decision.failed ??
+      (ev.decision.passes
+        ? []
+        : GATE2_FAILS.includes(ev.decision.reason_code) && s
+          ? localGate2(s, cut)
+          : [ev.decision.reason_code]))
+    : localFailed(ev, value);
+  const code: DecisionReason = ev.decision?.reason_code ?? failed[0] ?? "passes";
   const ok = ev.decision ? ev.decision.passes : code === "passes";
   const avgState: GateState =
     code === "field_missing" ? "skipped" : code === "average_below" ? "fail" : "pass";
@@ -279,6 +315,7 @@ export function decisionOf(ev: Evaluation): ChangeDecision | null {
       state,
     },
     failing,
+    failed: ok ? [] : failed.length > 0 ? failed : [code],
     low,
   };
 }
@@ -316,20 +353,97 @@ function localReason(ev: Evaluation, d: ChangeDecision): string {
       return `A IA não conseguiu avaliar ${missingFields(ev).length === 1 ? "o campo" : "os campos"} ${names}. Sem essa nota não há veredito: avalie de novo.`;
     }
     case "average_below":
-      return `A média ficou em ${avg}, abaixo do mínimo de ${cut}.`;
-    case "semantic_missing":
-      return `A média passou do mínimo (${avg}), mas a conferência das partes do pedido não voltou. Avalie de novo.`;
-    case "coherence_below":
-      return `A média passou (${avg}), mas as partes do pedido não combinam: coerência ${coh}, abaixo de ${cut}.`;
-    case "contradictions": {
-      const n = s?.problems.length ?? 0;
-      return `A média (${avg}) e a coerência (${coh}) passaram, mas a IA encontrou ${n} ${n === 1 ? "contradição" : "contradições"} entre as partes do pedido.`;
+      return missingFields(ev).length > 0
+        ? `Mesmo com nota 10 em ${missingFields(ev).join(", ")}, a média chegaria no máximo a ${fmt(bestAverage(ev), 2)}, abaixo do mínimo de ${cut}.`
+        : `A média ficou em ${avg}, abaixo do mínimo de ${cut}.`;
+    case "semantic_missing": {
+      const { why, again } = semanticCause(ev);
+      return `A média passou do mínimo (${avg}), mas a conferência das partes do pedido não voltou: ${why}. ${again}`;
     }
-    case "backout_not_adherent":
-      return `A média (${avg}) e a coerência (${coh}) passaram, mas o plano de retorno desfaz só ${s?.backout_adherence_percent ?? 0}% do que as tarefas fazem; abaixo de ${PARTIAL_FROM}% a mudança não segue.`;
-    default:
+    case "passes":
       return `Média ${avg} e coerência ${coh}, as duas a partir de ${cut}.`;
+    default: {
+      // Gate 2: every part that fails, joined like evaluator.decide.
+      const parts = d.failed.map((code) =>
+        code === "coherence_below"
+          ? `as partes do pedido não combinam: coerência ${coh}, abaixo de ${cut}`
+          : code === "contradictions"
+            ? `a IA encontrou ${contradictions(s?.problems.length ?? 0)} entre as partes do pedido`
+            : `o plano de retorno desfaz só ${s?.backout_adherence_percent ?? 0}% do que as tarefas fazem (abaixo de ${PARTIAL_FROM}% a mudança não segue)`,
+      );
+      const lead = d.failed.includes("coherence_below")
+        ? `A média passou (${avg}), mas `
+        : `A média (${avg}) e a coerência (${coh}) passaram, mas `;
+      const joined =
+        parts.length === 1
+          ? parts[0]
+          : `${parts.slice(0, -1).join("; ")}; e ${parts.at(-1)}`;
+      return `${lead}${joined}.`;
+    }
   }
+}
+
+function contradictions(n: number): string {
+  return `${n} ${n === 1 ? "contradição" : "contradições"}`;
+}
+
+/** Why the coherence check did not come back, in the backend's own words. */
+const SEMANTIC_WHY = {
+  timeout: "a IA demorou demais para responder",
+  quota: "a IA está sem cota agora",
+  format: "a IA não respondeu no formato esperado",
+} as const;
+
+/**
+ * The cause of a coherence check that did not come back, read from the
+ * backend's semantic_skipped_reason (timeout, no quota or an odd reply), and
+ * what to do about it.
+ */
+export function semanticCause(ev: Evaluation): { why: string; again: string } {
+  const said = ev.semantic_skipped_reason ?? "";
+  const kind = said.includes("demorou demais")
+    ? "timeout"
+    : said.includes("sem cota")
+      ? "quota"
+      : "format";
+  return {
+    why: SEMANTIC_WHY[kind],
+    again: kind === "quota" ? "Tente de novo mais tarde." : "Avalie de novo.",
+  };
+}
+
+/**
+ * Gate 2's answer on the banner: the number that failed. A contradiction or a
+ * short back-out plan is not a low coherence, so it is not shown as one.
+ */
+export function gate2Value(ev: Evaluation, d: ChangeDecision): string | null {
+  const s = ev.semantic;
+  if (d.coherence.value === null || !s) return null;
+  if (d.coherence.state !== "fail" || d.failed.includes("coherence_below"))
+    return fmt(d.coherence.value);
+  if (d.failed.includes("contradictions")) return contradictions(s.problems.length);
+  return `${s.backout_adherence_percent}%`;
+}
+
+/** Gate 2's note on the banner: every part that failed, or why it was not asked. */
+export function gate2Note(ev: Evaluation, d: ChangeDecision): string {
+  const cut = fmt(d.cut);
+  const s = ev.semantic;
+  if (d.coherence.state === "skipped") {
+    if (d.code !== "semantic_missing") return "Só é perguntado quando a 1 passa.";
+    const { why, again } = semanticCause(ev);
+    return `A conferência não voltou: ${why}. ${again}`;
+  }
+  if (d.coherence.state === "pass") return `Coerência de 0 a 10, mesmo corte de ${cut}.`;
+  return d.failed
+    .map((code) =>
+      code === "coherence_below"
+        ? `Coerência ${fmt(d.coherence.value ?? 0)}, abaixo de ${cut}.`
+        : code === "contradictions"
+          ? `A IA encontrou ${contradictions(s?.problems.length ?? 0)} entre as partes do pedido.`
+          : `O plano de retorno desfaz só ${s?.backout_adherence_percent ?? 0}% das tarefas; o mínimo é ${PARTIAL_FROM}%.`,
+    )
+    .join(" ");
 }
 
 /**
@@ -371,11 +485,10 @@ export function coherenceNote(ev: Evaluation): { title: string; line: string } |
         title: "Não conferida",
         line: "Não conferida: ela só é conferida quando a média chega ao mínimo.",
       };
-    case "semantic_missing":
-      return {
-        title: "Não conferida",
-        line: "Não conferida: a IA não respondeu no formato esperado. Avalie de novo.",
-      };
+    case "semantic_missing": {
+      const { why, again } = semanticCause(ev);
+      return { title: "Não conferida", line: `Não conferida: ${why}. ${again}` };
+    }
     case "contradictions":
       return {
         title: "Onde as partes se contradizem",
@@ -426,14 +539,26 @@ export function buildSteps(
   const d = decisionOf(ev);
   const missing = missingFields(ev);
 
+  // Fields sent again only because the AI had not graded them last time.
+  const ungraded = new Set(
+    previous?.fields.filter((f) => !isScored(f)).map((f) => f.key),
+  );
+  const sent = ev.fields.filter((f) => !f.reused);
+  const retried = sent.filter((f) => ungraded.has(f.key)).length;
   const notas =
     reused === n
       ? previous
         ? "Nada mudou desde a última avaliação: as notas foram reaproveitadas, sem chamar a IA."
         : "Este navegador já tinha avaliado este texto: as notas foram reaproveitadas, sem chamar a IA."
-      : reused > 0
-        ? "Só os campos com texto novo voltaram para a IA. Os outros foram reaproveitados, porque o texto não mudou."
-        : "Uma IA juíza dá nota de 0 a 10 a cada campo, sempre com os mesmos critérios.";
+      : reused > 0 && retried === sent.length
+        ? retried === 1
+          ? "O campo que a IA não tinha avaliado voltou para ela; os outros foram reaproveitados."
+          : "Os campos que a IA não tinha avaliado voltaram para ela; os outros foram reaproveitados."
+        : reused > 0 && retried > 0
+          ? "Voltaram para a IA os campos com texto novo e os que ela não tinha avaliado. Os outros foram reaproveitados."
+          : reused > 0
+            ? "Só os campos com texto novo voltaram para a IA. Os outros foram reaproveitados, porque o texto não mudou."
+            : "Uma IA juíza dá nota de 0 a 10 a cada campo, sempre com os mesmos critérios.";
   const steps: Step[] = [
     {
       id: "notas",
@@ -452,22 +577,24 @@ export function buildSteps(
       id: "portao",
       title: `Corte de ${cut}`,
       caption:
-        missing.length > 0
-          ? `Pergunta 1 de 2 fica sem resposta: a IA não conseguiu avaliar ${missing.join(", ")}. Não segue ainda: avalie de novo.`
-          : passed
-            ? `Pergunta 1 de 2: a média chegou a ${cut}. Agora a IA confere se os campos contam a mesma história.`
-            : `Pergunta 1 de 2: a média ficou abaixo de ${cut}. Não segue, e a pergunta 2 nem é feita.`,
+        missing.length > 0 && d?.code === "average_below"
+          ? `Pergunta 1 de 2: mesmo com nota 10 em ${missing.join(", ")}, a média chegaria no máximo a ${fmt(bestAverage(ev), 2)}, abaixo de ${cut}. Não segue.`
+          : missing.length > 0
+            ? `Pergunta 1 de 2 fica sem resposta: a IA não conseguiu avaliar ${missing.join(", ")}. Não segue ainda: avalie de novo.`
+            : passed
+              ? `Pergunta 1 de 2: a média chegou a ${cut}. Agora a IA confere se os campos contam a mesma história.`
+              : `Pergunta 1 de 2: a média ficou abaixo de ${cut}. Não segue, e a pergunta 2 nem é feita.`,
       ms: t.explain + t.hold * 2,
     },
   ];
 
   if (passed && !ev.semantic) {
     // The check did not come back: the lesson still ends on a verdict.
+    const { why, again } = semanticCause(ev);
     steps.push({
       id: "coerencia",
       title: "Coerência entre os campos",
-      caption:
-        "Pergunta 2 de 2 não voltou: a IA não respondeu no formato esperado. Não segue ainda: avalie de novo.",
+      caption: `Pergunta 2 de 2 não voltou: ${why}. Não segue ainda: ${again.charAt(0).toLowerCase()}${again.slice(1)}`,
       ms: t.explain + t.hold * 2,
     });
   }
@@ -514,6 +641,8 @@ export function parseTime(value: string | null | undefined, fallback: number): n
 interface Rerun {
   /** Fields edited since the last result. */
   dirty: number;
+  /** Fields the last result has no grade for and nobody edited: they go back too. */
+  failed?: number;
   /** The model differs from the one that read the last result. */
   modelChanged: boolean;
   total: number;
@@ -522,12 +651,29 @@ interface Rerun {
 /** How many fields the next run sends to the model (the content lock). */
 export function sentFields({
   dirty,
+  failed = 0,
   modelChanged,
   total,
   first,
 }: Rerun & { first: boolean }) {
   if (first || modelChanged) return total;
-  return dirty;
+  return dirty + failed;
+}
+
+/**
+ * The edited set after saving one field: a text back to the one the result
+ * was read with is no edit, so that field leaves the set (bugs-logica-3 P2-8).
+ */
+export function nextDirty(
+  dirty: Set<FieldKey>,
+  key: FieldKey,
+  next: string,
+  readText: string,
+): Set<FieldKey> {
+  const out = new Set(dirty);
+  if (next === readText) out.delete(key);
+  else out.add(key);
+  return out;
 }
 
 /**
@@ -548,8 +694,17 @@ export function runningLine(
 }
 
 /** What the next "Reavaliar" will send, said before it runs. */
-export function rerunHint({ dirty, modelChanged, total }: Rerun): string | null {
+export function rerunHint({
+  dirty,
+  failed = 0,
+  modelChanged,
+  total,
+}: Rerun): string | null {
   if (modelChanged) return `Modelo trocado: os ${total} campos voltam para a IA.`;
+  if (dirty === 0 && failed > 0)
+    return failed === 1
+      ? "O campo que a IA não tinha avaliado volta para ela; os outros são reaproveitados."
+      : `Os ${failed} campos que a IA não tinha avaliado voltam para ela; os outros são reaproveitados.`;
   if (dirty === 0) return null;
   return dirty === 1
     ? "1 campo mudou. Só ele volta para a IA; os outros são reaproveitados, porque o texto não mudou."

@@ -11,7 +11,7 @@ import {
   STATE_LABEL,
   TYPE_HINT,
   TYPE_LABEL,
-  markLabel,
+  markText,
   plainTitle,
   readEvalMarks,
   useChanges,
@@ -194,8 +194,6 @@ export default function ChangesPage() {
 
 /** "Pode seguir · 8,62": the verdict of this session's last evaluation. */
 function EvaluatedBadge({ mark }: { mark: EvalMark }) {
-  const score =
-    mark.overall === null ? "sem nota" : mark.overall.toFixed(2).replace(".", ",");
   // Marks saved before the verdict existed only know the cut.
   const ok = mark.ok ?? mark.passed;
   return (
@@ -207,7 +205,7 @@ function EvaluatedBadge({ mark }: { mark: EvalMark }) {
       }
     >
       {ok ? <Icons.check /> : <Icons.alert />}
-      {markLabel(mark)} · {score}
+      {markText(mark)}
       {mark.edited && " (com edições)"}
     </span>
   );

@@ -165,6 +165,15 @@ a.chg-row:focus-visible {
 .chg-record-head {
   margin-bottom: 18px;
 }
+/* The state badge says the AI's verdict: it may wrap, never widen the page
+   (bugs-logica-3 P0-A). */
+.chg-record-head .chg-state {
+  white-space: normal;
+  max-width: 100%;
+  height: auto;
+  min-height: 22px;
+  padding-block: 3px;
+}
 .chg-record-head .chg-tags {
   margin-bottom: 10px;
 }

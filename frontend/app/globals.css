@@ -5070,10 +5070,13 @@ body {
   scroll-padding-bottom: calc(var(--aula-bar-h, 0px) + 32px);
 }
 
-/* Phone: the FAB rises above the strip; the assistant sheet keeps its input
-   clear and the strip drops to the bottom edge while the sheet is open. */
+/* While the aula bar is shown the assistant button steps aside, at every
+   width: a 185 px pill next to (or above) the bar either hides behind it or
+   covers what the lesson points at (bugs-logica-3 P1-A, P2-1). The assistant
+   sheet keeps its input clear and, on a phone, the strip drops to the bottom
+   edge while the sheet is open. */
 :root[data-aula-bar] .cop-fab {
-  translate: 0 calc(-1 * (var(--aula-bar-h, 0px) + 8px));
+  display: none;
 }
 @media (max-width: 767px) {
   body:has(.cop-panel) .aula-bar-wrap {
@@ -5087,7 +5090,7 @@ body {
 @media (min-width: 768px) {
   .aula-bar-wrap {
     left: calc(60px + 24px);
-    right: 100px;
+    right: 24px;
     bottom: 20px;
   }
   .aula-bar {
@@ -5098,9 +5101,6 @@ body {
   }
   .aula-ctrl {
     flex: none;
-  }
-  :root[data-aula-bar] .cop-fab {
-    translate: none;
   }
   /* With the assistant panel open, the strip becomes the panel's own footer. */
   body:has(.cop-panel) .aula-bar-wrap {

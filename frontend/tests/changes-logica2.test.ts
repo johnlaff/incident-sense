@@ -259,7 +259,9 @@ describe("E2E P2-6: the coherence caption fits the aula bar", () => {
 describe("E2E P0-2: the header state never fights the verdict", () => {
   it("does not say 'não analisada' once the AI answered", () => {
     expect(stateHint("New", "Pode seguir")).not.toMatch(/não analisada|não avaliada/);
-    expect(stateHint("New", "Pode seguir")).toMatch(/aguardando uma pessoa/);
+    expect(stateHint("New", "Pode seguir")).toMatch(
+      /a IA diz pode seguir, falta aprovar/,
+    );
     expect(stateHint("New", null)).not.toMatch(/não analisada/);
   });
 });
