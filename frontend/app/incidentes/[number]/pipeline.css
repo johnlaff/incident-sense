@@ -811,6 +811,28 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.summary-orig p.whole {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+.summary-more {
+  margin-top: 6px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--primary-ink);
+  font: inherit;
+  font-size: var(--fs-sm, 13px);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.summary-more:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 .summary-new p {
   color: var(--ink);
   font-weight: 600;
@@ -1437,6 +1459,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  /* The button lines up in a column near its row, not at the far edge of a
+     wide screen. */
+  max-width: 440px;
   min-height: 36px;
   font-size: 13px;
   color: var(--ink-body);
@@ -1454,7 +1479,7 @@
 }
 
 /* ===================================================================== *
- *  Aurora panel: the same seven steps, compact
+ *  Assistant panel: the same seven steps, compact
  * ===================================================================== */
 .mini-rail {
   list-style: none;
