@@ -63,6 +63,16 @@ export function clientId(): string {
   }
 }
 
+/** An AI call (analysis, evaluation) gives up after this long. */
+export const AI_TIMEOUT_MS = 90_000;
+const TIMEOUT_DETAIL = "A IA demorou demais. Tente de novo.";
+
+function aiSignal(): AbortSignal | undefined {
+  return typeof AbortSignal.timeout === "function"
+    ? AbortSignal.timeout(AI_TIMEOUT_MS)
+    : undefined;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
@@ -74,7 +84,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         ...init?.headers,
       },
     });
-  } catch {
+  } catch (e) {
+    if (
+      e instanceof DOMException &&
+      (e.name === "TimeoutError" || e.name === "AbortError")
+    )
+      throw new ApiError(408, TIMEOUT_DETAIL);
     throw new ApiError(
       0,
       "Não conseguimos falar com o servidor. Confira a conexão e tente de novo.",
@@ -120,6 +135,7 @@ export const api = {
     request<SuggestResponse>("/api/suggest", {
       method: "POST",
       body: JSON.stringify(body),
+      signal: aiSignal(),
     }),
   listIncidents: (params: IncidentQuery = {}) =>
     request<IncidentListResponse>(`/api/incidents${buildQuery(params)}`),
@@ -136,6 +152,7 @@ export const api = {
     request<Evaluation>(`/api/changes/${encodeURIComponent(number)}/evaluate`, {
       method: "POST",
       body: JSON.stringify(body),
+      signal: aiSignal(),
     }),
 };
 

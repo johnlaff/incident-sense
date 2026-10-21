@@ -26,7 +26,7 @@ import {
   WakeNotice,
 } from "@/components/ui";
 import { activate, useFocusTrap, useScrollLock } from "@/lib/a11y";
-import { api, ApiError } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useAllIncidents, useClusters, useIncident } from "@/lib/incidents";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import {
@@ -55,6 +55,7 @@ import {
 import { funnel } from "@/lib/ruler";
 import type { SuggestResponse, WorkNote } from "@/lib/types";
 import { SuggestionMarkdown } from "@/components/markdown";
+import { isSuggestResponse, suggestErrorMessage } from "@/lib/suggest-guard";
 
 import "./pipeline.css";
 import { keepWhole } from "@/lib/text";
@@ -105,16 +106,15 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
         model,
       });
       setDurationMs(Date.now() - t0);
+      if (!isSuggestResponse(res)) {
+        setError("A análise voltou incompleta. Tente de novo.");
+        setPhase("error");
+        return;
+      }
       setResponse(res);
       setPhase("done");
     } catch (e) {
-      setError(
-        e instanceof ApiError
-          ? e.status === 503
-            ? "A IA não está configurada neste servidor."
-            : e.detail
-          : "Não foi possível falar com a IA agora.",
-      );
+      setError(suggestErrorMessage(e));
       setPhase("error");
     } finally {
       busy.current = false;
@@ -427,8 +427,12 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     flashToast("Rascunho descartado", 1800);
   }
   function doCopy(text: string) {
-    navigator.clipboard?.writeText(text).catch(() => {});
-    flashToast("Sugestão copiada", 1800);
+    // Only say "copiada" once it is: http pages and iframes have no clipboard.
+    const failed = () => flashToast("Não deu para copiar aqui. Selecione o texto.", 2400);
+    if (!navigator.clipboard) return failed();
+    navigator.clipboard
+      .writeText(text)
+      .then(() => flashToast("Sugestão copiada", 1800), failed);
   }
 
   // id: a system name (service, group); Inter like the rest, kept whole.
