@@ -1,6 +1,6 @@
 # ADR 0001 — Arquitetura e stack
 
-- Status: Aceito
+- Status: Aceito (hospedagem revista nos ADRs [0015](0015-uma-chave-e-demo-publica-gratuita.md) e [0017](0017-hospedagem-render-e-cloudflare-com-deploy-por-actions.md))
 - Data: 2026-06-22
 
 ## Contexto
