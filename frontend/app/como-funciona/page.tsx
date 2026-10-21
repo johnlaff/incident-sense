@@ -155,7 +155,7 @@ const CONTENT: Record<
           ],
           [
             "Saída",
-            "Nota de coerência de 0 a 10, lista de incoerências, raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
+            "Nota de coerência de 0 a 10, pontos que a IA anotou (só os que se contradizem pesam na nota), raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
           ],
           [
             "Cache",
@@ -360,7 +360,7 @@ function Summary30({ reduced }: { reduced: boolean }) {
         </li>
         <li>
           <b>Na Mudança, antes de ela ir ao ar:</b> a IA dá nota de 0 a 10 a cada parte do
-          pedido e, com 8,0 ou mais, confere se as partes combinam.{" "}
+          pedido. Pode seguir quando a média e a coerência entre as partes chegam a 8,0.{" "}
           <Cap n={1} reduced={reduced} /> <Cap n={2} reduced={reduced} />
         </li>
         <li>

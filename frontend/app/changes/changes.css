@@ -89,6 +89,20 @@ a.chg-row:focus-visible {
   line-height: 1.45;
   color: var(--ink-body);
 }
+/* The technical title, once the plain line leads: one quiet line. */
+.chg-row-plain.tech {
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.chg-scope-note {
+  margin: -12px 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
 .chg-meta {
   grid-area: meta;
   display: flex;
@@ -411,13 +425,12 @@ a.chg-row:focus-visible {
   justify-content: flex-end;
   gap: 8px;
 }
+/* The AI's reading of the field: a ruled section, not a box in the card. */
 .chg-verdict {
   display: grid;
   gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }
 .chg-verdict p {
   margin: 0;
@@ -565,6 +578,7 @@ a.chg-row:focus-visible {
   color: var(--ink-body);
 }
 .chg-playbar-count {
+  white-space: nowrap;
   color: var(--ink);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -1071,6 +1085,10 @@ a.chg-row:focus-visible {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+.chg-problems.soft .n {
+  background: var(--surface-2);
+  color: var(--ink-body);
+}
 .chg-none {
   display: flex;
   gap: 6px;
@@ -1403,10 +1421,9 @@ a.chg-row:focus-visible {
   height: 34px;
   min-width: 54px;
 }
+/* The AI's reading: a violet rule and label, not a box inside the card. */
 .chg-verdict {
-  background: var(--c-ai-tint);
-  border: 1px solid var(--c-ai-line);
-  border-radius: var(--radius-sm);
+  border-top-color: var(--c-ai-line);
 }
 .chg-verdict::before {
   content: "Leitura da IA";
@@ -1466,31 +1483,6 @@ a.chg-row:focus-visible {
   }
 }
 
-/* The closing line of a reading: may it go on to a person's approval? */
-.chg-final {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin: 0;
-  padding: 14px 16px;
-  font-size: 14px;
-  line-height: 1.45;
-  font-weight: 560;
-  color: var(--ink);
-}
-.chg-final svg {
-  width: 18px;
-  height: 18px;
-  flex: none;
-  margin-top: 1px;
-}
-.chg-final.ok svg {
-  color: var(--st-resolved);
-}
-.chg-final.no svg {
-  color: var(--p1);
-}
-
 /* "Em resumo" above each field's own text */
 .chg-plain {
   margin: 0 0 8px;
@@ -1498,25 +1490,127 @@ a.chg-row:focus-visible {
   border-bottom: 1px solid var(--border);
 }
 
-/* ----- Verdict first: the answer before the numbers ----- */
+/* ----- The answer first: two questions, then the verdict ----- */
 .chg-banner {
   display: grid;
-  gap: 4px;
+  gap: 10px;
   margin: 4px 0 2px;
   padding: 12px 14px;
-  border: 1px solid;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-}
-.chg-banner.ok {
-  border-color: color-mix(in oklch, var(--st-resolved) 40%, transparent);
-  background: var(--st-resolved-tint);
-}
-.chg-banner.no {
-  border-color: color-mix(in oklch, var(--p1) 40%, transparent);
-  background: var(--p1-tint);
+  background: var(--surface);
 }
 .chg-banner p {
   margin: 0;
+}
+.chg-banner .chg-decide-h {
+  margin: 0;
+  line-height: 1.3;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.chg-gates {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+@media (min-width: 560px) {
+  .chg-gates {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+/* The aside is narrow on a desktop: keep the questions stacked there. */
+@media (min-width: 921px) {
+  .chg-aside .chg-gates {
+    grid-template-columns: 1fr;
+  }
+}
+.chg-q {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.chg-q-text {
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 560;
+  line-height: 1.35;
+}
+.chg-q-answer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 15px;
+}
+.chg-q-answer b {
+  font-weight: 650;
+  color: var(--ink);
+}
+.chg-q-answer svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+.chg-q.pass .chg-q-answer svg {
+  color: var(--st-resolved);
+}
+.chg-q-note {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.chg-q-skip {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 550;
+}
+.chg-q.skipped .chg-q-text {
+  color: var(--muted);
+}
+.chg-q.skipped {
+  background: var(--surface-2);
+  border-style: dashed;
+}
+/* The failing question is the one red thing on the page. */
+.chg-q.fail {
+  border-color: color-mix(in oklch, var(--p1) 55%, transparent);
+  background: var(--p1-tint);
+}
+.chg-q.fail .chg-q-answer,
+.chg-q.fail .chg-q-answer b {
+  color: var(--p1);
+}
+.chg-q-where {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--p1);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.chg-outcome {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+.chg-outcome-arrow {
+  margin: 3px 0 0 1px;
+  color: var(--muted);
 }
 .chg-banner-title {
   display: flex;
@@ -1530,12 +1624,15 @@ a.chg-row:focus-visible {
   width: 20px;
   height: 20px;
   flex: none;
-}
-.chg-banner.ok .chg-banner-title svg {
   color: var(--st-resolved);
 }
-.chg-banner.no .chg-banner-title svg {
-  color: var(--p1);
+.chg-banner.ok {
+  border-color: color-mix(in oklch, var(--st-resolved) 40%, transparent);
+}
+.chg-banner.ok .chg-outcome {
+  margin: 0 -14px;
+  padding: 8px 14px;
+  background: var(--st-resolved-tint);
 }
 .chg-banner-reason {
   color: var(--ink-body);
@@ -1546,7 +1643,6 @@ a.chg-row:focus-visible {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 4px !important;
   color: var(--muted);
   font-size: 12.5px;
 }
@@ -1554,6 +1650,14 @@ a.chg-row:focus-visible {
   width: 14px;
   height: 14px;
   flex: none;
+}
+#coerencia,
+.chg-ledger {
+  scroll-margin-top: 72px;
+}
+#coerencia:focus,
+.chg-ledger:focus {
+  outline: none;
 }
 
 /* Ledger with detail: a bar against the 8,0 line and the one-line why */
@@ -1647,10 +1751,25 @@ a.chg-row:focus-visible {
   color: var(--muted);
 }
 
-/* The two texts the coherence check compared */
+/* The two texts the coherence check compared, folded until asked */
 .chg-excerpts {
   display: grid;
   gap: 6px;
+}
+.chg-excerpts > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+.chg-excerpts[open] > summary {
+  margin-bottom: 4px;
 }
 .chg-excerpts-grid {
   display: grid;
@@ -1713,4 +1832,99 @@ a.chg-row:focus-visible {
   font-size: 14px;
   line-height: 1.5;
   color: var(--ink-body);
+}
+
+/* Detail title: the plain line leads, the technical title waits behind a link */
+.chg-tech-title {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  margin-top: -2px;
+}
+.chg-tech-title p {
+  margin: 0;
+  color: var(--ink-body);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.chg-tech-btn {
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.chg-tech-btn:hover {
+  color: var(--ink);
+}
+
+/* Field cards fold to one line (name, score, why) once a result is in. */
+.chg-field.foldable {
+  position: relative;
+}
+.chg-field.foldable[data-folded="true"] {
+  gap: 4px;
+  padding-block: 10px;
+}
+.chg-field-toggle {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+/* The whole header is the tap target. */
+.chg-field-toggle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.chg-field.foldable[data-folded="false"] > header {
+  position: relative;
+}
+.chg-field.foldable[data-folded="false"] .chg-field-toggle::after {
+  inset: -14px -16px -6px;
+}
+.chg-field-toggle:focus-visible {
+  outline: 2px solid var(--focus, var(--c-chg));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.chg-field-chev {
+  display: inline-block;
+  vertical-align: -3px;
+  margin-left: 4px;
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  transition: rotate var(--dur-fast, 0.15s) ease;
+}
+.chg-field-toggle[aria-expanded="true"] .chg-field-chev {
+  rotate: 180deg;
+}
+.chg-field-why {
+  margin: 0;
+  color: var(--ink-body);
+  font-size: 13.5px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chg-field-chev {
+    transition: none;
+  }
 }

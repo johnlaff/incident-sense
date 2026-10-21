@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_TIMING,
   buildSteps,
+  decisionOf,
   firstSentence,
   fmtDelta,
   formulaTerms,
@@ -159,7 +160,9 @@ describe("buildSteps", () => {
     expect(gatePassed(ev)).toBe(false);
     const steps = buildSteps(ev);
     expect(steps.map((s) => s.id)).toEqual(["notas", "media", "portao"]);
-    expect(steps[2].caption).toBe("Abaixo do corte: a análise de coerência não roda.");
+    expect(steps[2].caption).toBe(
+      "Pergunta 1 de 2: a média ficou abaixo de 8,0. Não segue, e a pergunta 2 nem é feita.",
+    );
   });
 
   it("treats exactly the threshold as passing, like the backend", () => {
@@ -186,7 +189,12 @@ describe("buildSteps", () => {
 
   it("scales step durations with the number of fields and problems", () => {
     const ev = evaluation([9, 9, 9, 9, 9, 9, 9], {
-      semantic: { ...semantic, problems: [] },
+      semantic: {
+        ...semantic,
+        consistency_score: 9,
+        backout_adherence: "ADERENTE",
+        problems: [],
+      },
     });
     const steps = buildSteps(ev);
     const t = DEFAULT_TIMING;
@@ -227,6 +235,70 @@ describe("one overall for headline, bar, formula and gate", () => {
   });
 });
 
+// What the real model returned for CHG0031001: a high average, coherence on
+// the cut, back-out ADERENTE, and four points that are only suggestions.
+const realLike = (): Evaluation =>
+  evaluation([9.5, 9.4, 9.2, 9.0, 9.3, 9.1, 8.8], {
+    semantic: {
+      consistency_score: 8,
+      problems: [
+        "O objetivo poderia citar o indicador de sucesso.",
+        "A validação poderia dizer quem confere.",
+        "Os benefícios poderiam trazer um número.",
+        "O retorno poderia dar o tempo estimado.",
+      ],
+      reasoning: "As partes contam a mesma história.",
+      guidance: "",
+      backout_adherence: "ADERENTE",
+      backout_adherence_percent: 90,
+      reused: false,
+    },
+  });
+
+describe("decisionOf", () => {
+  it("lets the change go on when both gates pass, whatever the list of points", () => {
+    const d = decisionOf(realLike());
+    expect(d).toMatchObject({
+      ok: true,
+      failing: null,
+      average: { value: 9.24, state: "pass" },
+      coherence: { value: 8, adherence: "ADERENTE", state: "pass" },
+    });
+  });
+  it("holds the change on gate 2 when coherence is under the cut", () => {
+    const d = decisionOf(fixture.CHG0031002 as unknown as Evaluation);
+    expect(d).toMatchObject({
+      ok: false,
+      failing: "coherence",
+      average: { state: "pass" },
+      coherence: { value: 4, state: "fail" },
+    });
+  });
+  it("holds the change on gate 1 and never asks gate 2", () => {
+    const d = decisionOf(fixture.CHG0031003 as unknown as Evaluation);
+    expect(d).toMatchObject({
+      ok: false,
+      failing: "average",
+      average: { value: 3.13, state: "fail" },
+      coherence: { value: null, state: "skipped" },
+    });
+  });
+  it("fails gate 2 when the back-out plan does not undo the change", () => {
+    const ev = realLike();
+    ev.semantic = {
+      ...ev.semantic!,
+      consistency_score: 9,
+      backout_adherence: "NAO_ADERENTE",
+    };
+    expect(decisionOf(ev)).toMatchObject({ ok: false, failing: "coherence" });
+  });
+  it("lists the fields under the cut, lowest first", () => {
+    const d = decisionOf(fixture.CHG0031001 as unknown as Evaluation);
+    expect(d?.ok).toBe(true);
+    expect(d?.low.map((f) => f.key)).toEqual(["prerequisites"]);
+  });
+});
+
 describe("verdictOf", () => {
   it("says no when the average is below the cut", () => {
     const v = verdictOf(fixture.CHG0031003 as unknown as Evaluation);
@@ -234,14 +306,21 @@ describe("verdictOf", () => {
     expect(v?.title).toBe("Não segue");
     expect(v?.reason).toContain("abaixo do mínimo de 8,0");
   });
-  it("says no past the cut when coherence found a problem", () => {
+  it("says no past the cut when the parts do not agree", () => {
     const v = verdictOf(fixture.CHG0031002 as unknown as Evaluation);
     expect(v?.ok).toBe(false);
-    expect(v?.reason).toContain("1 ponto em que as partes do pedido se contradizem");
+    expect(v?.reason).toContain("coerência 4,0, abaixo de 8,0");
   });
-  it("says yes past the cut with no inconsistency", () => {
+  it("says yes for the real CHG0031001 reading and never says contradiction", () => {
+    const v = verdictOf(realLike());
+    expect(v).toMatchObject({ ok: true, title: "Pode seguir" });
+    expect(v?.reason).not.toMatch(/contradi/i);
+  });
+  it("says yes and names a field still under the cut", () => {
     const v = verdictOf(fixture.CHG0031001 as unknown as Evaluation);
     expect(v).toMatchObject({ ok: true, title: "Pode seguir" });
+    expect(v?.reason).toContain("Um campo ficou abaixo de 8,0");
+    expect(v?.reason).toContain("(7,5)");
   });
 });
 

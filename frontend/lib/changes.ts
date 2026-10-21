@@ -143,6 +143,16 @@ export const STATE_LABEL: Record<string, string> = {
   Closed: "Encerrada",
 };
 
+/**
+ * The plain-words title to lead with, or null when the plain line is a remark
+ * about a vague title ("O título não diz..."): then the title itself leads.
+ */
+export function plainTitle(plain: string | undefined | null): string | null {
+  const t = (plain ?? "").trim();
+  if (!t || /^o título não diz/i.test(t)) return null;
+  return t;
+}
+
 /** The type and state in plain words, for a reader new to ITSM. */
 export const TYPE_HINT: Record<string, string> = {
   Normal: "comum, não urgente",

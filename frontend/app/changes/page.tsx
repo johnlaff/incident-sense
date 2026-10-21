@@ -11,6 +11,7 @@ import {
   STATE_LABEL,
   TYPE_HINT,
   TYPE_LABEL,
+  plainTitle,
   readEvalMarks,
   useChanges,
   type ChangeSummary,
@@ -54,9 +55,10 @@ export default function ChangesPage() {
         <h1>Mudanças</h1>
       </div>
       <p className="page-lede">
-        Pedidos para alterar sistemas que os clientes usam. A IA dá nota aos pedidos
-        comuns, não urgentes, ainda não analisados e do próprio banco. Abra um para ver a
-        nota.
+        A IA dá uma nota de 0 a 10 a cada pedido e diz se pode seguir.
+      </p>
+      <p className="chg-scope-note">
+        Só entram pedidos comuns, não urgentes, ainda não analisados e do próprio banco.
       </p>
       {data && (
         <p className="chg-counts">
@@ -123,51 +125,66 @@ export default function ChangesPage() {
 
       {rows.length > 0 && (
         <ul className="chg-list">
-          {rows.map((c, i) => (
-            <li key={c.number} style={{ "--i": i } as CSSProperties}>
-              <Link href={`/changes/${c.number}`} className="chg-row">
-                <span className="chg-num">
-                  <RecordTag number={c.number} size="sm" />
-                </span>
-                <span className="chg-title">{keepWhole(c.short_description)}</span>
-                {c.plain ? <span className="chg-row-plain">{c.plain}</span> : null}
-                <span className="chg-meta">
-                  <span>{keepWhole(c.cmdb_ci)}</span>
-                  <span>{absDate(c.planned_start)}</span>
-                </span>
-                {/* Only what varies: almost every Change is Normal and Nova,
-                    so those words show up only on the one that is not. */}
-                <span className="chg-tags">
-                  {marks[c.number] ? <EvaluatedBadge mark={marks[c.number]} /> : null}
-                  <span className="badge chg-risk">
-                    <span className="dot" />
-                    Risco {c.risk.toLowerCase()}
+          {rows.map((c, i) => {
+            // The plain line leads; the technical title follows, smaller.
+            const lead = plainTitle(c.plain);
+            return (
+              <li key={c.number} style={{ "--i": i } as CSSProperties}>
+                <Link href={`/changes/${c.number}`} className="chg-row">
+                  <span className="chg-num">
+                    <RecordTag number={c.number} size="sm" />
                   </span>
-                  {c.type !== "Normal" && (
-                    <span className="badge chg-type">
+                  {lead ? (
+                    <>
+                      <span className="chg-title">{lead}</span>
+                      <span className="chg-row-plain tech">
+                        {keepWhole(c.short_description)}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="chg-title">{keepWhole(c.short_description)}</span>
+                      {c.plain ? <span className="chg-row-plain">{c.plain}</span> : null}
+                    </>
+                  )}
+                  <span className="chg-meta">
+                    <span>{keepWhole(c.cmdb_ci)}</span>
+                    <span>{absDate(c.planned_start)}</span>
+                  </span>
+                  {/* Only what varies: almost every Change is Normal and Nova,
+                    so those words show up only on the one that is not. */}
+                  <span className="chg-tags">
+                    {marks[c.number] ? <EvaluatedBadge mark={marks[c.number]} /> : null}
+                    <span className="badge chg-risk">
                       <span className="dot" />
-                      {TYPE_LABEL[c.type] ?? c.type}
-                      {TYPE_HINT[c.type] ? ` (${TYPE_HINT[c.type]})` : ""}
+                      Risco {c.risk.toLowerCase()}
                     </span>
-                  )}
-                  {c.state !== "New" && (
-                    <span className="badge chg-state">
-                      <span className="dot" />
-                      {STATE_LABEL[c.state] ?? c.state}
-                      {STATE_HINT[c.state] ? ` (${STATE_HINT[c.state]})` : ""}
-                    </span>
-                  )}
-                  {!c.in_scope && (
-                    <span className="badge chg-out">
-                      <Icons.dot />
-                      Fora do escopo da IA
-                    </span>
-                  )}
-                </span>
-                <Icons.chevronRight className="chg-go" />
-              </Link>
-            </li>
-          ))}
+                    {c.type !== "Normal" && (
+                      <span className="badge chg-type">
+                        <span className="dot" />
+                        {TYPE_LABEL[c.type] ?? c.type}
+                        {TYPE_HINT[c.type] ? ` (${TYPE_HINT[c.type]})` : ""}
+                      </span>
+                    )}
+                    {c.state !== "New" && (
+                      <span className="badge chg-state">
+                        <span className="dot" />
+                        {STATE_LABEL[c.state] ?? c.state}
+                        {STATE_HINT[c.state] ? ` (${STATE_HINT[c.state]})` : ""}
+                      </span>
+                    )}
+                    {!c.in_scope && (
+                      <span className="badge chg-out">
+                        <Icons.dot />
+                        Fora do escopo da IA
+                      </span>
+                    )}
+                  </span>
+                  <Icons.chevronRight className="chg-go" />
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

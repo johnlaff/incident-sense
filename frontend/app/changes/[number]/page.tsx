@@ -16,6 +16,7 @@ import {
   TYPE_LABEL,
   isEvaluation,
   markEvaluated,
+  plainTitle,
   useChange,
   useRubric,
   type Change,
@@ -42,8 +43,7 @@ import {
   readMotion,
   useElapsed,
   useFollowStep,
-  Verdict,
-  VerdictBanner,
+  Decision,
   type Motion,
 } from "../evaluation";
 import {
@@ -118,6 +118,26 @@ export default function ChangeDetailPage({
 function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric }) {
   const [edits, setEdits] = useState<Partial<Record<FieldKey, string>>>({});
   const [editing, setEditing] = useState<FieldKey | null>(null);
+  // With a result in, each field card folds to one line until opened.
+  const [openFields, setOpenFields] = useState<Set<FieldKey>>(new Set());
+  const toggleField = (key: FieldKey, on?: boolean) =>
+    setOpenFields((prev) => {
+      const next = new Set(prev);
+      if (on ?? !next.has(key)) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+  // A link to "#campo-x" (the ledger rows) opens that card.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as Element | null)?.closest?.('a[href^="#campo-"]');
+      if (!a) return;
+      const key = a.getAttribute("href")!.slice("#campo-".length) as FieldKey;
+      setOpenFields((prev) => new Set(prev).add(key));
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
   const [draft, setDraft] = useState("");
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [phase, setPhase] = useState<Phase>("idle");
@@ -322,7 +342,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             Risco {change.risk.toLowerCase()}
           </span>
         </div>
-        <h1>{keepWhole(change.short_description)}</h1>
+        <TitleLines
+          technical={change.short_description}
+          plain={change.plain_summary?.short_description}
+        />
         <dl className="chg-facts">
           <div>
             <dt>Serviço</dt>
@@ -422,7 +445,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             )}
 
             {/* The answer before the numbers; modo aula keeps it for the end. */}
-            {showResult && inScope && !lesson.aula && <VerdictBanner result={result} />}
+            {showResult && inScope && !lesson.aula && <Decision result={result} />}
 
             {showResult && overallOf(result) !== null && (
               <PlaybackBar
@@ -500,7 +523,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             lesson.aula &&
             result.scope.in_scope &&
             (gateClosed || at("problemas")) && (
-              <Verdict key={`ver-${epoch}`} result={result} />
+              <Decision key={`ver-${epoch}`} result={result} closing />
             )}
         </aside>
 
@@ -517,16 +540,35 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             const seg = avg?.segments.find((s) => s.key === f.key);
             const below =
               gateClosed && score !== undefined && score.score < result!.threshold;
+            const foldable =
+              score !== undefined && !isDirty && editing !== f.key && phase !== "running";
+            const folded = foldable && !openFields.has(f.key);
+            const plain = !edited ? change.plain_summary?.[f.key] : undefined;
             return (
               <article
                 key={f.key}
                 id={`campo-${f.key}`}
-                className={`card chg-field${below ? " flag" : ""}`}
+                className={`card chg-field${below ? " flag" : ""}${foldable ? " foldable" : ""}`}
+                data-folded={folded}
                 style={{ "--i": i } as CSSProperties}
               >
                 <header>
                   <div className="chg-field-title">
-                    <h3>{f.label}</h3>
+                    <h3>
+                      {foldable ? (
+                        <button
+                          type="button"
+                          className="chg-field-toggle"
+                          aria-expanded={!folded}
+                          onClick={() => toggleField(f.key)}
+                        >
+                          {f.label}
+                          <Icons.chevronDown className="chg-field-chev" />
+                        </button>
+                      ) : (
+                        f.label
+                      )}
+                    </h3>
                     <span className="chg-weight">
                       peso {fmtWeight(seg?.weight ?? f.weight)} de{" "}
                       {fmtWeight(totalWeight)}
@@ -553,7 +595,9 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   ) : null}
                 </header>
 
-                {editing === f.key ? (
+                {folded ? (
+                  <p className="chg-field-why">{firstSentence(score.diagnosis)}</p>
+                ) : editing === f.key ? (
                   <div className="chg-edit">
                     <textarea
                       value={draft}
@@ -580,17 +624,21 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 ) : (
                   <>
                     {/* The plain sentence is about the original text: an
-                        edited field drops it. */}
-                    {!edited && change.plain_summary?.[f.key] ? (
-                      <p className="plain-summary chg-plain">
-                        <b>Em resumo:</b> {change.plain_summary[f.key]}
-                      </p>
-                    ) : null}
-                    <LongText text={valueOf(f.key)} />
+                        edited field drops it, and then the text itself leads. */}
+                    {plain ? (
+                      <>
+                        <p className="plain-summary chg-plain">
+                          <b>Em resumo:</b> {plain}
+                        </p>
+                        <TechText text={valueOf(f.key)} />
+                      </>
+                    ) : (
+                      <LongText text={valueOf(f.key)} />
+                    )}
                   </>
                 )}
 
-                {score && !isDirty && editing !== f.key && (
+                {!folded && score && !isDirty && editing !== f.key && (
                   <div className="chg-verdict" key={`v-${epoch}`} data-on={at("notas")}>
                     <p>{score.diagnosis}</p>
                     {score.guidance && (
@@ -607,31 +655,33 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   </div>
                 )}
 
-                <footer>
-                  {score && !isDirty && score.reused && (
-                    <span
-                      className="chg-lock"
-                      title="O texto não mudou, então a nota foi reaproveitada sem chamar a IA"
-                    >
-                      <Icons.check sw={3} />
-                      Reaproveitado: o texto não mudou
-                    </span>
-                  )}
-                  {isDirty && (
-                    <span className="chg-lock dirty">Editado: será reavaliado</span>
-                  )}
-                  {!isDirty && edited && !score && phase !== "running" && (
-                    <span className="chg-lock dirty">Editado</span>
-                  )}
-                  {inScope && editing !== f.key && phase !== "running" && (
-                    <button
-                      className="btn btn-outline btn-sm chg-edit-btn"
-                      onClick={() => startEdit(f.key)}
-                    >
-                      Editar campo
-                    </button>
-                  )}
-                </footer>
+                {!folded && (
+                  <footer>
+                    {score && !isDirty && score.reused && (
+                      <span
+                        className="chg-lock"
+                        title="O texto não mudou, então a nota foi reaproveitada sem chamar a IA"
+                      >
+                        <Icons.check sw={3} />
+                        Reaproveitado: o texto não mudou
+                      </span>
+                    )}
+                    {isDirty && (
+                      <span className="chg-lock dirty">Editado: será reavaliado</span>
+                    )}
+                    {!isDirty && edited && !score && phase !== "running" && (
+                      <span className="chg-lock dirty">Editado</span>
+                    )}
+                    {inScope && editing !== f.key && phase !== "running" && (
+                      <button
+                        className="btn btn-outline btn-sm chg-edit-btn"
+                        onClick={() => startEdit(f.key)}
+                      >
+                        Editar campo
+                      </button>
+                    )}
+                  </footer>
+                )}
               </article>
             );
           })}
@@ -644,11 +694,15 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               </div>
             </header>
             {change.plain_summary?.backout_plan ? (
-              <p className="plain-summary chg-plain">
-                <b>Em resumo:</b> {change.plain_summary.backout_plan}
-              </p>
-            ) : null}
-            <LongText text={change.backout_plan} />
+              <>
+                <p className="plain-summary chg-plain">
+                  <b>Em resumo:</b> {change.plain_summary.backout_plan}
+                </p>
+                <TechText text={change.backout_plan} />
+              </>
+            ) : (
+              <LongText text={change.backout_plan} />
+            )}
             <h4>Tarefas cadastradas</h4>
             <ol className="chg-tasks">
               {change.tasks.map((t) => (
@@ -661,6 +715,47 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
           </article>
         </section>
       </div>
+    </div>
+  );
+}
+
+/** The plain title leads; the record's own title is one tap away. */
+function TitleLines({ technical, plain }: { technical: string; plain?: string }) {
+  const [open, setOpen] = useState(false);
+  const lead = plainTitle(plain);
+  if (!lead) return <h1>{keepWhole(technical)}</h1>;
+  return (
+    <>
+      <h1>{lead}</h1>
+      <div className="chg-tech-title">
+        <button
+          type="button"
+          className="chg-tech-btn"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? "Esconder o texto técnico" : "Ler o texto técnico"}
+        </button>
+        {open && <p>{keepWhole(technical)}</p>}
+      </div>
+    </>
+  );
+}
+
+/** The field's own words, behind one link once a plain line leads. */
+function TechText({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="chg-tech-title">
+      <button
+        type="button"
+        className="chg-tech-btn"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {open ? "Esconder o texto técnico" : "Ler o texto técnico"}
+      </button>
+      {open && <p className="chg-text">{text}</p>}
     </div>
   );
 }

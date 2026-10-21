@@ -1,7 +1,7 @@
 // Pure logic behind the evaluation reveal: the weighted-average segments, the
 // formula terms and the explicit list of teaching steps. No React, no DOM, so
 // the sequence can be tested and later driven by the "modo aula" step index.
-import type { Evaluation, FieldKey, FieldScore } from "@/lib/changes";
+import type { Evaluation, FieldKey, FieldScore, SemanticAnalysis } from "@/lib/changes";
 
 /** Base timings in ms, before --motion-scale. They mirror the motion tokens. */
 export interface Timing {
@@ -163,6 +163,65 @@ export function gatePassed(ev: Evaluation): boolean {
   return overall !== null && overall >= ev.threshold;
 }
 
+/** One of the two questions that decide a change. */
+export type GateState = "pass" | "fail" | "skipped";
+
+export interface ChangeDecision {
+  /** Pode seguir: both gates pass. */
+  ok: boolean;
+  cut: number;
+  /** Gate 1: does the weighted average reach the cut? */
+  average: { value: number; state: "pass" | "fail" };
+  /**
+   * Gate 2: do the parts of the request agree? "skipped" when gate 1 failed
+   * (the backend does not run it) or when the analysis did not come back.
+   */
+  coherence: {
+    value: number | null;
+    adherence: SemanticAnalysis["backout_adherence"] | null;
+    state: GateState;
+  };
+  /** The gate that holds the change back, if any. */
+  failing: "average" | "coherence" | null;
+  /** Fields under the cut, lowest first, even when the change may go on. */
+  low: FieldScore[];
+}
+
+/**
+ * The one rule every view reads (banner, list, aula captions, tests):
+ * Pode seguir = weighted average >= cut AND coherence score >= cut AND the
+ * back-out plan is not NAO_ADERENTE. The list of points the AI wrote does not
+ * decide anything by itself; the coherence score already weighs it.
+ */
+export function decisionOf(ev: Evaluation): ChangeDecision | null {
+  const value = overallOf(ev);
+  if (value === null) return null;
+  const cut = ev.threshold;
+  const low = ev.fields.filter((f) => f.score < cut).sort((a, b) => a.score - b.score);
+  const avgOk = value >= cut;
+  const s = ev.semantic;
+  let state: GateState = "skipped";
+  if (avgOk && s) {
+    state =
+      s.consistency_score >= cut && s.backout_adherence !== "NAO_ADERENTE"
+        ? "pass"
+        : "fail";
+  }
+  const failing = !avgOk ? "average" : state === "pass" ? null : "coherence";
+  return {
+    ok: failing === null,
+    cut,
+    average: { value, state: avgOk ? "pass" : "fail" },
+    coherence: {
+      value: avgOk && s ? s.consistency_score : null,
+      adherence: avgOk && s ? s.backout_adherence : null,
+      state,
+    },
+    failing,
+    low,
+  };
+}
+
 export interface ChangeVerdict {
   /** May go on to a person's approval. */
   ok: boolean;
@@ -172,44 +231,53 @@ export interface ChangeVerdict {
   reason: string;
 }
 
-/**
- * The answer of the whole reading, in words. The rubric only has the
- * weighted-average cut; past it, any inconsistency the AI points out holds the
- * change back until the author fixes it.
- */
+function lowNote(low: FieldScore[], cut: number): string {
+  if (low.length === 0) return "";
+  const named = low
+    .slice(0, 2)
+    .map((f) => `${f.label} (${fmt(f.score)})`)
+    .join(" e ");
+  const more = low.length > 2 ? ` e mais ${low.length - 2}` : "";
+  return low.length === 1
+    ? ` Um campo ficou abaixo de ${fmt(cut)}: ${named}. Vale melhorar, mas não impede.`
+    : ` ${low.length} campos ficaram abaixo de ${fmt(cut)}: ${named}${more}. Vale melhorar, mas não impedem.`;
+}
+
+/** The answer of the whole reading, in words, from decisionOf. */
 export function verdictOf(ev: Evaluation): ChangeVerdict | null {
-  const overall = overallOf(ev);
-  if (overall === null) return null;
-  const avg = fmt(overall, 2);
-  const cut = fmt(ev.threshold);
-  if (!gatePassed(ev)) {
+  const d = decisionOf(ev);
+  if (!d) return null;
+  const avg = fmt(d.average.value, 2);
+  const cut = fmt(d.cut);
+  if (d.failing === "average") {
     return {
       ok: false,
       title: "Não segue",
       reason: `A média ficou em ${avg}, abaixo do mínimo de ${cut}.`,
     };
   }
-  if (ev.semantic === null) {
+  if (d.coherence.value === null) {
     return {
       ok: false,
       title: "Não segue ainda",
-      reason: `A média passou do mínimo (${avg}), mas a conferência de coerência não rodou. Avalie de novo.`,
+      reason: `A média passou do mínimo (${avg}), mas a conferência das partes do pedido não rodou. Avalie de novo.`,
     };
   }
-  const n = ev.semantic.problems.length;
-  if (n > 0) {
+  const coh = fmt(d.coherence.value);
+  if (d.failing === "coherence") {
     return {
       ok: false,
       title: "Não segue",
-      reason: `A média passou do mínimo (${avg}), mas a IA achou ${
-        n === 1 ? "1 ponto" : `${n} pontos`
-      } em que as partes do pedido se contradizem.`,
+      reason:
+        d.coherence.value < d.cut
+          ? `A média passou (${avg}), mas as partes do pedido não combinam: coerência ${coh}, abaixo de ${cut}.`
+          : `A média passou (${avg}), mas o plano de retorno não desfaz o que a implementação muda.`,
     };
   }
   return {
     ok: true,
     title: "Pode seguir",
-    reason: `Média ${avg}, acima do mínimo de ${cut}, e as partes do pedido não se contradizem.`,
+    reason: `Média ${avg} e coerência ${coh}, as duas a partir de ${cut}.${lowNote(d.low, d.cut)}`,
   };
 }
 
@@ -256,27 +324,31 @@ export function buildSteps(
       id: "portao",
       title: `Corte de ${cut}`,
       caption: passed
-        ? `Com ${cut} ou mais a porta abre e a IA confere se os campos contam a mesma história.`
-        : "Abaixo do corte: a análise de coerência não roda.",
+        ? `Pergunta 1 de 2: a média chegou a ${cut}. Agora a IA confere se os campos contam a mesma história.`
+        : `Pergunta 1 de 2: a média ficou abaixo de ${cut}. Não segue, e a pergunta 2 nem é feita.`,
       ms: t.explain + t.hold * 2,
     },
   ];
 
   if (passed && ev.semantic) {
     const s = ev.semantic;
+    const combine = decisionOf(ev)?.coherence.state === "pass";
     steps.push(
       {
         id: "coerencia",
         title: "Coerência entre os campos",
-        caption: `A IA lê os campos juntos. O plano de retorno precisa desfazer o que as tarefas fazem: pela leitura dela, cobre ${s.backout_adherence_percent}%.`,
+        caption: `Pergunta 2 de 2: a IA lê os campos juntos e dá uma nota de coerência, com o mesmo corte de ${cut}. O plano de retorno precisa desfazer o que as tarefas fazem: pela leitura dela, cobre ${s.backout_adherence_percent}%.`,
         ms: t.explain + t.count + t.hold,
       },
       {
         id: "problemas",
-        title: "Contradições",
-        caption:
-          s.problems.length > 0
+        title: combine ? "Pontos de atenção" : "Onde as partes não combinam",
+        caption: !combine
+          ? s.problems.length > 0
             ? "Cada ponto é um lugar em que as partes do pedido contam histórias diferentes."
+            : `A nota de coerência ficou abaixo de ${cut}: as partes do pedido não contam a mesma história.`
+          : s.problems.length > 0
+            ? "As partes combinam. Os pontos são sugestões para melhorar e não impedem."
             : "Nada se contradiz: as partes do pedido contam a mesma história.",
         ms: Math.max(1, s.problems.length) * t.problem + t.hold,
       },

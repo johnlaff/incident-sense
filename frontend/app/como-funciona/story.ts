@@ -600,7 +600,8 @@ export const CHAPTERS: Chapter[] = [
       {
         title: "Com 8,0 ou mais, abre a próxima análise",
         line: "Abaixo disso, falta preencher campo.",
-        caption: "Com 8,0 ou mais a porta abre e a IA confere se os campos combinam.",
+        caption:
+          "Com 8,0 ou mais a porta abre e a IA confere se os campos combinam, no mesmo corte.",
         ms: 1500,
       },
     ],
@@ -634,9 +635,9 @@ export const CHAPTERS: Chapter[] = [
       },
       {
         title: "Coerência baixa, com o porquê",
-        line: "O autor vê o que ajustar antes de subir.",
+        line: "Coerência abaixo de 8,0: não segue, e o autor vê o que ajustar.",
         caption:
-          "Completo não é coerente: a nota de coerência cai e o autor sabe o que ajustar.",
+          "Coerência abaixo de 8,0: a Mudança não segue, e o autor sabe o que ajustar.",
         ms: 1400,
       },
     ],
