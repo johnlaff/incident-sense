@@ -547,7 +547,9 @@ function NotificationsMenu({
       <div className="notif-menu">
         <div className="nm-head">
           <span>Notificações</span>
-          <span className="nm-count">{notifs.length} novas</span>
+          <span className="nm-count">
+            {notifs.length} {notifs.length === 1 ? "aviso" : "avisos"}
+          </span>
         </div>
         {notifs.map(({ inc, icon: Icon, kind, title, sub }) => (
           <button
@@ -809,7 +811,7 @@ function CommandPalette({
                     }}
                   >
                     <div className={`pal-ico${"mono" in item ? " mono" : ""}`}>
-                      {"mono" in item ? "INC" : <item.icon />}
+                      {"mono" in item ? item.sub.slice(0, 3) : <item.icon />}
                     </div>
                     <div className="pal-main">
                       <div className="pal-title">{item.title}</div>
