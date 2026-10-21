@@ -231,6 +231,12 @@ h3 {
   font-feature-settings: normal;
   font-variant-numeric: tabular-nums;
 }
+/* Decimal numbers ("13,5", "0,83", "9,04"): Inter with even-width digits.
+   In the mono face the comma takes a whole cell and reads "13 , 5". */
+.num {
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+}
 .muted {
   color: var(--muted);
 }

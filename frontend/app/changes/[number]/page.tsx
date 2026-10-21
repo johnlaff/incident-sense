@@ -507,7 +507,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
         <section className="chg-fields" aria-label="Campos avaliados">
           <p className="chg-weight-note">
             <b>Peso</b> é quanto cada parte conta na nota final. Os pesos somam{" "}
-            <span className="mono">{fmtWeight(totalWeight)}</span>.
+            <span className="num">{fmtWeight(totalWeight)}</span>.
           </p>
           {orderedFields.map((f) => {
             const score = showResult ? scores.get(f.key) : undefined;

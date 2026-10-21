@@ -419,7 +419,7 @@ function SourcesBlock({
                 <span className="ans-src-what">
                   {row ? (
                     <>
-                      semelhança <b className="mono">{formatSim(row.sim)}</b>
+                      semelhança <b className="num">{formatSim(row.sim)}</b>
                       {row.outcome === "mantido-fallback"
                         ? ` · ${OUTCOME_LABEL[row.outcome]}`
                         : null}
@@ -522,7 +522,7 @@ function SourceSheet({
           <RecordTag number={id} />
           {ex?.similarity != null ? (
             <span className="src-sheet-sim">
-              semelhança <b className="mono">{formatSim(ex.similarity)}</b>
+              semelhança <b className="num">{formatSim(ex.similarity)}</b>
             </span>
           ) : null}
           <button
