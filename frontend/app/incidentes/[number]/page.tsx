@@ -58,6 +58,7 @@ import {
 } from "@/lib/pipeline";
 import { funnel } from "@/lib/ruler";
 import type { SuggestResponse, WorkNote } from "@/lib/types";
+import { AssistantFab } from "@/components/assistant-fab";
 import { SuggestionMarkdown } from "@/components/markdown";
 import { isSuggestResponse, suggestErrorMessage } from "@/lib/suggest-guard";
 
@@ -500,11 +501,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
               {/* The AI is the point of the screen: its button comes first and
                   is the only filled one. Atribuir and Resolver are outlined so
                   nobody mistakes Resolver for "let the AI solve it". */}
-              <button
-                className="btn btn-ai btn-sm record-ai"
-                onClick={startAnalysis}
-                data-ai-entry=""
-              >
+              <button className="btn btn-ai btn-sm record-ai" onClick={startAnalysis}>
                 <Icons.aiSpark />
                 {suggest.response ? "Ver a sugestão da IA" : "Analisar com a IA"}
               </button>
@@ -556,7 +553,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 ) : record.resolutionNotes ? (
                   <p className="rec-prose">{record.resolutionNotes}</p>
                 ) : (
-                  <div className="resnotes-empty k-ai-step-box" data-ai-entry="">
+                  <div className="resnotes-empty k-ai-step-box">
                     <ConceptLabel concept="ai-step">Ainda sem solução</ConceptLabel>
                     <p>
                       A IA pode procurar incidentes parecidos que já foram resolvidos e
@@ -663,6 +660,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
               onCite={peek}
               flashCite={flashCite}
               onShowNotes={showNotes}
+              onAsk={() => setCopilotOpen(true)}
               onInsert={doInsert}
               onCopy={doCopy}
             />
@@ -743,7 +741,6 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
         onInsert={doInsert}
         onCopy={doCopy}
         onOpenAnalysis={() => setTab("analise")}
-        quiet={tab === "analise"}
       />
 
       <div className="toast-slot" role="status" aria-live="polite">
@@ -858,7 +855,6 @@ function CopilotFab({
   onInsert,
   onCopy,
   onOpenAnalysis,
-  quiet = false,
 }: {
   record: IncidentRecord;
   suggest: SuggestionRun;
@@ -867,66 +863,8 @@ function CopilotFab({
   onInsert: (text: string) => void;
   onCopy: (text: string) => void;
   onOpenAnalysis: () => void;
-  /** The analysis tab already shows the run: the button steps aside. */
-  quiet?: boolean;
 }) {
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();
-
-  // On a phone the button floats over the record's cards: it tucks away
-  // while the reader scrolls down and comes back on the way up or at the end.
-  const [tucked, setTucked] = useState(false);
-  useEffect(() => {
-    const phone = window.matchMedia("(max-width: 767.98px)");
-    let last = window.scrollY;
-    function onScroll() {
-      if (!phone.matches) {
-        setTucked(false);
-        return;
-      }
-      const y = window.scrollY;
-      const atEnd = window.innerHeight + y >= document.documentElement.scrollHeight - 24;
-      if (atEnd || y < 80) setTucked(false);
-      else if (y > last + 4) setTucked(true);
-      else if (y < last - 4) setTucked(false);
-      last = y;
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Two AI buttons on one screen compete: while "Analisar com a IA" is in
-  // view, the floating assistant button steps aside.
-  const [entryInView, setEntryInView] = useState(false);
-  useEffect(() => {
-    const visible = new Set<Element>();
-    let watched: Element[] = [];
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) visible.add(e.target);
-        else visible.delete(e.target);
-      }
-      setEntryInView(visible.size > 0);
-    });
-    function sync() {
-      const now = [...document.querySelectorAll("[data-ai-entry]")];
-      if (now.length === watched.length && now.every((el, i) => el === watched[i]))
-        return;
-      io.disconnect();
-      visible.clear();
-      watched = now;
-      now.forEach((el) => io.observe(el));
-      if (now.length === 0) setEntryInView(false);
-    }
-    sync();
-    // The tab content changes under the button: re-watch only when the set
-    // of entry buttons itself changed.
-    const mo = new MutationObserver(sync);
-    mo.observe(document.body, { childList: true, subtree: true });
-    return () => {
-      io.disconnect();
-      mo.disconnect();
-    };
-  }, []);
 
   const phase = suggest.phase;
   const result = useMemo(
@@ -1246,14 +1184,7 @@ function CopilotFab({
 
   return (
     <>
-      <button
-        className={`cop-fab${open || entryInView || tucked ? " hidden" : ""}${quiet ? " quiet" : ""}`}
-        onClick={() => setOpen(true)}
-        aria-label="Falar com o assistente da IA"
-        title="Assistente da IA · sugestão de resolução"
-      >
-        <Icons.aiSpark />
-      </button>
+      <AssistantFab open={open} onOpen={() => setOpen(true)} />
 
       {open ? (
         <div

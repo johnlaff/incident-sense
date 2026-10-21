@@ -100,6 +100,7 @@ export function PipelineTrace({
   onCite,
   flashCite,
   onShowNotes,
+  onAsk,
   onInsert,
   onCopy,
 }: {
@@ -114,6 +115,8 @@ export function PipelineTrace({
   onCite: CiteHandler;
   flashCite: string | null;
   onShowNotes: () => void;
+  /** Open the assistant chat, to ask about this answer. */
+  onAsk?: () => void;
   onInsert?: (text: string) => void;
   onCopy?: (text: string) => void;
 }) {
@@ -246,12 +249,7 @@ export function PipelineTrace({
               citando cada um. Quem decide é você.
             </p>
           </div>
-          <button
-            className="btn btn-ai"
-            onClick={onRun}
-            disabled={running}
-            data-ai-entry=""
-          >
+          <button className="btn btn-ai" onClick={onRun} disabled={running}>
             {running ? <Icons.loader className="spin" /> : <Icons.aiSpark />}
             {running ? "Analisando" : result ? "Analisar de novo" : "Analisar com a IA"}
           </button>
@@ -278,6 +276,16 @@ export function PipelineTrace({
               onCopy={onCopy}
               onShowNotes={onShowNotes}
             />
+            {onAsk ? (
+              <button
+                type="button"
+                className="btn btn-outline btn-sm ans-ask"
+                onClick={onAsk}
+              >
+                <Icons.aiSpark />
+                Tirar dúvida com o assistente
+              </button>
+            ) : null}
           </div>
         ) : null}
 
@@ -320,12 +328,7 @@ export function PipelineTrace({
           <p className="pipe-lede">Sete passos da máquina. No fim, quem decide é você.</p>
           {legend}
         </div>
-        <button
-          className="btn btn-ai"
-          onClick={onRun}
-          disabled={running}
-          data-ai-entry=""
-        >
+        <button className="btn btn-ai" onClick={onRun} disabled={running}>
           {/* The one control to run it again: a new run, in AI violet. The
               replay of the last run plays by itself and has no button here. */}
           {running ? <Icons.loader className="spin" /> : <Icons.aiSpark />}
