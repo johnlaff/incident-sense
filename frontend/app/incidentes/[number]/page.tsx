@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, ViewTransition } from "react";
 
 import { ConceptLabel, RecordTag, TechDetails } from "@/components/concepts";
-import { scrollOnce } from "@/lib/reveal";
+import { showTop } from "@/lib/reveal";
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
 import {
@@ -340,6 +340,20 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     ];
   }, [record.activity, record.publishedNotes, notes]);
 
+  // Both AI buttons (top of the record and the empty resolution notes) open
+  // the analysis tab and start a run when there is no answer yet. The page
+  // moves only when the tabs sit below the fold, and then once, to their top.
+  function startAnalysis() {
+    setTab("analise");
+    if (!suggest.response && suggest.phase !== "running") void suggest.run();
+    requestAnimationFrame(() => {
+      const tabs = document.querySelector<HTMLElement>(
+        '[role="tablist"][aria-label="Seções do incidente"]',
+      );
+      if (tabs) showTop(tabs, reduced);
+    });
+  }
+
   function showNotes() {
     const latest = notes[notes.length - 1];
     setTab("detalhes");
@@ -466,6 +480,17 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
               </div>
             </div>
             <div className="record-actions">
+              {/* The AI is the point of the screen: its button comes first and
+                  is the only filled one. Atribuir and Resolver are outlined so
+                  nobody mistakes Resolver for "let the AI solve it". */}
+              <button
+                className="btn btn-ai btn-sm record-ai"
+                onClick={startAnalysis}
+                data-ai-entry=""
+              >
+                <Icons.aiSpark />
+                {suggest.response ? "Ver a sugestão da IA" : "Analisar com a IA"}
+              </button>
               <button
                 className={`btn btn-outline btn-sm${assignee ? " is-on" : ""}`}
                 onClick={doAssign}
@@ -474,7 +499,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                 {assignee ? <Icons.checkCircle /> : <Icons.assign />}
                 {assignee ? "Atribuído" : "Atribuir"}
               </button>
-              <button className="btn btn-primary btn-sm" onClick={doResolve}>
+              <button className="btn btn-outline btn-sm" onClick={doResolve}>
                 {localState === "resolved" ? <Icons.retry /> : <Icons.human />}
                 {localState === "resolved" ? "Reabrir" : "Resolver"}
               </button>
@@ -520,21 +545,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                       A IA pode procurar incidentes parecidos que já foram resolvidos e
                       sugerir uma solução. Você revisa antes de usar.
                     </p>
-                    <button
-                      className="btn btn-ai"
-                      onClick={() => {
-                        setTab("analise");
-                        if (suggest.phase !== "running") void suggest.run();
-                        // The new tab opens at its top, so its first line (or an
-                        // error) is never cut off by the old scroll position.
-                        requestAnimationFrame(() => {
-                          const tabs = document.querySelector<HTMLElement>(
-                            '[role="tablist"][aria-label="Seções do incidente"]',
-                          );
-                          if (tabs) scrollOnce(tabs, reduced);
-                        });
-                      }}
-                    >
+                    <button className="btn btn-ai" onClick={startAnalysis}>
                       <Icons.aiSpark />
                       Analisar com a IA
                     </button>

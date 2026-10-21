@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildQuery } from "@/lib/api";
 import {
+  meaningfulTags,
   buildSuggestionMarkdown,
   clusterColor,
   dsState,
@@ -228,5 +229,14 @@ describe("buildQuery", () => {
     expect(qs).toContain("state=open");
     expect(qs).toContain("service=PIX-Core");
     expect(qs).toContain("offset=50");
+  });
+});
+
+describe("meaningfulTags", () => {
+  it("hides the dataset's bookkeeping tags and keeps the rest in order", () => {
+    expect(meaningfulTags(["pix", "demo", "procedente", "timeout", "Ruido"])).toEqual([
+      "pix",
+      "timeout",
+    ]);
   });
 });

@@ -432,3 +432,21 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
 export function groupPlain(group: string): string {
   return /(^|-)N1$/.test(group) ? `${group} (primeiro atendimento)` : group;
 }
+
+/**
+ * Tags worth showing a reader. The dataset also carries bookkeeping tags (how
+ * a case was built or labelled for the demo); they mean nothing on screen.
+ */
+const INTERNAL_TAGS = new Set([
+  "demo",
+  "procedente",
+  "improcedente",
+  "borderline",
+  "ruido",
+  "dados-incompletos",
+  "suporte-interno",
+]);
+
+export function meaningfulTags(tags: readonly string[]): string[] {
+  return tags.filter((t) => !INTERNAL_TAGS.has(t.toLowerCase()));
+}
