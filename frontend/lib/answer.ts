@@ -154,10 +154,12 @@ export function sourceExcerpt(
 
 /** Plain text of the answer, for Copiar and the resolution note. */
 export function answerPlain(a: ParsedAnswer): string {
+  // The records stay with the text: a note without them loses its grounds.
+  const src = (ids: string[]) => (ids.length ? ` [${ids.join(", ")}]` : "");
   const steps = a.steps.map(
-    (s, i) => `${i + 1}. ${s.title ? `${s.title}: ` : ""}${s.text}`,
+    (s, i) => `${i + 1}. ${s.title ? `${s.title}: ` : ""}${s.text}${src(s.cites)}`,
   );
-  return [a.oneLine, "", ...steps].join("\n");
+  return [`${a.oneLine}${src(a.oneLineCites)}`, "", ...steps].join("\n");
 }
 
 /**

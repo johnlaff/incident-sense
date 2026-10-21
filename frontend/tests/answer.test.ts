@@ -52,3 +52,13 @@ describe("comma citations (auditoria P1-6)", () => {
     expect(parsed?.steps[0].text).toBe("forçar a renovação do token");
   });
 });
+
+describe("Usar como nota keeps the sources (E2E P2-14)", () => {
+  it("writes each step's records after it", () => {
+    const text = answerPlain(parseSuggestion(SAMPLE)!);
+    expect(text).toContain("[PRB0004105]");
+    expect(text).toMatch(
+      /renovar a sessão sozinho\. \[PRB0004105, INC0052219\]|renovar a sessão sozinho \[PRB0004105, INC0052219\]/,
+    );
+  });
+});

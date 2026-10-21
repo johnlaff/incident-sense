@@ -564,7 +564,11 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                     </p>
                     <button className="btn btn-ai" onClick={startAnalysis}>
                       <Icons.aiSpark />
-                      Analisar com a IA
+                      {suggest.response
+                        ? "Ver a sugestão da IA"
+                        : suggest.phase === "running"
+                          ? "Analisando"
+                          : "Analisar com a IA"}
                     </button>
                   </div>
                 )}
