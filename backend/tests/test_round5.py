@@ -72,8 +72,8 @@ def test_a_denial_is_never_a_contradiction(text: str) -> None:
 
 
 @pytest.mark.parametrize("text", REMARKS)
-def test_a_remark_on_one_part_is_guidance(text: str) -> None:
-    assert classify_point(text)[0] == "note"
+def test_a_remark_on_one_part_is_a_point_of_attention(text: str) -> None:
+    assert classify_point(text)[0] == "attention"
 
 
 @pytest.mark.parametrize("text", CONTRADICTIONS)
@@ -82,12 +82,21 @@ def test_a_real_contradiction_names_two_parts_and_counts(text: str) -> None:
 
 
 def test_the_structured_item_counts_by_its_two_parts() -> None:
-    item = {"campos": ["retorno", "implementação"], "descricao": "O retorno não desfaz o índice."}
+    item = {
+        "tipo": "contradicao",
+        "campos": ["retorno", "implementação"],
+        "descricao": "O retorno não desfaz o índice.",
+    }
     assert classify_point(item) == ("contradiction", "O retorno não desfaz o índice.")
-    one = {"campos": ["retorno"], "descricao": "O retorno poderia ser mais curto."}
-    assert classify_point(one)[0] == "note"
-    same = {"campos": ["retorno", "plano de retorno"], "descricao": "Falta o tempo."}
-    assert classify_point(same)[0] == "note"
+    assert classify_point(item, aligned=True)[0] == "contradiction"
+    one = {"tipo": "contradicao", "campos": ["retorno"], "descricao": "O retorno é longo."}
+    assert classify_point(one)[0] == "attention"
+    same = {
+        "tipo": "contradicao",
+        "campos": ["retorno", "plano de retorno"],
+        "descricao": "Falta o tempo.",
+    }
+    assert classify_point(same)[0] == "attention"
     polite = {"campos": ["objetivo", "plano"], "descricao": "Não há nenhuma contradição."}
     assert classify_point(polite)[0] == "none"
 
@@ -106,7 +115,7 @@ def test_a_polite_list_keeps_pode_seguir(client: TestClient, text: str) -> None:
     assert body["decision"]["passes"] is True
 
 
-def test_remarks_move_to_the_guidance(client: TestClient) -> None:
+def test_remarks_become_points_of_attention(client: TestClient) -> None:
     body = _change_eval(
         client,
         {
@@ -116,9 +125,8 @@ def test_remarks_move_to_the_guidance(client: TestClient) -> None:
         },
     )
     assert body["semantic"]["problems"] == []
-    assert body["semantic"]["guidance"] == (
-        "Detalhe o horário. Faltam responsáveis no plano de validação."
-    )
+    assert body["semantic"]["guidance"] == "Detalhe o horário."
+    assert body["semantic"]["attention"] == ["Faltam responsáveis no plano de validação"]
     assert body["decision"]["passes"] is True
 
 
@@ -144,6 +152,70 @@ def test_the_demo_replays_keep_their_verdicts(client: TestClient) -> None:
         body = client.post(f"/api/changes/{number}/evaluate", json={}).json()
         verdicts[number] = (body["decision"]["passes"], len(body["semantic"]["problems"]))
     assert verdicts == {"CHG0031001": (True, 0), "CHG0031002": (False, 1)}
+
+
+# --- e2e-5 P0-1: the two real CHG0031001 judgements -------------------------------
+REAL = Path(__file__).parent / "fixtures" / "real_eval"
+
+
+def _real(name: str) -> dict[str, Any]:
+    data: dict[str, Any] = json.loads((REAL / f"{name}.json").read_text(encoding="utf-8"))
+    return data
+
+
+@pytest.mark.parametrize(
+    ("name", "said"), [("CHG0031001_a", "snapshot"), ("CHG0031001_b", "canário")]
+)
+def test_an_aligned_judgement_with_a_suggestion_still_passes(
+    client: TestClient, name: str, said: str
+) -> None:
+    """Coherence 8,0, adherent, "bem alinhados": the lone item is advice, not a block."""
+    body = _change_eval(client, _real(name))
+    assert body["decision"]["passes"] is True, body["decision"]
+    assert body["semantic"]["problems"] == []
+    assert any(said in point for point in body["semantic"]["attention"])
+
+
+def test_the_real_chg0031002_judgement_still_holds_back(client: TestClient) -> None:
+    body = _change_eval(client, _real("CHG0031002"))
+    decision = body["decision"]
+    assert decision["passes"] is False
+    assert decision["failed"] == ["coherence_below", "contradictions", "backout_not_adherent"]
+    assert any("imagem do contêiner" in p for p in body["semantic"]["problems"])
+
+
+def test_a_typed_contradiction_blocks_even_an_aligned_judgement(client: TestClient) -> None:
+    point = {
+        "tipo": "contradicao",
+        "campos": ["implementação", "retorno"],
+        "descricao": "A implementação migra os dados e o retorno só troca a imagem.",
+    }
+    body = _change_eval(client, {"consistency_score": 9.0, "problems": [point]})
+    assert body["decision"]["failed"] == ["contradictions"]
+
+
+@pytest.mark.parametrize("kind", ["lacuna", "sugestao", "Sugestão"])
+def test_gaps_and_suggestions_never_block(client: TestClient, kind: str) -> None:
+    point = {
+        "tipo": kind,
+        "campos": ["implementação", "retorno"],
+        "descricao": "Registrar um snapshot antes do retorno.",
+    }
+    body = _change_eval(client, {"consistency_score": 7.0, "problems": [point]})
+    assert "contradictions" not in body["decision"]["failed"]
+    assert body["semantic"]["attention"] == ["Registrar um snapshot antes do retorno."]
+
+
+def test_the_prompt_types_each_point_with_examples() -> None:
+    from incident_sense.changes.evaluator import _SEMANTIC_SYSTEM, _semantic_prompt
+
+    for kind in ('"contradicao"', '"lacuna"', '"sugestao"'):
+        assert kind in _SEMANTIC_SYSTEM
+    assert _SEMANTIC_SYSTEM.count("Exemplo") >= 3
+    from test_changes_audit import _BY_LABEL, _change
+
+    prompt = _semantic_prompt(_change("CHG1"), dict.fromkeys(_BY_LABEL.values(), "x"), "volta")
+    assert '"tipo"' in prompt
 
 
 # --- P2-2 and P2-4: the follow-up and the analysis on screen ------------------------
@@ -198,3 +270,24 @@ def test_the_greeting_of_an_improcedente_offers_no_suggestion(client: TestClient
     assert "veredito" in hello
     _remember(client)
     assert "primeiro passo" in _ask(client, "oi").json()["answer"]
+
+
+def test_the_calibration_script_splits_the_points_by_what_they_do() -> None:
+    sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
+    import calibrar_mudanca
+
+    body = {
+        "overall": 9.17,
+        "decision": {"passes": True, "failed": []},
+        "semantic": {
+            "consistency_score": 8.0,
+            "backout_adherence_percent": 92,
+            "problems": [],
+            "attention": ["Registrar o snapshot."],
+        },
+    }
+    text = calibrar_mudanca.report(1, body)
+    assert text.startswith("#1 Pode seguir")
+    assert "portões que falharam: nenhum" in text
+    assert "contradicao (0)" in text and "lacuna ou sugestao (1)" in text
+    assert "- Registrar o snapshot." in text

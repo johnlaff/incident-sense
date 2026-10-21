@@ -176,6 +176,7 @@ SEMANTIC = {
         "consistency_score": 4.0,
         "problems": [
             {
+                "tipo": "contradicao",
                 "campos": ["implementação", "retorno"],
                 "descricao": "O plano de retorno não desfaz a alteração da tabela nem a "
                 "migração dos dados.",

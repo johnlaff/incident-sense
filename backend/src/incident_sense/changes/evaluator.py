@@ -65,15 +65,21 @@ _SEMANTIC_SYSTEM = (
     "plano de retorno precisam ser coerentes entre si, e o plano de retorno precisa "
     "desfazer de fato o que a implementação altera (por exemplo: se a implementação "
     "muda estrutura de dados, reverter só a imagem do contêiner não basta). Compare "
-    'também o plano de retorno com as tarefas cadastradas. Em "problems" entram '
-    "SOMENTE contradições reais entre DUAS partes: uma parte do pedido afirma ou faz "
-    "algo que outra parte desmente, ou o retorno deixa de desfazer algo que a "
-    'implementação altera. Cada item é um objeto com as duas partes em "campos" '
-    "(objetivo, descrição resumida, benefícios, pré-requisitos, implementação, "
-    'validação, testes, retorno, tarefas) e uma frase em "descricao". '
-    "Sugestões de melhoria, detalhes que faltam, boas práticas e observações sobre "
-    'uma parte só não são contradições: vão em "guidance". Se não houver '
-    'contradição real, responda "problems": [] (lista vazia). '
+    "também o plano de retorno com as tarefas cadastradas.\n\n"
+    'Cada item de "problems" tem um tipo:\n'
+    '- "contradicao": DUAS partes afirmam coisas incompatíveis. Exemplo: a '
+    "implementação migra o schema e os dados, mas o retorno só volta a imagem do "
+    "contêiner; ou o objetivo fala em 30 segundos e os benefícios em 9 minutos.\n"
+    '- "lacuna": algo que falta numa parte, sem que outra parte diga o contrário. '
+    "Exemplo: o plano de validação não diz quem confirma o sucesso.\n"
+    '- "sugestao": uma proteção extra ou um detalhe que "também poderia" entrar. '
+    "Exemplo: registrar um snapshot de backup antes do retorno, ou explicitar como "
+    "o canário vira 50%.\n"
+    'Em "campos", nomeie as partes envolvidas (objetivo, descrição resumida, '
+    "benefícios, pré-requisitos, implementação, validação, testes, retorno, "
+    'tarefas); uma "contradicao" sempre nomeia duas. Só "contradicao" reprova a '
+    "mudança: na dúvida entre contradição e sugestão, é sugestão. Se não houver "
+    'nada a apontar, responda "problems": [] (lista vazia). '
     "Responda apenas com JSON."
 )
 
@@ -233,23 +239,37 @@ def parts_named(text: str) -> set[str]:
     return {part for part, pattern in _PARTS.items() if pattern.search(bare)}
 
 
-def classify_point(item: object) -> tuple[str, str]:
-    """Sort one item of "problems" into ("contradiction" | "note" | "none", text).
+_KINDS = {"contradicao": "contradicao", "lacuna": "lacuna", "sugestao": "sugestao"}
 
-    The model answers ``{"campos": [two parts], "descricao": "..."}`` per
-    contradiction. A contradiction is between two parts of the Change, so an
-    item counts only when it names at least two distinct parts and does not
-    deny that a contradiction exists. Older plain strings go through the same
-    rule. Anything else is a remark for the author ("note"); a denial or an
-    empty item is nothing ("none"). Making the rule structural, instead of
-    listing filler phrasings, is what stops polite fillers from failing a
-    Change (logica-3 P1-B, logica-4 P2-5, logica-5 P1-2).
+
+def _kind(value: object) -> str | None:
+    """'Contradição', 'SUGESTAO' -> the kind; anything else -> None (untyped)."""
+    word = _bare(str(value or "")).replace(" ", "")
+    return _KINDS.get(word)
+
+
+def classify_point(item: object, *, aligned: bool = False) -> tuple[str, str]:
+    """Sort one item of "problems" into ("contradiction" | "attention" | "none", text).
+
+    The model types each item: ``{"tipo": "contradicao" | "lacuna" |
+    "sugestao", "campos": [...], "descricao": "..."}``. Only a contradicao
+    that names two distinct parts of the Change blocks it; a gap (lacuna) or a
+    suggestion (sugestao) is a point of attention for the author. An item that
+    denies a contradiction, or is empty, is nothing.
+
+    An untyped item (an older plain string) goes through the same two-part
+    rule, except when the judge itself found the Change aligned (coherence and
+    back-out both at the cut): then only a typed contradicao can block, and
+    the rest is attention. A rule on structure, not on phrasings, is what
+    stops a polite or advisory item from failing a Change (logica-3 P1-B,
+    logica-4 P2-5, logica-5 P1-2, e2e-5 P0-1).
     """
     named: set[str] = set()
+    kind: str | None = None
     if isinstance(item, dict):
-        text = _plain(
-            str(item.get("descricao") or item.get("description") or item.get("texto") or "")
-        )
+        said = item.get("descricao") or item.get("description") or item.get("texto")
+        text = _plain(str(said or ""))
+        kind = _kind(item.get("tipo") or item.get("type"))
         fields = item.get("campos") or item.get("fields") or []
         for field in [fields] if isinstance(fields, str) else list(fields):
             named |= parts_named(str(field))
@@ -258,7 +278,11 @@ def classify_point(item: object) -> tuple[str, str]:
     if _says_nothing(text):
         return "none", ""
     named |= parts_named(text)
-    return ("contradiction" if len(named) >= 2 else "note"), text
+    if kind in ("lacuna", "sugestao"):
+        return "attention", text
+    if kind is None and aligned:
+        return "attention", text
+    return ("contradiction" if len(named) >= 2 else "attention"), text
 
 
 def _plain(text: str) -> str:
@@ -281,6 +305,9 @@ def _adherence_word(value: object) -> object:
 
 ADHERENT_FROM = 80
 PARTIAL_FROM = 50
+# The judge calls the Change aligned from this coherence (and an adherent
+# back-out plan): an untyped item cannot block it then.
+ALIGNED_FROM = 8.0
 
 
 def adherence_for(percent: int) -> BackoutAdherence:
@@ -304,6 +331,7 @@ class _FieldOut(BaseModel):
 class _SemanticOut(BaseModel):
     consistency_score: float = Field(ge=0, le=10)
     problems: list[str] = Field(default_factory=list)
+    attention: list[str] = Field(default_factory=list)
     reasoning: str = ""
     guidance: str = ""
     backout_adherence: BackoutAdherence | None = None
@@ -317,28 +345,30 @@ class _SemanticOut(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def _sort_points(cls, data: object) -> object:
-        """Keep the real contradictions; remarks go to the guidance."""
+        """Real contradictions in "problems"; gaps and suggestions in "attention"."""
         if not isinstance(data, dict):
             return data
         items = _points(data.get("problems"))
         if not isinstance(items, list):
             return data
+        score = _first_number(str(data.get("consistency_score", "")))
+        percent = _first_number(str(data.get("backout_adherence_percent", "")))
+        aligned = (
+            score is not None
+            and percent is not None
+            and round(score, 1) >= ALIGNED_FROM
+            and percent >= ADHERENT_FROM
+        )
         kept: dict[str, None] = {}
-        notes: dict[str, None] = {}
-        for item in items:
-            kind, text = classify_point(item)
+        attention: dict[str, None] = {}
+        extra = _points(data.get("attention"))
+        for item in [*items, *(extra if isinstance(extra, list) else [])]:
+            kind, text = classify_point(item, aligned=aligned)
             if kind == "contradiction":
                 kept.setdefault(text, None)
-            elif kind == "note":
-                notes.setdefault(text, None)
-        guidance = _text(data.get("guidance"))
-        guidance = guidance if isinstance(guidance, str) else ""
-        extra = " ".join(n if n.endswith(".") else f"{n}." for n in notes)
-        return {
-            **data,
-            "problems": list(kept),
-            "guidance": f"{guidance.strip()} {extra}".strip() if extra else guidance,
-        }
+            elif kind == "attention":
+                attention.setdefault(text, None)
+        return {**data, "problems": list(kept), "attention": list(attention)}
 
     def settled(self) -> _SemanticOut:
         """One decimal on the score, and the label read from the percent."""
@@ -542,9 +572,9 @@ def _semantic_prompt(change: Change, values: dict[str, str], backout: str) -> st
         f"Plano de retorno:\n{backout}\n\n"
         f"TAREFAS CADASTRADAS:\n{tasks or '(nenhuma)'}\n\n"
         'Responda com JSON: {"consistency_score": <0 a 10>, '
-        '"problems": [{"campos": ["<parte>", "<outra parte>"], '
-        '"descricao": "<a contradição entre as duas, uma frase>"}] '
-        "(sem contradição real, []), "
+        '"problems": [{"tipo": "contradicao" | "lacuna" | "sugestao", '
+        '"campos": ["<parte>", "<outra parte>"], "descricao": "<uma frase>"}] '
+        "(sem nada a apontar, []), "
         '"reasoning": "<duas ou três frases com o raciocínio>", '
         '"guidance": "<o que o autor deve ajustar, incluindo sugestões de melhoria>", '
         '"backout_adherence_percent": <0 a 100, quanto do que as tarefas cadastradas '
