@@ -40,6 +40,7 @@ def list_problems(repo: RepoDep) -> list[ProblemSummary]:
 @router.get("/problems/{number}", response_model=ProblemDetail)
 def get_problem(number: str, repo: RepoDep, incidents: IncidentRepoDep) -> ProblemDetail:
     """One Problem with its linked incidents, or 404."""
+    number = number.strip().upper()
     detail = repo.detail(number, incidents)
     if detail is None:
         raise HTTPException(

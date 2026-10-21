@@ -18,6 +18,7 @@ from functools import lru_cache
 from incident_sense.models import WorkNote
 
 MAX_NOTES_PER_INCIDENT = 10
+MAX_KEYS = 5000
 
 
 class WorkNotesStore:
@@ -25,7 +26,7 @@ class WorkNotesStore:
 
     def __init__(self, max_per_incident: int = MAX_NOTES_PER_INCIDENT) -> None:
         self._max = max_per_incident
-        self._notes: dict[str, list[WorkNote]] = defaultdict(list)
+        self._notes: dict[tuple[str, str], list[WorkNote]] = defaultdict(list)
         self._lock = threading.Lock()
 
     def publish(
@@ -36,8 +37,18 @@ class WorkNotesStore:
         sources: list[str],
         author: str = "Assistente da IA",
         model: str | None = None,
+        client_id: str = "",
     ) -> WorkNote:
-        """Append a note to an incident's work notes and return it."""
+        """Append a note to an incident's work notes and return it.
+
+        The same text twice (another Analisar of the same incident) is the same
+        note: the history does not fill up with copies.
+        """
+        key = (client_id, incident_number)
+        with self._lock:
+            existing = self._notes.get(key, [])
+            if existing and existing[-1].text == text and existing[-1].sources == list(sources):
+                return existing[-1]
         note = WorkNote(
             id=uuid.uuid4().hex[:12],
             incident_number=incident_number,
@@ -48,15 +59,21 @@ class WorkNotesStore:
             created_at=datetime.now(UTC),
         )
         with self._lock:
-            notes = self._notes[incident_number]
+            if key not in self._notes and len(self._notes) >= MAX_KEYS:
+                self._notes.pop(next(iter(self._notes)))
+            notes = self._notes[key]
             notes.append(note)
             del notes[: max(0, len(notes) - self._max)]
         return note
 
-    def list(self, incident_number: str) -> list[WorkNote]:
-        """Return an incident's published notes, oldest first."""
+    def list(self, incident_number: str, client_id: str = "") -> list[WorkNote]:
+        """Return the notes this visitor's analyses published, oldest first.
+
+        Scoped per visitor (the browser session id): each student opens a clean
+        incident instead of every note anyone in the room published.
+        """
         with self._lock:
-            return list(self._notes.get(incident_number, []))
+            return list(self._notes.get((client_id, incident_number), []))
 
 
 @lru_cache

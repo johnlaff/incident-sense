@@ -455,7 +455,7 @@ def test_suggestion_is_published_as_a_work_note_on_the_incident() -> None:
     assert response.publication.published is True
     (note,) = spies["notes"].list("INC0099999")
     assert note.text == response.suggestion
-    assert note.sources == ["INC0000001", "PRB0004101"]
+    assert note.sources == ["INC0000001"]
     assert note.author == "Assistente da IA"
     assert response.publication.note == note
 

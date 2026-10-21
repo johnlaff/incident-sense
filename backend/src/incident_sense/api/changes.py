@@ -72,6 +72,7 @@ RepoDep = Annotated[ChangeRepository, Depends(get_change_repository)]
 
 
 def _get(repo: ChangeRepository, number: str) -> Change:
+    number = number.strip().upper()
     change = repo.get(number)
     if change is None:
         raise HTTPException(

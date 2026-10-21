@@ -10,7 +10,8 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import openai
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from incident_sense.config import get_settings, resolve_chat_model
 from incident_sense.guard import ai_quota
@@ -40,7 +41,9 @@ def get_rag_deps() -> RagDeps:
 
 @router.post("/suggest", response_model=SuggestResponse, dependencies=[Depends(ai_quota)])
 def suggest(
-    request: SuggestRequest, deps: Annotated[RagDeps, Depends(get_rag_deps)]
+    request: SuggestRequest,
+    deps: Annotated[RagDeps, Depends(get_rag_deps)],
+    x_client_id: Annotated[str | None, Header(max_length=64)] = None,
 ) -> SuggestResponse:
     """Run the seven-step pipeline: classify, suggest with sources, publish.
 
@@ -59,15 +62,23 @@ def suggest(
             deps, llm=OpenAILLMClient(make_chat_client(settings), chosen, reasoning=False)
         )
     try:
-        return run_suggestion(request, deps, settings, model=chosen)
+        return run_suggestion(request, deps, settings, model=chosen, client_id=x_client_id or "")
     except HTTPException:
         raise
+    except openai.APIStatusError as exc:
+        log.error("suggest_failed", error=str(exc), status=exc.status_code)
+        if exc.status_code in (402, 429):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="A IA está sem cota agora. Tente de novo mais tarde.",
+            ) from exc
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Não foi possível gerar a sugestão agora. Tente de novo em instantes.",
+        ) from exc
     except Exception as exc:  # noqa: BLE001 — surface a clean error to the client.
         log.error("suggest_failed", error=str(exc), error_type=type(exc).__name__)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=(
-                "Não foi possível gerar a sugestão agora. Verifique se o Qdrant e os "
-                "provedores de IA estão disponíveis e tente novamente."
-            ),
+            detail=("Não foi possível gerar a sugestão agora. Tente de novo em instantes."),
         ) from exc

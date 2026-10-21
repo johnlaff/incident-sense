@@ -121,7 +121,14 @@ class LLMPostFilter(BaseNodePostprocessor):
         for item in items:
             if isinstance(item, dict) and "number" in item:
                 verdicts[str(item["number"])] = (
-                    bool(item.get("relevant", True)),
+                    _truthy(item.get("relevant", True)),
                     str(item.get("reason", "")),
                 )
         return verdicts
+
+
+def _truthy(value: object) -> bool:
+    """bool("false") is True: read what the model meant."""
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"true", "sim", "1", "yes", "verdadeiro"}

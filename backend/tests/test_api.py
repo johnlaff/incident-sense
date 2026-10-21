@@ -92,8 +92,9 @@ def test_suggest_endpoint_contract_with_fake_deps(client: TestClient) -> None:
 
     assert response.status_code == 200
     body = response.json()
-    # No retrieved candidates -> IMPROCEDENTE with no suggestion.
-    assert body["classification"] == "IMPROCEDENTE"
+    # No retrieved candidates and an unreadable classification: treated as a real
+    # incident (never sent to self-service by a parse failure), with no suggestion.
+    assert body["classification"] == "PROCEDENTE"
     assert body["suggestion"] is None
     assert body["candidates"] == []
 
@@ -123,7 +124,7 @@ def test_suggest_accepts_model_field_with_fake_deps(client: TestClient) -> None:
         },
     )
     assert response.status_code == 200
-    assert response.json()["classification"] == "IMPROCEDENTE"
+    assert response.json()["classification"] == "PROCEDENTE"
 
 
 def test_suggest_missing_keys_returns_503(monkeypatch: pytest.MonkeyPatch) -> None:
