@@ -516,3 +516,45 @@ def test_embedding_client_has_the_same_short_deadline() -> None:
     client = make_embedding_client(Settings(openrouter_api_key="sk-test"))
     assert client.timeout == 20
     assert client.max_retries == 0
+
+
+# --- logica-4 ------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "point",
+    [
+        "Nenhuma tarefa cobre o problema de certificado citado no objetivo.",
+        "Sem retorno para a migração de dados que a implementação faz.",
+        "Não foi previsto rollback do certificado que o plano troca.",
+    ],
+)
+def test_a_short_real_contradiction_is_not_swallowed(client: TestClient, point: str) -> None:
+    """logica-4 P2-5: only a phrase that denies a contradiction is filler."""
+    sem = _semantic(consistency_score=8.5, problems=[point])
+    _wire(client, _Scripted(sem))
+    body = _eval(client)
+    assert body["semantic"]["problems"] == [point]
+    assert body["decision"]["reason_code"] == "contradictions"
+
+
+@pytest.mark.parametrize(
+    "filler", ["Nada a apontar.", "Nada a declarar", "Nenhuma inconsistência."]
+)
+def test_more_fillers_are_dropped(client: TestClient, filler: str) -> None:
+    sem = _semantic(consistency_score=9.0, problems=[filler])
+    _wire(client, _Scripted(sem))
+    body = _eval(client)
+    assert body["semantic"]["problems"] == []
+    assert body["decision"]["passes"] is True
+
+
+def test_unreachable_does_not_ask_to_evaluate_again(client: TestClient) -> None:
+    """logica-4 P2-9/P2-10: a definite "Não segue" never sits next to "Avalie de novo"."""
+    grades: dict[str, Any] = dict.fromkeys(_BY_LABEL.values(), 6.0)
+    grades["objective"] = ["?", "?"]
+    grades["benefits"] = ["?", "?"]
+    _wire(client, _Scripted(_semantic(), field=grades))
+    body = _eval(client)
+    assert body["decision"]["reason_code"] == "average_below"
+    assert "Objetivo e Benefícios" in body["decision"]["reason"]
+    assert "Avalie de novo" not in body["semantic_skipped_reason"]
+    assert "Avalie de novo" not in body["decision"]["reason"]

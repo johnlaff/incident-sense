@@ -18,7 +18,10 @@ class AskRequest(BaseModel):
     context_ids: list[str] = Field(
         default_factory=list,
         max_length=20,
-        description="The kept ids of the analysis (its context_ids); the only allowed sources.",
+        description=(
+            "Sent by older clients and ignored: the server holds the kept cases of "
+            "this visitor's last analysis."
+        ),
     )
     model: str | None = Field(default=None, description="Optional UI model id.")
 

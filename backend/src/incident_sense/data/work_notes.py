@@ -49,8 +49,11 @@ class WorkNotesStore:
             existing = self._notes.get(key, [])
             if existing and existing[-1].text == text and existing[-1].sources == list(sources):
                 return existing[-1]
+            # One AI note per visitor and incident: analysing again rewrites it
+            # in place (same id), so the history never shows two suggestions.
+            previous = next((n for n in existing if n.author == author), None)
         note = WorkNote(
-            id=uuid.uuid4().hex[:12],
+            id=previous.id if previous else uuid.uuid4().hex[:12],
             incident_number=incident_number,
             author=author,
             text=text,
@@ -62,6 +65,8 @@ class WorkNotesStore:
             if key not in self._notes and len(self._notes) >= MAX_KEYS:
                 self._notes.pop(next(iter(self._notes)))
             notes = self._notes[key]
+            if previous is not None:
+                notes[:] = [n for n in notes if n.id != previous.id]
             notes.append(note)
             del notes[: max(0, len(notes) - self._max)]
         return note

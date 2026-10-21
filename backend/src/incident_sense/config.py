@@ -90,6 +90,10 @@ class Settings(BaseSettings):
     ai_max_per_client: int = 20
     ai_max_per_ip: int = 300
     ai_max_per_day: int = 3000
+    # Follow-up questions are one short call each and come in bursts after an
+    # analysis: their own budget, so a curious class does not lock analyses out.
+    ai_ask_max_per_client: int = 40
+    ai_ask_max_per_ip: int = 1200
 
     # --- Logging --------------------------------------------------------------
     log_level: str = "INFO"

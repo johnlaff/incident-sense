@@ -34,8 +34,23 @@ class UsageGuard:
         self._day = ""
         self._day_count = 0
 
-    def check(self, *, client_id: str, ip: str, settings: Settings) -> str | None:
-        """Record one AI call, or return the pt-BR reason it is refused."""
+    def check(
+        self,
+        *,
+        client_id: str,
+        ip: str,
+        settings: Settings,
+        max_per_client: int | None = None,
+        max_per_ip: int | None = None,
+        noun: str = "análises",
+    ) -> str | None:
+        """Record one AI call, or return the pt-BR reason it is refused.
+
+        ``noun`` names what is counted ("análises", "perguntas"), so the
+        refusal says what the person actually did.
+        """
+        per_client = settings.ai_max_per_client if max_per_client is None else max_per_client
+        per_ip = settings.ai_max_per_ip if max_per_ip is None else max_per_ip
         now = self._clock()
         day = datetime.fromtimestamp(now, UTC).date().isoformat()
         with self._lock:
@@ -45,10 +60,10 @@ class UsageGuard:
                 return "A demo atingiu o limite de uso de hoje. Volte amanhã."
             client_hits = self._window(self._by_client[client_id], now, settings)
             ip_hits = self._window(self._by_ip[ip], now, settings)
-            if len(client_hits) >= settings.ai_max_per_client:
-                return "Você fez muitas análises seguidas. Espere alguns minutos."
-            if len(ip_hits) >= settings.ai_max_per_ip:
-                return "Muitas análises vindas desta rede. Espere alguns minutos."
+            if len(client_hits) >= per_client:
+                return f"Você fez muitas {noun} seguidas. Espere alguns minutos."
+            if len(ip_hits) >= per_ip:
+                return f"Muitas {noun} vindas desta rede. Espere alguns minutos."
             client_hits.append(now)
             ip_hits.append(now)
             self._day_count += 1
@@ -67,6 +82,14 @@ _guard = UsageGuard()
 def get_usage_guard() -> UsageGuard:
     """The process-wide guard (overridable in tests)."""
     return _guard
+
+
+_ask_guard = UsageGuard()
+
+
+def get_ask_guard() -> UsageGuard:
+    """The guard for follow-up questions: a budget of its own (overridable)."""
+    return _ask_guard
 
 
 def _client_ip(request: Request) -> str:
