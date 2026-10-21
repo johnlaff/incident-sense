@@ -13,7 +13,8 @@ export function LessonModeSwitch() {
         {aula ? (
           <>
             <b>Modo aula ligado.</b> As animações param a cada passo, com legenda. Avance
-            tocando em &quot;Próxima etapa&quot;, com a seta do teclado ou com o passador.
+            tocando em &quot;Próximo&quot;; no computador, também com a seta do teclado ou
+            com o passador.
           </>
         ) : (
           <>

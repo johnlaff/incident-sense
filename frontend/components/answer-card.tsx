@@ -23,7 +23,7 @@ import {
   type ParsedAnswer,
 } from "@/lib/answer";
 import { buildSuggestionMarkdown, markdownToPlain } from "@/lib/model";
-import { OUTCOME_LABEL, citationSource, formatSim } from "@/lib/pipeline";
+import { OUTCOME_LABEL, citationSource, formatSim, humanLine } from "@/lib/pipeline";
 import { problemState, useProblems } from "@/lib/problems";
 import type { SuggestResponse } from "@/lib/types";
 
@@ -471,7 +471,7 @@ function HumanDecides({
       <ConceptIcon concept="human" />
       <div className="ans-human-body">
         <p>
-          <b>Agora é com você:</b> confira as fontes e decida. A IA não resolve sozinha.
+          <b>Agora é com você:</b> {humanLine(result)}
         </p>
         {children}
         {result.publication.published ? (

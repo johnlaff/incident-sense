@@ -353,6 +353,9 @@
   font-weight: 600;
   padding: 0 9px;
   border-radius: 999px;
+  /* "Não, barrado" broke in two lines out of its pill at 360px. */
+  white-space: nowrap;
+  flex: none;
 }
 .gatemark-pass .gatemark-verdict {
   background: var(--score-high-tint);

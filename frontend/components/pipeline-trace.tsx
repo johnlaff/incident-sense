@@ -34,13 +34,16 @@ import { AnswerCard } from "./answer-card";
 import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
 import { buildSuggestionMarkdown, meaningfulTags } from "@/lib/model";
 import { formatSeconds, useElapsedSeconds, useIsPhone } from "@/lib/motion";
-import { freeBand, scrollPos, toTop } from "@/lib/reveal";
+import { freeBand, revealSubject, scrollPos, toTop } from "@/lib/reveal";
 import {
   OUTCOME_LABEL,
   PIPELINE_STEPS,
   STEP_STATUS_LABEL,
   TAG_SOURCE_LABEL,
+  BEATS,
   beatsFor,
+  humanLine,
+  stepHint,
   citationSource,
   citationSummary,
   formatSim,
@@ -82,7 +85,7 @@ const STATUS_ICON: Record<StepStatus, IconComponent> = {
 /** The replay as a lesson: beats, captions and the current beat. */
 export function usePipelineLesson(id: string, result: SuggestResponse | null) {
   const beats = useMemo(
-    () => beatsFor(result?.dims, result?.retrieval.vector.min_similarity ?? 0.8),
+    () => beatsFor(result?.dims, result?.retrieval.vector.min_similarity ?? 0.8, result),
     [result],
   );
   return useAulaLesson({ id, steps: beats, runKey: result });
@@ -129,13 +132,30 @@ export function PipelineTrace({
   const finished = lesson.done && !lesson.aula;
   const listRef = useRef<HTMLOListElement>(null);
 
-  // In modo aula the step being explained comes into view on every move.
+  // In modo aula the step being explained comes into view on every move. A
+  // search beat shows its own layer (tags, chart, the seven verdicts) whole,
+  // above the caption strip, not just the top of step 4 (E2E P1-2).
   useEffect(() => {
     if (!lesson.aula || beat < 0) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const layer = BEATS[beat]?.layer;
+    if (layer) {
+      let cancel = () => {};
+      // One frame so a layer that just appeared has its size.
+      const raf = requestAnimationFrame(() => {
+        cancel = revealSubject(
+          listRef.current?.querySelector(`[data-layer="${layer}"]`) ?? null,
+          reduced,
+        );
+      });
+      return () => {
+        cancelAnimationFrame(raf);
+        cancel();
+      };
+    }
     const current = listRef.current?.querySelector<HTMLElement>(
       '.pipe-step[aria-current="step"]',
     );
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     current?.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
   }, [beat, lesson.aula]);
 
@@ -209,6 +229,7 @@ export function PipelineTrace({
             key={def.key}
             def={def}
             view={reveal === "hidden" ? null : view}
+            hint={stepHint(def, reveal === "hidden" ? null : shown)}
             reveal={reveal}
             stopped={stoppedAfterGate(views, def.key, beat)}
           >
@@ -468,10 +489,13 @@ function StepItem({
   view,
   reveal,
   stopped,
+  hint,
   children,
 }: {
   def: StepDef;
   view: StepView | null;
+  /** The step's line for this run (stepHint); the generic one before it. */
+  hint: string;
   reveal: Reveal;
   stopped: boolean;
   children: ReactNode;
@@ -523,7 +547,7 @@ function StepItem({
             </span>
           ) : null}
         </div>
-        <p className={`pipe-decision${view ? "" : " is-hint"}`}>{def.hint}</p>
+        <p className={`pipe-decision${view ? "" : " is-hint"}`}>{hint}</p>
         {folds ? (
           <button
             type="button"
@@ -643,7 +667,7 @@ function StepDetail({
           <ConceptIcon concept="human" />
           <div>
             <b>Agora é com você.</b>
-            <p>Confira as fontes e decida. A IA não resolve sozinha.</p>
+            <p>{sentence(humanLine(result))}</p>
             {result.publication.published ? (
               <button
                 className="btn btn-primary btn-sm pipe-notes-btn"
@@ -816,7 +840,7 @@ function Layers({
         floor={vector.min_similarity}
       />
       <ol className="layers" aria-label="Camadas da busca">
-        <li className="layer layer-in">
+        <li className="layer layer-in" data-layer="tags">
           <div className="layer-head">
             <span className="layer-n mono">1</span>
             <span className="layer-name">Onde procurar</span>
@@ -842,7 +866,7 @@ function Layers({
         </li>
 
         {showVector ? (
-          <li className="layer layer-in">
+          <li className="layer layer-in" data-layer="vetor">
             <div className="layer-head">
               <span className="layer-n mono">2</span>
               <span className="layer-name">O quanto se parece</span>
@@ -882,7 +906,7 @@ function Layers({
         ) : null}
 
         {showCheck ? (
-          <li className="layer layer-in">
+          <li className="layer layer-in" data-layer="conferir">
             <div className="layer-head">
               <span className="layer-n mono">3</span>
               <span className="layer-name">Serve mesmo?</span>
@@ -1189,4 +1213,9 @@ export function IdChip({ id, onCite }: { id: string; onCite: CiteHandler }) {
       <RecordTag number={id} ghost={!problem} size="sm" />
     </button>
   );
+}
+
+/** "confira as fontes..." -> "Confira as fontes...": the line opens a sentence. */
+function sentence(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }

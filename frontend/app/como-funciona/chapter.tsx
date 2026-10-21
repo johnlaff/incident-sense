@@ -48,8 +48,11 @@ export function ChapterView({
   stage,
   details,
   source,
+  onNext,
 }: {
   chapter: Chapter;
+  /** Modo aula: the last step's button goes on to the next chapter. */
+  onNext?: () => void;
   /** This chapter is the one in the middle of the screen. */
   focused: boolean;
   /** The reader arrived here scrolling up (aula shows the end, not step 1). */
@@ -73,6 +76,7 @@ export function ChapterView({
     runKey,
     fastMs: 1300,
     reducedMotion: "pace",
+    onward: onNext ? { label: "Próximo capítulo", go: onNext } : null,
   });
   const total = steps.length;
   const started = runKey !== null;

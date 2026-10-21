@@ -206,3 +206,12 @@ describe("texto e aula", () => {
     expect(appHref("/recorrencias?grupo=5", true)).toBe("/recorrencias?grupo=5&aula=1");
   });
 });
+
+describe("E2E rodada 2 P0-1: the search chapter never promises identity", () => {
+  it("says it is one recorded run and why live results vary", () => {
+    const ch = CHAPTERS.find((c) => c.id === "cap-4")!;
+    expect(ch.note).not.toMatch(/os mesmos que o app/);
+    expect(ch.note).toMatch(/uma execução/);
+    expect(ch.note).toMatch(/resumo/);
+  });
+});
