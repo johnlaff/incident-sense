@@ -11,6 +11,7 @@ import {
   ADHERENCE_LABEL,
   band,
   nota,
+  type Change,
   type Evaluation,
   type FieldKey,
 } from "@/lib/changes";
@@ -25,6 +26,7 @@ import {
   overallOf,
   parseTime,
   reached,
+  verdictOf,
   type Step,
   type StepId,
   type WeightedAverage,
@@ -165,6 +167,7 @@ function ScoreChip({
   big = false,
   places = 1,
   label,
+  neutral = false,
 }: {
   score: number;
   from?: number;
@@ -175,12 +178,14 @@ function ScoreChip({
   /** Decimal places; the overall uses two, like the formula under it. */
   places?: number;
   label: string;
+  /** No hue: the verdict, not this number, says yes or no. */
+  neutral?: boolean;
 }) {
   const { value, finished } = useCount(score, from, run, delay, dur);
   const cls = big ? "chg-overall-num" : "chg-score";
   return (
     <span
-      className={`${cls} ${finished ? band(score) : "counting"}`}
+      className={`${cls} ${finished ? (neutral ? "neutral" : band(score)) : "counting"}`}
       data-on={run}
       role="img"
       aria-label={label}
@@ -265,10 +270,13 @@ export function PlaybackBar({
   steps,
   playback,
   seconds,
+  instant = false,
 }: {
   steps: Step[];
   playback: Playback;
   seconds: number;
+  /** The result showed at once (outside modo aula): offer the walk-through. */
+  instant?: boolean;
 }) {
   const playing = !playback.done;
   const step = steps[Math.max(0, Math.min(playback.index, steps.length - 1))];
@@ -292,11 +300,11 @@ export function PlaybackBar({
         <>
           <p>
             <span className="chg-playbar-count">{took}</span>
-            <span>{steps.length} etapas repassadas</span>
+            {!instant && <span>{steps.length} etapas repassadas</span>}
           </p>
           <button className="btn btn-ghost btn-sm" onClick={playback.replay}>
             <Icons.replay />
-            Repassar
+            {instant ? "Ver passo a passo" : "Repassar"}
           </button>
         </>
       )}
@@ -324,6 +332,7 @@ export function Ledger({
   flagBelow,
   threshold,
   caption,
+  why,
 }: {
   rows: LedgerRow[];
   avg: WeightedAverage | null;
@@ -334,17 +343,32 @@ export function Ledger({
   flagBelow: boolean;
   threshold: number;
   caption: string | null;
+  /**
+   * One-line reason per field. When given (outside modo aula, result in),
+   * the rows read worst first, each with a bar against the 8,0 line.
+   */
+  why?: Map<FieldKey, string> | null;
 }) {
   const byKey = new Map(avg?.segments.map((s) => [s.key, s]) ?? []);
+  const detail = Boolean(why) && avg !== null;
+  const ordered = detail
+    ? [...rows].sort(
+        (a, b) => (byKey.get(a.key)?.score ?? 0) - (byKey.get(b.key)?.score ?? 0),
+      )
+    : rows;
   return (
-    <div className="chg-ledger">
-      <h3>Nota de cada campo</h3>
+    <div className={`chg-ledger${detail ? " detail" : ""}`}>
+      <h3>
+        {detail ? "Nota de cada campo, da pior para a melhor" : "Nota de cada campo"}
+      </h3>
       {caption && <p className="chg-caption">{caption}</p>}
       <ol>
-        {rows.map((r, i) => {
+        {ordered.map((r, i) => {
           const seg = byKey.get(r.key);
           const prev = previous.get(r.key);
-          const below = flagBelow && seg !== undefined && seg.score < threshold;
+          const below =
+            (flagBelow || detail) && seg !== undefined && seg.score < threshold;
+          const line = detail ? why?.get(r.key) : undefined;
           return (
             <li
               key={r.key}
@@ -365,8 +389,19 @@ export function Ledger({
                         reaproveitado
                       </span>
                     )}
-                    {below && <span className="chg-below">abaixo do corte</span>}
+                    {below && <span className="chg-below">abaixo de 8,0</span>}
                   </span>
+                  {detail && seg && (
+                    <span
+                      className={`chg-led-bar ${band(seg.score)}`}
+                      style={{ "--sc": seg.score, "--cut": threshold } as Vars}
+                      aria-hidden="true"
+                    >
+                      <span className="fill" />
+                      <span className="tick" />
+                    </span>
+                  )}
+                  {line && <span className="chg-led-why">{line}</span>}
                 </span>
                 <span className="chg-led-score">
                   {seg ? (
@@ -412,6 +447,7 @@ export function Average({
   steps,
   skipped,
   motion,
+  aula = false,
 }: {
   result: Evaluation;
   avg: WeightedAverage;
@@ -421,6 +457,8 @@ export function Average({
   steps: Step[];
   skipped: boolean;
   motion: Motion;
+  /** Modo aula opens the formula; elsewhere it waits behind "Ver a conta". */
+  aula?: boolean;
 }) {
   const at = (id: StepId) => reached(steps, index, id);
   const onMedia = at("media");
@@ -428,6 +466,10 @@ export function Average({
   // Same number as the formula's result: one source for headline, bar and gate.
   const overall = overallOf(result) ?? 0;
   const passed = gatePassed(result);
+  // Green only when the whole reading says yes: past the cut, a blocked
+  // coherence check keeps the line neutral and the verdict carries the color.
+  const finalOk = verdictOf(result)?.ok ?? false;
+  const gate = passed ? (finalOk ? "open" : "neutral") : "closed";
   const n = avg.segments.length;
   const terms = formulaTerms(avg);
   const before = new Map(previousAvg?.segments.map((s) => [s.key, s]) ?? []);
@@ -461,6 +503,7 @@ export function Average({
           delay={landDelay}
           dur={skipped ? 0 : motion.count}
           places={2}
+          neutral={passed && !finalOk}
           label={`Média ponderada ${fmt(overall, 2)} de 10`}
         />
         <span className="chg-overall-label">
@@ -479,10 +522,10 @@ export function Average({
       <div
         className="chg-scale"
         data-on={onMedia}
-        data-gate={onGate ? (passed ? "open" : "closed") : "idle"}
+        data-gate={onGate ? gate : "idle"}
         role="img"
-        aria-label={`Barra de 0 a 10: média ${fmt(overall, 2)}, corte em ${cut}. ${
-          passed ? "Passou do corte." : "Ficou abaixo do corte."
+        aria-label={`Régua de 0 a 10: média ${fmt(overall, 2)}, mínimo para seguir ${cut}. ${
+          passed ? "Passou do mínimo." : "Ficou abaixo do mínimo."
         }`}
       >
         <span className="chg-pointer" aria-hidden="true">
@@ -518,54 +561,63 @@ export function Average({
           <span style={{ "--at": 0 } as Vars}>0</span>
           <span style={{ "--at": 5 } as Vars}>5</span>
           <span className="cut" style={{ "--at": result.threshold } as Vars}>
-            corte {cut}
+            {cut}
           </span>
           <span style={{ "--at": 10 } as Vars}>10</span>
         </span>
       </div>
 
-      <p className="chg-formula" data-on={onMedia} aria-label={formulaLabel(avg)}>
-        <span className="chg-formula-terms" aria-hidden="true">
-          {terms.map((t, i) => (
-            <span
-              key={avg.segments[i].key}
-              className="chg-term"
-              style={{ "--i": i } as Vars}
-            >
-              {i > 0 && <span className="op">+</span>}
-              <span>
-                {i === 0 && <span className="paren">(</span>}
-                <span className={`t${i % 2 ? " alt" : ""}`}>{t}</span>
-                {i === n - 1 && <span className="paren">)</span>}
-              </span>
-            </span>
-          ))}
-          <span className="chg-term div" style={{ "--i": n } as Vars}>
-            <span className="op">÷</span>
-            <span className="t">{fmtWeight(avg.totalWeight)}</span>
-          </span>
-        </span>
-        <span
-          className="chg-formula-result"
-          aria-hidden="true"
-          style={{ "--i": n + 1 } as Vars}
-        >
-          = {fmt(avg.numerator, 2)} ÷ {fmtWeight(avg.totalWeight)} ={" "}
-          <b>{fmt(overall, 2)}</b>
-        </span>
+      <p className="chg-scale-key">
+        <span className="tick" aria-hidden="true" />
+        Linha em {cut}: mínimo para seguir
       </p>
 
+      <details className="chg-conta" open={aula || undefined}>
+        <summary>Ver a conta</summary>
+        <p className="chg-formula" data-on={onMedia} aria-label={formulaLabel(avg)}>
+          <span className="chg-formula-terms" aria-hidden="true">
+            {terms.map((t, i) => (
+              <span
+                key={avg.segments[i].key}
+                className="chg-term"
+                style={{ "--i": i } as Vars}
+              >
+                {i > 0 && <span className="op">+</span>}
+                <span>
+                  {i === 0 && <span className="paren">(</span>}
+                  <span className={`t${i % 2 ? " alt" : ""}`}>{t}</span>
+                  {i === n - 1 && <span className="paren">)</span>}
+                </span>
+              </span>
+            ))}
+            <span className="chg-term div" style={{ "--i": n } as Vars}>
+              <span className="op">÷</span>
+              <span className="t">{fmtWeight(avg.totalWeight)}</span>
+            </span>
+          </span>
+          <span
+            className="chg-formula-result"
+            aria-hidden="true"
+            style={{ "--i": n + 1 } as Vars}
+          >
+            = {fmt(avg.numerator, 2)} ÷ {fmtWeight(avg.totalWeight)} ={" "}
+            <b>{fmt(overall, 2)}</b>
+          </span>
+        </p>
+      </details>
+
       {onGate && (
-        <p className={`chg-gate ${passed ? "open" : "closed"}`}>
+        <p className={`chg-gate ${gate}`}>
           {passed ? <LockOpen /> : <LockClosed />}
           <span>
             {passed ? (
               <>
-                <b>Passou do corte de {cut}.</b> A análise de coerência roda.
+                <b>Passou do mínimo de {cut}.</b> Por isso a IA também confere a coerência
+                entre os campos.
               </>
             ) : (
               <>
-                <b>Abaixo do corte: a análise de coerência não roda.</b>{" "}
+                <b>Abaixo do mínimo: a conferência de coerência não roda.</b>{" "}
                 {roundsToCut
                   ? `${fmt(overall, 2)} ainda é menos que ${cut}.`
                   : `Faltam ${fmt(result.threshold - overall, 2)} pontos para ${cut}.`}{" "}
@@ -592,12 +644,15 @@ function formulaLabel(avg: WeightedAverage): string {
 
 export function Coherence({
   result,
+  change,
   index,
   steps,
   skipped,
   motion,
 }: {
   result: Evaluation;
+  /** The record, for the two texts the check compares. */
+  change?: Change;
   index: number;
   steps: Step[];
   skipped: boolean;
@@ -615,7 +670,9 @@ export function Coherence({
           <LockClosed />
           <h2 id="sem-h">Coerência entre os campos</h2>
         </header>
-        <p className="chg-sem-stop">Abaixo do corte: a análise de coerência não roda.</p>
+        <p className="chg-sem-stop">
+          Abaixo do mínimo: a conferência de coerência não roda.
+        </p>
         {result.semantic_skipped_reason && (
           <p className="chg-muted">{plainReason(result.semantic_skipped_reason)}</p>
         )}
@@ -623,8 +680,12 @@ export function Coherence({
     );
   }
 
+  const finalOk = verdictOf(result)?.ok ?? false;
   return (
-    <section className="card chg-semantic open" aria-labelledby="sem-h">
+    <section
+      className={`card chg-semantic open${finalOk ? "" : " blocked"}`}
+      aria-labelledby="sem-h"
+    >
       <header className="chg-sem-head">
         <LockOpen />
         <h2 id="sem-h">Coerência entre os campos</h2>
@@ -697,6 +758,7 @@ export function Coherence({
             Nenhuma incoerência apontada.
           </p>
         )}
+        {s.problems.length > 0 && change ? <Excerpts change={change} /> : null}
         <h3>Raciocínio</h3>
         <p>{s.reasoning}</p>
         {s.guidance.trim() ? (
@@ -716,30 +778,59 @@ export function Coherence({
  * AI points out holds the change back until the author fixes it.
  */
 export function Verdict({ result }: { result: Evaluation }) {
-  const overall = overallOf(result);
-  if (overall === null) return null;
-  const avg = fmt(overall, 2);
-  const cut = nota(result.threshold);
-  const problems = result.semantic?.problems.length ?? 0;
-  const passed = gatePassed(result);
-  const ok = passed && result.semantic !== null && problems === 0;
-  let text: string;
-  if (!passed) {
-    text = `Não segue para aprovação: a média ponderada ficou em ${avg}, abaixo do corte de ${cut}.`;
-  } else if (result.semantic === null) {
-    text = `A média ponderada passou do corte (${avg}), mas a análise de coerência não rodou: avalie de novo antes de pedir aprovação.`;
-  } else if (problems > 0) {
-    text = `Ainda não segue para aprovação: a média ponderada passou do corte (${avg}), mas a IA apontou ${
-      problems === 1 ? "1 incoerência" : `${problems} incoerências`
-    } entre os campos.`;
-  } else {
-    text = `Pode seguir para a aprovação de uma pessoa: a média ponderada passou do corte (${avg}) e a IA não apontou incoerência.`;
-  }
+  const v = verdictOf(result);
+  if (!v) return null;
   return (
-    <p className={`card chg-final ${ok ? "ok" : "no"}`} role="status">
-      {ok ? <Icons.checkCircle /> : <Icons.alert />}
-      <span>{text}</span>
+    <p className={`card chg-final ${v.ok ? "ok" : "no"}`} role="status">
+      {v.ok ? <Icons.checkCircle /> : <Icons.alert />}
+      <span>
+        <b>{v.title}.</b> {v.reason}
+      </span>
     </p>
+  );
+}
+
+/**
+ * The same answer, first thing in the reading (outside modo aula): the
+ * verdict and its reason come before any number.
+ */
+export function VerdictBanner({ result }: { result: Evaluation }) {
+  const v = verdictOf(result);
+  if (!v) return null;
+  return (
+    <div className={`chg-banner ${v.ok ? "ok" : "no"}`} role="status">
+      <p className="chg-banner-title">
+        {v.ok ? <Icons.checkCircle /> : <Icons.alert />}
+        {v.title}
+      </p>
+      <p className="chg-banner-reason">{v.reason}</p>
+      <p className="chg-banner-human">
+        <Icons.human />A IA recomenda, quem decide é uma pessoa.
+      </p>
+    </div>
+  );
+}
+
+/** What the coherence check compares, side by side on a wide screen. */
+function Excerpts({ change }: { change: Change }) {
+  return (
+    <div className="chg-excerpts">
+      <h3>Os dois textos que a IA comparou</h3>
+      <div className="chg-excerpts-grid">
+        <div>
+          <p className="chg-excerpt-label">O que as tarefas fazem</p>
+          <ol className="chg-excerpt-tasks">
+            {change.tasks.map((t) => (
+              <li key={t.number}>{t.short_description}</li>
+            ))}
+          </ol>
+        </div>
+        <div>
+          <p className="chg-excerpt-label">O que o plano de retorno desfaz</p>
+          <p className="chg-excerpt-text">{change.backout_plan}</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -830,7 +921,8 @@ export function useFollowStep(
   const at = aula ? Math.min(index, steps.length - 1) : index;
   const id = at >= 0 && at < steps.length ? steps[at].id : null;
   useEffect(() => {
-    if (stopped || id === null) return;
+    // Outside modo aula the page never scrolls on its own while the reader reads.
+    if (!aula || stopped || id === null) return;
     // A closed gate ends the reading: its verdict is the subject.
     const sel = id === "portao" && gateClosed ? ".chg-final" : STEP_TARGET[id];
     // Wait one frame so a block that just mounted has its size.
@@ -842,5 +934,5 @@ export function useFollowStep(
       cancelAnimationFrame(raf);
       cancel();
     };
-  }, [id, at, stopped, reduced, gateClosed]);
+  }, [id, at, stopped, reduced, gateClosed, aula]);
 }

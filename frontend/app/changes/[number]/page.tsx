@@ -39,14 +39,17 @@ import {
   useElapsed,
   useFollowStep,
   Verdict,
+  VerdictBanner,
   type Motion,
 } from "../evaluation";
 import {
   buildSteps,
+  firstSentence,
   fmtWeight,
   gatePassed,
   overallOf,
   reached,
+  verdictOf,
   weightedSegments,
   type StepId,
 } from "../sequence";
@@ -172,17 +175,26 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   });
   const [replays, setReplays] = useState(0);
   const [skippedRun, setSkippedRun] = useState<string | null>(null);
+  // Outside modo aula a result shows whole at once: no counting, no moving
+  // bar, nothing scrolls. "Ver passo a passo" plays it on request.
+  const [walkedRun, setWalkedRun] = useState<string | null>(null);
   const runId = `${runKey}-${replays}`;
+  const instant = !lesson.aula && walkedRun !== runId;
+  const { aula: inAula, done: lessonDone, skip: lessonSkip } = lesson;
+  useEffect(() => {
+    if (!inAula && !lessonDone && walkedRun !== runId) lessonSkip();
+  }, [inAula, lessonDone, walkedRun, runId, lessonSkip]);
   const playback: Playback = {
-    index: lesson.done ? steps.length : lesson.step,
-    done: lesson.done,
-    skipped: skippedRun === runId,
+    index: lesson.done || instant ? steps.length : lesson.step,
+    done: lesson.done || instant,
+    skipped: skippedRun === runId || instant,
     epoch: replays,
     skip: () => {
       setSkippedRun(runId);
       lesson.skip();
     },
     replay: () => {
+      setWalkedRun(`${runKey}-${replays + 1}`);
       setReplays((n) => n + 1);
       lesson.replay();
     },
@@ -203,7 +215,11 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       setPrevious(result);
       setResult(res);
       // /changes marks the Changes evaluated in this session.
-      markEvaluated(change.number, { overall: overallOf(res), passed: gatePassed(res) });
+      markEvaluated(change.number, {
+        overall: overallOf(res),
+        passed: gatePassed(res),
+        ok: verdictOf(res)?.ok ?? false,
+      });
       setMotion(readMotion());
       setRunKey((k) => k + 1);
       setDirty(new Set());
@@ -241,6 +257,13 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
     gateClosed,
   });
   const notasStep = steps.find((s) => s.id === "notas");
+  const whyByField = useMemo(
+    () =>
+      new Map<FieldKey, string>(
+        result?.fields.map((f) => [f.key, firstSentence(f.diagnosis)]) ?? [],
+      ),
+    [result],
+  );
 
   return (
     <div className="chg-page">
@@ -364,11 +387,15 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               </>
             )}
 
+            {/* The answer before the numbers; modo aula keeps it for the end. */}
+            {showResult && inScope && !lesson.aula && <VerdictBanner result={result} />}
+
             {showResult && overallOf(result) !== null && (
               <PlaybackBar
                 steps={steps}
                 playback={playback}
                 seconds={result.duration_ms / 1000}
+                instant={!lesson.aula}
               />
             )}
 
@@ -384,7 +411,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                   motion={motion}
                   flagBelow={gateClosed}
                   threshold={result?.threshold ?? rubric.eligibility_threshold}
-                  caption={showResult ? (notasStep?.caption ?? null) : null}
+                  caption={
+                    showResult && lesson.aula ? (notasStep?.caption ?? null) : null
+                  }
+                  why={showResult && !lesson.aula ? whyByField : null}
                 />
               )}
 
@@ -399,6 +429,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                 steps={steps}
                 skipped={playback.skipped}
                 motion={motion}
+                aula={lesson.aula}
               />
             )}
 
@@ -423,6 +454,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             <Coherence
               key={`sem-${epoch}`}
               result={result}
+              change={change}
               index={playback.index}
               steps={steps}
               skipped={playback.skipped}
@@ -430,9 +462,12 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
             />
           )}
 
-          {showResult && result.scope.in_scope && (gateClosed || at("problemas")) && (
-            <Verdict key={`ver-${epoch}`} result={result} />
-          )}
+          {showResult &&
+            lesson.aula &&
+            result.scope.in_scope &&
+            (gateClosed || at("problemas")) && (
+              <Verdict key={`ver-${epoch}`} result={result} />
+            )}
         </aside>
 
         <section className="chg-fields" aria-label="Campos avaliados">
@@ -522,7 +557,12 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     {score.guidance && (
                       <p className="chg-guidance">
                         <Icons.lightbulb />
-                        {score.guidance}
+                        <span>
+                          {score.score < (result?.threshold ?? 8) && (
+                            <b>O que subiria a nota: </b>
+                          )}
+                          {score.guidance}
+                        </span>
                       </p>
                     )}
                   </div>

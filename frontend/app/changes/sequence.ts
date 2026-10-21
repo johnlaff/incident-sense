@@ -163,6 +163,63 @@ export function gatePassed(ev: Evaluation): boolean {
   return overall !== null && overall >= ev.threshold;
 }
 
+export interface ChangeVerdict {
+  /** May go on to a person's approval. */
+  ok: boolean;
+  /** "Pode seguir" or "Não segue". */
+  title: string;
+  /** One plain line with the reason. */
+  reason: string;
+}
+
+/**
+ * The answer of the whole reading, in words. The rubric only has the
+ * weighted-average cut; past it, any inconsistency the AI points out holds the
+ * change back until the author fixes it.
+ */
+export function verdictOf(ev: Evaluation): ChangeVerdict | null {
+  const overall = overallOf(ev);
+  if (overall === null) return null;
+  const avg = fmt(overall, 2);
+  const cut = fmt(ev.threshold);
+  if (!gatePassed(ev)) {
+    return {
+      ok: false,
+      title: "Não segue",
+      reason: `A média ficou em ${avg}, abaixo do mínimo de ${cut}.`,
+    };
+  }
+  if (ev.semantic === null) {
+    return {
+      ok: false,
+      title: "Não segue ainda",
+      reason: `A média passou do mínimo (${avg}), mas a conferência de coerência não rodou. Avalie de novo.`,
+    };
+  }
+  const n = ev.semantic.problems.length;
+  if (n > 0) {
+    return {
+      ok: false,
+      title: "Não segue",
+      reason: `A média passou do mínimo (${avg}), mas a IA achou ${
+        n === 1 ? "1 incoerência" : `${n} incoerências`
+      } entre os campos.`,
+    };
+  }
+  return {
+    ok: true,
+    title: "Pode seguir",
+    reason: `Média ${avg}, acima do mínimo de ${cut}, e nenhuma incoerência entre os campos.`,
+  };
+}
+
+/** The first sentence of a longer text, for a one-line "why". */
+export function firstSentence(text: string): string {
+  const t = text.trim();
+  const m = t.match(/^[\s\S]*?[.!?](?=\s|$)/);
+  return (m ? m[0] : t).trim();
+}
+
 /**
  * The teaching sequence for one evaluation, in order. The coherence steps
  * exist only when the backend actually ran the semantic analysis.

@@ -161,6 +161,8 @@ export interface EvalMark {
   /** Weighted average as the page shows it, null when out of scope. */
   overall: number | null;
   passed: boolean;
+  /** The whole verdict: past the cut and no inconsistency. Older marks lack it. */
+  ok?: boolean;
 }
 
 const EVAL_KEY = "is-evaluated";

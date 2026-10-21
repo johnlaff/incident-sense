@@ -1488,3 +1488,212 @@ a.chg-row:focus-visible {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
+
+/* ----- Verdict first: the answer before the numbers ----- */
+.chg-banner {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 2px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: var(--radius-sm);
+}
+.chg-banner.ok {
+  border-color: color-mix(in oklch, var(--st-resolved) 40%, transparent);
+  background: var(--st-resolved-tint);
+}
+.chg-banner.no {
+  border-color: color-mix(in oklch, var(--p1) 40%, transparent);
+  background: var(--p1-tint);
+}
+.chg-banner p {
+  margin: 0;
+}
+.chg-banner-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-lg, 17px);
+  font-weight: 650;
+  color: var(--ink);
+}
+.chg-banner-title svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.chg-banner.ok .chg-banner-title svg {
+  color: var(--st-resolved);
+}
+.chg-banner.no .chg-banner-title svg {
+  color: var(--p1);
+}
+.chg-banner-reason {
+  color: var(--ink-body);
+  font-size: var(--fs-md, 14px);
+  line-height: 1.5;
+}
+.chg-banner-human {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px !important;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.chg-banner-human svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+/* Ledger with detail: a bar against the 8,0 line and the one-line why */
+.chg-ledger.detail .chg-led-link {
+  align-items: start;
+  padding-block: 9px;
+}
+.chg-led-bar {
+  position: relative;
+  display: block;
+  height: 6px;
+  margin: 5px 0 2px;
+  max-width: 220px;
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+.chg-led-bar .fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--sc) * 10%);
+  border-radius: 3px;
+  background: var(--c-chg);
+}
+.chg-led-bar.mid .fill {
+  background: var(--p2);
+}
+.chg-led-bar.low .fill {
+  background: var(--p1);
+}
+.chg-led-bar .tick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: calc(var(--cut) * 10% - 0.5px);
+  width: 1px;
+  background: var(--ink);
+}
+.chg-led-why {
+  color: var(--ink-body);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+/* The ruler's key: what the line on the bar means */
+.chg-scale-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ink-body);
+  font-size: 12.5px;
+}
+.chg-scale-key .tick {
+  width: 2px;
+  height: 14px;
+  border-radius: 1px;
+  background: var(--ink);
+}
+
+/* The formula waits behind "Ver a conta" */
+.chg-conta > summary {
+  width: fit-content;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+}
+.chg-conta[open] > summary {
+  margin-bottom: 6px;
+}
+
+/* Past the cut but blocked by coherence: neutral line, the verdict has the color */
+.chg-gate.neutral {
+  color: var(--ink-body);
+  background: var(--surface-2);
+}
+.chg-scale[data-gate="neutral"] .chg-door .top {
+  translate: 0 -9px;
+}
+.chg-scale[data-gate="neutral"] .chg-door .bot {
+  translate: 0 9px;
+}
+.chg-semantic.open.blocked .chg-sem-head .chg-lock-icon {
+  color: var(--muted);
+}
+
+/* The two texts the coherence check compared */
+.chg-excerpts {
+  display: grid;
+  gap: 6px;
+}
+.chg-excerpts-grid {
+  display: grid;
+  gap: 8px;
+}
+@media (min-width: 560px) {
+  .chg-excerpts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.chg-excerpts-grid > div {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.chg-excerpt-label {
+  margin: 0 0 4px !important;
+  color: var(--ink) !important;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+.chg-excerpt-tasks {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.chg-excerpt-text {
+  font-size: 13px;
+}
+
+/* /changes: the three counts that add up to the total */
+.chg-counts {
+  margin: -4px 0 12px;
+  color: var(--ink-body);
+  font-size: var(--fs-sm, 13px);
+  font-variant-numeric: tabular-nums;
+}
+.chg-counts b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.chg-evaluated svg {
+  width: 13px;
+  height: 13px;
+}
+.chg-evaluated.ok {
+  color: var(--st-resolved);
+}
+.chg-evaluated.no {
+  color: var(--p1);
+}

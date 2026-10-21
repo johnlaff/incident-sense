@@ -43,20 +43,25 @@ export default function ChangesPage() {
   );
   const toEvaluate = (data ?? []).filter((c) => c.in_scope && !marks[c.number]).length;
   const evaluated = (data ?? []).filter((c) => marks[c.number]).length;
+  // The three numbers add up to the total: none is left unexplained.
+  const outOfScope = (data ?? []).filter((c) => !c.in_scope && !marks[c.number]).length;
 
   return (
     <div className="chg-page">
       <div className="page-head">
         <h1>Mudanças</h1>
-        {data && (
-          <span className="count">
-            {data.length} mudanças · {toEvaluate} para avaliar
-          </span>
-        )}
       </div>
       <p className="page-lede">
-        Pedidos para mexer em produção. Abra um e veja a nota da IA.
+        Pedidos para mexer em produção. Abra um e veja a nota da IA. Ela só avalia
+        mudanças normais, novas e do Banco Meridiano; as outras ficam fora do escopo da
+        IA.
       </p>
+      {data && (
+        <p className="chg-counts">
+          <b>{data.length} mudanças:</b> {toEvaluate} para avaliar · {evaluated}{" "}
+          {evaluated === 1 ? "avaliada" : "avaliadas"} · {outOfScope} fora do escopo da IA
+        </p>
+      )}
       <WakeNotice show={slow} />
 
       <div className="segmented chg-seg" role="group" aria-label="Filtrar mudanças">
@@ -110,7 +115,7 @@ export default function ChangesPage() {
       {data && rows.length === 0 && tab !== "done" && (
         <StateBlock title="Nenhuma mudança para avaliar">
           As que você avaliou estão em <b>Avaliadas</b>. Escolha <b>Todas</b> para ver
-          também as que ficam fora da avaliação.
+          também as que ficam fora do escopo da IA.
         </StateBlock>
       )}
 
@@ -150,7 +155,7 @@ export default function ChangesPage() {
                   {!c.in_scope && (
                     <span className="badge chg-out">
                       <Icons.dot />
-                      Fora da avaliação
+                      Fora do escopo da IA
                     </span>
                   )}
                 </span>
@@ -164,17 +169,19 @@ export default function ChangesPage() {
   );
 }
 
-/** "Avaliada · 8,62": the last evaluation of this session, ink, no hue. */
+/** "Pode seguir · 8,62": the verdict of this session's last evaluation. */
 function EvaluatedBadge({ mark }: { mark: EvalMark }) {
   const score =
     mark.overall === null ? "sem nota" : mark.overall.toFixed(2).replace(".", ",");
+  // Marks saved before the verdict existed only know the cut.
+  const ok = mark.ok ?? mark.passed;
   return (
     <span
-      className="badge chg-evaluated"
-      title={mark.passed ? "Passou do corte de 8,0" : "Abaixo do corte de 8,0"}
+      className={`badge chg-evaluated ${ok ? "ok" : "no"}`}
+      title={ok ? "A IA recomenda seguir para aprovação" : "A IA recomenda não seguir"}
     >
-      <Icons.check />
-      Avaliada · {score}
+      {ok ? <Icons.check /> : <Icons.alert />}
+      {ok ? "Pode seguir" : "Não segue"} · {score}
     </span>
   );
 }
