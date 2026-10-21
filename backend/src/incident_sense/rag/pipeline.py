@@ -457,9 +457,18 @@ def classify(
 _TITLE_LINE = re.compile(r"^\*\*\s*(?:sugest[^*]*|[^*]*:)\s*\*\*\s*$", re.IGNORECASE)
 
 
+_FENCE = re.compile(r"^\s*```[\w-]*[ \t]*\n(.*?)\n?[ \t]*```\s*$", re.DOTALL)
+
+
+def _strip_fences(text: str) -> str:
+    """Unwrap an answer the model put inside a ```markdown code fence."""
+    match = _FENCE.match(text)
+    return match.group(1).strip() if match else text
+
+
 def _strip_redundant_title(text: str) -> str:
     """Drop a leading bold "Sugestão de Resolução:" heading if the model adds one."""
-    lines = text.lstrip().splitlines()
+    lines = _strip_fences(text).lstrip().splitlines()
     if lines and _TITLE_LINE.match(lines[0].strip()):
         lines = lines[1:]
         while lines and not lines[0].strip():
@@ -754,13 +763,20 @@ def run_suggestion(
             )
         else:
             check = "todas as citações estão no contexto recuperado."
+        cited = (
+            f"Sugestão citando {_plural(len(citations.cited), 'fonte', 'fontes')}"
+            if citations.cited
+            else "A sugestão não cita nenhum caso do contexto"
+        )
+        if not citations.cited and not citations.flagged:
+            check = "confira antes de usar."
         steps.append(
             _step(
                 "sugerir",
                 6,
                 "Sugestão com fontes",
                 StepStatus.DONE,
-                f"Sugestão citando {_plural(len(citations.cited), 'fonte', 'fontes')}; {check}",
+                f"{cited}; {check}",
             )
         )
     else:

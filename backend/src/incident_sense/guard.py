@@ -77,10 +77,19 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+def client_key(request: Request) -> str:
+    """Who is asking: the X-Client-Id (first 64 chars) or, without one, the IP.
+
+    The quota, the content lock and the published notes all key on this, so
+    the three never disagree about who a visitor is.
+    """
+    return request.headers.get(CLIENT_HEADER, "")[:64] or f"ip:{_client_ip(request)}"
+
+
 def ai_quota(request: Request, guard: Annotated[UsageGuard, Depends(get_usage_guard)]) -> None:
     """FastAPI dependency: refuse with 429 once a limit is reached."""
     ip = _client_ip(request)
-    client_id = request.headers.get(CLIENT_HEADER, "")[:64] or f"ip:{ip}"
+    client_id = client_key(request)
     reason = guard.check(client_id=client_id, ip=ip, settings=get_settings())
     if reason:
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=reason)

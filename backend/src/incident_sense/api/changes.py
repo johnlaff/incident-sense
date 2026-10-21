@@ -12,13 +12,13 @@ from functools import lru_cache
 from typing import Annotated
 
 import openai
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from incident_sense.changes.evaluator import ChangeEvaluator, EvaluationCache, JudgeLLM
 from incident_sense.changes.repository import ChangeRepository, load_changes
 from incident_sense.changes.rubric import load_rubric
 from incident_sense.config import get_settings, resolve_chat_model
-from incident_sense.guard import ai_quota
+from incident_sense.guard import ai_quota, client_key
 from incident_sense.logging import get_logger
 from incident_sense.models.change import (
     Change,
@@ -110,7 +110,7 @@ def evaluate_change(
     repo: RepoDep,
     cache: Annotated[EvaluationCache, Depends(get_evaluation_cache)],
     judge_for: Annotated[JudgeFactory, Depends(get_judge_factory)],
-    x_client_id: Annotated[str | None, Header(max_length=64)] = None,
+    http: Request,
 ) -> EvaluationResponse:
     """Score the seven fields, then run the semantic analysis if eligible."""
     change = _get(repo, number)
@@ -121,7 +121,8 @@ def evaluate_change(
             change,
             overrides=request.fields,
             backout_plan=request.backout_plan,
-            client_id=x_client_id or "",
+            client_id=client_key(http),
+            fresh=request.fresh,
         )
     except openai.APIStatusError as exc:
         log.error("evaluate_failed", error=str(exc), status=exc.status_code)
