@@ -2673,6 +2673,23 @@ body {
   line-height: 1.55;
   max-width: 86%;
 }
+/* A follow-up answer: the words, then what it stands on (E2E-3 P1-2). */
+.bubble-ai.followup > :first-child {
+  margin-top: 0;
+}
+.bubble-ai.followup .followup-wait {
+  color: var(--muted);
+}
+.bubble-ai.followup .followup-note {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+}
+.bubble-ai.followup .btn {
+  margin-top: 8px;
+}
 .bubble-ai.wide {
   max-width: 100%;
   flex: 1;
@@ -5039,6 +5056,14 @@ body {
 @media (max-width: 767.98px) {
   .aula-ctrl .aula-skip {
     display: none;
+  }
+  /* "Próximo capítulo" next to "Anterior" and "Reproduzir" fits 360 px only
+     with the tighter gap (E2E-3 P2-2). */
+  .aula-ctrl {
+    gap: 4px;
+  }
+  .aula-btn.aula-play {
+    padding: 0 10px 0 8px;
   }
   .aula-skip-top {
     display: block;

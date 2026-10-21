@@ -71,8 +71,12 @@
 .topbar button.search:hover .input {
   border-color: var(--border-strong);
 }
+/* The keyboard ring sits on the button itself, like every other control
+   (E2E-3 P2-16): the field's own shadow alone did not show. */
 .topbar button.search:focus-visible {
-  outline: none;
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 10px;
 }
 .topbar button.search:focus-visible .input {
   border-color: var(--focus);

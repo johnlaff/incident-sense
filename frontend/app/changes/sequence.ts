@@ -133,7 +133,8 @@ export function fmtWeight(n: number): string {
 export function fmtDelta(delta: number, places = 1): string {
   if (delta > 0) return `+${fmt(delta, places)}`;
   if (delta < 0) return `−${fmt(-delta, places)}`;
-  return fmt(0, places);
+  // "0,0" next to a grade read as a second grade of zero (E2E-3 P2-4).
+  return "igual";
 }
 
 /** Change of the weighted average, at its two places. */
@@ -582,7 +583,7 @@ export function buildSteps(
           : missing.length > 0
             ? `Pergunta 1 de 2 fica sem resposta: a IA não conseguiu avaliar ${missing.join(", ")}. Não segue ainda: avalie de novo.`
             : passed
-              ? `Pergunta 1 de 2: a média chegou a ${cut}. Agora a IA confere se os campos contam a mesma história.`
+              ? `Pergunta 1 de 2: a média (${fmt(overallOf(ev) ?? 0, 2)}) passou do mínimo de ${cut}. Agora a IA confere se os campos contam a mesma história.`
               : `Pergunta 1 de 2: a média ficou abaixo de ${cut}. Não segue, e a pergunta 2 nem é feita.`,
       ms: t.explain + t.hold * 2,
     },

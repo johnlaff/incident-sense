@@ -134,6 +134,26 @@ describe("aulaKeyAction", () => {
   });
 });
 
+describe("aulaKeyAction on the topbar switch (E2E-3 P1-4)", () => {
+  const none = { alt: false, ctrl: false, meta: false, shift: false };
+  const toggle: KeyTarget = {
+    editable: false,
+    pressable: true,
+    arrowWidget: false,
+    modal: false,
+    aulaToggle: true,
+  };
+
+  it("Space advances instead of switching modo aula off", () => {
+    expect(aulaKeyAction(" ", none, toggle)).toBe("next");
+    expect(aulaKeyAction(" ", { ...none, shift: true }, toggle)).toBe("prev");
+  });
+
+  it("Enter still belongs to the switch", () => {
+    expect(aulaKeyAction("Enter", none, toggle)).toBeNull();
+  });
+});
+
 describe("aulaFromQuery", () => {
   it("reads ?aula=1 and ?aula=0", () => {
     expect(aulaFromQuery("?aula=1")).toBe(true);

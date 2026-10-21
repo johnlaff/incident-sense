@@ -683,8 +683,10 @@ export function Average({
             <span>
               {passed ? (
                 <>
-                  <b>Pergunta 1: sim, chegou a {cut}.</b> Agora a IA confere se as partes
-                  do pedido combinam.
+                  <b>
+                    Pergunta 1: sim, {fmt(overall, 2)} passou do mínimo de {cut}.
+                  </b>{" "}
+                  Agora a IA confere se as partes do pedido combinam.
                 </>
               ) : (
                 <>
