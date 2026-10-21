@@ -48,7 +48,7 @@ mas com um copiloto que **mostra o trabalho** em vez de pedir confiança cega.
 
 <div align="center"><img src="docs/assets/recurrences.webp" alt="Mapa de recorrências animado: os pontos se agrupam por causa raiz e um cluster é selecionado para inspeção" width="720"></div>
 
-**Assistente da IA** — resume, busca, classifica e sugere uma resolução, **citando** as fontes (clicáveis):
+**Assistente da IA**: resume, busca, classifica e sugere uma resolução, **citando** as fontes (clicáveis):
 
 <div align="center"><img src="docs/assets/aurora.webp" alt="Assistente da IA gerando uma sugestão fundamentada com citações [INC] clicáveis e a lista de fontes consultadas" width="440"></div>
 

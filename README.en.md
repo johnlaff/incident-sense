@@ -48,7 +48,7 @@ with a copilot that **shows its work** instead of asking for blind trust.
 
 <div align="center"><img src="docs/assets/recurrences.webp" alt="Animated recurrence map: points group by root cause and a cluster is selected for inspection" width="720"></div>
 
-**AI assistant** — summarizes, retrieves, classifies and suggests a resolution, **citing** its sources (clickable):
+**AI assistant**: summarizes, retrieves, classifies and suggests a resolution, **citing** its sources (clickable):
 
 <div align="center"><img src="docs/assets/aurora.webp" alt="AI assistant producing a grounded suggestion with clickable [INC] citations and the list of sources it consulted" width="440"></div>
 
