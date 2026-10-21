@@ -4,6 +4,7 @@
 // clickable citations). Keeping this in one place means the screens never touch
 // raw field names like cmdb_ci or assignment_group.
 
+import { emptyAnswer, type EmptyKind } from "./answer";
 import type {
   Classification,
   IncidentDetail,
@@ -399,6 +400,8 @@ export interface CopilotResult {
   /** Records the answer actually cites (the backend checked each one). */
   cited: string[];
   noBase: boolean;
+  /** Why there is no suggestion, as the answer card says it (emptyAnswer). */
+  empty: { kind: EmptyKind; line: string } | null;
 }
 
 export function mapSuggest(res: SuggestResponse): CopilotResult {
@@ -426,6 +429,7 @@ export function mapSuggest(res: SuggestResponse): CopilotResult {
     // "No base yet" only when there is genuinely no usable suggestion — a parsed
     // suggestion (even one whose citations are inline) should never be dropped.
     noBase: procedente && suggestion === null,
+    empty: suggestion === null ? emptyAnswer(res) : null,
   };
 }
 
@@ -461,7 +465,7 @@ export function recurrenceView(r: {
   isOutlier: boolean | null;
 }): { label: string; href: string | null } | null {
   if (r.isOutlier || (r.clusterId != null && r.clusterId < 0))
-    return { label: "Caso isolado (não se repete)", href: null };
+    return { label: "Caso isolado no mapa", href: null };
   if (!r.clusterLabel) return null;
   return {
     label: r.clusterLabel,

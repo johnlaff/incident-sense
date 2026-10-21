@@ -175,3 +175,20 @@ def test_problem_dates_follow_their_incidents() -> None:
         assert problem.opened_at >= first, problem.number
         if problem.resolved_at is not None:
             assert problem.resolved_at >= last, problem.number
+
+
+def test_code_fences_around_the_suggestion_are_removed() -> None:
+    """P2-N7: "```markdown" used to open the answer and the published note."""
+    fenced = "```markdown\nAjuste o timeout do DICT [INC0000001].\n```"
+    response, spies = _run(ScriptedLLM(suggestion=fenced))
+    assert response.suggestion == "Ajuste o timeout do DICT [INC0000001]."
+    (note,) = spies["notes"].list("INC0099999")
+    assert "```" not in note.text
+
+
+def test_a_suggestion_with_no_citation_says_so() -> None:
+    """P2-N11: "citando 0 fontes; todas as citações estão no contexto"."""
+    response, _ = _run(ScriptedLLM(suggestion="Reinicie o serviço de DICT."))
+    step = next(s for s in response.steps if s.id == "sugerir")
+    assert "0 fontes" not in step.decision
+    assert "não cita nenhum caso" in step.decision

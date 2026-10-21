@@ -96,3 +96,21 @@ export function SuggestionMarkdown({
     </div>
   );
 }
+
+/**
+ * The AI's prose (reasoning, guidance) as plain reading text: emphasis, code
+ * and lists render; links stay text, so nothing leaves the page.
+ */
+export function ProseMarkdown({ source }: { source: string }) {
+  const components: Components = {
+    a: ({ children }) => <>{children}</>,
+    img: () => null,
+  };
+  return (
+    <div className="md prose-md">
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {source}
+      </ReactMarkdown>
+    </div>
+  );
+}

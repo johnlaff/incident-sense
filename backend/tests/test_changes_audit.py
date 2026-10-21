@@ -83,14 +83,6 @@ def _eval(client: TestClient, client_id: str = "visitante-1", **body: Any) -> di
 # ----- One decision, computed once -------------------------------------------
 
 
-def test_suggestions_do_not_hold_back_a_coherent_change(client: TestClient) -> None:
-    sem = _semantic(problems=["Poderia citar o indicador.", "Poderia dar o tempo."])
-    _wire(client, _Scripted(sem))
-    body = _eval(client)
-    assert body["decision"]["passes"] is True
-    assert body["decision"]["reason_code"] == "passes"
-
-
 def test_low_coherence_with_no_points_does_not_pass(client: TestClient) -> None:
     """P0-1: 3,0 and Não aderente 10% next to "Pode seguir"."""
     sem = _semantic(
@@ -236,10 +228,161 @@ def test_skip_reason_names_the_lowest_field(client: TestClient) -> None:
     assert "vazio ou vago" not in reason
 
 
-# ----- Timeouts (P1-14) -------------------------------------------------------
+# ----- Audit round 2 (logica-2) -----------------------------------------------
 
 
-def test_chat_client_has_a_short_timeout_and_one_retry() -> None:
+def test_a_real_contradiction_holds_back_even_with_high_coherence(client: TestClient) -> None:
+    """P1-N3: "Pode seguir" next to a contradiction listed as "não impedem"."""
+    sem = _semantic(
+        consistency_score=9.0,
+        problems=["O plano de retorno não reverte a migração de dados que a implementação faz"],
+    )
+    _wire(client, _Scripted(sem))
+    body = _eval(client)
+    assert body["decision"]["passes"] is False
+    assert body["decision"]["reason_code"] == "contradictions"
+    assert "contradição" in body["decision"]["reason"]
+
+
+def test_suggestions_in_guidance_never_hold_back(client: TestClient) -> None:
+    sem = _semantic(guidance="Poderia citar o indicador de sucesso.")
+    _wire(client, _Scripted(sem))
+    assert _eval(client)["decision"]["reason_code"] == "passes"
+
+
+def test_backout_reason_names_the_percent_and_the_cut(client: TestClient) -> None:
+    """P1-N1: the failing gate is the backout, not the coherence."""
+    sem = _semantic(consistency_score=8.5, backout_adherence_percent=45)
+    _wire(client, _Scripted(sem))
+    decision = _eval(client)["decision"]
+    assert decision["reason_code"] == "backout_not_adherent"
+    assert "45%" in decision["reason"]
+    assert "50%" in decision["reason"]
+    assert "tarefas" in decision["reason"]
+
+
+def test_semantic_prompt_states_the_adherence_cuts() -> None:
+    """P1-N1: the label follows the percent; the prompt says by which rule."""
+    from incident_sense.changes.evaluator import _semantic_prompt
+
+    prompt = _semantic_prompt(_change("CHG1"), dict.fromkeys(_BY_LABEL.values(), "x"), "volta")
+    assert "80" in prompt and "50" in prompt
+    assert '"backout_adherence"' not in prompt
+
+
+@pytest.mark.parametrize(
+    "over",
+    [
+        {"backout_adherence": "PARCIALMENTE_ADERENTE", "backout_adherence_percent": 60},
+        {"problems": None},
+        {"reasoning": None, "guidance": None},
+        {"consistency_score": "8/10"},
+        {"backout_adherence": None},
+    ],
+)
+def test_near_schema_semantic_is_read(client: TestClient, over: dict[str, Any]) -> None:
+    """P1-N5: what the backend can read must not become "semantic_missing"."""
+    _wire(client, _Scripted(_semantic(**over)))
+    body = _eval(client)
+    assert body["semantic"] is not None, body["semantic_skipped_reason"]
+    assert body["decision"]["reason_code"] != "semantic_missing"
+
+
+def test_a_single_problem_string_becomes_a_list(client: TestClient) -> None:
+    _wire(client, _Scripted(_semantic(problems="O retorno não desfaz o índice")))
+    assert _eval(client)["semantic"]["problems"] == ["O retorno não desfaz o índice"]
+
+
+def test_one_unreadable_field_degrades_only_that_field(client: TestClient) -> None:
+    """P1-R1: one field that fails twice no longer 502s the whole evaluation."""
+    judge = _Scripted(_semantic(), field={"objective": ["não sei avaliar", "não sei avaliar"]})
+    _wire(client, judge)
+    body = _eval(client)
+    objective = next(f for f in body["fields"] if f["key"] == "objective")
+    assert objective["score"] is None
+    assert objective["failed"] is True
+    assert "não conseguiu avaliar" in objective["diagnosis"]
+    others = [f for f in body["fields"] if f["key"] != "objective"]
+    assert all(f["score"] == 9.2 and not f["failed"] for f in others)
+    assert body["decision"]["passes"] is False
+    assert body["decision"]["reason_code"] == "field_missing"
+    assert "Objetivo" in body["decision"]["reason"]
+    assert body["semantic"] is None
+
+
+def test_a_failed_field_is_not_locked(client: TestClient) -> None:
+    """The next attempt asks the model again for the field that failed."""
+    cache = EvaluationCache()
+    good = json.dumps({"score": 9.2, "diagnosis": "ok", "guidance": ""})
+    judge = _Scripted(_semantic(), field={"objective": ["?", "?", good]})
+    _wire(client, judge, cache)
+    _eval(client, client_id="ana")
+    body = _eval(client, client_id="ana")
+    objective = next(f for f in body["fields"] if f["key"] == "objective")
+    assert objective["failed"] is False
+    assert objective["reused"] is False
+
+
+def test_every_field_failing_is_still_an_error(client: TestClient) -> None:
+    _wire(client, _Scripted(_semantic(), field="nada"))
+    r = client.post("/api/changes/CHG1/evaluate", json={}, headers={"X-Client-Id": "x"})
+    assert r.status_code == 502
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [("9/10", 9.0), ("9.0 (bom)", 9.0), (10.5, 10.0), (10, 10.0), (85, 8.5), (11, 1.1)],
+)
+def test_more_score_spellings_are_read(client: TestClient, raw: object, expected: float) -> None:
+    """P1-R1 and P2-N10: 10,5 used to become 1,1."""
+    _wire(client, _Scripted(_semantic(), field=raw))  # type: ignore[arg-type]
+    assert {f["score"] for f in _eval(client)["fields"]} == {expected}
+
+
+def test_missing_diagnosis_is_not_a_failure(client: TestClient) -> None:
+    _wire(client, _Scripted(_semantic(), field={"objective": ['{"score": 9}']}))
+    objective = next(f for f in _eval(client)["fields"] if f["key"] == "objective")
+    assert objective["score"] == 9.0
+    assert objective["failed"] is False
+
+
+@pytest.mark.parametrize(("raw", "expected"), [(10.5, 10.0), ("8/10", 8.0)])
+def test_coherence_spellings(client: TestClient, raw: object, expected: float) -> None:
+    _wire(client, _Scripted(_semantic(consistency_score=raw)))
+    assert _eval(client)["semantic"]["consistency_score"] == expected
+
+
+def test_fraction_percent_is_read_as_percent(client: TestClient) -> None:
+    """P2-N10: 0.8 used to become 1%."""
+    _wire(client, _Scripted(_semantic(backout_adherence_percent=0.8)))
+    sem = _eval(client)["semantic"]
+    assert sem["backout_adherence_percent"] == 80
+    assert sem["backout_adherence"] == "ADERENTE"
+
+
+def test_fresh_bypasses_the_content_lock(client: TestClient) -> None:
+    """P1-N4: a rehearsal in the same browser never freezes the live demo."""
+    cache = EvaluationCache()
+    judge = _Scripted(_semantic())
+    _wire(client, judge, cache)
+    _eval(client, client_id="ana")
+    body = _eval(client, client_id="ana", fresh=True)
+    assert body["model_calls"] == 8
+    assert not any(f["reused"] for f in body["fields"])
+    assert body["semantic"]["reused"] is False
+    # The fresh reading is stored: a plain re-evaluation reuses it.
+    assert _eval(client, client_id="ana")["model_calls"] == 0
+
+
+def test_long_client_id_is_truncated_like_the_guard(client: TestClient) -> None:
+    """P2-N13: 65 characters used to give 422 while the quota accepted it."""
+    _wire(client, _Scripted(_semantic()))
+    r = client.post("/api/changes/CHG1/evaluate", json={}, headers={"X-Client-Id": "a" * 65})
+    assert r.status_code == 200, r.text
+
+
+def test_server_deadline_fits_under_the_front_timeout() -> None:
+    """P2-N9: field + repair + coherence + repair must end before the 90 s front."""
     client = make_chat_client(Settings(openrouter_api_key="sk-test"))
-    assert client.timeout == 30
-    assert client.max_retries == 1
+    assert client.max_retries == 0
+    assert client.timeout * 4 < 90

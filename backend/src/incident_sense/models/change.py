@@ -117,6 +117,10 @@ class EvaluateRequest(BaseModel):
     )
     backout_plan: str | None = None
     model: str | None = None
+    fresh: bool = Field(
+        default=False,
+        description="Skip the content lock: every part goes back to the model.",
+    )
 
 
 class FieldScore(BaseModel):
@@ -125,7 +129,10 @@ class FieldScore(BaseModel):
     key: str
     label: str
     weight: float
-    score: float = Field(ge=0, le=10)
+    score: float | None = Field(
+        default=None, ge=0, le=10, description="Null only when the AI could not judge it."
+    )
+    failed: bool = Field(default=False, description="True when the AI could not judge it.")
     diagnosis: str
     guidance: str = ""
     reused: bool = Field(description="True when the content lock skipped the model.")
@@ -156,14 +163,16 @@ class Decision(BaseModel):
     """The one answer every view shows: may this Change go on to approval?
 
     Pode seguir = weighted average >= threshold AND consistency score (one
-    decimal) >= threshold AND the backout plan is not NAO_ADERENTE. The list of
-    points the AI wrote never decides by itself.
+    decimal) >= threshold AND no real contradiction listed AND the backout plan
+    is not NAO_ADERENTE (below 50%). Suggestions live in guidance and never
+    decide. A field the AI could not read holds the verdict back.
     """
 
     passes: bool
     reason_code: str = Field(
         description=(
-            "passes | average_below | coherence_below | backout_not_adherent | semantic_missing"
+            "passes | field_missing | average_below | semantic_missing | coherence_below | "
+            "contradictions | backout_not_adherent"
         )
     )
     reason: str

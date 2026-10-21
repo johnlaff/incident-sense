@@ -11,10 +11,10 @@ from dataclasses import replace
 from typing import Annotated
 
 import openai
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from incident_sense.config import get_settings, resolve_chat_model
-from incident_sense.guard import ai_quota
+from incident_sense.guard import ai_quota, client_key
 from incident_sense.logging import get_logger
 from incident_sense.models import SuggestRequest, SuggestResponse
 from incident_sense.providers import make_chat_client
@@ -43,7 +43,7 @@ def get_rag_deps() -> RagDeps:
 def suggest(
     request: SuggestRequest,
     deps: Annotated[RagDeps, Depends(get_rag_deps)],
-    x_client_id: Annotated[str | None, Header(max_length=64)] = None,
+    http: Request,
 ) -> SuggestResponse:
     """Run the seven-step pipeline: classify, suggest with sources, publish.
 
@@ -62,7 +62,7 @@ def suggest(
             deps, llm=OpenAILLMClient(make_chat_client(settings), chosen, reasoning=False)
         )
     try:
-        return run_suggestion(request, deps, settings, model=chosen, client_id=x_client_id or "")
+        return run_suggestion(request, deps, settings, model=chosen, client_id=client_key(http))
     except HTTPException:
         raise
     except openai.APIStatusError as exc:

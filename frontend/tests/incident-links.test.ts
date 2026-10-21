@@ -8,9 +8,14 @@ describe("recurrenceView", () => {
     expect(
       recurrenceView({ clusterId: -1, clusterLabel: "Outliers", isOutlier: true }),
     ).toEqual({
-      label: "Caso isolado (não se repete)",
+      label: "Caso isolado no mapa",
       href: null,
     });
+  });
+  it("never says an isolated case does not repeat (E2E rodada 2, P2-1)", () => {
+    // It can still be linked to a Problem that gathers other incidents.
+    const v = recurrenceView({ clusterId: -1, clusterLabel: null, isOutlier: true });
+    expect(v?.label).not.toMatch(/não se repete/);
   });
   it("links a grouped case to its group", () => {
     expect(

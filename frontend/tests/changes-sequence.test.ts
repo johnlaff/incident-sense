@@ -38,7 +38,7 @@ function fields(scores: number[], reused: boolean[] = []): FieldScore[] {
     key,
     label: key,
     weight,
-    score: scores[i],
+    score: scores[i] as number,
     diagnosis: "",
     guidance: "",
     reused: reused[i] ?? false,
@@ -50,7 +50,8 @@ function evaluation(scores: number[], extra: Partial<Evaluation> = {}): Evaluati
   const fs = fields(scores);
   const total = fs.reduce((s, f) => s + f.weight, 0);
   const overall =
-    Math.round((fs.reduce((s, f) => s + f.score * f.weight, 0) / total) * 100) / 100;
+    Math.round((fs.reduce((s, f) => s + (f.score ?? 0) * f.weight, 0) / total) * 100) /
+    100;
   return {
     number: "CHG0031001",
     rubric_version: "2026-10-19",
@@ -240,19 +241,16 @@ describe("one overall for headline, bar, formula and gate", () => {
 });
 
 // What the real model returned for CHG0031001: a high average, coherence on
-// the cut, back-out ADERENTE, and four points that are only suggestions.
+// the cut, back-out ADERENTE. Its four suggestions now live in guidance;
+// "problems" holds only real contradictions, and one would hold it back.
 const realLike = (): Evaluation =>
   evaluation([9.5, 9.4, 9.2, 9.0, 9.3, 9.1, 8.8], {
     semantic: {
       consistency_score: 8,
-      problems: [
-        "O objetivo poderia citar o indicador de sucesso.",
-        "A validação poderia dizer quem confere.",
-        "Os benefícios poderiam trazer um número.",
-        "O retorno poderia dar o tempo estimado.",
-      ],
+      problems: [],
       reasoning: "As partes contam a mesma história.",
-      guidance: "",
+      guidance:
+        "O objetivo poderia citar o indicador de sucesso. O retorno poderia dar o tempo estimado.",
       backout_adherence: "ADERENTE",
       backout_adherence_percent: 90,
       reused: false,
@@ -260,7 +258,7 @@ const realLike = (): Evaluation =>
   });
 
 describe("decisionOf", () => {
-  it("lets the change go on when both gates pass, whatever the list of points", () => {
+  it("lets the change go on when both gates pass, whatever the suggestions say", () => {
     const d = decisionOf(realLike());
     expect(d).toMatchObject({
       ok: true,

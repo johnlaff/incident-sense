@@ -301,9 +301,86 @@ export const BEATS: Beat[] = [
   },
 ];
 
-/** The 3 in "3072 números" comes from the run when the server reports it. */
-export function beatsFor(dims: number | null | undefined, minSimilarity: number): Beat[] {
+/** How the run ended, the one source for suggestion, sources and note words. */
+type RunOutcome = "suggested" | "unsourced" | "improcedente" | "none";
+
+function outcomeOf(res: SuggestResponse): RunOutcome {
+  if (res.classification !== "PROCEDENTE") return "improcedente";
+  if (!res.suggestion) return "none";
+  return res.publication.published ? "suggested" : "unsourced";
+}
+
+/** The analysis button once a run is in: "sugestão" only when there is one. */
+export function analysisButton(res: SuggestResponse | null | undefined): string {
+  if (!res) return "Analisar com a IA";
+  return res.classification === "PROCEDENTE" && res.suggestion
+    ? "Ver a sugestão da IA"
+    : "Ver a análise da IA";
+}
+
+/** "Agora é com você": what the person does next, for this run. */
+export function humanLine(res: SuggestResponse): string {
+  switch (outcomeOf(res)) {
+    case "improcedente":
+      return "oriente o cliente e decida o que fazer com o chamado. A IA não resolve sozinha.";
+    case "none":
+      return "resolva o caso e registre a solução. A IA não resolve sozinha.";
+    case "unsourced":
+      return "a sugestão não cita nenhum caso: confira antes de usar. A IA não resolve sozinha.";
+    default:
+      return "confira as fontes e decida. A IA não resolve sozinha.";
+  }
+}
+
+/** A step's one-line hint in the trace, true to this run. */
+export function stepHint(def: StepDef, res: SuggestResponse | null | undefined): string {
+  if (!res) return def.hint;
+  const outcome = outcomeOf(res);
+  if (def.key === "sugerir") {
+    if (outcome === "improcedente") return "Sem falha técnica, não há sugestão.";
+    if (outcome === "none") return "Sem caso que sirva, a IA não escreve sugestão.";
+  }
+  if (def.key === "publicar" && !res.publication.published)
+    return outcome === "improcedente" || outcome === "none"
+      ? "Sem sugestão, não há nota. A pessoa analista decide."
+      : "Sem fonte citada, nada vira nota. A pessoa analista decide.";
+  return def.hint;
+}
+
+const OUTCOME_CAPTION: Record<
+  Exclude<RunOutcome, "suggested">,
+  { sugerir: string; publicar: string }
+> = {
+  improcedente: {
+    sugerir: "Improcedente: sem falha técnica, não há sugestão nem citação.",
+    publicar:
+      "Sem sugestão, nada é publicado. Quem decide o chamado é a pessoa analista.",
+  },
+  none: {
+    sugerir: "Sem caso que sirva, a IA não escreve sugestão. Ela não inventa.",
+    publicar: "Sem sugestão, nada é publicado. Quem decide é a pessoa analista.",
+  },
+  unsourced: {
+    sugerir:
+      "A sugestão só pode citar casos que passaram pela busca. Esta não citou nenhum.",
+    publicar: "Sem fonte citada, nada é publicado. Quem decide é a pessoa analista.",
+  },
+};
+
+/**
+ * The beats of this run. The 3 in "3072 números" comes from the run when the
+ * server reports it; steps 6 and 7 follow the classification and whether a
+ * note was actually published.
+ */
+export function beatsFor(
+  dims: number | null | undefined,
+  minSimilarity: number,
+  res?: SuggestResponse | null,
+): Beat[] {
+  const outcome = res ? outcomeOf(res) : "suggested";
   return BEATS.map((b) => {
+    if (outcome !== "suggested" && (b.step === "sugerir" || b.step === "publicar"))
+      return { ...b, caption: OUTCOME_CAPTION[outcome][b.step] };
     if (b.step === "numeros" && dims)
       return { ...b, caption: b.caption.replace("3072", dims.toLocaleString("pt-BR")) };
     if (b.layer === "vetor")

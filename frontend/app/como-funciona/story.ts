@@ -696,7 +696,7 @@ export const CHAPTERS: Chapter[] = [
     part: "depois",
     title: "Buscar e conferir",
     why: "Parecido não basta: primeiro buscar, depois conferir. Parecer não é o mesmo que servir.",
-    note: "Casos e contagens do demo, os mesmos que o app acha; as semelhanças são arredondadas.",
+    note: "Casos de uma execução real do demo, com as semelhanças arredondadas. Ao vivo a ordem e as semelhanças podem mudar um pouco, e um caso pode trocar por outro, porque a IA reescreve o resumo do chamado a cada análise.",
     app: { href: "/incidentes/INC0052233", label: "Ver no app: INC0052233" },
     steps: [
       {

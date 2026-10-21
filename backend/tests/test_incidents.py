@@ -116,7 +116,10 @@ def test_detail_includes_work_notes_published_by_the_platform(client: TestClient
         [_incident("INC1", state=IncidentState.NEW, cmdb_ci="PIX-Core", short="Pix lento")]
     )
     store = WorkNotesStore()
-    store.publish("INC1", "Ajuste o timeout [INC0000001].", sources=["INC0000001"])
+    # Without X-Client-Id the visitor is its IP, the same key the quota uses.
+    store.publish(
+        "INC1", "Ajuste o timeout [INC0000001].", sources=["INC0000001"], client_id="ip:testclient"
+    )
     client.app.dependency_overrides[get_incident_repository] = lambda: repo
     client.app.dependency_overrides[get_work_notes] = lambda: store
 

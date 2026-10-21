@@ -5225,3 +5225,10 @@ body {
   min-height: 60vh;
   padding: 24px 16px;
 }
+
+/* The app draws its own clear button in the search field: hide the browser's. */
+.field-search input[type="search"]::-webkit-search-cancel-button,
+.field-search input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}

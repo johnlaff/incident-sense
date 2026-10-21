@@ -1,7 +1,16 @@
 // Pure logic behind the evaluation reveal: the weighted-average segments, the
 // formula terms and the explicit list of teaching steps. No React, no DOM, so
 // the sequence can be tested and later driven by the "modo aula" step index.
-import type { Evaluation, FieldKey, FieldScore, SemanticAnalysis } from "@/lib/changes";
+import {
+  PARTIAL_FROM,
+  isScored,
+  type DecisionReason,
+  type Evaluation,
+  type FieldKey,
+  type FieldScore,
+  type ScoredField,
+  type SemanticAnalysis,
+} from "@/lib/changes";
 
 /** Base timings in ms, before --motion-scale. They mirror the motion tokens. */
 export interface Timing {
@@ -69,13 +78,15 @@ export function scoreDelta(current: number, previous: number | undefined): numbe
 /**
  * Lay the fields end to end on a 0-10 bar. Each field fills
  * score x weight / sum(weights), so the bar's end is the weighted average.
+ * A field the AI could not judge is left out, like evaluator.py does.
  */
 export function weightedSegments(
-  fields: FieldScore[],
+  all: FieldScore[],
   previous?: FieldScore[] | null,
 ): WeightedAverage {
+  const fields = all.filter(isScored);
   const totalWeight = fields.reduce((sum, f) => sum + f.weight, 0);
-  const before = new Map(previous?.map((f) => [f.key, f.score]) ?? []);
+  const before = new Map(previous?.filter(isScored).map((f) => [f.key, f.score]) ?? []);
   let cursor = 0;
   let numerator = 0;
   const segments = fields.map((f) => {
@@ -137,6 +148,11 @@ export function formulaTerms(avg: WeightedAverage): string[] {
 
 export type StepId = "notas" | "media" | "portao" | "coerencia" | "problemas";
 
+/** The fields the AI could not judge, by label. */
+export function missingFields(ev: Evaluation): string[] {
+  return ev.fields.filter((f) => !isScored(f)).map((f) => f.label);
+}
+
 export interface Step {
   id: StepId;
   /** Short name for "Etapa 2 de 5: Média ponderada". */
@@ -163,9 +179,10 @@ export function overallOf(ev: Evaluation): number | null {
   return round2(weightedSegments(ev.fields).average);
 }
 
+/** Gate 1 answered yes: every field graded and the average reaches the cut. */
 export function gatePassed(ev: Evaluation): boolean {
   const overall = overallOf(ev);
-  return overall !== null && overall >= ev.threshold;
+  return overall !== null && overall >= ev.threshold && missingFields(ev).length === 0;
 }
 
 /** One of the two questions that decide a change. */
@@ -174,9 +191,14 @@ export type GateState = "pass" | "fail" | "skipped";
 export interface ChangeDecision {
   /** Pode seguir: both gates pass. */
   ok: boolean;
+  /** Which rule decided: the backend's reason_code (or the local one). */
+  code: DecisionReason;
   cut: number;
-  /** Gate 1: does the weighted average reach the cut? */
-  average: { value: number; state: "pass" | "fail" };
+  /**
+   * Gate 1: does the weighted average reach the cut? "skipped" when a field
+   * has no grade, so the question has no answer yet.
+   */
+  average: { value: number; state: GateState };
   /**
    * Gate 2: do the parts of the request agree? "skipped" when gate 1 failed
    * (the backend does not run it) or when the analysis did not come back.
@@ -187,40 +209,70 @@ export interface ChangeDecision {
     state: GateState;
   };
   /** The gate that holds the change back, if any. */
-  failing: "average" | "coherence" | null;
+  failing: "fields" | "average" | "coherence" | null;
   /** Fields under the cut, lowest first, even when the change may go on. */
-  low: FieldScore[];
+  low: ScoredField[];
 }
 
+/** The rule of evaluator.decide, for old payloads and fixtures without it. */
+function localCode(ev: Evaluation, value: number): DecisionReason {
+  if (missingFields(ev).length > 0) return "field_missing";
+  if (value < ev.threshold) return "average_below";
+  const s = ev.semantic;
+  if (!s) return "semantic_missing";
+  if (Math.round(s.consistency_score * 10) / 10 < ev.threshold) return "coherence_below";
+  if (s.problems.length > 0) return "contradictions";
+  if (s.backout_adherence === "NAO_ADERENTE") return "backout_not_adherent";
+  return "passes";
+}
+
+const GATE2_FAILS: DecisionReason[] = [
+  "coherence_below",
+  "contradictions",
+  "backout_not_adherent",
+];
+
 /**
- * The one rule every view reads (banner, list, aula captions, tests):
- * Pode seguir = weighted average >= cut AND coherence score >= cut AND the
- * back-out plan is not NAO_ADERENTE. The list of points the AI wrote does not
- * decide anything by itself; the coherence score already weighs it.
+ * The one rule every view reads (banner, list, aula captions, tests), as the
+ * backend's decision.reason_code says: every field graded, average >= cut,
+ * coherence >= cut, no real contradiction listed and the back-out plan undoes
+ * at least 50% of the tasks. The local rule only reads old payloads.
  */
 export function decisionOf(ev: Evaluation): ChangeDecision | null {
   const value = overallOf(ev);
   if (value === null) return null;
   const cut = ev.threshold;
-  const low = ev.fields.filter((f) => f.score < cut).sort((a, b) => a.score - b.score);
+  const low = ev.fields
+    .filter(isScored)
+    .filter((f) => f.score < cut)
+    .sort((a, b) => a.score - b.score);
   const s = ev.semantic;
-  // The backend decides; the local rule only reads old payloads and fixtures.
-  const backend = ev.decision ?? null;
-  const avgOk = backend ? backend.reason_code !== "average_below" : value >= cut;
+  const code = ev.decision?.reason_code ?? localCode(ev, value);
+  const ok = ev.decision ? ev.decision.passes : code === "passes";
+  const avgState: GateState =
+    code === "field_missing" ? "skipped" : code === "average_below" ? "fail" : "pass";
+  const avgOk = avgState === "pass";
   const coh = s ? Math.round(s.consistency_score * 10) / 10 : null;
-  let state: GateState = "skipped";
-  if (avgOk && s && coh !== null) {
-    const passes = backend
-      ? backend.passes
-      : coh >= cut && s.backout_adherence !== "NAO_ADERENTE";
-    state = passes ? "pass" : "fail";
-  }
-  const ok = backend ? backend.passes : avgOk && state === "pass";
-  const failing = ok ? null : !avgOk ? "average" : "coherence";
+  const state: GateState =
+    !avgOk || !s
+      ? "skipped"
+      : ok
+        ? "pass"
+        : GATE2_FAILS.includes(code)
+          ? "fail"
+          : "skipped";
+  const failing = ok
+    ? null
+    : code === "field_missing"
+      ? "fields"
+      : !avgOk
+        ? "average"
+        : "coherence";
   return {
     ok,
+    code,
     cut,
-    average: { value, state: avgOk ? "pass" : "fail" },
+    average: { value, state: avgState },
     coherence: {
       value: avgOk && s ? coh : null,
       adherence: avgOk && s ? s.backout_adherence : null,
@@ -240,7 +292,7 @@ export interface ChangeVerdict {
   reason: string;
 }
 
-function lowNote(low: FieldScore[], cut: number): string {
+function lowNote(low: ScoredField[], cut: number): string {
   if (low.length === 0) return "";
   const named = low
     .slice(0, 2)
@@ -252,42 +304,102 @@ function lowNote(low: FieldScore[], cut: number): string {
     : ` ${low.length} campos ficaram abaixo de ${fmt(cut)}: ${named}${more}. Vale melhorar, mas não impedem.`;
 }
 
-/** The answer of the whole reading, in words, from decisionOf. */
+/** The same sentences as evaluator.decide, for payloads without a decision. */
+function localReason(ev: Evaluation, d: ChangeDecision): string {
+  const avg = fmt(d.average.value, 2);
+  const cut = fmt(d.cut);
+  const coh = d.coherence.value === null ? "" : fmt(d.coherence.value);
+  const s = ev.semantic;
+  switch (d.code) {
+    case "field_missing": {
+      const names = missingFields(ev).join(", ");
+      return `A IA não conseguiu avaliar ${missingFields(ev).length === 1 ? "o campo" : "os campos"} ${names}. Sem essa nota não há veredito: avalie de novo.`;
+    }
+    case "average_below":
+      return `A média ficou em ${avg}, abaixo do mínimo de ${cut}.`;
+    case "semantic_missing":
+      return `A média passou do mínimo (${avg}), mas a conferência das partes do pedido não voltou. Avalie de novo.`;
+    case "coherence_below":
+      return `A média passou (${avg}), mas as partes do pedido não combinam: coerência ${coh}, abaixo de ${cut}.`;
+    case "contradictions": {
+      const n = s?.problems.length ?? 0;
+      return `A média (${avg}) e a coerência (${coh}) passaram, mas a IA encontrou ${n} ${n === 1 ? "contradição" : "contradições"} entre as partes do pedido.`;
+    }
+    case "backout_not_adherent":
+      return `A média (${avg}) e a coerência (${coh}) passaram, mas o plano de retorno desfaz só ${s?.backout_adherence_percent ?? 0}% do que as tarefas fazem; abaixo de ${PARTIAL_FROM}% a mudança não segue.`;
+    default:
+      return `Média ${avg} e coerência ${coh}, as duas a partir de ${cut}.`;
+  }
+}
+
+/**
+ * The answer of the whole reading, in words. The reason is the backend's own
+ * sentence, so the banner, the list and the API never word it twice.
+ */
 export function verdictOf(ev: Evaluation): ChangeVerdict | null {
   const d = decisionOf(ev);
   if (!d) return null;
-  const avg = fmt(d.average.value, 2);
+  const reason = ev.decision?.reason ?? localReason(ev, d);
+  if (d.ok) {
+    return {
+      ok: true,
+      title: "Pode seguir",
+      reason: `${reason}${lowNote(d.low, d.cut)}`,
+    };
+  }
+  const again = d.code === "semantic_missing" || d.code === "field_missing";
+  return { ok: false, title: again ? "Não segue ainda" : "Não segue", reason };
+}
+
+/**
+ * What the coherence card and the last aula step say about gate 2, from the
+ * decision's reason_code. One wording for both, so they never disagree.
+ */
+export function coherenceNote(ev: Evaluation): { title: string; line: string } | null {
+  const d = decisionOf(ev);
+  if (!d) return null;
   const cut = fmt(d.cut);
-  if (d.failing === "average") {
-    return {
-      ok: false,
-      title: "Não segue",
-      reason: `A média ficou em ${avg}, abaixo do mínimo de ${cut}.`,
-    };
+  const s = ev.semantic;
+  switch (d.code) {
+    case "field_missing":
+      return {
+        title: "Não conferida",
+        line: `Não conferida: falta a nota de ${missingFields(ev).join(", ")}. Avalie de novo.`,
+      };
+    case "average_below":
+      return {
+        title: "Não conferida",
+        line: "Não conferida: ela só é conferida quando a média chega ao mínimo.",
+      };
+    case "semantic_missing":
+      return {
+        title: "Não conferida",
+        line: "Não conferida: a IA não respondeu no formato esperado. Avalie de novo.",
+      };
+    case "contradictions":
+      return {
+        title: "Onde as partes se contradizem",
+        line: "Cada ponto é uma contradição entre as partes do pedido. Com uma só, a mudança não segue.",
+      };
+    case "backout_not_adherent":
+      return {
+        title: "O plano de retorno não cobre as tarefas",
+        line: `A coerência passou (${fmt(s?.consistency_score ?? 0)}), mas o plano de retorno desfaz só ${s?.backout_adherence_percent ?? 0}% do que as tarefas fazem; abaixo de ${PARTIAL_FROM}% a mudança não segue.`,
+      };
+    case "coherence_below":
+      return {
+        title: "Onde as partes não combinam",
+        line:
+          s && s.problems.length > 0
+            ? "Cada ponto é um lugar em que as partes do pedido contam histórias diferentes."
+            : `A nota de coerência ficou abaixo de ${cut}: as partes do pedido não contam a mesma história.`,
+      };
+    default:
+      return {
+        title: "Nada se contradiz",
+        line: "Nada se contradiz: as partes do pedido contam a mesma história.",
+      };
   }
-  if (d.coherence.value === null) {
-    return {
-      ok: false,
-      title: "Não segue ainda",
-      reason: `A média passou do mínimo (${avg}), mas a conferência das partes do pedido não rodou. Avalie de novo.`,
-    };
-  }
-  const coh = fmt(d.coherence.value);
-  if (d.failing === "coherence") {
-    return {
-      ok: false,
-      title: "Não segue",
-      reason:
-        d.coherence.value < d.cut
-          ? `A média passou (${avg}), mas as partes do pedido não combinam: coerência ${coh}, abaixo de ${cut}.`
-          : `A média passou (${avg}), mas o plano de retorno não desfaz o que a implementação muda.`,
-    };
-  }
-  return {
-    ok: true,
-    title: "Pode seguir",
-    reason: `Média ${avg} e coerência ${coh}, as duas a partir de ${cut}.${lowNote(d.low, d.cut)}`,
-  };
 }
 
 /** The first sentence of a longer text, for a one-line "why". */
@@ -311,15 +423,22 @@ export function buildSteps(
   const cut = fmt(ev.threshold);
   const reused = ev.fields.filter((f) => f.reused).length;
   const passed = gatePassed(ev);
+  const d = decisionOf(ev);
+  const missing = missingFields(ev);
 
+  const notas =
+    reused === n
+      ? previous
+        ? "Nada mudou desde a última avaliação: as notas foram reaproveitadas, sem chamar a IA."
+        : "Este navegador já tinha avaliado este texto: as notas foram reaproveitadas, sem chamar a IA."
+      : reused > 0
+        ? "Só os campos com texto novo voltaram para a IA. Os outros foram reaproveitados, porque o texto não mudou."
+        : "Uma IA juíza dá nota de 0 a 10 a cada campo, sempre com os mesmos critérios.";
   const steps: Step[] = [
     {
       id: "notas",
       title: "Nota de cada campo",
-      caption:
-        previous && reused > 0
-          ? "Só os campos editados voltaram para a IA. Os outros foram reaproveitados, porque o texto não mudou."
-          : "Uma IA juíza dá nota de 0 a 10 a cada campo, sempre com os mesmos critérios.",
+      caption: notas,
       ms: (n - 1) * t.stagger + t.count + t.hold,
     },
     {
@@ -332,33 +451,40 @@ export function buildSteps(
     {
       id: "portao",
       title: `Corte de ${cut}`,
-      caption: passed
-        ? `Pergunta 1 de 2: a média chegou a ${cut}. Agora a IA confere se os campos contam a mesma história.`
-        : `Pergunta 1 de 2: a média ficou abaixo de ${cut}. Não segue, e a pergunta 2 nem é feita.`,
+      caption:
+        missing.length > 0
+          ? `Pergunta 1 de 2 fica sem resposta: a IA não conseguiu avaliar ${missing.join(", ")}. Não segue ainda: avalie de novo.`
+          : passed
+            ? `Pergunta 1 de 2: a média chegou a ${cut}. Agora a IA confere se os campos contam a mesma história.`
+            : `Pergunta 1 de 2: a média ficou abaixo de ${cut}. Não segue, e a pergunta 2 nem é feita.`,
       ms: t.explain + t.hold * 2,
     },
   ];
 
+  if (passed && !ev.semantic) {
+    // The check did not come back: the lesson still ends on a verdict.
+    steps.push({
+      id: "coerencia",
+      title: "Coerência entre os campos",
+      caption:
+        "Pergunta 2 de 2 não voltou: a IA não respondeu no formato esperado. Não segue ainda: avalie de novo.",
+      ms: t.explain + t.hold * 2,
+    });
+  }
   if (passed && ev.semantic) {
     const s = ev.semantic;
-    const combine = decisionOf(ev)?.coherence.state === "pass";
+    const note = coherenceNote(ev)!;
     steps.push(
       {
         id: "coerencia",
         title: "Coerência entre os campos",
-        caption: `Pergunta 2 de 2: a IA lê os campos juntos e dá uma nota de coerência, com o mesmo corte de ${cut}. Pela leitura dela, o plano de retorno desfaz ${s.backout_adherence_percent}% do que as tarefas fazem.`,
+        caption: `Pergunta 2 de 2: os campos contam a mesma história? Nota de coerência, corte de ${cut}; o retorno desfaz ${s.backout_adherence_percent}% das tarefas.`,
         ms: t.explain + t.count + t.hold,
       },
       {
         id: "problemas",
-        title: combine ? "Pontos de atenção" : "Onde as partes não combinam",
-        caption: !combine
-          ? s.problems.length > 0
-            ? "Cada ponto é um lugar em que as partes do pedido contam histórias diferentes."
-            : `A nota de coerência ficou abaixo de ${cut}: as partes do pedido não contam a mesma história.`
-          : s.problems.length > 0
-            ? "As partes combinam. Os pontos são sugestões para melhorar e não impedem."
-            : "Nada se contradiz: as partes do pedido contam a mesma história.",
+        title: d?.ok ? "As partes combinam" : note.title,
+        caption: note.line,
         ms: Math.max(1, s.problems.length) * t.problem + t.hold,
       },
     );
@@ -404,9 +530,18 @@ export function sentFields({
   return dirty;
 }
 
-/** The line under the button while the evaluation runs. */
-export function runningLine(fields: number): string {
+/**
+ * The line under the button while the evaluation runs. ``mayReuse``: this tab
+ * has no result yet, but the server may hold this browser's earlier reading
+ * of the same text, so a fresh reading is not promised.
+ */
+export function runningLine(
+  fields: number,
+  { mayReuse = false }: { mayReuse?: boolean } = {},
+): string {
   if (fields === 0) return "Conferindo se algo mudou desde a última avaliação.";
+  if (mayReuse)
+    return "Enviando os campos para a IA, no servidor. Texto que este navegador já avaliou volta reaproveitado.";
   if (fields === 1)
     return "A IA está lendo o campo que mudou, no servidor. Os outros são reaproveitados.";
   return `A IA está lendo os ${fields} campos em paralelo, no servidor. As notas chegam todas juntas.`;

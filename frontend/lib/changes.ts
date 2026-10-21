@@ -71,11 +71,21 @@ export interface FieldScore {
   key: FieldKey;
   label: string;
   weight: number;
-  score: number;
+  /** Null only when the AI could not judge this field (``failed``). */
+  score: number | null;
+  /** The AI could not judge it: no grade, and no verdict until a new run. */
+  failed?: boolean;
   diagnosis: string;
   guidance: string;
   reused: boolean;
   content_hash: string;
+}
+
+/** A field with a grade (every field, unless the AI failed on one). */
+export type ScoredField = FieldScore & { score: number };
+
+export function isScored(f: FieldScore): f is ScoredField {
+  return typeof f.score === "number";
 }
 
 export type BackoutAdherence = "ADERENTE" | "PARCIAL" | "NAO_ADERENTE";
@@ -92,10 +102,16 @@ export interface SemanticAnalysis {
 
 export type DecisionReason =
   | "passes"
+  | "field_missing"
   | "average_below"
   | "semantic_missing"
   | "coherence_below"
+  | "contradictions"
   | "backout_not_adherent";
+
+/** Cuts of the back-out adherence, the same as evaluator.py and its prompt. */
+export const ADHERENT_FROM = 80;
+export const PARTIAL_FROM = 50;
 
 export interface EvaluationDecision {
   passes: boolean;
@@ -133,7 +149,10 @@ export function isEvaluation(value: unknown): value is Evaluation {
   return (
     Array.isArray(v.fields) &&
     v.fields.every(
-      (f) => f && typeof f.key === "string" && typeof f.score === "number",
+      (f) =>
+        f &&
+        typeof f.key === "string" &&
+        (typeof f.score === "number" || (f.score === null && f.failed === true)),
     ) &&
     typeof v.scope === "object" &&
     v.scope !== null &&
@@ -146,6 +165,8 @@ export interface EvaluateBody {
   fields?: Partial<Record<FieldKey, string>>;
   backout_plan?: string;
   model?: string;
+  /** Skip the content lock: every part goes back to the model. */
+  fresh?: boolean;
 }
 
 export const TYPE_LABEL: Record<string, string> = {
@@ -179,11 +200,22 @@ export const TYPE_HINT: Record<string, string> = {
 };
 
 export const STATE_HINT: Record<string, string> = {
-  New: "ainda não analisada",
+  // The ITSM state, not the AI's: "não analisada" read as "a IA não analisou".
+  New: "aguardando aprovação",
   Scheduled: "com data marcada",
   Implement: "sendo feita agora",
   Closed: "já terminou",
 };
+
+/**
+ * The state in plain words. Once the AI answered, a new Change says so, so the
+ * header never reads "não analisada" above a verdict.
+ */
+export function stateHint(state: string, verdict: string | null): string {
+  if (state === "New" && verdict)
+    return `avaliada pela IA (${verdict.toLowerCase()}), aguardando uma pessoa`;
+  return STATE_HINT[state] ?? "";
+}
 
 export const ADHERENCE_LABEL: Record<BackoutAdherence, string> = {
   ADERENTE: "Aderente",
@@ -235,6 +267,14 @@ export interface EvalMark {
   ok?: boolean;
   /** The result was read with edited text, not the Change as registered. */
   edited?: boolean;
+  /** The verdict's title, as the detail shows it ("Não segue ainda"). */
+  title?: string;
+}
+
+/** The list badge's words: the detail's own title, or the older marks' rule. */
+export function markLabel(mark: EvalMark): string {
+  if (mark.title) return mark.title;
+  return (mark.ok ?? mark.passed) ? "Pode seguir" : "Não segue";
 }
 
 const EVAL_KEY = "is-evaluated";
@@ -246,7 +286,8 @@ function isMark(v: unknown): v is EvalMark {
     (m.overall === null || typeof m.overall === "number") &&
     typeof m.passed === "boolean" &&
     (m.ok === undefined || typeof m.ok === "boolean") &&
-    (m.edited === undefined || typeof m.edited === "boolean")
+    (m.edited === undefined || typeof m.edited === "boolean") &&
+    (m.title === undefined || typeof m.title === "string")
   );
 }
 

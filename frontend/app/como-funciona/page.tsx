@@ -565,12 +565,14 @@ export default function HowItWorksPage() {
         </ol>
       </nav>
 
-      {CHAPTERS.map((ch) => {
+      {CHAPTERS.map((ch, i) => {
         const c = CONTENT[ch.id];
+        const after = CHAPTERS[i + 1];
         return (
           <ChapterView
             key={ch.id}
             chapter={ch}
+            onNext={after ? () => scrollToId(after.id, reduced) : undefined}
             focused={focused === ch.id}
             cameFromBelow={fromBelow}
             onSignal={onSignal}

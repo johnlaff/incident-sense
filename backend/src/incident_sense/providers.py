@@ -53,13 +53,15 @@ def make_chat_client(settings: Settings) -> OpenAI:
             "copy .env.example to .env and fill it in."
         )
     # The SDK default is a 600 s read and two retries: a slow provider would keep
-    # "Avaliando" spinning for minutes in front of the audience.
+    # "Avaliando" spinning for minutes in front of the audience. The worst path
+    # (field, its repair, coherence, its repair, in series) must end before the
+    # front gives up at 90 s, or the late answer lands in the lock unseen.
     return OpenAI(
         api_key=settings.openrouter_api_key,
         base_url=settings.llm_base_url,
         default_headers=_OPENROUTER_HEADERS,
-        timeout=30,
-        max_retries=1,
+        timeout=20,
+        max_retries=0,
     )
 
 

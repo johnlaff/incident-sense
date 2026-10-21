@@ -75,6 +75,9 @@ interface LessonSnapshot {
   togglePlay: () => void;
   /** Jump to the lesson's last step ("Pular"). */
   skip: () => void;
+  /** On the last step: where to go next instead of the roteiro, if anywhere. */
+  onward: string | null;
+  goOnward: () => void;
 }
 
 interface AulaContextValue {
@@ -327,13 +330,17 @@ function AulaWelcome({ onClose }: { onClose: () => void }) {
     if (pathname !== first.current) onClose();
   }, [pathname, onClose]);
   const ref = useBarRoom();
+  // On the roteiro itself, "Roteiro da aula" would lead to this same page.
+  const onRoteiro = pathname === "/aula";
   return (
     <div className="aula-bar-wrap">
       <div className="aula-bar aula-welcome" ref={ref} role="status" aria-live="polite">
         <div className="aula-text">
           <span className="aula-count">Modo aula ligado</span>
           <span className="aula-caption">
-            Esta tela não tem passo a passo. Comece pela primeira parada do roteiro.
+            {onRoteiro
+              ? "Este é o roteiro. A aula começa na primeira parada."
+              : "Esta tela não tem passo a passo. Comece pela primeira parada do roteiro."}
           </span>
         </div>
         <button
@@ -346,9 +353,15 @@ function AulaWelcome({ onClose }: { onClose: () => void }) {
           <Icons.close />
         </button>
         <div className="aula-ctrl">
-          <Link href="/aula?aula=1" className="btn btn-outline btn-sm" onClick={onClose}>
-            Roteiro da aula
-          </Link>
+          {onRoteiro ? null : (
+            <Link
+              href="/aula?aula=1"
+              className="btn btn-outline btn-sm"
+              onClick={onClose}
+            >
+              Roteiro da aula
+            </Link>
+          )}
           <Link
             href={FIRST_STOP}
             className="btn btn-primary btn-sm aula-next"
@@ -417,10 +430,16 @@ export function useAulaLesson({
   runKey,
   fastMs = FAST_REPLAY_MS,
   reducedMotion = "finish",
+  onward = null,
 }: {
   id: string;
   steps: AulaLessonStep[];
   runKey: unknown;
+  /**
+   * What the last step offers instead of "Voltar ao roteiro" (the next
+   * chapter, say), so the button does what the clicker does.
+   */
+  onward?: { label: string; go: () => void } | null;
   /** Default step length outside modo aula, when a step has no `durationMs`. */
   fastMs?: number;
   /**
@@ -479,6 +498,14 @@ export function useAulaLesson({
     dispatch({ type: "start", total, playing: !aula });
   }, [total, aula]);
   const pause = useCallback(() => dispatch({ type: "pause" }), []);
+  // The label is data; the action goes through a ref, so a new closure on
+  // every render never republishes the lesson.
+  const onwardLabel = onward?.label ?? null;
+  const onwardRef = useRef(onward);
+  useEffect(() => {
+    onwardRef.current = onward;
+  });
+  const goOnward = useCallback(() => onwardRef.current?.go(), []);
   const playing = state.playing;
   const togglePlay = useCallback(
     () => dispatch({ type: playing ? "pause" : "play" }),
@@ -497,8 +524,22 @@ export function useAulaLesson({
       prev,
       togglePlay,
       skip,
+      onward: onwardLabel,
+      goOnward,
     });
-  }, [id, run, state, steps, next, prev, togglePlay, skip, publish]);
+  }, [
+    id,
+    run,
+    state,
+    steps,
+    next,
+    prev,
+    togglePlay,
+    skip,
+    publish,
+    onwardLabel,
+    goOnward,
+  ]);
   useEffect(() => () => retire(id), [id, retire]);
 
   return {
@@ -570,7 +611,17 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
               {lesson.playing ? "Pausar" : "Reproduzir"}
             </span>
           </button>
-          {last ? (
+          {last && lesson.onward ? (
+            // More of this screen follows (the next chapter): go on there.
+            <button
+              type="button"
+              className="btn btn-primary btn-sm aula-next"
+              onClick={lesson.goOnward}
+            >
+              {lesson.onward}
+              <Icons.arrowRight />
+            </button>
+          ) : last ? (
             // The lesson is over: the next useful step is the next stop.
             <Link href="/aula?aula=1" className="btn btn-primary btn-sm aula-next">
               Voltar ao roteiro

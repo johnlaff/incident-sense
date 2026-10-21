@@ -48,6 +48,7 @@ import {
 import { DEFAULT_MODEL, MODELS, modelName, modelNameFromRoute } from "@/lib/models";
 import {
   BEATS,
+  analysisButton,
   PIPELINE_STEPS,
   formatSim,
   layerShown,
@@ -503,7 +504,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                   nobody mistakes Resolver for "let the AI solve it". */}
               <button className="btn btn-ai btn-sm record-ai" onClick={startAnalysis}>
                 <Icons.aiSpark />
-                {suggest.response ? "Ver a sugestão da IA" : "Analisar com a IA"}
+                {analysisButton(suggest.response)}
               </button>
               <button
                 className={`btn btn-outline btn-sm${assignee ? " is-on" : ""}`}
@@ -562,7 +563,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                     <button className="btn btn-ai" onClick={startAnalysis}>
                       <Icons.aiSpark />
                       {suggest.response
-                        ? "Ver a sugestão da IA"
+                        ? analysisButton(suggest.response)
                         : suggest.phase === "running"
                           ? "Analisando"
                           : "Analisar com a IA"}
@@ -1076,7 +1077,7 @@ function CopilotFab({
               {result.verdict === "IMPROCEDENTE"
                 ? "Este chamado não é uma falha do sistema. É um pedido de autoatendimento ou dúvida."
                 : result.noBase
-                  ? "É um incidente de verdade, mas ainda não há um caso parecido já resolvido para sugerir."
+                  ? `É um incidente de verdade. ${result.empty?.line ?? ""}`
                   : "É um incidente de verdade. A resolução sugerida está abaixo."}
             </div>
           </div>
@@ -1088,11 +1089,13 @@ function CopilotFab({
               {result.verdict === "IMPROCEDENTE" ? <Icons.alert /> : <Icons.inbox />}
               {result.verdict === "IMPROCEDENTE"
                 ? "Por que não é um incidente"
-                : "Ainda sem um caso parecido"}
+                : "Sem sugestão desta vez"}
             </div>
             {result.verdict === "IMPROCEDENTE"
               ? "É um pedido de autoatendimento (por exemplo, redefinir a senha), e não a falha de um sistema. O melhor caminho é orientar o cliente pelo próprio autoatendimento, sem abrir um incidente técnico."
-              : "É um incidente de verdade, mas ainda não temos um caso parecido já resolvido para embasar uma sugestão automática. Resolva manualmente e registre a solução: ela passa a alimentar o copiloto nos próximos casos."}
+              : result.empty?.kind === "unwritten"
+                ? "Analise de novo, ou resolva manualmente e registre a solução."
+                : "Resolva manualmente e registre a solução: ela passa a alimentar o copiloto nos próximos casos."}
           </div>
         ) : (
           <>
