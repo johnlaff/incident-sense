@@ -273,7 +273,7 @@ export function buildSteps(
       },
       {
         id: "problemas",
-        title: "Incoerências",
+        title: "Contradições",
         caption:
           s.problems.length > 0
             ? "Cada ponto é um lugar em que as partes do pedido contam histórias diferentes."

@@ -292,8 +292,8 @@ class ChangeEvaluator:
             skipped = (
                 # Two places, like the overall itself: 7.96 must not read "8.0 abaixo de 8.0".
                 f"Nota {overall:.2f} abaixo de {rubric.eligibility_threshold:.1f}: o problema "
-                "ainda é campo vazio ou genérico, e apontar incoerência entre campos não "
-                "ajuda o autor agora."
+                "ainda é campo vazio ou vago, e procurar contradições entre as partes do "
+                "pedido não ajuda o autor agora."
             )
         return base.model_copy(
             update={
