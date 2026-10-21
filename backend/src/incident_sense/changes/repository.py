@@ -46,6 +46,7 @@ class ChangeRepository:
                 planned_start=c.planned_start,
                 in_scope=scope_of(c).in_scope,
                 scenario=c.scenario,
+                plain=c.plain_summary.get("short_description", ""),
             )
             for c in self._changes
         ]
