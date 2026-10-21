@@ -152,3 +152,16 @@ export function answerPlain(a: ParsedAnswer): string {
   );
   return [a.oneLine, "", ...steps].join("\n");
 }
+
+/**
+ * A step in two layers: the plain action to read first (its bold title, or
+ * the first sentence when it has none) and the technical rest, shown on
+ * request ("Ler o texto técnico").
+ */
+export function stepLayers(step: AnswerStep): { lead: string; rest: string } {
+  if (step.title) return { lead: step.title, rest: step.text.trim() };
+  const t = step.text.trim();
+  const m = t.match(/^[\s\S]*?[.!?](?=\s|$)/);
+  const lead = (m ? m[0] : t).trim();
+  return { lead, rest: t.slice(lead.length).trim() };
+}

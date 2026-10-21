@@ -173,24 +173,6 @@ export function PipelineTrace({
     return () => cancelAnimationFrame(id);
   }, [answerFirst, shown]);
 
-  function showInSearch(id: string) {
-    setHowOpen(true);
-    window.dispatchEvent(new CustomEvent(OPEN_STEP_EVENT, { detail: "buscar" }));
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        const row = document.getElementById(`src-${id}`);
-        if (!row) return;
-        const fold = row.closest("details");
-        if (fold) fold.open = true;
-        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        row.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
-        row.classList.remove("is-flash");
-        void row.offsetWidth;
-        row.classList.add("is-flash");
-      }),
-    );
-  }
-
   const legend = (
     <div className="pipe-legend" aria-label="Legenda">
       <ConceptLabel concept="ai-step">Passo da IA</ConceptLabel>
@@ -287,7 +269,6 @@ export function PipelineTrace({
               result={shown}
               modelName={modelName}
               onCite={onCite}
-              onShowInSearch={showInSearch}
               onInsert={onInsert}
               onCopy={onCopy}
               onShowNotes={onShowNotes}
@@ -304,7 +285,7 @@ export function PipelineTrace({
             <Icons.chevronRight />
             <span>
               Como a IA chegou nisso
-              <span className="pipe-how-n">7 passos</span>
+              <span className="pipe-how-n">{PIPELINE_STEPS.length} passos</span>
             </span>
           </summary>
           <div className="pipe-how-body">
@@ -372,16 +353,9 @@ export function PipelineTrace({
 
 /**
  * While the server works. The server answers all at once at the end, so the
- * stages are listed as what happens, in order, without ticking any of them
- * off by the clock.
+ * seven steps (the same names as "Como a IA chegou nisso") are listed as what
+ * happens, in order, without ticking any of them off by the clock.
  */
-const PROGRESS_STAGES = [
-  "Lê o chamado",
-  "Busca incidentes e Problemas parecidos",
-  "Confere se cada caso serve",
-  "Escreve a sugestão citando os casos",
-];
-
 function RunProgress() {
   return (
     <div className="run-progress" role="status" aria-live="polite">
@@ -389,14 +363,16 @@ function RunProgress() {
         <Icons.loader size={14} className="spin" />
         Isso leva alguns segundos...
       </p>
-      <p className="run-progress-note">O que a IA faz, nesta ordem:</p>
+      <p className="run-progress-note">
+        O que a IA faz, nos {PIPELINE_STEPS.length} passos:
+      </p>
       <ol>
-        {PROGRESS_STAGES.map((label, i) => (
-          <li key={label}>
+        {PIPELINE_STEPS.map((def) => (
+          <li key={def.key}>
             <span className="run-progress-n mono" aria-hidden="true">
-              {i + 1}
+              {def.order}
             </span>
-            {label}
+            {def.title}
           </li>
         ))}
       </ol>
