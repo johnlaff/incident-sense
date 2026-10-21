@@ -25,7 +25,7 @@ import {
   type Rubric,
 } from "@/lib/changes";
 import { absDate } from "@/lib/model";
-import { freeBand, scrollOnce } from "@/lib/reveal";
+import { scrollPos, showTop } from "@/lib/reveal";
 import { DEFAULT_MODEL, MODELS, modelNameFromRoute } from "@/lib/models";
 
 import "../changes.css";
@@ -188,18 +188,22 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   useEffect(() => {
     if (!inAula && !lessonDone && walkedRun !== runId) lessonSkip();
   }, [inAula, lessonDone, walkedRun, runId, lessonSkip]);
-  // A new verdict out of view (the button sat low on a phone): one scroll
-  // brings it up, then the page stays put.
+  // A new verdict: if the reader scrolled while it ran, leave them there; if
+  // its top shows, nothing moves; below the fold, one scroll puts its top
+  // under the top bar. Never later.
+  const startPos = useRef<number | null>(null);
+  useEffect(() => {
+    if (phase === "running") startPos.current = scrollPos();
+  }, [phase]);
   useEffect(() => {
     if (inAula || runKey === 0) return;
+    const moved =
+      startPos.current !== null && Math.abs(scrollPos() - startPos.current) > 80;
+    startPos.current = null;
+    if (moved) return;
     const raf = requestAnimationFrame(() => {
       const el = document.querySelector(".chg-banner");
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const band = freeBand();
-      if (r.top < band.top || r.bottom > band.bottom) {
-        scrollOnce(el, window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-      }
+      if (el) showTop(el, window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     });
     return () => cancelAnimationFrame(raf);
   }, [runKey, inAula]);

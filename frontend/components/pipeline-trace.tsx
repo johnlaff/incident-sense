@@ -32,9 +32,9 @@ import { Icons, type IconComponent } from "./icons";
 import { SuggestionMarkdown } from "./markdown";
 import { AnswerCard } from "./answer-card";
 import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
-import { buildSuggestionMarkdown } from "@/lib/model";
+import { buildSuggestionMarkdown, meaningfulTags } from "@/lib/model";
 import { formatSeconds, useElapsedSeconds, useIsPhone } from "@/lib/motion";
-import { showCardTop } from "@/lib/reveal";
+import { freeBand, scrollPos, showTop } from "@/lib/reveal";
 import {
   OUTCOME_LABEL,
   PIPELINE_STEPS,
@@ -147,14 +147,29 @@ export function PipelineTrace({
     window.addEventListener(OPEN_STEP_EVENT, open);
     return () => window.removeEventListener(OPEN_STEP_EVENT, open);
   }, []);
-  // When an answer arrives, show its top once (never scrolling past the
-  // "Sugestão da IA" heading), then never again.
+  // When an answer arrives: if the reader scrolled while it ran, leave them
+  // there; if its card already shows, nothing moves; otherwise one scroll puts
+  // the top of the block ("Sugestão da IA") under the top bar. Never later.
+  const startPos = useRef<number | null>(null);
+  useEffect(() => {
+    if (running) startPos.current = scrollPos();
+  }, [running]);
   useEffect(() => {
     if (!answerFirst || !shown) return;
-    const el = answerRef.current;
-    if (!el) return;
+    const card = answerRef.current;
+    const head = headRef.current;
+    if (!card || !head) return;
+    const moved =
+      startPos.current !== null && Math.abs(scrollPos() - startPos.current) > 80;
+    startPos.current = null;
+    if (moved) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const id = requestAnimationFrame(() => showCardTop(el, headRef.current, reduced));
+    const id = requestAnimationFrame(() => {
+      const band = freeBand();
+      const top = card.getBoundingClientRect().top;
+      if (top >= band.top && top <= band.bottom - 120) return;
+      showTop(head, reduced);
+    });
     return () => cancelAnimationFrame(id);
   }, [answerFirst, shown]);
 
@@ -676,7 +691,7 @@ function LoadedFields({ source }: { source: PipelineSource }) {
             <span className="loaded-k">{k}</span> {v || "não informada"}
           </span>
         ))}
-        {source.tags.map((t, i) => (
+        {meaningfulTags(source.tags).map((t, i) => (
           <span className="tag loaded-chip" key={t} style={{ "--i": i + 3 } as Style}>
             {t}
           </span>
