@@ -168,8 +168,11 @@ export function PipelineTrace({
     const id = requestAnimationFrame(() => {
       const band = freeBand();
       const top = card.getBoundingClientRect().top;
-      if (top >= band.top && top <= band.bottom - 120) return;
-      // The card itself is below the fold: its section title goes to the top.
+      // The answer's own sentence must show, not only the card's label.
+      const one = card.querySelector(".ans-one") ?? card;
+      const end = one.getBoundingClientRect().bottom;
+      if (top >= band.top && end <= band.bottom) return;
+      // The answer is below the fold: its section title goes to the top.
       toTop(head, reduced);
     });
     return () => cancelAnimationFrame(id);
