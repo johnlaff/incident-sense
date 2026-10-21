@@ -2153,12 +2153,27 @@
   color: var(--ink-body);
 }
 .ans-steps {
+  list-style: none;
   margin: 0;
-  padding-left: 22px;
+  padding: 0;
   display: grid;
   gap: 12px;
 }
-.ans-steps li::marker {
+.ans-steps li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.ans-step-n {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  border: 1px solid var(--c-ai-line);
+  border-radius: 50%;
+  font-size: 12px;
   font-weight: 600;
   color: var(--c-ai-ink);
 }
@@ -2227,15 +2242,30 @@
   color: var(--ink);
 }
 .ans-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ans-actions .btn {
+  justify-content: center;
+  width: 100%;
+  padding-inline: 8px;
+  gap: 6px;
+  white-space: nowrap;
+}
+.ans-vote {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 8px 12px;
 }
-.ans-vote {
+.ans-vote-q {
+  font-size: 14px;
+  color: var(--ink-body);
+}
+.ans-vote-btns {
   display: inline-flex;
-  gap: 4px;
-  margin-left: auto;
+  gap: 8px;
 }
 .ans-thanks {
   font-size: 13px;
@@ -2255,9 +2285,6 @@
   }
   .ans-src-go {
     padding-left: 0;
-  }
-  .ans-vote {
-    margin-left: 0;
   }
 }
 
@@ -2323,28 +2350,32 @@
   font-size: 14px;
   color: var(--muted);
 }
-.run-progress li.is-done {
-  color: var(--ink-body);
-}
-.run-progress li.is-done svg {
-  color: var(--c-ai-ink);
-}
-.run-progress li.is-now {
-  color: var(--ink);
+.run-progress-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
   font-weight: 600;
+  color: var(--ink);
 }
-.run-progress li.is-now svg {
+.run-progress-now svg {
   color: var(--c-ai-ink);
-}
-.run-progress-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px dashed var(--c-ai-line);
 }
 .run-progress-note {
-  margin: 10px 0 0;
-  font-size: 12px;
+  margin: 12px 0 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.run-progress-n {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: 11px;
   color: var(--muted);
 }
 
@@ -2437,4 +2468,7 @@
 }
 .src-sheet .btn {
   justify-self: start;
+}
+.ans-actions:has(> .btn:only-child) {
+  grid-template-columns: 1fr;
 }

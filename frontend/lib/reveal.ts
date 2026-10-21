@@ -98,3 +98,23 @@ export function scrollOnce(el: Element, reduced: boolean): void {
   const d = el.getBoundingClientRect().top - band.top;
   scrollByDelta(el, d, !reduced);
 }
+
+/**
+ * When an answer arrives: leave the page alone if the top of `card` already
+ * shows, otherwise scroll just enough to show it, never past `heading` (the
+ * section title stays on screen). One scroll, no re-checks.
+ */
+export function showCardTop(
+  card: Element,
+  heading: Element | null,
+  reduced: boolean,
+): void {
+  const band = freeBand();
+  const top = card.getBoundingClientRect().top;
+  // Already visible with a few lines of it: nothing to do.
+  if (top >= band.top && top <= band.bottom - 120) return;
+  let d = top - (band.bottom - 160);
+  if (top < band.top) d = top - band.top;
+  if (heading) d = Math.min(d, heading.getBoundingClientRect().top - band.top);
+  scrollByDelta(card, d, !reduced);
+}

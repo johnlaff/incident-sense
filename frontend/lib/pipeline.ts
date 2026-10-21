@@ -34,9 +34,9 @@ export type Outcome = "abaixo" | "mantido" | "descartado" | "mantido-fallback";
 
 export const OUTCOME_LABEL: Record<Outcome, string> = {
   abaixo: "pouco parecido",
-  mantido: "mantido",
-  descartado: "descartado",
-  "mantido-fallback": "mantido (lista original)",
+  mantido: "serve",
+  descartado: "não serve",
+  "mantido-fallback": "usado sem conferir",
 };
 
 export interface RetrievalRow {

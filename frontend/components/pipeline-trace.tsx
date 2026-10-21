@@ -34,7 +34,7 @@ import { AnswerCard } from "./answer-card";
 import { CosineAngle, SimilarityRuler } from "./similarity-ruler";
 import { buildSuggestionMarkdown } from "@/lib/model";
 import { formatSeconds, useElapsedSeconds, useIsPhone } from "@/lib/motion";
-import { scrollOnce } from "@/lib/reveal";
+import { showCardTop } from "@/lib/reveal";
 import {
   OUTCOME_LABEL,
   PIPELINE_STEPS,
@@ -140,19 +140,21 @@ export function PipelineTrace({
   const answerFirst = !lesson.aula;
   const [howOpen, setHowOpen] = useState(false);
   const answerRef = useRef<HTMLDivElement>(null);
+  const headRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // "Ver na busca" (and any citation) opens the folded steps first.
     const open = () => setHowOpen(true);
     window.addEventListener(OPEN_STEP_EVENT, open);
     return () => window.removeEventListener(OPEN_STEP_EVENT, open);
   }, []);
-  // When an answer arrives, bring its top into view once, then never again.
+  // When an answer arrives, show its top once (never scrolling past the
+  // "Sugestão da IA" heading), then never again.
   useEffect(() => {
     if (!answerFirst || !shown) return;
     const el = answerRef.current;
     if (!el) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const id = requestAnimationFrame(() => scrollOnce(el, reduced));
+    const id = requestAnimationFrame(() => showCardTop(el, headRef.current, reduced));
     return () => cancelAnimationFrame(id);
   }, [answerFirst, shown]);
 
@@ -234,7 +236,7 @@ export function PipelineTrace({
   if (answerFirst) {
     return (
       <div className="section pipe-section">
-        <div className="pipe-head">
+        <div className="pipe-head" ref={headRef}>
           <div className="pipe-head-text">
             <h2>Sugestão da IA</h2>
             <p className="pipe-lede">
@@ -242,7 +244,12 @@ export function PipelineTrace({
               citando cada um. Quem decide é você.
             </p>
           </div>
-          <button className="btn btn-ai" onClick={onRun} disabled={running}>
+          <button
+            className="btn btn-ai"
+            onClick={onRun}
+            disabled={running}
+            data-ai-entry=""
+          >
             {running ? <Icons.loader className="spin" /> : <Icons.aiSpark />}
             {running ? "Analisando" : result ? "Analisar de novo" : "Analisar com a IA"}
           </button>
@@ -257,7 +264,7 @@ export function PipelineTrace({
           </div>
         ) : null}
 
-        {running ? <RunProgress startedAt={startedAt} /> : null}
+        {running ? <RunProgress /> : null}
 
         {shown ? (
           <div ref={answerRef} className="ans-wrap">
@@ -281,7 +288,7 @@ export function PipelineTrace({
           <summary>
             <Icons.chevronRight />
             <span>
-              {shown ? "Como a IA chegou nisso" : "Como a IA chega numa sugestão"}
+              Como a IA chegou nisso
               <span className="pipe-how-n">7 passos</span>
             </span>
           </summary>
@@ -308,11 +315,16 @@ export function PipelineTrace({
     <div className="section pipe-section">
       <div className="pipe-head">
         <div className="pipe-head-text">
-          <h2>Como a IA chegou na sugestão</h2>
+          <h2>Como a IA chegou nisso</h2>
           <p className="pipe-lede">Sete passos da máquina. No fim, quem decide é você.</p>
           {legend}
         </div>
-        <button className="btn btn-ai" onClick={onRun} disabled={running}>
+        <button
+          className="btn btn-ai"
+          onClick={onRun}
+          disabled={running}
+          data-ai-entry=""
+        >
           {/* The one control to run it again: a new run, in AI violet. The
               replay of the last run plays by itself and has no button here. */}
           {running ? <Icons.loader className="spin" /> : <Icons.aiSpark />}
@@ -343,40 +355,36 @@ export function PipelineTrace({
   );
 }
 
-/** While the server works: the usual stages, ticked by elapsed time. */
-const PROGRESS_STAGES: { at: number; label: string }[] = [
-  { at: 0, label: "Lendo o chamado" },
-  { at: 1, label: "Buscando incidentes e Problemas parecidos" },
-  { at: 3, label: "Conferindo se cada caso serve" },
-  { at: 5, label: "Escrevendo a sugestão com as fontes" },
+/**
+ * While the server works. The server answers all at once at the end, so the
+ * stages are listed as what happens, in order, without ticking any of them
+ * off by the clock.
+ */
+const PROGRESS_STAGES = [
+  "Lê o chamado",
+  "Busca incidentes e Problemas parecidos",
+  "Confere se cada caso serve",
+  "Escreve a sugestão citando os casos",
 ];
 
-function RunProgress({ startedAt }: { startedAt: number | null }) {
-  const seconds = useElapsedSeconds(startedAt);
-  const current = PROGRESS_STAGES.reduce((acc, s, i) => (seconds >= s.at ? i : acc), 0);
+function RunProgress() {
   return (
     <div className="run-progress" role="status" aria-live="polite">
+      <p className="run-progress-now">
+        <Icons.loader size={14} className="spin" />
+        Isso leva alguns segundos...
+      </p>
+      <p className="run-progress-note">O que a IA faz, nesta ordem:</p>
       <ol>
-        {PROGRESS_STAGES.map((s, i) => (
-          <li
-            key={s.label}
-            className={i < current ? "is-done" : i === current ? "is-now" : undefined}
-          >
-            {i < current ? (
-              <Icons.check size={14} sw={3} />
-            ) : i === current ? (
-              <Icons.loader size={14} className="spin" />
-            ) : (
-              <span className="run-progress-dot" aria-hidden="true" />
-            )}
-            {s.label}
+        {PROGRESS_STAGES.map((label, i) => (
+          <li key={label}>
+            <span className="run-progress-n mono" aria-hidden="true">
+              {i + 1}
+            </span>
+            {label}
           </li>
         ))}
       </ol>
-      <p className="run-progress-note">
-        <span className="mono">{seconds} s</span> · etapas de costume: o servidor devolve
-        tudo junto no fim.
-      </p>
     </div>
   );
 }

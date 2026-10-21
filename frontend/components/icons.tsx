@@ -102,6 +102,18 @@ export const Icons = {
       stroke="none"
     />,
   ),
+  thumbUp: icon(
+    <>
+      <path d="M7 10v11" />
+      <path d="M15 5.9 14 10h5.8a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 18.4 21H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h3l4-8a3 3 0 0 1 4 3.9Z" />
+    </>,
+  ),
+  thumbDown: icon(
+    <>
+      <path d="M17 14V3" />
+      <path d="M9 18.1 10 14H4.2a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 5.6 3H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3l-4 8a3 3 0 0 1-4-3.9Z" />
+    </>,
+  ),
   replay: icon(
     <>
       <path d="M3 2v6h6" />

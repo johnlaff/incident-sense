@@ -125,7 +125,7 @@ export function AnswerCard({
       <div className="ans-head">
         <h3 id="ans-h" className="ans-title">
           <ConceptLabel concept="ai-out" />
-          <span className="ans-sub">Uma sugestão para revisar, não uma ordem.</span>
+          <span className="ans-sub">Revise antes de usar.</span>
         </h3>
         <ConfidenceTag level={confidence.level} label={confidence.label} />
       </div>
@@ -168,51 +168,59 @@ export function AnswerCard({
         onShowInSearch={onShowInSearch}
       />
 
-      <div className="ans-actions">
-        {onCopy ? (
-          <button
-            type="button"
-            className="btn btn-outline btn-sm"
-            onClick={() => onCopy(plain)}
-          >
-            <Icons.copy />
-            Copiar
-          </button>
-        ) : null}
-        {onInsert ? (
-          <button
-            type="button"
-            className="btn btn-outline btn-sm"
-            onClick={() => onInsert(plain)}
-          >
-            <Icons.insert />
-            Usar como nota de resolução
-          </button>
-        ) : null}
-        <span className="ans-vote" role="group" aria-label="A sugestão ajudou?">
-          {vote ? (
-            <span className="ans-thanks" role="status">
-              Obrigado. Fica só neste navegador.
-            </span>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => setVote("util")}
-              >
-                Útil
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => setVote("nao")}
-              >
-                Não útil
-              </button>
-            </>
-          )}
+      {onCopy || onInsert ? (
+        <div className="ans-actions">
+          {onCopy ? (
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => onCopy(plain)}
+            >
+              <Icons.copy />
+              Copiar
+            </button>
+          ) : null}
+          {onInsert ? (
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => onInsert(plain)}
+            >
+              <Icons.insert />
+              Usar como nota
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="ans-vote" role="group" aria-labelledby="ans-vote-q">
+        <span id="ans-vote-q" className="ans-vote-q">
+          A sugestão ajudou?
         </span>
+        {vote ? (
+          <span className="ans-thanks" role="status">
+            Obrigado. Sua resposta fica só neste navegador.
+          </span>
+        ) : (
+          <span className="ans-vote-btns">
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => setVote("util")}
+            >
+              <Icons.thumbUp />
+              Útil
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => setVote("nao")}
+            >
+              <Icons.thumbDown />
+              Não útil
+            </button>
+          </span>
+        )}
       </div>
 
       <TechDetails summary="Detalhes técnicos">
@@ -314,11 +322,18 @@ function ParsedBlocks({
         <ol className="ans-steps">
           {parsed.steps.map((s, i) => (
             <li key={i}>
-              <p>
-                {s.title ? <b>{s.title}: </b> : null}
-                {s.text}
-              </p>
-              {s.cites.length ? <StepSources ids={s.cites} onSource={onSource} /> : null}
+              <span className="ans-step-n mono" aria-hidden="true">
+                {i + 1}
+              </span>
+              <div>
+                <p>
+                  {s.title ? <b>{s.title}: </b> : null}
+                  {s.text}
+                </p>
+                {s.cites.length ? (
+                  <StepSources ids={s.cites} onSource={onSource} />
+                ) : null}
+              </div>
             </li>
           ))}
         </ol>
@@ -333,7 +348,8 @@ function ParsedBlocks({
   );
 }
 
-/** "Com base em" under a step: the first record, then "+N" for the rest. */
+/** "Fonte" under a step: the first record, then "+N" for the rest. The
+ *  "Com base em" heading is said once, on the block below the steps. */
 function StepSources({
   ids,
   onSource,
@@ -345,7 +361,7 @@ function StepSources({
   const shown = all ? ids : ids.slice(0, 1);
   return (
     <div className="ans-step-src">
-      <span className="ans-step-src-k">Com base em</span>
+      <span className="ans-step-src-k">{ids.length > 1 ? "Fontes" : "Fonte"}</span>
       {shown.map((id) => (
         <button
           key={id}
@@ -404,8 +420,9 @@ function SourcesBlock({
                   {row ? (
                     <>
                       semelhança <b className="mono">{formatSim(row.sim)}</b>
-                      {" · "}
-                      {OUTCOME_LABEL[row.outcome]}
+                      {row.outcome === "mantido-fallback"
+                        ? ` · ${OUTCOME_LABEL[row.outcome]}`
+                        : null}
                     </>
                   ) : inContext ? (
                     "entre os casos encontrados"
@@ -449,10 +466,19 @@ function HumanDecides({
         <b>Agora é com você.</b>
         <p>Confira as fontes e decida. A IA não resolve sozinha.</p>
         {result.publication.published ? (
-          <button className="btn btn-primary btn-sm pipe-notes-btn" onClick={onShowNotes}>
-            <Icons.list />
-            Ver a nota no incidente
-          </button>
+          <>
+            <p className="ans-note">
+              A IA também deixou esta sugestão como nota no histórico do incidente,
+              marcada como dela.
+            </p>
+            <button
+              className="btn btn-primary btn-sm pipe-notes-btn"
+              onClick={onShowNotes}
+            >
+              <Icons.list />
+              Ver a nota da IA
+            </button>
+          </>
         ) : null}
       </div>
     </div>
