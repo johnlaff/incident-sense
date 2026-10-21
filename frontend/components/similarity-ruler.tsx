@@ -32,7 +32,7 @@ export function SimilarityRuler({
   incidents: RetrievalRow[];
   problems: RetrievalRow[];
   floor: number;
-  /** Aurora panel: no simulation, smaller type. */
+  /** Assistant panel: no simulation, smaller type. */
   compact?: boolean;
   onOpen?: (number: string, el?: HTMLElement) => void;
 }) {

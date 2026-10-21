@@ -134,6 +134,8 @@
   gap: 10px;
   padding: 2px 0 28px;
   min-width: 0;
+  /* On the vertical route the example cards keep a reading width. */
+  max-width: 640px;
 }
 .stop-head {
   display: flex;
@@ -277,8 +279,10 @@
   }
 }
 
-/* Wide screens: the line runs across, four stations side by side. */
-@media (min-width: 1100px) {
+/* Wide screens: the line runs across, four stations side by side. Below
+   1400px the four columns get too narrow for their titles, so the route
+   stays vertical. */
+@media (min-width: 1400px) {
   .lesson-route {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 32px;
@@ -321,6 +325,7 @@
   }
   .stop-body {
     display: grid;
+    max-width: none;
     grid-row: 2 / span 4;
     grid-template-rows: subgrid;
     row-gap: 10px;

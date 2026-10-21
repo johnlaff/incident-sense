@@ -395,7 +395,7 @@ export const IMPROCEDENTE = {
 };
 
 /**
- * ILUSTRATIVO: a suggestion like Aurora's. The ids in brackets are citations;
+ * ILUSTRATIVO: a suggestion like the assistant's. The ids in brackets are citations;
  * INC0051234 never came from the search, so the check removes it.
  */
 export const SUGGESTION: { text: string; cite?: string; removed?: boolean }[] = [

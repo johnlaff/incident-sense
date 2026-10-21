@@ -294,7 +294,7 @@ export function clusterColor(clusterId: number, isOutlier = false): string {
   return `oklch(${t.l} ${t.c} ${t.h})`;
 }
 
-// ----- Copilot result (maps SuggestResponse → Aurora's chat output) ----------
+// ----- Copilot result (maps SuggestResponse → the assistant's chat output) ----------
 
 const INLINE_CITE = /\b(?:INC|PRB)\d{4,}\b/;
 

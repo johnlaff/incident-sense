@@ -345,7 +345,7 @@ function AulaBar({ lesson }: { lesson: LessonSnapshot }) {
   const ref = useRef<HTMLDivElement>(null);
   const current = lesson.steps[lesson.step];
 
-  // Publish the bar height so the FAB and the Aurora sheet can make room.
+  // Publish the bar height so the FAB and the assistant sheet can make room.
   useEffect(() => {
     const el = ref.current;
     const root = document.documentElement;

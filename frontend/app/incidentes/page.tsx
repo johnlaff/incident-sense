@@ -372,12 +372,12 @@ export default function IncidentesPage() {
               </caption>
               <thead>
                 <tr>
-                  {sortBtn("num", "Número", { width: 150 })}
+                  {sortBtn("num", "Número", { width: 136 })}
                   {sortBtn("desc", "Título")}
-                  {sortBtn("svc", "Serviço", { width: 200 }, "col-svc")}
+                  {sortBtn("svc", "Serviço", { width: 172 }, "col-svc")}
                   {sortBtn("state", "Estado", { width: 128 })}
-                  {sortBtn("priority", "Prioridade", { width: 112 })}
-                  {sortBtn("when", "Aberto", { width: 112 })}
+                  {sortBtn("priority", "Prioridade", { width: 104 })}
+                  {sortBtn("when", "Aberto", { width: 96 })}
                 </tr>
               </thead>
               <tbody>

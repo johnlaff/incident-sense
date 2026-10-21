@@ -152,13 +152,16 @@ a.chg-row:focus-visible {
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
+/* Each fact is as wide as its value: the execution window reads on one line
+   when the row has room and wraps whole to the next row when it does not. */
 .chg-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 40px;
   margin: 0;
 }
 .chg-facts div {
+  flex: 0 1 auto;
   min-width: 0;
 }
 .chg-facts dt {
@@ -178,8 +181,7 @@ a.chg-row:focus-visible {
    ones (group, window) take a row of their own. */
 @media (max-width: 559.98px) {
   .chg-facts {
-    display: flex;
-    flex-wrap: wrap;
+    gap: 10px 18px;
   }
   .chg-facts > div {
     flex: 1 0 auto;

@@ -734,12 +734,12 @@ a {
   }
 }
 
-/* The analysis tab shows the same run as Aurora: the button steps aside
+/* The analysis tab shows the same run as the assistant: the button steps aside
    there, at every width. */
 .cop-fab.quiet {
   display: none;
 }
-/* Phones: the Aurora button floats over the text; give the record room at
+/* Phones: the assistant button floats over the text; give the record room at
    the end. */
 @media (max-width: 767px) {
   .detail-single {
@@ -747,8 +747,8 @@ a {
   }
 }
 
-/* Phones: each incident row wraps like text. The service sits at the right
-   of the badges and drops to its own line when it does not fit, whole. */
+/* Phones: each incident row wraps like text. The service always has its own
+   line under the title, so every row has the same shape. */
 @media (max-width: 767px) {
   .list tbody tr:not(.sk-row) {
     display: flex;
@@ -768,17 +768,18 @@ a {
     order: 3;
     flex: 1 1 100%;
   }
-  .list tbody td.st {
-    order: 4;
-  }
-  .list tbody td.pr {
-    order: 5;
-  }
   .list tbody td.svc {
-    order: 6;
-    margin-left: auto;
+    order: 4;
+    flex: 1 1 100%;
+    text-align: left;
     white-space: nowrap;
     overflow-wrap: normal;
+  }
+  .list tbody td.st {
+    order: 5;
+  }
+  .list tbody td.pr {
+    order: 6;
   }
   .list tbody td[colspan] {
     flex: 1 1 100%;

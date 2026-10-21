@@ -50,7 +50,7 @@ interface ShellContextValue {
   peek: (number: string, from?: HTMLElement) => void;
   /** Navigate to an incident's full record. */
   openIncident: (number: string) => void;
-  /** Ask Aurora to suggest a resolution (navigates to the incident if needed). */
+  /** Ask the AI assistant to suggest a resolution (navigates to the incident if needed). */
   requestSuggest: (number?: string) => void;
   /** The incident the copilot should auto-run for after navigation, or null. */
   autoSuggestFor: string | null;
