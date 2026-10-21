@@ -22,6 +22,7 @@ import {
   type Rubric,
 } from "@/lib/changes";
 import { absDate } from "@/lib/model";
+import { freeBand, scrollOnce } from "@/lib/reveal";
 import { DEFAULT_MODEL, MODELS, modelNameFromRoute } from "@/lib/models";
 
 import "../changes.css";
@@ -184,6 +185,21 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   useEffect(() => {
     if (!inAula && !lessonDone && walkedRun !== runId) lessonSkip();
   }, [inAula, lessonDone, walkedRun, runId, lessonSkip]);
+  // A new verdict out of view (the button sat low on a phone): one scroll
+  // brings it up, then the page stays put.
+  useEffect(() => {
+    if (inAula || runKey === 0) return;
+    const raf = requestAnimationFrame(() => {
+      const el = document.querySelector(".chg-banner");
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const band = freeBand();
+      if (r.top < band.top || r.bottom > band.bottom) {
+        scrollOnce(el, window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [runKey, inAula]);
   const playback: Playback = {
     index: lesson.done || instant ? steps.length : lesson.step,
     done: lesson.done || instant,
