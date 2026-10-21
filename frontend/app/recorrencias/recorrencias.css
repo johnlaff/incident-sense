@@ -322,13 +322,15 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-/* Count only: the number is the whole label, so it takes the ink. */
+/* No room beside the group: its short name and count sit on it. */
+.rx-label-short {
+  display: none;
+}
 .rx-label.compact .rx-label-name {
   display: none;
 }
-.rx-label.compact .rx-label-n {
-  padding-left: 0;
-  color: inherit;
+.rx-label.compact .rx-label-short {
+  display: inline;
 }
 @media (max-width: 699.98px) {
   .rx-label {
@@ -1000,4 +1002,57 @@
 .rx-peek .rtag {
   width: fit-content;
   justify-self: start;
+}
+
+/* Each ranked row: when it happened and how much of it is one service */
+.rx-row-sub {
+  grid-column: 1 / -1;
+  margin-top: -2px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.rx-why {
+  margin: 6px 0 10px;
+  color: var(--ink-body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* A tapped point's card sits under the map, so the map stays in view */
+.rx-peek.docked {
+  position: static;
+  margin: 8px 12px 0;
+  box-shadow: none;
+}
+
+/* What the map's space means */
+.rx-map-key {
+  margin: 0;
+  padding: 8px 14px 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* One line per term, right under the lede */
+.rx-lede p {
+  margin: 0;
+}
+.rx-terms {
+  margin-top: 6px !important;
+  color: var(--ink-body);
+  font-size: var(--fs-sm, 14px);
+  line-height: 1.5;
+}
+.rx-terms b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Phone, outside modo aula: the ranking (the answer) comes before the map */
+@media (max-width: 1099.98px) {
+  :root:not([data-aula]) .rx-side {
+    order: -1;
+  }
 }

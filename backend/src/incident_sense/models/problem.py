@@ -20,6 +20,9 @@ class Problem(BaseModel):
 
     number: str = Field(description="Problem id, e.g. PRB0004101.", examples=["PRB0004101"])
     short_description: str
+    plain_summary: str = Field(
+        default="", description="One or two plain sentences for a reader new to ITSM."
+    )
     description: str
     root_cause: str
     workaround: str
@@ -43,6 +46,7 @@ class ProblemSummary(BaseModel):
 
     number: str
     short_description: str
+    plain_summary: str = ""
     root_cause: str
     state: str
     category: str

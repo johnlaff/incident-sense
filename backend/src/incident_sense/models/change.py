@@ -58,6 +58,13 @@ class Change(BaseModel):
 
     scenario: str = Field(default="", description="Demo label for the presenter.")
     scenario_note: str = ""
+    plain_summary: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "One plain sentence per field card, for a reader new to ITSM. "
+            "Shown above the field text; never sent to the judge."
+        ),
+    )
 
 
 class ChangeSummary(BaseModel):

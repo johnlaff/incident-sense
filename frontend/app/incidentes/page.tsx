@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, ViewTransition } from "react";
 
-import { RecordTag } from "@/components/concepts";
+import { DemoNote, KindLine, RecordTag } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
 import {
@@ -258,6 +258,7 @@ export default function IncidentesPage() {
 
   return (
     <div>
+      <DemoNote />
       <div className="page-head">
         <h1>Incidentes</h1>
         <span className="count">
@@ -269,9 +270,10 @@ export default function IncidentesPage() {
         </span>
       </div>
 
-      <p className="page-lede">
-        Cada linha é um chamado. Abra um e veja a IA sugerir a solução.
-      </p>
+      <div className="page-lede inc-lede">
+        <p>Cada linha é um chamado. Abra um e veja a IA sugerir a solução.</p>
+        <KindLine />
+      </div>
 
       <WakeNotice show={slow} />
 

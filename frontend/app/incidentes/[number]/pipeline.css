@@ -1986,3 +1986,455 @@
     animation: none;
   }
 }
+
+/* ===================================================================== *
+ *  The answer first: three fixed blocks, sources, confidence in words
+ * ===================================================================== */
+.ans-wrap {
+  margin-top: 16px;
+  scroll-margin-top: 72px;
+}
+.ans {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  background: var(--c-ai-tint);
+  border: 1px solid var(--c-ai-line);
+}
+.ans-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+.ans-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.ans-sub {
+  font-weight: 400;
+  color: var(--ink-body);
+}
+.ans-conf {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-body);
+}
+.ans-conf b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.ans-conf-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.ans-conf-bars i {
+  display: block;
+  width: 4px;
+  border-radius: 1px;
+  background: var(--border-strong);
+}
+.ans-conf-bars i:nth-child(1) {
+  height: 5px;
+}
+.ans-conf-bars i:nth-child(2) {
+  height: 8px;
+}
+.ans-conf-bars i:nth-child(3) {
+  height: 12px;
+}
+.ans-conf.is-baixa .ans-conf-bars i:nth-child(1),
+.ans-conf.is-media .ans-conf-bars i:nth-child(-n + 2),
+.ans-conf.is-alta .ans-conf-bars i {
+  background: var(--c-ai-ink);
+}
+.ans-scope summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  list-style: none;
+}
+.ans-scope summary::-webkit-details-marker {
+  display: none;
+}
+.ans-scope summary svg {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--dur-state) var(--ease-out);
+}
+.ans-scope[open] summary svg {
+  transform: rotate(90deg);
+}
+.ans-scope ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.ans-scope li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 10px;
+  align-items: center;
+  font-size: 13px;
+}
+.ans-scope-d {
+  color: var(--ink-body);
+  min-width: 0;
+}
+.ans-scope-s {
+  grid-column: 2;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.ans-known {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--c-prb-line);
+}
+.ans-known-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.ans-known-k {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-prb-ink);
+}
+.ans-known p {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  color: var(--ink);
+}
+.ans-block {
+  display: grid;
+  gap: 8px;
+}
+.ans-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--c-ai-ink);
+}
+.ans-one {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.ans-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-body);
+}
+.ans-steps {
+  margin: 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 12px;
+}
+.ans-steps li::marker {
+  font-weight: 600;
+  color: var(--c-ai-ink);
+}
+.ans-steps p {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  color: var(--ink-body);
+}
+.ans-steps b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.ans-step-src {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.ans-step-src-k {
+  font-size: 12px;
+  color: var(--muted);
+}
+.ans-more {
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+.ans-sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.ans-sources li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  max-width: 520px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--c-ai-line);
+}
+.ans-src-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.ans-src-what {
+  font-size: 13px;
+  color: var(--ink-body);
+  white-space: nowrap;
+}
+.ans-src-what b {
+  color: var(--ink);
+}
+.ans-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ans-vote {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.ans-thanks {
+  font-size: 13px;
+  color: var(--muted);
+}
+.ans-human {
+  margin-top: 0;
+}
+/* Phones: "Ver na busca" drops under its row instead of covering it. */
+@media (max-width: 559.98px) {
+  .ans {
+    padding: 14px;
+  }
+  .ans-sources li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ans-src-go {
+    padding-left: 0;
+  }
+  .ans-vote {
+    margin-left: 0;
+  }
+}
+
+/* "Como a IA chegou nisso": the seven steps, folded under the answer. */
+.pipe-how {
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+.pipe-how > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--ink);
+  list-style: none;
+}
+.pipe-how > summary::-webkit-details-marker {
+  display: none;
+}
+.pipe-how > summary svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--dur-state) var(--ease-out);
+}
+.pipe-how[open] > summary svg {
+  transform: rotate(90deg);
+}
+.pipe-how-n {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.pipe-how-body {
+  display: grid;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+/* While the server works: the usual stages, ticked by time. */
+.run-progress {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--c-ai-line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.run-progress ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.run-progress li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.run-progress li.is-done {
+  color: var(--ink-body);
+}
+.run-progress li.is-done svg {
+  color: var(--c-ai-ink);
+}
+.run-progress li.is-now {
+  color: var(--ink);
+  font-weight: 600;
+}
+.run-progress li.is-now svg {
+  color: var(--c-ai-ink);
+}
+.run-progress-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px dashed var(--c-ai-line);
+}
+.run-progress-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* The exact text behind a source: bottom sheet on a phone, dialog wider. */
+.src-sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: oklch(0.2 0.01 265 / 0.38);
+}
+.src-sheet {
+  position: fixed;
+  z-index: 96;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 82vh;
+  overflow-y: auto;
+  display: grid;
+  gap: 10px;
+  padding: 16px max(16px, var(--safe-r)) calc(18px + var(--safe-b))
+    max(16px, var(--safe-l));
+  background: var(--surface);
+  border-top: 1px solid var(--border-strong);
+  border-radius: 16px 16px 0 0;
+  box-shadow: var(--shadow-md);
+  animation: src-sheet-in var(--dur-move) var(--ease-out);
+}
+@keyframes src-sheet-in {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .src-sheet {
+    animation: none;
+  }
+}
+@media (min-width: 768px) {
+  .src-sheet {
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    width: min(560px, 92vw);
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    animation: none;
+  }
+}
+.src-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.src-sheet-head .icon-btn {
+  margin-left: auto;
+}
+.src-sheet-sim {
+  font-size: 13px;
+  color: var(--ink-body);
+}
+.src-sheet-title {
+  margin: 0;
+  font-size: var(--fs-lg, 1.125rem);
+  line-height: 1.35;
+}
+.src-sheet-k {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.src-sheet-q {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 2px solid var(--border-strong);
+  background: var(--surface-2);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.src-sheet-why {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-body);
+}
+.src-sheet .btn {
+  justify-self: start;
+}

@@ -9,6 +9,8 @@ import type { IncidentSummary } from "./types";
 export interface ProblemSummary {
   number: string;
   short_description: string;
+  /** One or two plain sentences, for a reader new to ITSM ("Em resumo"). */
+  plain_summary?: string;
   root_cause: string;
   state: string;
   category: string;

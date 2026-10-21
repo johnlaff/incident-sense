@@ -58,7 +58,7 @@ export function Weights() {
     <figure className="cf-card cf-weights">
       <figcaption className="cf-card-head">
         <span>Grade de avaliação</span>
-        <Origin kind="demo">rubrica.toml do demo</Origin>
+        <Origin kind="demo">critérios do demo</Origin>
       </figcaption>
       <ul className="cf-wt-list">
         {RUBRIC.map((r, i) => (
@@ -508,7 +508,7 @@ export function Vectorize() {
   return (
     <figure className="cf-card cf-vec">
       <figcaption className="cf-card-head">
-        <span>A consulta vira um vetor</span>
+        <span>A consulta vira uma lista de números (vetor)</span>
         <Origin kind="ilustrativo">números ilustrativos</Origin>
       </figcaption>
       <pre className="cf-query">{queryText(EXAMPLE_SUMMARY)}</pre>
@@ -599,7 +599,7 @@ export function Ruler() {
   return (
     <figure className="cf-card cf-ruler">
       <figcaption className="cf-card-head">
-        <span>Camada 2 · semelhança de cosseno</span>
+        <span>Camada 2 · quanto cada caso se parece, de 0 a 1</span>
         <Origin kind="ilustrativo">similaridades ilustrativas</Origin>
       </figcaption>
       <div className="cf-ruler-plot" style={{ "--floor": floorX } as Style}>
@@ -698,8 +698,7 @@ export function Classify() {
     <figure className="cf-card cf-cls">
       <figcaption className="cf-card-head">
         <span className="cf-head-k">
-          <ConceptLabel concept="ai-step" />
-          Procedente ou improcedente?
+          <ConceptLabel concept="ai-step" />É falha de verdade?
         </span>
         <Origin kind="demo">registros do demo</Origin>
       </figcaption>
@@ -710,8 +709,7 @@ export function Classify() {
             <span>{INCIDENT.title}</span>
           </span>
           <span className="cf-cls-v">
-            <Icons.checkCircle size={16} />
-            Procedente: segue para a sugestão
+            <Icons.checkCircle size={16} />É falha: segue para a sugestão
           </span>
         </li>
         <li className="is-no" style={{ "--i": 1 } as Style}>
@@ -721,7 +719,7 @@ export function Classify() {
           </span>
           <span className="cf-cls-v">
             <Icons.alert size={16} />
-            Improcedente: é um pedido, sem sugestão
+            Não é falha: é um pedido, sem sugestão
           </span>
         </li>
       </ul>
@@ -849,7 +847,8 @@ export function ClusterStage({ idx, total }: { idx: number; total: number }) {
               { "--x": g.cx, "--y": g.cy, "--i": i, "--c": clusterColor(g.id) } as Style
             }
           >
-            {g.label}
+            {/* Short names, as on the Grupos map: a long one wraps and gets cut. */}
+            <span title={g.label}>{g.short}</span>
             {i === 0 ? <b className="cf-prb-chip mono">PRB</b> : null}
           </span>
         ))}

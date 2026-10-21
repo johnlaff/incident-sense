@@ -10,8 +10,16 @@ function stubFetch(response: unknown) {
 
 describe("api client", () => {
   it("returns parsed JSON on success", async () => {
-    stubFetch({ ok: true, json: async () => ({ status: "ok" }) });
+    stubFetch({ ok: true, text: async () => JSON.stringify({ status: "ok" }) });
     await expect(api.getHealth()).resolves.toEqual({ status: "ok" });
+  });
+
+  it("shows team names with their accent", async () => {
+    stubFetch({
+      ok: true,
+      text: async () => JSON.stringify({ group: "Sustentacao-Pagamentos" }),
+    });
+    await expect(api.getHealth()).resolves.toEqual({ group: "Sustentação-Pagamentos" });
   });
 
   it("throws ApiError carrying the backend detail on error responses", async () => {

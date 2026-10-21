@@ -791,3 +791,53 @@ a {
 .meta-item {
   white-space: nowrap;
 }
+
+/* Phones: the top bar names its tools. The product name gives way to the
+   "Modo aula" label; the page title already says where you are. In modo aula
+   the theme button (also in the search palette) makes room for "Desligar". */
+@media (max-width: 559.98px) {
+  .topbar .brand-prod {
+    display: none;
+  }
+  .topbar .aula-toggle {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 13px;
+  }
+  .topbar .aula-toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+  :root[data-aula] .topbar .theme-btn {
+    display: none;
+  }
+  :root[data-aula] .topbar .icon-btn:not(.aula-toggle) {
+    width: 40px;
+  }
+}
+
+/* Incidentes: the lede line, then the Incidente vs Problema line. */
+.inc-lede {
+  display: grid;
+  gap: 8px;
+}
+.inc-lede p {
+  margin: 0;
+}
+
+/* A tab name on two lines ("Como a IA / funciona") keeps the bar's height:
+   tighter lines, and its icon sits a little higher. */
+.tab-label.two {
+  display: flex;
+  font-size: 11px;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+  text-align: center;
+}
+.tab-item:has(.tab-label.two) {
+  gap: 1px;
+  padding-block: 2px;
+}

@@ -90,7 +90,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       detail ?? `O servidor respondeu com erro ${response.status}.`,
     );
   }
-  return response.json() as Promise<T>;
+  return JSON.parse(withAccents(await response.text())) as T;
+}
+
+/**
+ * The synthetic data writes team names the way ITSM tools store them, without
+ * accents ("Sustentacao-Pagamentos"). On screen they read as Portuguese.
+ */
+export function withAccents(text: string): string {
+  return text.replace(/Sustentacao/g, "Sustentação");
 }
 
 export const api = {

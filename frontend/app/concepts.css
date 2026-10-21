@@ -485,3 +485,71 @@
 .tag-btn:hover .rtag-ghost {
   background: var(--c-inc-tint);
 }
+
+/* ----- Kind line: Incidente vs Problema, with their marks ----- */
+.kind-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-body);
+  text-wrap: pretty;
+}
+.kind-line-part {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.kind-line b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.kind-mark {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  margin-top: 2px;
+}
+.kind-mark svg {
+  width: 15px;
+  height: 15px;
+}
+.kind-mark-inc {
+  color: var(--c-inc-ink);
+}
+.kind-mark-prb {
+  color: var(--c-prb-ink);
+}
+
+/* ----- Demo note: one quiet line at the top of the first screen ----- */
+.demo-note {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  background: var(--surface);
+}
+
+/* ----- "Em resumo": the plain sentence above a technical text ----- */
+.plain-summary {
+  display: block;
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.plain-summary b {
+  font-weight: 600;
+}
+.plain-summary-lg {
+  font-size: var(--fs-md);
+  margin-bottom: 10px;
+  max-width: 62ch;
+}

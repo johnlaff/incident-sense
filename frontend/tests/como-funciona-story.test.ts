@@ -175,7 +175,7 @@ describe("texto e aula", () => {
       const steps = lessonSteps(ch);
       expect(steps.length).toBe(ch.steps.length);
       for (const s of steps) expect(s.caption.length).toBeLessThanOrEqual(90);
-      expect(steps[0].counter).toBe(`Capítulo ${ch.n} · 1 de ${ch.steps.length}`);
+      expect(steps[0].counter).toBe(`Capítulo ${ch.n} · Passo 1 de ${ch.steps.length}`);
     }
   });
 

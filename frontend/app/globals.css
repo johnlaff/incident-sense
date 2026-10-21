@@ -4884,7 +4884,12 @@ body {
   font-weight: 600;
 }
 .aula-toggle-t {
-  display: none;
+  white-space: nowrap;
+}
+.aula-toggle-off {
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .aula-toggle.on {
   color: var(--primary-ink);
@@ -5023,9 +5028,6 @@ body {
   }
 }
 @media (min-width: 921px) {
-  .aula-toggle-t {
-    display: inline;
-  }
   .aula-bar-wrap {
     left: calc(232px + 24px);
   }

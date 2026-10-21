@@ -48,6 +48,8 @@ export interface Change extends Record<FieldKey, string> {
   tasks: ChangeTask[];
   scenario: string;
   scenario_note: string;
+  /** One plain sentence per field card, keyed by field (and backout_plan). */
+  plain_summary?: Partial<Record<FieldKey | "backout_plan", string>>;
 }
 
 export interface RubricField {
@@ -159,6 +161,8 @@ export interface EvalMark {
   /** Weighted average as the page shows it, null when out of scope. */
   overall: number | null;
   passed: boolean;
+  /** The whole verdict: past the cut and no inconsistency. Older marks lack it. */
+  ok?: boolean;
 }
 
 const EVAL_KEY = "is-evaluated";

@@ -27,7 +27,14 @@ import { RecordTag } from "./concepts";
 import { StateBadge, PriorityBadge } from "./ui";
 import { useFocusTrap, useScrollLock } from "@/lib/a11y";
 import { useAllIncidents, useIncident } from "@/lib/incidents";
-import { absDate, mapDetail } from "@/lib/model";
+import {
+  PRIORITY_LABEL,
+  STATE_LABEL,
+  absDate,
+  dsState,
+  mapDetail,
+  pCode,
+} from "@/lib/model";
 import { isProblemNumber } from "@/lib/problems";
 import type { IncidentSummary } from "@/lib/types";
 import { keepWhole } from "@/lib/text";
@@ -236,7 +243,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       <AulaProvider>
         <div className="app">
           <header className="topbar">
-            <Link href="/incidentes" className="brand" style={{ textDecoration: "none" }}>
+            <Link
+              href="/incidentes"
+              className="brand"
+              style={{ textDecoration: "none" }}
+              aria-label="Incident Sense, Banco Meridiano: ir para Incidentes"
+            >
               <span className="mark">
                 <svg
                   viewBox="0 0 24 24"
@@ -285,7 +297,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Icons.search />
               </button>
               <button
-                className="icon-btn"
+                className="icon-btn theme-btn"
                 onClick={toggleTheme}
                 title={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
                 aria-label={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
@@ -386,7 +398,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className="tab-ico">
                   <n.icon />
                 </span>
-                <span className="tab-label">{n.short}</span>
+                {n.short.includes("\n") ? (
+                  <span className="tab-label two">
+                    {n.short.split("\n").map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
+                  </span>
+                ) : (
+                  <span className="tab-label">{n.short}</span>
+                )}
               </Link>
             ))}
           </nav>
@@ -430,6 +450,68 @@ export function AppShell({ children }: { children: ReactNode }) {
 // Notifications dropdown (synthetic, references real incidents)
 // ---------------------------------------------------------------------------
 
+/** The incident the aula opens: its similar resolved cases make a good demo. */
+const DEMO_AI_INCIDENT = "INC0052233";
+
+interface DemoNotification {
+  inc: IncidentSummary;
+  icon: IconComponent;
+  kind: string;
+  title: string;
+  sub: string;
+}
+
+/**
+ * Demo notifications, each one true of the record it names: the priority and
+ * the state come from the data, never from a fixed sentence.
+ */
+export function buildNotifications(items: IncidentSummary[]): DemoNotification[] {
+  const open = items
+    .filter((i) => !i.is_resolved)
+    .slice()
+    .sort((a, b) => b.opened_at.localeCompare(a.opened_at));
+  const out: DemoNotification[] = [];
+  const used = new Set<string>();
+  const add = (
+    inc: IncidentSummary | undefined,
+    icon: IconComponent,
+    kind: string,
+    title: string,
+  ) => {
+    if (!inc || used.has(inc.number)) return;
+    used.add(inc.number);
+    const prio = PRIORITY_LABEL[pCode(inc.priority)];
+    out.push({
+      inc,
+      icon,
+      kind,
+      title,
+      sub: `${STATE_LABEL[dsState(inc.state)]} · prioridade ${prio.toLowerCase()}`,
+    });
+  };
+  const urgent = open.find((i) => i.priority <= 2);
+  if (urgent)
+    add(
+      urgent,
+      Icons.alert,
+      "alert",
+      `Novo incidente de prioridade ${PRIORITY_LABEL[pCode(urgent.priority)].toLowerCase()}`,
+    );
+  add(
+    open.find((i) => dsState(i.state) === "progress" && !used.has(i.number)),
+    Icons.incidents,
+    "warn",
+    "Incidente segue em andamento",
+  );
+  add(
+    open.find((i) => i.number === DEMO_AI_INCIDENT),
+    Icons.aiSpark,
+    "ai",
+    "A IA pode sugerir uma solução para este incidente",
+  );
+  return out;
+}
+
 function NotificationsMenu({
   items,
   onOpen,
@@ -447,34 +529,7 @@ function NotificationsMenu({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const open = items.filter((i) => !i.is_resolved).slice(0, 4);
-  const kinds: { icon: IconComponent; kind: string; title: string; time: string }[] = [
-    {
-      icon: Icons.alert,
-      kind: "alert",
-      title: "Novo incidente de prioridade alta no seu grupo",
-      time: "há 4 min",
-    },
-    {
-      icon: Icons.incidents,
-      kind: "warn",
-      title: "Incidente segue em andamento",
-      time: "há 1 h",
-    },
-    {
-      icon: Icons.recurrences,
-      kind: "recur",
-      title: "Possível recorrência detectada",
-      time: "há 2 h",
-    },
-    {
-      icon: Icons.aiSpark,
-      kind: "ai",
-      title: "A IA preparou uma sugestão para você revisar",
-      time: "há 3 h",
-    },
-  ];
-  const notifs = open.map((inc, i) => ({ inc, ...kinds[i % kinds.length] }));
+  const notifs = buildNotifications(items);
 
   return (
     <>
@@ -484,7 +539,7 @@ function NotificationsMenu({
           <span>Notificações</span>
           <span className="nm-count">{notifs.length} novas</span>
         </div>
-        {notifs.map(({ inc, icon: Icon, kind, title, time }) => (
+        {notifs.map(({ inc, icon: Icon, kind, title, sub }) => (
           <button
             key={inc.number}
             className="nm-item"
@@ -500,7 +555,7 @@ function NotificationsMenu({
               <div className="nm-title">{title}</div>
               <div className="nm-sub">
                 <span className="mono">{inc.number}</span>
-                {` · ${time}`}
+                {` · ${sub}`}
               </div>
             </div>
           </button>

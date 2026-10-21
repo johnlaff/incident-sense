@@ -268,3 +268,35 @@ export function ConceptLegend({ only }: { only?: ConceptKey[] }) {
     </ul>
   );
 }
+
+/**
+ * The one line that tells the two record kinds apart, with their marks: the
+ * blue lightning is an Incidente, the amber converging lines a Problema.
+ */
+export function KindLine({ className = "" }: { className?: string }) {
+  return (
+    <p className={`kind-line ${className}`}>
+      <span className="kind-line-part">
+        <span className="kind-mark kind-mark-inc" aria-hidden="true">
+          <Icons.incident />
+        </span>
+        <span>
+          <b>Incidente</b> é a falha de hoje;
+        </span>
+      </span>{" "}
+      <span className="kind-line-part">
+        <span className="kind-mark kind-mark-prb" aria-hidden="true">
+          <Icons.problems />
+        </span>
+        <span>
+          <b>Problema</b> é a causa por trás de várias delas.
+        </span>
+      </span>
+    </p>
+  );
+}
+
+/** Says once, at the top of the first screen, that nothing here is real. */
+export function DemoNote() {
+  return <p className="demo-note">Demo com dados fictícios do Banco Meridiano.</p>;
+}

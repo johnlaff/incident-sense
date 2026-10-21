@@ -159,6 +159,11 @@ export function ProblemPeekDrawer({
                   <MetaLine items={[data.cmdb_ci, data.assignment_group]} />
                 </p>
               </div>
+              {data.plain_summary ? (
+                <p className="plain-summary">
+                  <b>Em resumo:</b> {data.plain_summary}
+                </p>
+              ) : null}
               <ProblemChain problem={data} className="prb-peek-chain" />
               {linked.length ? (
                 <section className="prb-peek-linked">

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_TIMING,
   buildSteps,
+  firstSentence,
   fmtDelta,
   formulaTerms,
   gatePassed,
@@ -10,9 +11,12 @@ import {
   parseTime,
   reached,
   scoreDelta,
+  verdictOf,
   weightedSegments,
 } from "@/app/changes/sequence";
 import type { Evaluation, FieldKey, FieldScore } from "@/lib/changes";
+
+import fixture from "./evaluation-fixture.json";
 
 const WEIGHTS: [FieldKey, number][] = [
   ["implementation_plan", 2.5],
@@ -220,5 +224,32 @@ describe("one overall for headline, bar, formula and gate", () => {
 
   it("falls back to the sent overall when there are no fields", () => {
     expect(overallOf(evaluation([], { fields: [], overall: null }))).toBeNull();
+  });
+});
+
+describe("verdictOf", () => {
+  it("says no when the average is below the cut", () => {
+    const v = verdictOf(fixture.CHG0031003 as unknown as Evaluation);
+    expect(v?.ok).toBe(false);
+    expect(v?.title).toBe("Não segue");
+    expect(v?.reason).toContain("abaixo do mínimo de 8,0");
+  });
+  it("says no past the cut when coherence found a problem", () => {
+    const v = verdictOf(fixture.CHG0031002 as unknown as Evaluation);
+    expect(v?.ok).toBe(false);
+    expect(v?.reason).toContain("1 incoerência");
+  });
+  it("says yes past the cut with no inconsistency", () => {
+    const v = verdictOf(fixture.CHG0031001 as unknown as Evaluation);
+    expect(v).toMatchObject({ ok: true, title: "Pode seguir" });
+  });
+});
+
+describe("firstSentence", () => {
+  it("keeps the first sentence and ignores dots inside versions", () => {
+    expect(firstSentence("Sobe para a v2.3 hoje. Depois valida.")).toBe(
+      "Sobe para a v2.3 hoje.",
+    );
+    expect(firstSentence("Sem ponto final")).toBe("Sem ponto final");
   });
 });
