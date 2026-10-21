@@ -792,29 +792,75 @@ a {
   white-space: nowrap;
 }
 
-/* Phones: the top bar names its tools. The product name gives way to the
-   "Modo aula" label; the page title already says where you are. In modo aula
-   the theme button (also in the search palette) makes room for "Desligar". */
-@media (max-width: 559.98px) {
+/* Phones: the product name sits by the mark, on two short lines, and every
+   tool in the top bar carries a caption under its icon, like the tab bar.
+   Each tool keeps a fixed width, so turning modo aula on or off (its caption
+   reads "Modo aula" or "Sair da aula") moves nothing around it. */
+.tb-cap,
+.aula-toggle-short {
+  display: none;
+}
+.topbar-tools > * {
+  flex-shrink: 0;
+}
+@media (max-width: 767.98px) {
+  .topbar .brand {
+    gap: 8px;
+  }
+  .topbar .brand-name,
+  .topbar .brand-sep {
+    display: none;
+  }
   .topbar .brand-prod {
-    display: none;
-  }
-  .topbar .aula-toggle {
-    height: 36px;
-    padding: 0 10px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
+    display: block;
+    width: 7ch;
+    white-space: normal;
     font-size: 13px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--ink);
   }
-  .topbar .aula-toggle svg {
-    width: 18px;
-    height: 18px;
+  .topbar .brand-accent {
+    color: var(--ink);
   }
-  :root[data-aula] .topbar .theme-btn {
+  .topbar .topbar-tools {
+    gap: 2px;
+  }
+  .topbar .topbar-tools .icon-btn {
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    justify-content: center;
+    gap: 3px;
+    border: 0;
+    border-radius: 10px;
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .topbar .topbar-tools .icon-btn svg {
+    width: 19px;
+    height: 19px;
+  }
+  .topbar .topbar-tools .aula-toggle,
+  .topbar .notif-wrap .icon-btn {
+    width: 66px;
+  }
+  .tb-cap,
+  .aula-toggle-short {
+    display: block;
+    white-space: nowrap;
+  }
+  .aula-toggle-long {
     display: none;
   }
-  :root[data-aula] .topbar .icon-btn:not(.aula-toggle) {
-    width: 40px;
+  .topbar .notif-dot {
+    top: 6px;
+    right: 20px;
   }
 }
 

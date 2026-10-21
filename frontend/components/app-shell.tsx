@@ -266,7 +266,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="brand-name">Banco Meridiano</span>
               <span className="brand-sep" aria-hidden="true" />
               <span className="brand-prod">
-                Incident&nbsp;<span className="brand-accent">Sense</span>
+                Incident <span className="brand-accent">Sense</span>
               </span>
             </Link>
             <div className="grow" />
@@ -295,6 +295,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-label="Buscar (abre a paleta de comandos)"
               >
                 <Icons.search />
+                <span className="tb-cap" aria-hidden="true">
+                  Buscar
+                </span>
               </button>
               <button
                 className="icon-btn theme-btn"
@@ -303,6 +306,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-label={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
               >
                 {theme === "dark" ? <Icons.sun /> : <Icons.moon />}
+                <span className="tb-cap" aria-hidden="true">
+                  {theme === "dark" ? "Claro" : "Escuro"}
+                </span>
               </button>
               <div className="notif-wrap">
                 <button
@@ -316,6 +322,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 >
                   <Icons.bell />
                   {!notifRead && items.length > 0 ? <span className="notif-dot" /> : null}
+                  <span className="tb-cap" aria-hidden="true">
+                    Notificações
+                  </span>
                 </button>
                 {notifOpen ? (
                   <NotificationsMenu
