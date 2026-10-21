@@ -1883,7 +1883,7 @@ body {
   white-space: pre-line;
   overflow-wrap: break-word;
 }
-/* The Aurora draft is the only tinted block: it is not saved yet. */
+/* The assistant draft is the only tinted block: it is not saved yet. */
 .resnotes-draft {
   display: flex;
   flex-direction: column;
@@ -2248,7 +2248,7 @@ body {
  *  Floating copilot — bubble (FAB) + chat panel
  * ===================================================================== */
 /* The record uses the shared page container; the bottom pad keeps the last
-   line clear of the Aurora button. */
+   line clear of the assistant button. */
 .detail-single {
   padding-bottom: 84px;
 }
@@ -4238,7 +4238,7 @@ body {
   grid-column: 1 / -1;
 }
 
-/* ----- Aurora: FAB above the tab bar, panel as a full-height sheet ----- */
+/* ----- AI assistant: FAB above the tab bar, panel as a full-height sheet ----- */
 .cop-fab {
   right: max(16px, var(--safe-r));
   bottom: calc(var(--tabbar-h) + var(--safe-b) + 14px);
@@ -4973,7 +4973,7 @@ body {
   scroll-padding-bottom: calc(var(--aula-bar-h, 0px) + 32px);
 }
 
-/* Phone: the FAB rises above the strip; the Aurora sheet keeps its input
+/* Phone: the FAB rises above the strip; the assistant sheet keeps its input
    clear and the strip drops to the bottom edge while the sheet is open. */
 :root[data-aula-bar] .cop-fab {
   translate: 0 calc(-1 * (var(--aula-bar-h, 0px) + 8px));
@@ -5005,7 +5005,7 @@ body {
   :root[data-aula-bar] .cop-fab {
     translate: none;
   }
-  /* With the Aurora panel open, the strip becomes the panel's own footer. */
+  /* With the assistant panel open, the strip becomes the panel's own footer. */
   body:has(.cop-panel) .aula-bar-wrap {
     left: auto;
     right: 24px;

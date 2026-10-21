@@ -19,6 +19,7 @@ import {
 } from "@/lib/problems";
 
 import "@/app/problemas/problemas.css";
+import { keepWhole } from "@/lib/text";
 
 export function ProblemStateBadge({ state }: { state: string }) {
   const { tone, label } = problemState(state);
@@ -153,7 +154,7 @@ export function ProblemPeekDrawer({
                 <ProblemStateBadge state={data.state} />
               </div>
               <div className="peek-title">
-                <h2>{data.short_description}</h2>
+                <h2>{keepWhole(data.short_description)}</h2>
                 <p>
                   <MetaLine items={[data.cmdb_ci, data.assignment_group]} />
                 </p>

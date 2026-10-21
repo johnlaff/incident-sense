@@ -217,7 +217,7 @@ export default function RecurrencesPage() {
       }
     >
       <div className="page-head">
-        <h1>Recorrências</h1>
+        <h1>Grupos</h1>
         <span className="count">
           {data
             ? `${data.groups.length} grupos · ${data.incidents.length} incidentes`
@@ -225,7 +225,8 @@ export default function RecurrencesPage() {
         </span>
       </div>
       <p className="page-lede">
-        Cada ponto é um incidente. Grupo grande pede um{" "}
+        Recorrências: incidentes que se repetem formam grupos. Cada ponto é um incidente.
+        Grupo grande pede um{" "}
         <Link className="prb-inline-link" href="/problemas">
           problema
         </Link>

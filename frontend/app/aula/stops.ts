@@ -19,7 +19,7 @@ export interface Pick {
 export interface Stop {
   n: number;
   concept: ConceptKey;
-  /** A section that is not a concept (Recorrências) shows its own icon. */
+  /** A section that is not a concept (Grupos) shows its own icon. */
   icon?: IconComponent;
   tone: string;
   title: string;
@@ -35,7 +35,7 @@ export const STOPS: Stop[] = [
     n: 1,
     concept: "ai-step",
     tone: "k-ai",
-    title: "Como funciona",
+    title: "Sobre a IA",
     line: "Do chamado aberto à sugestão revisada.",
     href: "/como-funciona?aula=1",
     cta: "Ver o caminho",
@@ -63,7 +63,7 @@ export const STOPS: Stop[] = [
     concept: "prb",
     icon: Icons.recurrences,
     tone: "",
-    title: "Recorrências",
+    title: "Grupos",
     line: "Erro que se repete vira grupo. Grupo pede um Problema.",
     href: "/recorrencias?aula=1",
     cta: "Ver os grupos",

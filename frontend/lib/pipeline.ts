@@ -2,7 +2,7 @@
 // article; the procedência gate is step 5). Pure functions, so the screen never
 // reads raw wire fields and the mapping is unit-tested.
 //
-// One vocabulary everywhere (pipeline, Aurora panel, Como funciona):
+// One vocabulary everywhere (pipeline, assistant panel, Como funciona):
 // 1 Carregar · 2 Resumir · 3 Transformar em números · 4 Buscar e conferir
 // (tags, vetor, pós-filtro) · 5 Classificar · 6 Sugerir · 7 Publicar.
 

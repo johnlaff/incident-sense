@@ -150,7 +150,7 @@ No detalhe do incidente, a aba **Análise da IA** mostra as sete etapas e a
 decisão de procedência, cada uma com o que decidiu; a etapa 4 abre as três
 camadas com cada candidato mantido ou descartado e o motivo; a etapa 6 mostra a
 sugestão e a validação das citações; a etapa 7 leva às **Notas de trabalho**,
-onde a sugestão aparece publicada. A Aurora (o copiloto flutuante) roda o mesmo
+onde a sugestão aparece publicada. O assistente da IA (o painel flutuante) roda o mesmo
 pipeline e compartilha o resultado com a aba.
 
 ## Saída didática e modelos trocáveis
@@ -160,7 +160,7 @@ numerada de ações), com tom didático e siglas explicadas na primeira menção
 frontend renderiza com `react-markdown` + `remark-gfm`; citações `[INC…]` viram
 botões que abrem o incidente citado e `[PRB…]` viram selos do problema.
 
-O **modelo de IA é trocável por requisição**: o seletor da Aurora envia um id
+O **modelo de IA é trocável por requisição**: o seletor do assistente da IA envia um id
 público (`frontend/lib/models.ts`) que o backend mapeia para um modelo real da
 OpenRouter (`SELECTABLE_MODELS` em `config.py`); ids desconhecidos caem no padrão.
 

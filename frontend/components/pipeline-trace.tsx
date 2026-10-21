@@ -12,6 +12,7 @@
 
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -236,7 +237,7 @@ export function RunStatus({
   replaying: boolean;
   aula: boolean;
   onSkip: () => void;
-  /** Aurora's panel offers "Repassar"; the analysis tab has "Analisar de novo". */
+  /** The assistant panel offers "Repassar"; the analysis tab has "Analisar de novo". */
   onReplay?: () => void;
   compact?: boolean;
 }) {
@@ -321,8 +322,10 @@ function StepItem({
       <span className="pipe-marker" aria-hidden="true">
         {def.gate ? <GateMark open={reveal !== "hidden" && !stopped} /> : null}
         <span className="pipe-marker-n">
-          {reveal === "done" && view?.status === "concluida" && !def.gate ? (
-            <Icons.check size={14} sw={2.8} />
+          {/* Every finished station, the gate included, shows a check: no
+              station keeps its number once done. */}
+          {reveal === "done" && view?.status === "concluida" ? (
+            <Icons.check size={def.gate ? 12 : 14} sw={2.8} />
           ) : (
             def.order
           )}
@@ -444,7 +447,11 @@ function StepDetail({
               flashCite={flashCite}
             />
             <div className="sugg-foot">
-              Gerado por <b>{modelName}</b>.
+              <TechDetails summary="Detalhes técnicos">
+                <p>
+                  Gerado por <b>{modelName}</b>.
+                </p>
+              </TechDetails>
             </div>
           </div>
           <CitedSources result={result} onCite={onCite} />
@@ -503,13 +510,43 @@ function LoadedFields({ source }: { source: PipelineSource }) {
 function Summary({ original, summary }: { original: string; summary: string }) {
   const before = wordCount(original);
   const after = wordCount(summary);
+  // The customer's text is cut at four lines; when it is cut, it opens whole.
+  const origRef = useRef<HTMLParagraphElement>(null);
+  const [clipped, setClipped] = useState(false);
+  const [whole, setWhole] = useState(false);
+  const textId = useId();
+  useEffect(() => {
+    const el = origRef.current;
+    if (!el) return;
+    const check = () => {
+      if (!el.classList.contains("whole"))
+        setClipped(el.scrollHeight > el.clientHeight + 1);
+    };
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [original]);
   return (
     <div className="pipe-block summary">
       <div className="summary-col summary-orig">
         <div className="pipe-label">
           Escrito pelo cliente <span className="mono">{before} palavras</span>
         </div>
-        <p>{original}</p>
+        <p ref={origRef} id={textId} className={whole ? "whole" : undefined}>
+          {original}
+        </p>
+        {clipped ? (
+          <button
+            type="button"
+            className="summary-more"
+            aria-expanded={whole}
+            aria-controls={textId}
+            onClick={() => setWhole((w) => !w)}
+          >
+            {whole ? "Mostrar menos" : "Ler o texto inteiro"}
+          </button>
+        ) : null}
       </div>
       <Icons.arrowRight className="summary-arrow" />
       <div className="summary-col summary-new">

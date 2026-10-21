@@ -236,7 +236,10 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
   );
   const order = new Map(orderedFields.map((f, i) => [f.key, i]));
   const epoch = `${runKey}-${playback.epoch}`;
-  useFollowStep(steps, playback.index, epoch, motion.reduced);
+  useFollowStep(steps, playback.index, epoch, motion.reduced, {
+    aula: lesson.aula,
+    gateClosed,
+  });
   const notasStep = steps.find((s) => s.id === "notas");
 
   return (
@@ -558,7 +561,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
               {change.tasks.map((t) => (
                 <li key={t.number}>
                   <span className="mono">{t.number}</span>
-                  <span>{t.short_description}</span>
+                  <span>{keepWhole(t.short_description)}</span>
                 </li>
               ))}
             </ol>
@@ -619,15 +622,26 @@ function useTallSticky() {
     const el = ref.current;
     const scroller = el?.closest<HTMLElement>(".main");
     if (!el || !scroller) return;
+    const root = document.documentElement;
     const fit = () => {
-      const room = scroller.clientHeight - el.offsetHeight - 24;
+      // In modo aula its end stops above the caption strip, not behind it.
+      const bar = root.hasAttribute("data-aula-bar")
+        ? parseFloat(getComputedStyle(root).getPropertyValue("--aula-bar-h")) || 0
+        : 0;
+      const room = scroller.clientHeight - el.offsetHeight - 24 - (bar ? bar + 24 : 0);
       el.style.setProperty("--aside-top", `${Math.min(0, room)}px`);
     };
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(el);
     ro.observe(scroller);
-    return () => ro.disconnect();
+    // The strip comes and goes with modo aula and changes height per caption.
+    const mo = new MutationObserver(fit);
+    mo.observe(root, { attributes: true, attributeFilter: ["style", "data-aula-bar"] });
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+    };
   }, []);
   return ref;
 }

@@ -30,6 +30,7 @@ import { useAllIncidents, useIncident } from "@/lib/incidents";
 import { absDate, mapDetail } from "@/lib/model";
 import { isProblemNumber } from "@/lib/problems";
 import type { IncidentSummary } from "@/lib/types";
+import { keepWhole } from "@/lib/text";
 
 type Theme = "light" | "dark";
 
@@ -49,7 +50,7 @@ interface ShellContextValue {
   peek: (number: string, from?: HTMLElement) => void;
   /** Navigate to an incident's full record. */
   openIncident: (number: string) => void;
-  /** Ask Aurora to suggest a resolution (navigates to the incident if needed). */
+  /** Ask the AI assistant to suggest a resolution (navigates to the incident if needed). */
   requestSuggest: (number?: string) => void;
   /** The incident the copilot should auto-run for after navigation, or null. */
   autoSuggestFor: string | null;
@@ -469,7 +470,7 @@ function NotificationsMenu({
     {
       icon: Icons.aiSpark,
       kind: "ai",
-      title: "A Aurora preparou uma sugestão para você revisar",
+      title: "A IA preparou uma sugestão para você revisar",
       time: "há 3 h",
     },
   ];
@@ -573,7 +574,7 @@ function CommandPalette({
         group: "Ações",
         icon: Icons.sparkle,
         title: "Sugerir resolução",
-        sub: "Abre a Aurora no incidente",
+        sub: "Abre o assistente da IA no incidente",
         hint: "↵",
         run: onSuggest,
       },
@@ -796,7 +797,9 @@ function PeekDrawer({
               </div>
               <div className="peek-title">
                 <h2>{inc.title}</h2>
-                <p>{`${inc.service} · ${inc.group} · aberto em ${inc.opened}`}</p>
+                <p>
+                  {keepWhole(`${inc.service} · ${inc.group} · aberto em ${inc.opened}`)}
+                </p>
               </div>
 
               {inc.resolutionNotes ? (

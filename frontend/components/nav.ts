@@ -36,8 +36,10 @@ export const NAV_ITEMS: readonly NavItem[] = [
     key: "recurrences",
     href: "/recorrencias",
     icon: Icons.recurrences,
-    label: "Recorrências",
-    // "Recorrências" does not fit a ~72px tab on a 360px phone.
+    // The tab, the menu and the page all say "Grupos": "Recorrências" does
+    // not fit a ~66px tab on a 360px phone. The page names recorrências in
+    // its lede.
+    label: "Grupos",
     short: "Grupos",
     sub: "Incidentes que se repetem, em grupos",
     match: ["/recorrencias"],
@@ -67,8 +69,9 @@ export const NAV_ITEMS: readonly NavItem[] = [
     key: "how",
     href: "/como-funciona",
     icon: Icons.how,
-    label: "Como funciona",
-    // Five tabs leave ~78px each on a phone; the full label would be cut.
+    // One name in the tab, the menu and the page: "Como funciona" does not
+    // fit a ~66px tab on a 360px phone.
+    label: "Sobre a IA",
     short: "Sobre a IA",
     sub: "O caminho todo, passo a passo",
     match: ["/como-funciona"],

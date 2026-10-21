@@ -1,6 +1,6 @@
 "use client";
 
-// Renders the Aurora suggestion (LLM markdown) the way every modern AI chat
+// Renders the AI suggestion (LLM markdown) the way every modern AI chat
 // does — via react-markdown + remark-gfm — while keeping the project's signature
 // feature: the [INC…] citations stay first-class, clickable buttons that peek the
 // cited incident. A tiny remark plugin rewrites bare/bracketed INC numbers into

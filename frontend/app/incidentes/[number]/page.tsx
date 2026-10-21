@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, ViewTransition } from "react";
 
-import { ConceptLabel, RecordTag } from "@/components/concepts";
+import { ConceptLabel, RecordTag, TechDetails } from "@/components/concepts";
 import { Icons } from "@/components/icons";
 import { useShell } from "@/components/app-shell";
 import {
@@ -58,7 +58,7 @@ import { keepWhole } from "@/lib/text";
 
 type Tab = "detalhes" | "analise" | "atividade" | "relacionados";
 
-/** The live pipeline run for one incident, shared by the Aurora panel and the
+/** The live pipeline run for one incident, shared by the assistant panel and the
  * "Análise da IA" tab so both show the same result. */
 export interface SuggestionRun {
   phase: RunPhase;
@@ -110,7 +110,7 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
           ? e.status === 503
             ? "A IA não está configurada neste servidor."
             : e.detail
-          : "Não foi possível falar com a Aurora agora.",
+          : "Não foi possível falar com a IA agora.",
       );
       setPhase("error");
     } finally {
@@ -647,7 +647,7 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
                         <RecordTag number={r.number} size="sm" />
                       </span>
                       <span className="rdesc">{r.short}</span>
-                      <span className="svc mono">{r.service}</span>
+                      <span className="svc mono">{keepWhole(r.service)}</span>
                       <StateBadge state={r.state} />
                     </div>
                   ))}
@@ -774,7 +774,7 @@ function TabList({
 }
 
 // ===========================================================================
-//  Floating copilot — Aurora. Animated pipeline trace over the live RAG call.
+//  Floating copilot, the AI assistant. Animated pipeline trace over the live RAG call.
 // ===========================================================================
 
 function CopilotFab({
@@ -799,8 +799,30 @@ function CopilotFab({
 }) {
   const { peek, flashCite, autoSuggestFor, consumeAutoSuggest } = useShell();
 
+  // On a phone the button floats over the record's cards: it tucks away
+  // while the reader scrolls down and comes back on the way up or at the end.
+  const [tucked, setTucked] = useState(false);
+  useEffect(() => {
+    const phone = window.matchMedia("(max-width: 767.98px)");
+    let last = window.scrollY;
+    function onScroll() {
+      if (!phone.matches) {
+        setTucked(false);
+        return;
+      }
+      const y = window.scrollY;
+      const atEnd = window.innerHeight + y >= document.documentElement.scrollHeight - 24;
+      if (atEnd || y < 80) setTucked(false);
+      else if (y > last + 4) setTucked(true);
+      else if (y < last - 4) setTucked(false);
+      last = y;
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   // Two AI buttons on one screen compete: while "Analisar com a IA" is in
-  // view, the floating Aurora button steps aside.
+  // view, the floating assistant button steps aside.
   const [entryInView, setEntryInView] = useState(false);
   useEffect(() => {
     const visible = new Set<Element>();
@@ -990,7 +1012,7 @@ function CopilotFab({
         onClick={() => setSrcOpen((s) => !s)}
       >
         <Icons.list size={15} />
-        <span className="src-tt">Fontes que a Aurora consultou</span>
+        <span className="src-tt">Fontes que a IA consultou</span>
         <span className="src-count">{result.candidates.length}</span>
         <Icons.chevronDown size={14} />
       </button>
@@ -1072,7 +1094,12 @@ function CopilotFab({
                   flashCite={flashCite}
                 />
                 <div className="sugg-foot">
-                  Gerado por <b>{curModel.name}</b>. Fundamentado em casos resolvidos.
+                  <p>Fundamentado em casos resolvidos.</p>
+                  <TechDetails summary="Detalhes técnicos">
+                    <p>
+                      Gerado por <b>{curModel.name}</b>.
+                    </p>
+                  </TechDetails>
                 </div>
               </div>
             ) : null}
@@ -1143,10 +1170,10 @@ function CopilotFab({
   return (
     <>
       <button
-        className={`cop-fab${open || entryInView ? " hidden" : ""}${quiet ? " quiet" : ""}`}
+        className={`cop-fab${open || entryInView || tucked ? " hidden" : ""}${quiet ? " quiet" : ""}`}
         onClick={() => setOpen(true)}
-        aria-label="Falar com a Aurora"
-        title="Aurora · assistente de resolução"
+        aria-label="Falar com o assistente da IA"
+        title="Assistente da IA · sugestão de resolução"
       >
         <Icons.aiSpark />
       </button>
@@ -1156,7 +1183,7 @@ function CopilotFab({
           className="cop-panel"
           role="dialog"
           aria-modal="true"
-          aria-label="Aurora, assistente de resolução"
+          aria-label="Assistente da IA"
           tabIndex={-1}
           ref={trapRef}
         >
@@ -1165,7 +1192,7 @@ function CopilotFab({
               <Icons.aiSpark />
             </span>
             <div className="cph-title">
-              <div className="t">Aurora</div>
+              <div className="t">Assistente da IA</div>
               <button
                 className="model-pick"
                 onClick={() => setModelOpen((o) => !o)}
@@ -1220,9 +1247,9 @@ function CopilotFab({
                 <Icons.aiSpark size={15} />
               </span>
               <div className="bubble-ai">
-                Oi, eu sou a Aurora. Posso sugerir uma resolução para o{" "}
-                <b className="mono">{record.number}</b>, com base em incidentes parecidos
-                que já foram resolvidos. Sempre mostro as fontes para você conferir.
+                Posso sugerir uma resolução para o <b className="mono">{record.number}</b>
+                , com base em incidentes parecidos que já foram resolvidos. Sempre mostro
+                as fontes para você conferir.
               </div>
             </div>
             {!started ? (
@@ -1253,8 +1280,8 @@ function CopilotFab({
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Escreva uma mensagem para a Aurora…"
-              aria-label="Mensagem para a Aurora"
+              placeholder="Escreva uma mensagem para a IA…"
+              aria-label="Mensagem para a IA"
               onKeyDown={(e) => {
                 if (e.key === "Enter") submit();
               }}
@@ -1269,7 +1296,7 @@ function CopilotFab({
   );
 }
 
-/** Step 4 in the Aurora panel: the funnel and a compact ruler. */
+/** Step 4 in the assistant panel: the funnel and a compact ruler. */
 function MiniSearch({
   result,
   beat,

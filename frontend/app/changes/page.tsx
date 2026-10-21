@@ -19,7 +19,9 @@ import { absDate } from "@/lib/model";
 import "./changes.css";
 import { keepWhole } from "@/lib/text";
 
-type Tab = "scope" | "all";
+// "Para avaliar" holds what still needs a reading; a Change evaluated in this
+// browser tab moves to "Avaliadas" (the marks live in sessionStorage).
+type Tab = "scope" | "done" | "all";
 
 export default function ChangesPage() {
   const { data, loading, error, slow, retry } = useChanges();
@@ -29,10 +31,18 @@ export default function ChangesPage() {
   useEffect(() => setMarks(readEvalMarks()), []);
 
   const rows = useMemo<ChangeSummary[]>(
-    () => (data ?? []).filter((c) => tab === "all" || c.in_scope),
-    [data, tab],
+    () =>
+      (data ?? []).filter((c) =>
+        tab === "all"
+          ? true
+          : tab === "done"
+            ? Boolean(marks[c.number])
+            : c.in_scope && !marks[c.number],
+      ),
+    [data, tab, marks],
   );
-  const inScope = (data ?? []).filter((c) => c.in_scope).length;
+  const toEvaluate = (data ?? []).filter((c) => c.in_scope && !marks[c.number]).length;
+  const evaluated = (data ?? []).filter((c) => marks[c.number]).length;
 
   return (
     <div className="chg-page">
@@ -40,7 +50,7 @@ export default function ChangesPage() {
         <h1>Mudanças</h1>
         {data && (
           <span className="count">
-            {data.length} mudanças · {inScope} para avaliar
+            {data.length} mudanças · {toEvaluate} para avaliar
           </span>
         )}
       </div>
@@ -56,6 +66,13 @@ export default function ChangesPage() {
           onClick={() => setTab("scope")}
         >
           Para avaliar
+        </button>
+        <button
+          aria-pressed={tab === "done"}
+          className={tab === "done" ? "on" : ""}
+          onClick={() => setTab("done")}
+        >
+          Avaliadas{evaluated > 0 ? ` · ${evaluated}` : ""}
         </button>
         <button
           aria-pressed={tab === "all"}
@@ -84,9 +101,16 @@ export default function ChangesPage() {
         </div>
       )}
 
-      {data && rows.length === 0 && (
-        <StateBlock title="Nenhuma mudança neste filtro">
-          Escolha <b>Todas</b> para ver também as que ficam fora da avaliação.
+      {data && rows.length === 0 && tab === "done" && (
+        <StateBlock title="Nenhuma mudança avaliada ainda">
+          Abra uma em <b>Para avaliar</b> e peça a nota da IA. Ela fica aqui enquanto esta
+          aba do navegador estiver aberta.
+        </StateBlock>
+      )}
+      {data && rows.length === 0 && tab !== "done" && (
+        <StateBlock title="Nenhuma mudança para avaliar">
+          As que você avaliou estão em <b>Avaliadas</b>. Escolha <b>Todas</b> para ver
+          também as que ficam fora da avaliação.
         </StateBlock>
       )}
 
