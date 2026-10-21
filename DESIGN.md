@@ -136,6 +136,27 @@ Shared concept components in `components/concepts.tsx`:
 - **TechDetails** (`.tech`): the "Ver detalhes técnicos" disclosure.
 - **ConceptLegend** (`.legend`): the legend on `/aula`.
 
+Other shared pieces:
+
+- **Assistant button** (`components/assistant-fab.tsx`, `.cop-fab`): a
+  floating "Perguntar à IA" button on the incident page. Secondary style
+  (violet outline on the surface) so it never competes with the filled
+  "Analisar com a IA". Always visible unless the chat is open or the lesson
+  bar is on screen; on a phone it tucks away while scrolling down and comes
+  back on scroll up, at the end of the page or 0.9 s after scrolling stops,
+  and sits above the tab bar.
+- **Assistant panel**: titled "Assistente da IA" (the old name, Aurora, is
+  never shown). The answer card leads with one sentence, numbered steps,
+  clickable sources, confidence in words and the known error on top.
+- **Lesson bar** (`components/aula.tsx`): "Passo X de N", caption, "Reproduzir" (or "Pausar"),
+  "Próximo", "Ir ao fim" and "Pular"; the top bar shows "Modo aula ligado ·
+  Desligar". Each step scrolls its subject into the free band above the bar.
+
+Navigation names are declared once in `components/nav.ts`: Incidentes,
+Repetições (`/recorrencias`, `/repeticoes` redirects there), Problemas,
+Mudanças (`/changes`) and Como a IA funciona (`/como-funciona`). The menu, the
+tab bar and the page title use the same name.
+
 Buttons: 38px, weight 500, radius 8px. `.btn-primary` is ink (human action),
 `.btn-ai` is violet (asks the machine), `.btn-outline` and `.btn-ghost` for the
 rest. Every state is covered: default, hover, focus-visible, active, disabled,
