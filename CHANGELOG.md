@@ -7,101 +7,7 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
-### Alterado
-
-- **Coerência estável**: a conferência de coerência da Mudança roda três vezes
-  em paralelo. Nota e percentual de aderência são a mediana, e uma contradição
-  só reprova se aparecer no mesmo par de partes em pelo menos duas execuções;
-  as outras viram pontos de atenção. Com uma execução falhando, valem as que
-  voltaram. O tempo continua o de uma chamada; `model_calls` passa a contar 10
-  (7 campos + 3).
-- Tarefa, detalhe ou responsável que falta é sempre "lacuna", nunca
-  contradição, no prompt e na leitura da resposta.
-- CHG0031001 diz tudo o que as avaliações reais cobravam: tarefa de retorno
-  para conferir `helm get values` e as conexões no painel, como o canário
-  cresce (`canary.replicas` por etapa, com quem confirma), quem recebe o
-  alerta das 4 horas dentro e fora da janela, e que o retorno não restaura
-  dados (o snapshot fica só como contingência).
-- `scripts/calibrar_mudanca.py --paralelo K` roda K avaliações ao mesmo tempo.
-
-- O repositório e a demo não citam mais nenhum evento: o texto fala em
-  demonstração ao vivo, apresentações e aulas.
-- As fontes viram referências no padrão autor-data, como "(Ferreira, 2026)", com
-  a lista completa em "Referências" na tela Como a IA funciona e nos READMEs. Sai
-  a linha de créditos com os nomes de quem apresenta.
-- Os valores de "ensaio" passam a ser de uma execução real de referência.
-- **Coerência da Mudança com pontos tipados**: cada ponto do juiz tem tipo
-  (`contradicao`, `lacuna`, `sugestao`), com definições e exemplos no prompt.
-  Só uma contradição entre duas partes do pedido reprova; lacunas e sugestões
-  aparecem em "Pontos de atenção" (`semantic.attention`). Com o juiz dizendo
-  que o pedido está alinhado (coerência 8,0 ou mais e retorno aderente), um
-  item sem tipo também vira ponto de atenção. As duas avaliações reais de
-  CHG0031001 que saíam "Não segue" por causa de um snapshot e de um canário
-  passam a "Pode seguir"; a de CHG0031002 continua "Não segue".
-- `scripts/calibrar_mudanca.py` repete a avaliação real de uma Mudança N vezes e
-  mostra o veredito, as portas que reprovaram e os pontos por tipo.
-- "Analisar de novo" começa uma conversa nova no chat, com a linha "Nova
-  análise: a conversa recomeçou".
-- A pergunta envia o id da análise que a tela mostra; se outra aba analisou
-  depois, o servidor responde 409 e a tela analisa de novo antes de responder.
-- Com o modo aula ligado, a etapa 7 oferece "Fazer uma pergunta", que abre o
-  chat sem desligar a aula. A partir de 768 px, "Perguntar à IA" fica no rail
-  durante a aula; entre 768 e 920 px, vira um círculo de 44 px no rail estreito.
-
-### Alterado
-
-- **Perguntas partem da análise guardada no servidor**: `/api/suggest` guarda,
-  por visitante e incidente, o veredito, a justificativa, a sugestão mostrada e
-  os casos mantidos com o motivo de cada um. `/ask` responde a partir disso,
-  segue os passos da sugestão na mesma ordem e ignora os `context_ids` do
-  navegador. Sem análise guardada, responde 409 e a tela roda a análise antes
-  da pergunta; uma saudação continua respondida na hora.
-- Perguntas têm limite de uso próprio (`AI_ASK_MAX_PER_CLIENT`,
-  `AI_ASK_MAX_PER_IP`), separado das análises, com frase própria.
-- O prompt das perguntas usa os rótulos da tela ("Crítica", "Em andamento").
-- Analisar de novo substitui a nota da IA no lugar, sem empilhar outra.
-- Com o rail completo, o botão "Perguntar à IA" fica no rail e não cobre o
-  texto do registro.
-
-### Corrigido
-
-- Abrir o chat pela etapa 7 da aula ("Fazer uma pergunta") não recomeça mais a
-  barra em "Etapa 1 de 7": a aula do painel começa na última etapa quando a
-  análise já foi ensinada na aba. O painel só ensina do início uma análise que
-  ele mesmo rodou.
-- Depois de o servidor reiniciar, perguntas davam 409 para sempre sob uma
-  análise ainda na tela. Agora a análise roda de novo uma vez por pergunta, sem
-  limpar a conversa e sem duplicar a nota, e a pergunta é feita em seguida; se
-  ainda falhar, uma frase explica e oferece "Analisar de novo". Vale também
-  para a análise trazida de volta na mesma aba.
-- A nota da IA vem de uma fonte só: Atividade e Notas de trabalho mostram o
-  mesmo texto depois de analisar de novo, e a nota nova de um servidor
-  reiniciado substitui a antiga em vez de somar outra.
-- Voltar a um texto já avaliado só conta campos que tiveram nota, e a dica diz
-  que "a IA pode reaproveitar a nota se ela ainda estiver guardada"; a etiqueta
-  do campo diz "Editado: texto já avaliado" em vez de "será reavaliado".
-- A saudação de uma análise improcedente não oferece mais "a resolução
-  sugerida".
-- Uma frase que nega contradição ("Não identifiquei nenhuma inconsistência
-  entre objetivo e benefícios") nunca reprova a Mudança.
-- Pergunta com mais de 600 caracteres derrubava a tela do incidente: o campo
-  para em 600 com contador, e todo erro de validação vira uma frase em
-  português.
-- Chat: resposta com `kind` fora do padrão ou vazia, pergunta perdida quando a
-  análise falhava, pergunta ignorada enquanto a análise rodava, "Tentar de
-  novo" que mudava a pergunta de lugar, texto do campo cortado em 360 e que
-  oferecia sugestão no improcedente, palavras longas fora do balão.
-- Sair do incidente e voltar na mesma aba mantém a análise e a conversa.
-- O filtro de contradições só descarta frases inteiras de negação; uma
-  contradição curta e real conta.
-- Campo que volta a um texto já avaliado não aparece como "Nada mudou".
-- Média inalcançável não pede "Avalie de novo"; nomes de campos em "A e B".
-- Coerência que reprova aparece em vermelho no cartão, como na pergunta 2; o
-  último passo da aula aponta para "Ver onde".
-- "3.072 dimensões" no passo do embedding; INC0053082 com prioridade Crítica,
-  como pedem Impacto e Urgência altos.
-
-## [1.1.0] - 2026-10-21
+## [1.1.0] - 2026-10-22
 
 Versão pronta para demonstração ao vivo em apresentações e aulas. Tudo o que
 mudou na API é aditivo: rotas e campos novos, nenhum removido ou renomeado.
@@ -154,6 +60,55 @@ mudou na API é aditivo: rotas e campos novos, nenhum removido ou renomeado.
 
 ### Alterado
 
+- **Coerência estável**: a conferência de coerência da Mudança roda três vezes
+  em paralelo. Nota e percentual de aderência são a mediana, e uma contradição
+  só reprova se aparecer no mesmo par de partes em pelo menos duas execuções;
+  as outras viram pontos de atenção. Com uma execução falhando, valem as que
+  voltaram. O tempo continua o de uma chamada; `model_calls` passa a contar 10
+  (7 campos + 3).
+- Tarefa, detalhe ou responsável que falta é sempre "lacuna", nunca
+  contradição, no prompt e na leitura da resposta.
+- CHG0031001 diz tudo o que as avaliações reais cobravam: tarefa de retorno
+  para conferir `helm get values` e as conexões no painel, como o canário
+  cresce (`canary.replicas` por etapa, com quem confirma), quem recebe o
+  alerta das 4 horas dentro e fora da janela, e que o retorno não restaura
+  dados (o snapshot fica só como contingência).
+- `scripts/calibrar_mudanca.py --paralelo K` roda K avaliações ao mesmo tempo.
+- O repositório e a demo não citam mais nenhum evento: o texto fala em
+  demonstração ao vivo, apresentações e aulas.
+- As fontes viram referências no padrão autor-data, como "(Ferreira, 2026)", com
+  a lista completa em "Referências" na tela Como a IA funciona e nos READMEs. Sai
+  a linha de créditos com os nomes de quem apresenta.
+- Os valores de "ensaio" passam a ser de uma execução real de referência.
+- **Coerência da Mudança com pontos tipados**: cada ponto do juiz tem tipo
+  (`contradicao`, `lacuna`, `sugestao`), com definições e exemplos no prompt.
+  Só uma contradição entre duas partes do pedido reprova; lacunas e sugestões
+  aparecem em "Pontos de atenção" (`semantic.attention`). Com o juiz dizendo
+  que o pedido está alinhado (coerência 8,0 ou mais e retorno aderente), um
+  item sem tipo também vira ponto de atenção. As duas avaliações reais de
+  CHG0031001 que saíam "Não segue" por causa de um snapshot e de um canário
+  passam a "Pode seguir"; a de CHG0031002 continua "Não segue".
+- `scripts/calibrar_mudanca.py` repete a avaliação real de uma Mudança N vezes e
+  mostra o veredito, as portas que reprovaram e os pontos por tipo.
+- "Analisar de novo" começa uma conversa nova no chat, com a linha "Nova
+  análise: a conversa recomeçou".
+- A pergunta envia o id da análise que a tela mostra; se outra aba analisou
+  depois, o servidor responde 409 e a tela analisa de novo antes de responder.
+- Com o modo aula ligado, a etapa 7 oferece "Fazer uma pergunta", que abre o
+  chat sem desligar a aula. A partir de 768 px, "Perguntar à IA" fica no rail
+  durante a aula; entre 768 e 920 px, vira um círculo de 44 px no rail estreito.
+- **Perguntas partem da análise guardada no servidor**: `/api/suggest` guarda,
+  por visitante e incidente, o veredito, a justificativa, a sugestão mostrada e
+  os casos mantidos com o motivo de cada um. `/ask` responde a partir disso,
+  segue os passos da sugestão na mesma ordem e ignora os `context_ids` do
+  navegador. Sem análise guardada, responde 409 e a tela roda a análise antes
+  da pergunta; uma saudação continua respondida na hora.
+- Perguntas têm limite de uso próprio (`AI_ASK_MAX_PER_CLIENT`,
+  `AI_ASK_MAX_PER_IP`), separado das análises, com frase própria.
+- O prompt das perguntas usa os rótulos da tela ("Crítica", "Em andamento").
+- Analisar de novo substitui a nota da IA no lugar, sem empilhar outra.
+- Com o rail completo, o botão "Perguntar à IA" fica no rail e não cobre o
+  texto do registro.
 - Interface toda revista: layout mobile first (sem rolagem lateral de 360 a
   1920 px), visual "Claro" com violeta só para a IA, cor, ícone e forma fixos
   por conceito, copy em português simples com o jargão em "Ver detalhes
@@ -178,6 +133,41 @@ mudou na API é aditivo: rotas e campos novos, nenhum removido ou renomeado.
 
 ### Corrigido
 
+- Abrir o chat pela etapa 7 da aula ("Fazer uma pergunta") não recomeça mais a
+  barra em "Etapa 1 de 7": a aula do painel começa na última etapa quando a
+  análise já foi ensinada na aba. O painel só ensina do início uma análise que
+  ele mesmo rodou.
+- Depois de o servidor reiniciar, perguntas davam 409 para sempre sob uma
+  análise ainda na tela. Agora a análise roda de novo uma vez por pergunta, sem
+  limpar a conversa e sem duplicar a nota, e a pergunta é feita em seguida; se
+  ainda falhar, uma frase explica e oferece "Analisar de novo". Vale também
+  para a análise trazida de volta na mesma aba.
+- A nota da IA vem de uma fonte só: Atividade e Notas de trabalho mostram o
+  mesmo texto depois de analisar de novo, e a nota nova de um servidor
+  reiniciado substitui a antiga em vez de somar outra.
+- Voltar a um texto já avaliado só conta campos que tiveram nota, e a dica diz
+  que "a IA pode reaproveitar a nota se ela ainda estiver guardada"; a etiqueta
+  do campo diz "Editado: texto já avaliado" em vez de "será reavaliado".
+- A saudação de uma análise improcedente não oferece mais "a resolução
+  sugerida".
+- Uma frase que nega contradição ("Não identifiquei nenhuma inconsistência
+  entre objetivo e benefícios") nunca reprova a Mudança.
+- Pergunta com mais de 600 caracteres derrubava a tela do incidente: o campo
+  para em 600 com contador, e todo erro de validação vira uma frase em
+  português.
+- Chat: resposta com `kind` fora do padrão ou vazia, pergunta perdida quando a
+  análise falhava, pergunta ignorada enquanto a análise rodava, "Tentar de
+  novo" que mudava a pergunta de lugar, texto do campo cortado em 360 e que
+  oferecia sugestão no improcedente, palavras longas fora do balão.
+- Sair do incidente e voltar na mesma aba mantém a análise e a conversa.
+- O filtro de contradições só descarta frases inteiras de negação; uma
+  contradição curta e real conta.
+- Campo que volta a um texto já avaliado não aparece como "Nada mudou".
+- Média inalcançável não pede "Avalie de novo"; nomes de campos em "A e B".
+- Coerência que reprova aparece em vermelho no cartão, como na pergunta 2; o
+  último passo da aula aponta para "Ver onde".
+- "3.072 dimensões" no passo do embedding; INC0053082 com prioridade Crítica,
+  como pedem Impacto e Urgência altos.
 - Avaliação de Mudança não quebra com JSON cortado nem com resposta fora do
   formato: leitura tolerante de notas e percentuais, nova tentativa de formato,
   campo que falha vira "sem nota" em vez de derrubar a avaliação.
