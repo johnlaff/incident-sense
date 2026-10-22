@@ -250,6 +250,7 @@ export function PipelineTrace({
                   onCite={onCite}
                   flashCite={flashCite}
                   onShowNotes={onShowNotes}
+                  onAsk={onAsk}
                 />
               )
             ) : null}
@@ -589,7 +590,7 @@ function GateMark({ open }: { open: boolean }) {
   );
 }
 
-function StepDetail({
+export function StepDetail({
   step,
   result,
   source,
@@ -598,6 +599,7 @@ function StepDetail({
   onCite,
   flashCite,
   onShowNotes,
+  onAsk,
 }: {
   step: LessonStepKey;
   result: SuggestResponse;
@@ -607,6 +609,8 @@ function StepDetail({
   onCite: CiteHandler;
   flashCite: string | null;
   onShowNotes: () => void;
+  /** Open the assistant chat, modo aula staying on (E2E-5 P1-1). */
+  onAsk?: () => void;
 }) {
   switch (step) {
     case "carregar":
@@ -675,6 +679,16 @@ function StepDetail({
               >
                 <Icons.list />
                 Ver a nota no incidente
+              </button>
+            ) : null}
+            {onAsk ? (
+              <button
+                type="button"
+                className="btn btn-outline btn-sm pipe-ask-btn"
+                onClick={onAsk}
+              >
+                <Icons.aiSpark />
+                Fazer uma pergunta
               </button>
             ) : null}
           </div>

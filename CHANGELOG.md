@@ -15,6 +15,23 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
   a lista completa em "Referências" na tela Como a IA funciona e nos READMEs. Sai
   a linha de créditos com os nomes de quem apresenta.
 - Os valores de "ensaio" passam a ser de uma execução real de referência.
+- **Coerência da Mudança com pontos tipados**: cada ponto do juiz tem tipo
+  (`contradicao`, `lacuna`, `sugestao`), com definições e exemplos no prompt.
+  Só uma contradição entre duas partes do pedido reprova; lacunas e sugestões
+  aparecem em "Pontos de atenção" (`semantic.attention`). Com o juiz dizendo
+  que o pedido está alinhado (coerência 8,0 ou mais e retorno aderente), um
+  item sem tipo também vira ponto de atenção. As duas avaliações reais de
+  CHG0031001 que saíam "Não segue" por causa de um snapshot e de um canário
+  passam a "Pode seguir"; a de CHG0031002 continua "Não segue".
+- `scripts/calibrar_mudanca.py` repete a avaliação real de uma Mudança N vezes e
+  mostra o veredito, as portas que reprovaram e os pontos por tipo.
+- "Analisar de novo" começa uma conversa nova no chat, com a linha "Nova
+  análise: a conversa recomeçou".
+- A pergunta envia o id da análise que a tela mostra; se outra aba analisou
+  depois, o servidor responde 409 e a tela analisa de novo antes de responder.
+- Com o modo aula ligado, a etapa 7 oferece "Fazer uma pergunta", que abre o
+  chat sem desligar a aula. A partir de 768 px, "Perguntar à IA" fica no rail
+  durante a aula; entre 768 e 920 px, vira um círculo de 44 px no rail estreito.
 
 ### Alterado
 
@@ -33,6 +50,21 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ### Corrigido
 
+- Depois de o servidor reiniciar, perguntas davam 409 para sempre sob uma
+  análise ainda na tela. Agora a análise roda de novo uma vez por pergunta, sem
+  limpar a conversa e sem duplicar a nota, e a pergunta é feita em seguida; se
+  ainda falhar, uma frase explica e oferece "Analisar de novo". Vale também
+  para a análise trazida de volta na mesma aba.
+- A nota da IA vem de uma fonte só: Atividade e Notas de trabalho mostram o
+  mesmo texto depois de analisar de novo, e a nota nova de um servidor
+  reiniciado substitui a antiga em vez de somar outra.
+- Voltar a um texto já avaliado só conta campos que tiveram nota, e a dica diz
+  que "a IA pode reaproveitar a nota se ela ainda estiver guardada"; a etiqueta
+  do campo diz "Editado: texto já avaliado" em vez de "será reavaliado".
+- A saudação de uma análise improcedente não oferece mais "a resolução
+  sugerida".
+- Uma frase que nega contradição ("Não identifiquei nenhuma inconsistência
+  entre objetivo e benefícios") nunca reprova a Mudança.
 - Pergunta com mais de 600 caracteres derrubava a tela do incidente: o campo
   para em 600 com contador, e todo erro de validação vira uma frase em
   português.

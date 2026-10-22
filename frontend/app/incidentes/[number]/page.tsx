@@ -26,8 +26,9 @@ import {
   WakeNotice,
 } from "@/components/ui";
 import { activate, useFocusTrap, useScrollLock } from "@/lib/a11y";
-import { api, ApiError } from "@/lib/api";
+import { api } from "@/lib/api";
 import {
+  afterAskError,
   askNote,
   followUpBody,
   inputHint,
@@ -35,6 +36,7 @@ import {
   QUESTION_MAX,
   questionCount,
   readChat,
+  restartTurns,
   saveChat,
   settleTurns,
   upsertTurn,
@@ -53,7 +55,7 @@ import {
   mapDetail,
   mapSuggest,
   markdownToPlain,
-  noteActivity,
+  activityWithNotes,
   relTime,
   type DsState,
   type IncidentRecord,
@@ -93,12 +95,13 @@ export interface SuggestionRun {
   durationMs: number | null;
   model: string;
   setModel: (id: string) => void;
-  run: () => Promise<void>;
+  /** A new analysis. ``keepChat``: a silent re-sync for a waiting question. */
+  run: (opts?: { keepChat?: boolean }) => Promise<void>;
   /** Questions typed in the assistant chat, kept with the analysis. */
   turns: Turn[];
   setTurns: (update: (turns: Turn[]) => Turn[]) => void;
-  /** True once an analysis ran in this visit (not one brought back). */
-  ranHere: boolean;
+  /** A new analysis cleared the conversation about the previous one. */
+  restarted: boolean;
 }
 
 function useSuggestion(record: IncidentRecord): SuggestionRun {
@@ -109,7 +112,7 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
   const [durationMs, setDurationMs] = useState<number | null>(null);
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [ranHere, setRanHere] = useState(false);
+  const [restarted, setRestarted] = useState(false);
   const busy = useRef(false);
 
   // Leaving the incident and coming back in the same tab brings the analysis
@@ -128,9 +131,16 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
     if (response) saveChat(record.number, { response, durationMs, model, turns });
   }, [record.number, response, durationMs, model, turns]);
 
-  async function run() {
+  async function run({ keepChat = false }: { keepChat?: boolean } = {}) {
     if (busy.current) return;
     busy.current = true;
+    // Analysing again starts a new conversation (E2E-5 P1-2); a re-sync after
+    // a lost analysis keeps it, since the question is about to be asked.
+    if (!keepChat && response) {
+      const next = restartTurns(turns);
+      setTurns(next.turns);
+      setRestarted(next.restarted || restarted);
+    }
     const t0 = Date.now();
     setStartedAt(t0);
     setPhase("running");
@@ -154,7 +164,6 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
         return;
       }
       setResponse(res);
-      setRanHere(true);
       setPhase("done");
     } catch (e) {
       setError(suggestErrorMessage(e));
@@ -175,7 +184,7 @@ function useSuggestion(record: IncidentRecord): SuggestionRun {
     run,
     turns,
     setTurns,
-    ranHere,
+    restarted,
   };
 }
 
@@ -388,13 +397,11 @@ function Detail({ record, peek }: { record: IncidentRecord; peek: (n: string) =>
     () => mergeNotes(record.publishedNotes, suggest.response?.publication.note),
     [record.publishedNotes, suggest.response],
   );
-  const activity = useMemo(() => {
-    const loaded = new Set(record.publishedNotes.map((n) => n.id));
-    return [
-      ...record.activity,
-      ...notes.filter((n) => !loaded.has(n.id)).map(noteActivity),
-    ];
-  }, [record.activity, record.publishedNotes, notes]);
+  // One source for the AI note: the same list as "Notas de trabalho".
+  const activity = useMemo(
+    () => activityWithNotes(record.activity, notes),
+    [record.activity, notes],
+  );
 
   // Both AI buttons (top of the record and the empty resolution notes) open
   // the analysis tab and start a run when there is no answer yet. The page
@@ -977,19 +984,32 @@ function CopilotFab({
         record.number,
         followUpBody(suggest.response, turn.question, model),
       );
-      setTurns((all) => upsertTurn(all, { ...turn, state: "done", res, error: null }));
+      setTurns((all) =>
+        upsertTurn(all, {
+          ...turn,
+          state: "done",
+          res,
+          error: null,
+          needsAnalysis: false,
+        }),
+      );
     } catch (e) {
-      // 409: the server holds no analysis for this visitor yet (or lost it).
-      // The question waits, the analysis runs, then the question is asked.
-      if (e instanceof ApiError && e.status === 409 && !suggest.ranHere) {
-        setTurns((all) => upsertTurn(all, { ...turn, state: "waiting" }));
-        askDefault();
-        return;
-      }
-      const error =
-        e instanceof ApiError ? e.detail : "Não foi possível responder agora.";
-      setTurns((all) => upsertTurn(all, { ...turn, state: "error", error }));
+      // 409: the server holds no analysis for this visitor (a restart, or it
+      // never ran), or another tab's. The analysis runs again once, without
+      // clearing the chat, and the question is asked after it (logica-5 P1-1).
+      const next = afterAskError(turn, e);
+      setTurns((all) => upsertTurn(all, next.turn));
+      if (next.reanalyze) void suggest.run({ keepChat: true });
     }
+  }
+
+  /** "Analisar de novo" on a question that waits or lost its analysis. */
+  function resync(turn: Turn) {
+    if (turn.state === "error")
+      setTurns((all) =>
+        upsertTurn(all, { ...turn, state: "waiting", error: null, needsAnalysis: false }),
+      );
+    void suggest.run({ keepChat: true });
   }
 
   // A written message is a question. The server answers a greeting at once
@@ -1389,6 +1409,11 @@ function CopilotFab({
                 </div>
               </>
             )}
+            {suggest.restarted && phase !== "idle" ? (
+              <p className="cop-restart" role="status">
+                Nova análise: a conversa recomeçou
+              </p>
+            ) : null}
             {turns.map((t) => (
               <FollowUpTurn
                 key={t.id}
@@ -1397,7 +1422,7 @@ function CopilotFab({
                 onCite={peek}
                 flashCite={flashCite}
                 onRetry={() => void ask(t)}
-                onRetryAnalysis={run}
+                onRetryAnalysis={() => resync(t)}
               />
             ))}
           </div>
@@ -1483,10 +1508,17 @@ function FollowUpTurn({
           ) : turn.state === "error" ? (
             <>
               <p>{turn.error}</p>
-              <button className="btn btn-outline btn-sm" onClick={onRetry}>
-                <Icons.retry />
-                Tentar de novo
-              </button>
+              {turn.needsAnalysis ? (
+                <button className="btn btn-outline btn-sm" onClick={onRetryAnalysis}>
+                  <Icons.retry />
+                  Analisar de novo
+                </button>
+              ) : (
+                <button className="btn btn-outline btn-sm" onClick={onRetry}>
+                  <Icons.retry />
+                  Tentar de novo
+                </button>
+              )}
             </>
           ) : turn.res ? (
             <>

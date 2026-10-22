@@ -4,6 +4,7 @@
 // suggestion and kept cases) and nothing else. It never re-runs the analysis
 // and never publishes a note.
 import { isSuggestResponse } from "./suggest-guard";
+import { ApiError } from "./api";
 import type { AskBody, AskResponse, SuggestResponse } from "./types";
 
 /** "A, B e C". */
@@ -35,6 +36,8 @@ export function followUpBody(
   return {
     question: question.trim(),
     context_ids: analysis?.context_ids ?? [],
+    // The analysis on screen: another tab's run makes the server ask to re-sync.
+    ...(analysis?.analysis_id ? { analysis_id: analysis.analysis_id } : {}),
     ...(model ? { model } : {}),
   };
 }
@@ -72,6 +75,60 @@ export interface Turn {
   state: "waiting" | "running" | "done" | "error";
   res: AskResponse | null;
   error: string | null;
+  /** The analysis already ran again once for this question (after a 409). */
+  resynced?: boolean;
+  /** The error can only be fixed by a new analysis: it offers "Analisar de novo". */
+  needsAnalysis?: boolean;
+}
+
+/** Said when the server still has no analysis after running it again. */
+export const LOST_ANALYSIS =
+  "O servidor não encontrou a análise desta tela (ele pode ter reiniciado). Analise de novo e a pergunta é feita em seguida.";
+
+/**
+ * What a failed question does next. A 409 means the server holds no analysis
+ * for this visitor, or another one than the page shows (a restart, another
+ * tab): the analysis runs again once, silently, and the question waits for it.
+ * A second 409 for the same question stops with a sentence and "Analisar de
+ * novo"; anything else keeps its own message and "Tentar de novo".
+ */
+export function afterAskError(
+  turn: Turn,
+  error: unknown,
+): { turn: Turn; reanalyze: boolean } {
+  if (error instanceof ApiError && error.status === 409) {
+    if (!turn.resynced)
+      return {
+        turn: { ...turn, state: "waiting", res: null, error: null, resynced: true },
+        reanalyze: true,
+      };
+    return {
+      turn: {
+        ...turn,
+        state: "error",
+        res: null,
+        error: LOST_ANALYSIS,
+        needsAnalysis: true,
+      },
+      reanalyze: false,
+    };
+  }
+  const detail =
+    error instanceof ApiError ? error.detail : "Não foi possível responder agora.";
+  return {
+    turn: { ...turn, state: "error", res: null, error: detail, needsAnalysis: false },
+    reanalyze: false,
+  };
+}
+
+/**
+ * A new analysis (the person asked for it) starts a new conversation: the
+ * answers about the old one would contradict what is on screen. A question
+ * still waiting for an analysis stays, to be asked after this one.
+ */
+export function restartTurns(turns: Turn[]): { turns: Turn[]; restarted: boolean } {
+  const kept = turns.filter((t) => t.state === "waiting");
+  return { turns: kept, restarted: kept.length < turns.length };
 }
 
 /** Put a turn back where it was (a retry never moves it), or add it at the end. */

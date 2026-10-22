@@ -188,6 +188,8 @@ export interface SuggestResponse {
   decision: ProcedenciaDecision;
   citations: CitationCheck;
   publication: Publication;
+  /** Which run this is: the follow-up sends it back (absent on older servers). */
+  analysis_id?: string | null;
 }
 
 /** A follow-up question about an analysis (POST /api/incidents/{n}/ask). */
@@ -195,6 +197,8 @@ export interface AskBody {
   question: string;
   /** The kept ids of the analysis: the only sources the answer may cite. */
   context_ids: string[];
+  /** The analysis the page shows; the server answers 409 when it holds another. */
+  analysis_id?: string;
   model?: string;
 }
 

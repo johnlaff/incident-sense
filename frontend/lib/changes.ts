@@ -92,7 +92,10 @@ export type BackoutAdherence = "ADERENTE" | "PARCIAL" | "NAO_ADERENTE";
 
 export interface SemanticAnalysis {
   consistency_score: number;
+  /** Real contradictions between two parts: they hold the Change back. */
   problems: string[];
+  /** Gaps and suggestions (pontos de atenção): never block. Older servers omit it. */
+  attention?: string[];
   reasoning: string;
   guidance: string;
   backout_adherence: BackoutAdherence;

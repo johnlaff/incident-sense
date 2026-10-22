@@ -4,6 +4,7 @@
 import {
   PARTIAL_FROM,
   isScored,
+  type Change,
   type DecisionReason,
   type Evaluation,
   type FieldKey,
@@ -722,6 +723,35 @@ export function runningLine(
   return `A IA está lendo os ${fields} campos em paralelo, no servidor. As notas chegam todas juntas.`;
 }
 
+/**
+ * The texts the AI graded, per field, after one more result: only fields that
+ * came back with a grade, so going back to a text promises only a grade the
+ * server can have kept (logica-5 P2-3).
+ */
+export function gradedTexts(
+  all: Partial<Record<FieldKey, string[]>>,
+  read: Partial<Record<FieldKey, string>>,
+  change: Change,
+  fields: FieldScore[],
+): Partial<Record<FieldKey, string[]>> {
+  const next = { ...all };
+  for (const f of fields) {
+    if (!isScored(f)) continue;
+    const text = read[f.key] ?? change[f.key];
+    if (typeof text !== "string") continue;
+    if (!next[f.key]?.includes(text)) next[f.key] = [...(next[f.key] ?? []), text];
+  }
+  return next;
+}
+
+/**
+ * The tag on an edited field. Back to a text the AI already graded, it is
+ * not "será reavaliado": the next run may bring that grade back (e2e-5 P2-2).
+ */
+export function editTag(recalled: boolean): string {
+  return recalled ? "Editado: texto já avaliado" : "Editado: será reavaliado";
+}
+
 /** What the next "Reavaliar" will send, said before it runs. */
 export function rerunHint({
   dirty,
@@ -733,8 +763,8 @@ export function rerunHint({
   if (modelChanged) return `Modelo trocado: os ${total} campos voltam para a IA.`;
   if (dirty === 0 && failed === 0 && recalled > 0)
     return recalled === 1
-      ? "O campo voltou a um texto que a IA já tinha avaliado: ele volta para a nota desse texto, sem chamar a IA."
-      : `${recalled} campos voltaram a textos que a IA já tinha avaliado: eles voltam para as notas desses textos, sem chamar a IA.`;
+      ? "O campo voltou a um texto que a IA já tinha avaliado: a IA pode reaproveitar a nota se ela ainda estiver guardada."
+      : `${recalled} campos voltaram a textos que a IA já tinha avaliado: a IA pode reaproveitar as notas se elas ainda estiverem guardadas.`;
   if (dirty === 0 && failed > 0)
     return failed === 1
       ? "O campo que a IA não tinha avaliado volta para ela; os outros são reaproveitados."
