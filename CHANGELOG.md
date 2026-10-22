@@ -12,7 +12,8 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - **Guarda de uso confiável** ([ADR 0023](docs/decisions/0023-guarda-de-uso-confiavel-e-limites-de-tamanho.md)):
   a rede do visitante é o endereço que o proxy acrescentou a
   `X-Forwarded-For` (`TRUSTED_PROXY_HOPS`, padrão 1), não o primeiro, que o
-  cliente escolhe. A guarda remove janelas vazias, tem teto de 10.000 chaves e
+  cliente escolhe; endereços privados do proxy interno no fim da lista são
+  ignorados. A guarda remove janelas vazias, tem teto de 10.000 chaves e
   registra cada recusa no log (`ai_quota_refused`).
 - **Limites de tamanho** em todo texto enviado ao modelo: descrição 4000,
   título 300, campo de Mudança e plano de retorno 6000, até 7 campos,

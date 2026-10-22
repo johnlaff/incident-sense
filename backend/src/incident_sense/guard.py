@@ -14,6 +14,7 @@ process without limit.
 
 from __future__ import annotations
 
+import ipaddress
 import threading
 import time
 from collections import OrderedDict, deque
@@ -156,21 +157,35 @@ def get_ask_guard() -> UsageGuard:
 
 
 def client_ip(request: Request, settings: Settings | None = None) -> str:
-    """The visitor's network: the last hop a trusted proxy appended.
+    """The visitor's network: the last public hop a trusted proxy appended.
 
     Proxies append the address they saw to ``X-Forwarded-For``, so the list
     ends with what our own edge saw; everything before it is whatever the
-    client chose to send. ``trusted_proxy_hops`` counts the trusted entries
-    from the end (one for Render's edge). Without the header, the peer of the
-    connection is the visitor.
+    client chose to send. Addresses from private ranges at the end of the
+    list are the hosting platform's own hops (Render's internal proxies
+    append one, and it changes between requests) and never a visitor, so
+    they are skipped first. ``trusted_proxy_hops`` then counts the trusted
+    entries from the end (one for Render's edge). Without the header, the
+    peer of the connection is the visitor.
     """
     settings = settings or get_settings()
     forwarded = [h.strip() for h in request.headers.get("x-forwarded-for", "").split(",")]
     forwarded = [h for h in forwarded if h]
+    while len(forwarded) > 1 and _is_internal(forwarded[-1]):
+        forwarded.pop()
     if forwarded:
         hops = max(1, settings.trusted_proxy_hops)
         return forwarded[-hops] if hops <= len(forwarded) else forwarded[0]
     return request.client.host if request.client else "unknown"
+
+
+def _is_internal(address: str) -> bool:
+    """A private, loopback, link-local or unspecified address: a platform hop."""
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+    return ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_unspecified
 
 
 def client_key(request: Request) -> str:
