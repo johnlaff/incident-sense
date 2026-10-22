@@ -61,7 +61,7 @@ export function askNote(res: AskResponse): string | null {
  * what the analysis has: no suggestion on an improcedente or an empty base.
  */
 export function inputHint(analysis: SuggestResponse | null): string {
-  if (!analysis) return "Pergunte; antes, a IA analisa…";
+  if (!analysis) return "Pergunte sobre o incidente…";
   if (analysis.classification === "PROCEDENTE" && analysis.suggestion)
     return "Pergunte sobre a sugestão…";
   return "Pergunte sobre a análise…";
@@ -79,7 +79,13 @@ export interface Turn {
   resynced?: boolean;
   /** The error can only be fixed by a new analysis: it offers "Analisar de novo". */
   needsAnalysis?: boolean;
+  /** No analysis ran yet: the button reads "Analisar o incidente". */
+  firstAnalysis?: boolean;
 }
+
+/** Said when a question comes before any analysis; the analysis is a choice. */
+export const NO_ANALYSIS =
+  "Para responder sobre este incidente, a IA precisa analisá-lo antes. A análise leva alguns segundos.";
 
 /** Said when the server still has no analysis after running it again. */
 export const LOST_ANALYSIS =
@@ -87,15 +93,30 @@ export const LOST_ANALYSIS =
 
 /**
  * What a failed question does next. A 409 means the server holds no analysis
- * for this visitor, or another one than the page shows (a restart, another
- * tab): the analysis runs again once, silently, and the question waits for it.
- * A second 409 for the same question stops with a sentence and "Analisar de
- * novo"; anything else keeps its own message and "Tentar de novo".
+ * for this visitor, or another one than the page shows. With no analysis on
+ * screen, nothing runs unasked: the chat says so and offers "Analisar o
+ * incidente". Under an analysis on screen (a restart, another tab), the
+ * analysis runs again once, silently, and the question waits for it. A second
+ * 409 for the same question stops with a sentence and "Analisar de novo";
+ * anything else keeps its own message and "Tentar de novo".
  */
 export function afterAskError(
   turn: Turn,
   error: unknown,
+  onScreen: boolean,
 ): { turn: Turn; reanalyze: boolean } {
+  if (error instanceof ApiError && error.status === 409 && !onScreen)
+    return {
+      turn: {
+        ...turn,
+        state: "error",
+        res: null,
+        error: NO_ANALYSIS,
+        needsAnalysis: true,
+        firstAnalysis: true,
+      },
+      reanalyze: false,
+    };
   if (error instanceof ApiError && error.status === 409) {
     if (!turn.resynced)
       return {

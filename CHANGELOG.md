@@ -29,6 +29,11 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ### Corrigido
 
+- Uma pergunta no chat antes de qualquer análise disparava a análise inteira
+  sozinha. Agora o chat explica que a IA precisa analisar o incidente antes e
+  oferece "Analisar o incidente"; a análise só roda quando a pessoa pede. O
+  campo diz "Pergunte sobre o incidente…". Sob uma análise que o servidor
+  perdeu (reinício), a pergunta continua analisando de novo uma vez sozinha.
 - A API do Render dormia entre as apresentações: o agendamento do GitHub
   Actions, que devia pingar a cada 10 minutos, rodava com cerca de 3 horas de
   intervalo. O ping passa para o Worker `keep-awake/`, com cron trigger da

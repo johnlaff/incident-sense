@@ -52,14 +52,14 @@ const lost = () => new ApiError(409, "Ainda não há análise.");
 
 describe("logica-5 P1-1: a 409 after a restart re-syncs once, then says what to do", () => {
   it("the first 409 of a question runs the analysis again and asks after it", () => {
-    const next = afterAskError(turn(), lost());
+    const next = afterAskError(turn(), lost(), true);
     expect(next.reanalyze).toBe(true);
     expect(next.turn.state).toBe("waiting");
     expect(next.turn.resynced).toBe(true);
   });
 
   it("a second 409 for the same question stops, in PT-BR, with 'Analisar de novo'", () => {
-    const next = afterAskError(turn({ resynced: true }), lost());
+    const next = afterAskError(turn({ resynced: true }), lost(), true);
     expect(next.reanalyze).toBe(false);
     expect(next.turn.state).toBe("error");
     expect(next.turn.needsAnalysis).toBe(true);
@@ -78,15 +78,19 @@ describe("logica-5 P1-1: a 409 after a restart re-syncs once, then says what to 
     const back = readChat("INC0052233")!;
     expect(back.response.analysis_id).toBe("a1");
     const asked = turn({ id: 2, question: "E depois?" });
-    expect(afterAskError(asked, lost()).reanalyze).toBe(true);
+    expect(afterAskError(asked, lost(), true).reanalyze).toBe(true);
   });
 
   it("any other error keeps its own message and retry", () => {
-    const next = afterAskError(turn(), new ApiError(503, "A IA está indisponível."));
+    const next = afterAskError(
+      turn(),
+      new ApiError(503, "A IA está indisponível."),
+      true,
+    );
     expect(next.reanalyze).toBe(false);
     expect(next.turn).toMatchObject({ state: "error", error: "A IA está indisponível." });
     expect(next.turn.needsAnalysis).toBeFalsy();
-    expect(afterAskError(turn(), new Error("x")).turn.error).toBe(
+    expect(afterAskError(turn(), new Error("x"), true).turn.error).toBe(
       "Não foi possível responder agora.",
     );
   });

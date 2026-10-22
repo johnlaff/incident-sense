@@ -102,7 +102,7 @@ describe("P1-2: a typed question is a follow-up, not a new analysis", () => {
   });
 
   it("the input says what it does before and after the analysis", () => {
-    expect(inputHint(null)).toMatch(/analisa/);
+    expect(inputHint(null)).not.toMatch(/analisa/);
     expect(inputHint(res)).toMatch(/sugestão/);
   });
 });
