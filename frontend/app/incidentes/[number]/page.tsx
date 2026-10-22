@@ -950,7 +950,17 @@ function CopilotFab({
   // only runs while the panel is open, so a closed panel never takes the
   // modo aula caption bar from the tab.
   const shown = phase === "done" ? suggest.response : null;
-  const lesson = usePipelineLesson("aurora", open ? shown : null);
+  // In modo aula the panel teaches only an analysis it ran itself ("Sugerir
+  // resolução" here). Opened on one the tab already taught (step 7's "Fazer
+  // uma pergunta", the button, a silent re-sync), its lesson starts at the
+  // last step, so the bar never goes back to "Etapa 1 de 7".
+  const [teach, setTeach] = useState(false);
+  useEffect(() => {
+    if (!open) setTeach(false);
+  }, [open]);
+  const lesson = usePipelineLesson("aurora", open ? shown : null, {
+    startAt: teach ? "first" : "end",
+  });
   const beat = shown ? lesson.step : -1;
   const views = useMemo(() => (shown ? stepViews(shown) : null), [shown]);
   const reached = (key: (typeof BEATS)[number]["step"]) =>
@@ -1045,6 +1055,7 @@ function CopilotFab({
 
   function askDefault() {
     setLastMessage("Sugerir resolução para este incidente");
+    setTeach(true);
     run();
   }
 
