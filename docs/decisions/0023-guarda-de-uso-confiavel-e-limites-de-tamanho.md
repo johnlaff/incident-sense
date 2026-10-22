@@ -27,7 +27,10 @@ que um script escapava das duas primeiras barreiras e encarecia cada chamada:
 - **A rede é o salto que o proxy confiável acrescentou.** `client_ip()` lê
   `X-Forwarded-For` do fim para o começo: `TRUSTED_PROXY_HOPS` (padrão 1) diz
   quantos endereços no fim da lista vieram de proxies nossos, e o visitante é
-  o último deles. Sem cabeçalho, vale o par da conexão. O `request.client` do
+  o último deles. Antes de contar, endereços privados no fim da lista são
+  descartados: em produção o proxy interno do Render acrescenta um `10.x`
+  que muda a cada requisição e nunca é o visitante. Sem cabeçalho, vale o par
+  da conexão. O `request.client` do
   uvicorn não entra na cota, porque `--forwarded-allow-ips='*'` o torna tão
   falsificável quanto o primeiro endereço.
 - **A guarda tem teto de memória.** Janelas vazias saem na própria verificação,

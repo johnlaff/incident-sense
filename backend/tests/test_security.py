@@ -93,14 +93,26 @@ def _settings(**overrides: Any) -> Settings:
 
 def test_the_network_is_the_hop_the_trusted_proxy_appended() -> None:
     """A client-chosen first hop never counts: Render appends the real one last."""
-    req = _Request(x_forwarded_for="203.0.113.9, 198.51.100.7")
-    assert client_ip(req, _settings(trusted_proxy_hops=1)) == "198.51.100.7"  # type: ignore[arg-type]
-    assert client_ip(req, _settings(trusted_proxy_hops=2)) == "203.0.113.9"  # type: ignore[arg-type]
+    req = _Request(x_forwarded_for="93.184.216.9, 151.101.1.69")
+    assert client_ip(req, _settings(trusted_proxy_hops=1)) == "151.101.1.69"  # type: ignore[arg-type]
+    assert client_ip(req, _settings(trusted_proxy_hops=2)) == "93.184.216.9"  # type: ignore[arg-type]
+
+
+def test_the_platforms_private_hops_at_the_end_are_skipped() -> None:
+    """Seen in production: Render's internal proxy appends a 10.x address that
+    changes between requests. It is never the visitor."""
+    req = _Request(x_forwarded_for="93.184.216.9, 151.101.1.69, 10.31.87.202")
+    assert client_ip(req, _settings(trusted_proxy_hops=1)) == "151.101.1.69"  # type: ignore[arg-type]
+    req = _Request(x_forwarded_for="151.101.1.69, 10.31.87.202, 172.16.0.9")
+    assert client_ip(req, _settings(trusted_proxy_hops=1)) == "151.101.1.69"  # type: ignore[arg-type]
+    # A lone private address (local development) still counts as itself.
+    req = _Request(x_forwarded_for="10.0.0.5")
+    assert client_ip(req, _settings(trusted_proxy_hops=1)) == "10.0.0.5"  # type: ignore[arg-type]
 
 
 def test_more_hops_than_addresses_falls_back_to_the_first() -> None:
-    req = _Request(x_forwarded_for="198.51.100.7")
-    assert client_ip(req, _settings(trusted_proxy_hops=3)) == "198.51.100.7"  # type: ignore[arg-type]
+    req = _Request(x_forwarded_for="151.101.1.69")
+    assert client_ip(req, _settings(trusted_proxy_hops=3)) == "151.101.1.69"  # type: ignore[arg-type]
 
 
 def test_without_the_header_the_connection_is_the_network() -> None:
@@ -121,7 +133,7 @@ def test_a_spoofed_first_hop_does_not_escape_the_network_cap(
             json={"short_description": "Pix", "description": "Detalhes."},
             headers={
                 "X-Client-Id": f"script-{i}",
-                "X-Forwarded-For": f"203.0.113.{i}, 198.51.100.7",
+                "X-Forwarded-For": f"93.184.216.{i}, 151.101.1.69",
             },
         )
     assert r.status_code == 429
@@ -174,12 +186,12 @@ def test_a_refusal_is_logged_without_the_visitors_text(monkeypatch: pytest.Monke
     monkeypatch.setattr(guard_module, "log", _Log())
     guard = UsageGuard(_Clock())
     s = _settings(ai_max_per_client=1, ai_max_per_ip=10, ai_max_per_day=10)
-    guard.check(client_id="a" * 80, ip="198.51.100.7", settings=s)
-    guard.check(client_id="a" * 80, ip="198.51.100.7", settings=s)
+    guard.check(client_id="a" * 80, ip="151.101.1.69", settings=s)
+    guard.check(client_id="a" * 80, ip="151.101.1.69", settings=s)
     refused = [fields for event, fields in events if event == "ai_quota_refused"]
     assert len(refused) == 1
     assert refused[0]["limit"] == "client"
-    assert refused[0]["ip"] == "198.51.100.7"
+    assert refused[0]["ip"] == "151.101.1.69"
     assert len(refused[0]["client_id"]) <= 16
 
 
