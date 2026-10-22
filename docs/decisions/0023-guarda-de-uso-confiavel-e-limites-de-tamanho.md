@@ -29,8 +29,9 @@ que um script escapava das duas primeiras barreiras e encarecia cada chamada:
   quantos endereços no fim da lista vieram de proxies nossos, e o visitante é
   o último deles. Antes de contar, endereços privados no fim da lista são
   descartados: em produção o proxy interno do Render acrescenta um `10.x`
-  que muda a cada requisição e nunca é o visitante. Sem cabeçalho, vale o par
-  da conexão. O `request.client` do
+  que muda a cada requisição e nunca é o visitante. No Render a cadeia vista
+  no log é `visitante, borda da Cloudflare, 10.x`, então o `render.yaml`
+  define `TRUSTED_PROXY_HOPS=2`. Sem cabeçalho, vale o par da conexão. O `request.client` do
   uvicorn não entra na cota, porque `--forwarded-allow-ips='*'` o torna tão
   falsificável quanto o primeiro endereço.
 - **A guarda tem teto de memória.** Janelas vazias saem na própria verificação,
