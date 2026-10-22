@@ -7,6 +7,12 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Alterado
+
+- Os exemplos da demonstração aparecem primeiro nas listas: INC0052233 e
+  INC0053084 em Incidentes (na ordem padrão; ordenar por coluna continua
+  valendo) e CHG0031001, CHG0031002 e CHG0031003 em Mudanças.
+
 ### Segurança
 
 - **Guarda de uso confiável** ([ADR 0023](docs/decisions/0023-guarda-de-uso-confiavel-e-limites-de-tamanho.md)):
