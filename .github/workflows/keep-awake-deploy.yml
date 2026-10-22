@@ -1,0 +1,41 @@
+name: keep-awake-deploy
+
+# Publishes the keep-awake Worker (keep-awake/), whose Cloudflare cron trigger
+# pings the API every 10 minutes. Needs the same CLOUDFLARE_API_TOKEN and
+# CLOUDFLARE_ACCOUNT_ID secrets as frontend-deploy; without the token the job
+# is skipped.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "keep-awake/**"
+      - ".github/workflows/keep-awake-deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: keep-awake-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    defaults:
+      run:
+        working-directory: keep-awake
+    steps:
+      - uses: actions/checkout@v7
+        if: env.HAS_TOKEN == 'true'
+
+      - uses: actions/setup-node@v7
+        if: env.HAS_TOKEN == 'true'
+        with:
+          node-version: 24
+
+      - name: Deploy
+        if: env.HAS_TOKEN == 'true'
+        run: npx --yes wrangler@4.151.2 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

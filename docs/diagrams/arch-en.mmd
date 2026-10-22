@@ -7,4 +7,5 @@ flowchart LR
   D -.->|"seeds"| Q
   API -->|"chat and embeddings<br/>one key"| OR["OpenRouter<br/>Claude Haiku 5.5 and others<br/>text-embedding-3-large"]
   GH["GitHub Actions"] -.->|"frontend-deploy"| W
-  GH -.->|"backend-deploy: deploy hook<br/>and ping every 10 min"| API
+  GH -.->|"backend-deploy: deploy hook"| API
+  K["Cloudflare cron<br/>keep-awake"] -.->|"ping every 10 min"| API
