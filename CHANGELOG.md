@@ -50,6 +50,10 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ### Corrigido
 
+- Abrir o chat pela etapa 7 da aula ("Fazer uma pergunta") não recomeça mais a
+  barra em "Etapa 1 de 7": a aula do painel começa na última etapa quando a
+  análise já foi ensinada na aba. O painel só ensina do início uma análise que
+  ele mesmo rodou.
 - Depois de o servidor reiniciar, perguntas davam 409 para sempre sob uma
   análise ainda na tela. Agora a análise roda de novo uma vez por pergunta, sem
   limpar a conversa e sem duplicar a nota, e a pergunta é feita em seguida; se

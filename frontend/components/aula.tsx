@@ -442,10 +442,18 @@ export function useAulaLesson({
   fastMs = FAST_REPLAY_MS,
   reducedMotion = "finish",
   onward = null,
+  startAt = "first",
 }: {
   id: string;
   steps: AulaLessonStep[];
   runKey: unknown;
+  /**
+   * Where a new run stops in modo aula: step 1, waiting for a tap (default),
+   * or its last step, when the same result was already taught elsewhere (the
+   * assistant panel opened from step 7 of the analysis tab). Outside modo
+   * aula it changes nothing.
+   */
+  startAt?: "first" | "end";
   /**
    * What the last step offers instead of "Voltar ao roteiro" (the next
    * chapter, say), so the button does what the clicker does.
@@ -479,6 +487,7 @@ export function useAulaLesson({
     } else {
       setRun((n) => n + 1);
       dispatch({ type: "start", total, playing: !aula });
+      if (aula && startAt === "end") dispatch({ type: "finish" });
       if (!aula && reduced && reducedMotion === "finish") dispatch({ type: "finish" });
     }
   }

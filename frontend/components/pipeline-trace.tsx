@@ -83,12 +83,16 @@ const STATUS_ICON: Record<StepStatus, IconComponent> = {
 };
 
 /** The replay as a lesson: beats, captions and the current beat. */
-export function usePipelineLesson(id: string, result: SuggestResponse | null) {
+export function usePipelineLesson(
+  id: string,
+  result: SuggestResponse | null,
+  { startAt = "first" }: { startAt?: "first" | "end" } = {},
+) {
   const beats = useMemo(
     () => beatsFor(result?.dims, result?.retrieval.vector.min_similarity ?? 0.8, result),
     [result],
   );
-  return useAulaLesson({ id, steps: beats, runKey: result });
+  return useAulaLesson({ id, steps: beats, runKey: result, startAt });
 }
 
 export function PipelineTrace({
