@@ -208,7 +208,9 @@ Serve o resultado **pré-computado e commitado**: cada incidente como um ponto
   começo: `TRUSTED_PROXY_HOPS` (padrão 1) diz quantos endereços no fim da
   lista o proxy confiável acrescentou, e o visitante é o último deles;
   endereços privados no fim da lista (o proxy interno do Render) são
-  descartados antes. O primeiro endereço é do cliente e não conta. A guarda remove janelas vazias,
+  descartados antes. No Render a cadeia é `visitante, borda da Cloudflare,
+  10.x`, e o `render.yaml` define `TRUSTED_PROXY_HOPS=2`. O primeiro
+  endereço é do cliente e não conta. A guarda remove janelas vazias,
   guarda no máximo 10.000 chaves por tabela e registra cada recusa como
   `ai_quota_refused` ([ADR 0023](decisions/0023-guarda-de-uso-confiavel-e-limites-de-tamanho.md)).
 - **Tamanhos.** Todo texto que vai ao modelo tem máximo: descrição 4000,
