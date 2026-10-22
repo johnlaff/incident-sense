@@ -1,0 +1,11 @@
+// Cloudflare Worker with only a cron trigger: pings the API every 10 minutes.
+// Deploy: the keep-awake-deploy workflow, or `npx wrangler deploy` in this folder.
+{
+  "$schema": "https://unpkg.com/wrangler@4.151.2/config-schema.json",
+  "name": "incident-sense-keep-awake",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "triggers": { "crons": ["*/10 * * * *"] },
+  "observability": { "enabled": true },
+}

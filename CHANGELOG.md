@@ -7,6 +7,13 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Corrigido
+
+- A API do Render dormia entre as apresentações: o agendamento do GitHub
+  Actions, que devia pingar a cada 10 minutos, rodava com cerca de 3 horas de
+  intervalo. O ping passa para o Worker `keep-awake/`, com cron trigger da
+  Cloudflare a cada 10 minutos, publicado pelo workflow `keep-awake-deploy`.
+
 ## [1.1.0] - 2026-10-22
 
 Versão pronta para demonstração ao vivo em apresentações e aulas. Tudo o que

@@ -119,9 +119,13 @@ os vetores commitados.
 2. **Deploy contínuo da API.** Cadastre o deploy hook do serviço como o segredo
    `RENDER_DEPLOY_HOOK_URL`. O workflow
    [`backend-deploy`](.github/workflows/backend-deploy.yml) chama o hook a cada
-   push em `main` que mexe em `backend/` ou no `render.yaml`, e faz um ping em
-   `/api/health` a cada 10 minutos para a instância gratuita não dormir. Sem o
-   segredo, o passo de deploy é pulado.
+   push em `main` que mexe em `backend/` ou no `render.yaml`. Sem o segredo, o
+   passo de deploy é pulado. Para a instância gratuita não dormir, o Worker
+   [`keep-awake/`](keep-awake/) faz um ping em `/api/health` a cada 10 minutos
+   por um cron trigger da Cloudflare, publicado pelo workflow
+   [`keep-awake-deploy`](.github/workflows/keep-awake-deploy.yml) com os mesmos
+   segredos da Cloudflare do passo 3. O agendamento do GitHub Actions não serve
+   para isso, porque roda com horas de intervalo.
 3. **Site na Cloudflare Workers (OpenNext).** Cadastre os segredos
    `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID` e a variável
    `NEXT_PUBLIC_API_URL` com a URL da API. O workflow

@@ -40,8 +40,10 @@ frontend/              Next.js 16 (App Router) + TS + Tailwind v4 + regl-scatter
   lib/                 api (X-Client-Id, 90 s AI timeout), followup (ask), changes, models, aula-machine
   wrangler.jsonc       Cloudflare Workers via OpenNext (npm run cf:deploy)
 render.yaml            Render Blueprint for the API (Qdrant ":memory:")
-.github/workflows/     backend-ci, frontend-ci, backend-deploy (hook + 10 min ping),
-                       frontend-deploy (Cloudflare), release (tag -> GitHub Release + GHCR)
+keep-awake/            Cloudflare Worker with a cron trigger: pings the API every 10 min
+.github/workflows/     backend-ci, frontend-ci, backend-deploy (hook + backup ping),
+                       frontend-deploy (Cloudflare), keep-awake-deploy,
+                       release (tag -> GitHub Release + GHCR)
 docs/                  PT-BR docs, diagrams/ (Mermaid sources) + decisions/ (ADRs)
 ```
 

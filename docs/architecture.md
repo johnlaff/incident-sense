@@ -23,7 +23,7 @@ npx -y @mermaid-js/mermaid-cli -i docs/diagrams/arch-pt.mmd -o docs/assets/archi
 | Peça | Demo pública | Local |
 | --- | --- | --- |
 | Site (`frontend/`) | Cloudflare Workers via OpenNext, publicado pelo workflow `frontend-deploy` | `make web` ou o serviço `web` do Docker Compose |
-| API (`backend/`) | Render, plano Free, pelo Blueprint `render.yaml`; o workflow `backend-deploy` chama o deploy hook a cada merge e faz ping a cada 10 min | `make api` ou o serviço `api` do Docker Compose |
+| API (`backend/`) | Render, plano Free, pelo Blueprint `render.yaml`; o workflow `backend-deploy` chama o deploy hook a cada merge, e o Worker `keep-awake` faz ping a cada 10 min por cron da Cloudflare | `make api` ou o serviço `api` do Docker Compose |
 | Qdrant | em memória dentro da API (`QDRANT_URL=:memory:`), semeado no boot | servidor `qdrant` do Docker Compose, ou `:memory:` |
 | Modelos | OpenRouter, uma chave (`OPENROUTER_API_KEY`) | o mesmo |
 
@@ -35,7 +35,8 @@ flowchart LR
     API -- "chat e embeddings" --> OR[(OpenRouter)]
     D[Dados commitados] -- "boot" --> API
     GH[GitHub Actions] -. "frontend-deploy" .-> W
-    GH -. "deploy hook + ping 10 min" .-> API
+    GH -. "deploy hook" .-> API
+    K[Cloudflare cron<br/>keep-awake] -. "ping 10 min" .-> API
 ```
 
 ## Stack (resumo)

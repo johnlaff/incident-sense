@@ -4,8 +4,9 @@ name: backend-deploy
 # - push to main (backend or render.yaml): calls the service's deploy hook, so
 #   a merge ships without clicking "Deploy latest commit". Needs the
 #   RENDER_DEPLOY_HOOK_URL secret; without it the step is skipped.
-# - every 10 minutes: pings /api/health so the free instance does not sleep
-#   (it sleeps after 15 idle minutes and takes about a minute to wake).
+# - schedule: pings /api/health as a backup. GitHub runs this cron hours apart,
+#   so the real keep-awake is the Cloudflare cron in keep-awake/ (the free
+#   instance sleeps after 15 idle minutes and takes about a minute to wake).
 on:
   push:
     branches: [main]
