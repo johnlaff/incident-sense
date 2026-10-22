@@ -137,9 +137,14 @@ os vetores commitados.
 
 As rotas que chamam modelos têm limite por visitante (`X-Client-Id`), por rede
 e um teto diário (`AI_MAX_PER_CLIENT`, `AI_MAX_PER_IP`, `AI_MAX_PER_DAY`), para
-que uma plateia inteira use a demo sem custo descontrolado. Cada chamada ao
-provedor desiste em 20 s, sem nova tentativa, e o site desiste em 90 s com um
-aviso em português.
+que uma plateia inteira use a demo sem custo descontrolado. A rede é o endereço
+que o proxy acrescentou a `X-Forwarded-For` (`TRUSTED_PROXY_HOPS`, padrão 1),
+não o que o cliente escreveu. Todo texto enviado ao modelo tem tamanho máximo
+(descrição até 4000 caracteres, campo de Mudança até 6000, pergunta até 600) e
+corpos acima de 64 KB recebem 413. Cada chamada ao provedor desiste em 20 s,
+sem nova tentativa, e o site desiste em 90 s com um aviso em português. Defina
+também um limite de gasto na chave da OpenRouter: é o teto financeiro fora do
+código. Detalhes em [SECURITY.md](SECURITY.md).
 
 ## 🧠 Como funciona
 

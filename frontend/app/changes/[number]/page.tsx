@@ -17,6 +17,7 @@ import {
   isScored,
   markEvaluated,
   plainTitle,
+  FIELD_MAX_CHARS,
   readSavedEvaluation,
   saveEvaluation,
   stateHint,
@@ -795,6 +796,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                     <textarea
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
+                      maxLength={FIELD_MAX_CHARS}
                       rows={Math.min(12, Math.max(3, draft.split("\n").length + 1))}
                       aria-label={`Editar ${f.label}`}
                       autoFocus

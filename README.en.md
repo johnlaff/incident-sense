@@ -136,9 +136,14 @@ committed vectors.
 
 Routes that call models are limited per visitor (`X-Client-Id`), per network
 and by a daily cap (`AI_MAX_PER_CLIENT`, `AI_MAX_PER_IP`, `AI_MAX_PER_DAY`), so
-a whole audience can use the demo without runaway cost. Each provider call
-gives up after 20 s with no retry, and the site gives up after 90 s with a
-message in Portuguese.
+a whole audience can use the demo without runaway cost. The network is the
+address the proxy appended to `X-Forwarded-For` (`TRUSTED_PROXY_HOPS`, default
+1), never the one the client wrote. Every text sent to a model has a maximum
+size (description up to 4000 characters, Change field up to 6000, question up
+to 600) and bodies over 64 KB get 413. Each provider call gives up after 20 s
+with no retry, and the site gives up after 90 s with a message in Portuguese.
+Also set a spending limit on the OpenRouter key: it is the financial ceiling
+outside the code. Details in [SECURITY.md](SECURITY.md).
 
 ## 🧠 How it works
 

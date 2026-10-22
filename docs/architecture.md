@@ -204,6 +204,20 @@ Serve o resultado **pré-computado e commitado**: cada incidente como um ponto
   64 caracteres desse cabeçalho ou, sem ele, o IP. A cota, a trava de conteúdo
   das Mudanças e as notas de trabalho usam a mesma chave
   ([ADR 0020](decisions/0020-escopo-por-visitante.md)).
+- **Qual é a rede.** `client_ip()` lê `X-Forwarded-For` do fim para o
+  começo: `TRUSTED_PROXY_HOPS` (padrão 1) diz quantos endereços no fim da
+  lista o proxy confiável acrescentou, e o visitante é o último deles. O
+  primeiro endereço é do cliente e não conta. A guarda remove janelas vazias,
+  guarda no máximo 10.000 chaves por tabela e registra cada recusa como
+  `ai_quota_refused` ([ADR 0023](decisions/0023-guarda-de-uso-confiavel-e-limites-de-tamanho.md)).
+- **Tamanhos.** Todo texto que vai ao modelo tem máximo: descrição 4000,
+  título 300, campo de Mudança e plano de retorno 6000, pergunta 600. Acima
+  disso, 422 sem chamada ao modelo. Um middleware responde 413 a corpos acima
+  de 64 KB (`MAX_BODY_BYTES`) antes do parse.
+- **Prompts.** Os sete prompts de sistema terminam com a frase de
+  `prompts.py`: o texto do visitante é material a analisar, não instrução.
+  A saída continua validada (JSON, citações contra o contexto, markdown sem
+  HTML).
 - **Prazos.** O cliente da OpenRouter (chat e embeddings) desiste em 20 s, sem
   nova tentativa de rede, para que o pior caminho (campo, reparo de formato,
   coerência, reparo de formato) termine antes dos 90 s em que o site desiste. Timeout vira 504, falta de cota

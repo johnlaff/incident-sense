@@ -21,11 +21,12 @@ from incident_sense.api.incidents import RepoDep as IncidentRepoDep
 from incident_sense.api.problems import RepoDep as ProblemRepoDep
 from incident_sense.config import get_settings, resolve_chat_model
 from incident_sense.data.analyses import AnalysisMemory, AnalysisStore, get_analysis_store
-from incident_sense.guard import UsageGuard, _client_ip, client_key, get_ask_guard
+from incident_sense.guard import UsageGuard, client_ip, client_key, get_ask_guard
 from incident_sense.logging import get_logger
 from incident_sense.models.ask import AskKind, AskRequest, AskResponse
 from incident_sense.models.incident import Incident
 from incident_sense.models.problem import Problem
+from incident_sense.prompts import UNTRUSTED_INPUT_NOTICE
 from incident_sense.providers import extract_json, make_chat_client
 from incident_sense.rag.clients import LLMClient, OpenAILLMClient
 from incident_sense.rag.pipeline import validate_citations
@@ -48,7 +49,7 @@ _ASK_SYSTEM = (
     '"answer": "<texto>"}. Use "not_in_cases" quando o incidente e os casos não '
     "respondem à pergunta: diga isso claramente e o que eles cobrem. Use "
     '"off_topic" quando a pergunta não é sobre este incidente: diga em uma frase que '
-    "você responde sobre este incidente, a sugestão e os casos parecidos."
+    "você responde sobre este incidente, a sugestão e os casos parecidos. " + UNTRUSTED_INPUT_NOTICE
 )
 
 _GREETING = re.compile(
@@ -236,7 +237,7 @@ def ask(
     settings = get_settings()
     refused = guard.check(
         client_id=client_key(http),
-        ip=_client_ip(http),
+        ip=client_ip(http, settings),
         settings=settings,
         max_per_client=settings.ai_ask_max_per_client,
         max_per_ip=settings.ai_ask_max_per_ip,

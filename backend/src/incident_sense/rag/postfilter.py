@@ -20,6 +20,7 @@ from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore, QueryBundle
 
 from incident_sense.logging import get_logger
+from incident_sense.prompts import UNTRUSTED_INPUT_NOTICE
 from incident_sense.providers import extract_json
 from incident_sense.rag.clients import LLMClient
 
@@ -31,7 +32,8 @@ _SYSTEM = (
     "Você é um analista de operações de TI de um banco. Dado um NOVO incidente "
     "e uma lista de incidentes passados já resolvidos, decida quais passados são "
     "REALMENTE relevantes para ajudar a resolver o novo (mesmo problema/causa), "
-    "ignorando os que apenas compartilham palavras. Responda apenas com JSON."
+    "ignorando os que apenas compartilham palavras. Responda apenas com JSON. "
+    + UNTRUSTED_INPUT_NOTICE
 )
 
 
