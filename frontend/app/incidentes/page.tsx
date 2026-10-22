@@ -13,6 +13,7 @@ import {
   StateBlock,
   WakeNotice,
 } from "@/components/ui";
+import { DEMO_INCIDENTS, demoFirst } from "@/lib/demo-first";
 import { useAllIncidents } from "@/lib/incidents";
 import {
   PRIORITY_LABEL,
@@ -110,7 +111,7 @@ export default function IncidentesPage() {
       return true;
     });
     const dir = sortDir === "asc" ? 1 : -1;
-    return list.slice().sort((a, b) => {
+    const sorted = list.slice().sort((a, b) => {
       let av: string | number;
       let bv: string | number;
       switch (sortKey) {
@@ -142,6 +143,11 @@ export default function IncidentesPage() {
       if (av > bv) return 1 * dir;
       return 0;
     });
+    // In the default order the demo incidents come first, easy to find on
+    // stage; a column the person sorts by wins.
+    return sortKey === "when" && sortDir === "desc"
+      ? demoFirst(sorted, DEMO_INCIDENTS)
+      : sorted;
   }, [allRows, tab, service, priority, query, sortKey, sortDir]);
 
   useEffect(() => {
