@@ -1007,7 +1007,7 @@ function CopilotFab({
       // 409: the server holds no analysis for this visitor (a restart, or it
       // never ran), or another tab's. The analysis runs again once, without
       // clearing the chat, and the question is asked after it (logica-5 P1-1).
-      const next = afterAskError(turn, e);
+      const next = afterAskError(turn, e, suggest.response != null);
       setTurns((all) => upsertTurn(all, next.turn));
       if (next.reanalyze) void suggest.run({ keepChat: true });
     }
@@ -1017,14 +1017,21 @@ function CopilotFab({
   function resync(turn: Turn) {
     if (turn.state === "error")
       setTurns((all) =>
-        upsertTurn(all, { ...turn, state: "waiting", error: null, needsAnalysis: false }),
+        upsertTurn(all, {
+          ...turn,
+          state: "waiting",
+          error: null,
+          needsAnalysis: false,
+          firstAnalysis: false,
+        }),
       );
     void suggest.run({ keepChat: true });
   }
 
   // A written message is a question. The server answers a greeting at once
   // and anything else from the analysis it kept; with none, it says so (409)
-  // and the analysis runs first. Sent while the analysis runs, it waits.
+  // and the chat offers the analysis, never running it unasked. Sent while the
+  // analysis runs, it waits.
   function submit() {
     const text = draft.trim().slice(0, QUESTION_MAX);
     if (!text) return;
@@ -1521,8 +1528,8 @@ function FollowUpTurn({
               <p>{turn.error}</p>
               {turn.needsAnalysis ? (
                 <button className="btn btn-outline btn-sm" onClick={onRetryAnalysis}>
-                  <Icons.retry />
-                  Analisar de novo
+                  {turn.firstAnalysis ? <Icons.aiSpark /> : <Icons.retry />}
+                  {turn.firstAnalysis ? "Analisar o incidente" : "Analisar de novo"}
                 </button>
               ) : (
                 <button className="btn btn-outline btn-sm" onClick={onRetry}>
