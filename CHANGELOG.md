@@ -13,8 +13,8 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
   a rede do visitante é o endereço que o proxy acrescentou a
   `X-Forwarded-For` (`TRUSTED_PROXY_HOPS`, padrão 1), não o primeiro, que o
   cliente escolhe; endereços privados do proxy interno no fim da lista são
-  ignorados, e o `render.yaml` define `TRUSTED_PROXY_HOPS=2` (visitante,
-  borda da Cloudflare). A guarda remove janelas vazias, tem teto de 10.000 chaves e
+  ignorados, assim como as faixas publicadas da Cloudflare, que o Render usa
+  como borda. A guarda remove janelas vazias, tem teto de 10.000 chaves e
   registra cada recusa no log (`ai_quota_refused`).
 - **Limites de tamanho** em todo texto enviado ao modelo: descrição 4000,
   título 300, campo de Mudança e plano de retorno 6000, até 7 campos,

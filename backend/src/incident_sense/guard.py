@@ -161,17 +161,18 @@ def client_ip(request: Request, settings: Settings | None = None) -> str:
 
     Proxies append the address they saw to ``X-Forwarded-For``, so the list
     ends with what our own edge saw; everything before it is whatever the
-    client chose to send. Addresses from private ranges at the end of the
-    list are the hosting platform's own hops (Render's internal proxies
-    append one, and it changes between requests) and never a visitor, so
-    they are skipped first. ``trusted_proxy_hops`` then counts the trusted
-    entries from the end (one for Render's edge). Without the header, the
-    peer of the connection is the visitor.
+    client chose to send. The hosting platform's own hops at the end of the
+    list are never a visitor and are skipped first: private addresses
+    (Render's internal proxy appends one that changes between requests) and
+    Cloudflare's published ranges (Render's edge runs on it and appends its
+    own address). ``trusted_proxy_hops`` then counts any further trusted
+    entries from the end (1: the last remaining hop is the visitor). Without
+    the header, the peer of the connection is the visitor.
     """
     settings = settings or get_settings()
     forwarded = [h.strip() for h in request.headers.get("x-forwarded-for", "").split(",")]
     forwarded = [h for h in forwarded if h]
-    while len(forwarded) > 1 and _is_internal(forwarded[-1]):
+    while len(forwarded) > 1 and _is_platform_hop(forwarded[-1]):
         forwarded.pop()
     if forwarded:
         hops = max(1, settings.trusted_proxy_hops)
@@ -179,13 +180,47 @@ def client_ip(request: Request, settings: Settings | None = None) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _is_internal(address: str) -> bool:
-    """A private, loopback, link-local or unspecified address: a platform hop."""
+# Cloudflare's published ranges (https://www.cloudflare.com/ips-v4 and
+# /ips-v6, read on 2026-10-22). Render's edge sits on Cloudflare, which appends
+# its own address after the visitor's; a visitor never comes from these.
+_CLOUDFLARE_RANGES = tuple(
+    ipaddress.ip_network(cidr)
+    for cidr in (
+        "173.245.48.0/20",
+        "103.21.244.0/22",
+        "103.22.200.0/22",
+        "103.31.4.0/22",
+        "141.101.64.0/18",
+        "108.162.192.0/18",
+        "190.93.240.0/20",
+        "188.114.96.0/20",
+        "197.234.240.0/22",
+        "198.41.128.0/17",
+        "162.158.0.0/15",
+        "104.16.0.0/13",
+        "104.24.0.0/14",
+        "172.64.0.0/13",
+        "131.0.72.0/22",
+        "2400:cb00::/32",
+        "2606:4700::/32",
+        "2803:f800::/32",
+        "2405:b500::/32",
+        "2405:8100::/32",
+        "2a06:98c0::/29",
+        "2c0f:f248::/32",
+    )
+)
+
+
+def _is_platform_hop(address: str) -> bool:
+    """A private, loopback, link-local, unspecified or Cloudflare address."""
     try:
         ip = ipaddress.ip_address(address)
     except ValueError:
         return False
-    return ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_unspecified
+    if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_unspecified:
+        return True
+    return any(ip in net for net in _CLOUDFLARE_RANGES)
 
 
 def client_key(request: Request) -> str:

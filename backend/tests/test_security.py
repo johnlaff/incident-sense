@@ -105,6 +105,16 @@ def test_the_platforms_private_hops_at_the_end_are_skipped() -> None:
     assert client_ip(req, _settings(trusted_proxy_hops=1)) == "151.101.1.69"  # type: ignore[arg-type]
     req = _Request(x_forwarded_for="151.101.1.69, 10.31.87.202, 172.16.0.9")
     assert client_ip(req, _settings(trusted_proxy_hops=1)) == "151.101.1.69"  # type: ignore[arg-type]
+    # Seen next: Render's edge runs on Cloudflare and appends its own address
+    # after the visitor's. Cloudflare's ranges are platform hops too.
+    req = _Request(x_forwarded_for="93.184.216.9, 151.101.1.69, 104.22.100.178, 10.31.87.202")
+    assert client_ip(req, _settings(trusted_proxy_hops=1)) == "151.101.1.69"  # type: ignore[arg-type]
+    req = _Request(x_forwarded_for="151.101.1.69, 2606:4700::1111, 10.0.0.2")
+    assert client_ip(req, _settings(trusted_proxy_hops=1)) == "151.101.1.69"  # type: ignore[arg-type]
+    # A client cannot hide behind a Cloudflare address it wrote itself: only
+    # the trailing hops are skipped, and the real one comes after it.
+    req = _Request(x_forwarded_for="104.22.100.178, 151.101.1.69, 104.22.100.1, 10.0.0.2")
+    assert client_ip(req, _settings(trusted_proxy_hops=1)) == "151.101.1.69"  # type: ignore[arg-type]
     # A lone private address (local development) still counts as itself.
     req = _Request(x_forwarded_for="10.0.0.5")
     assert client_ip(req, _settings(trusted_proxy_hops=1)) == "10.0.0.5"  # type: ignore[arg-type]
