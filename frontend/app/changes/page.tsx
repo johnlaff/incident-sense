@@ -22,6 +22,7 @@ import { absDate } from "@/lib/model";
 
 import "./changes.css";
 import { keepWhole } from "@/lib/text";
+import { DEMO_CHANGES, demoFirst } from "@/lib/demo-first";
 
 // "Para avaliar" holds what still needs a reading; a Change evaluated in this
 // browser tab moves to "Avaliadas" (the marks live in sessionStorage).
@@ -34,14 +35,18 @@ export default function ChangesPage() {
   const [marks, setMarks] = useState<Record<string, EvalMark>>({});
   useEffect(() => setMarks(readEvalMarks()), []);
 
+  // The demo Changes come first, so they are easy to find on stage.
   const rows = useMemo<ChangeSummary[]>(
     () =>
-      (data ?? []).filter((c) =>
-        tab === "all"
-          ? true
-          : tab === "done"
-            ? Boolean(marks[c.number])
-            : c.in_scope && !marks[c.number],
+      demoFirst(
+        (data ?? []).filter((c) =>
+          tab === "all"
+            ? true
+            : tab === "done"
+              ? Boolean(marks[c.number])
+              : c.in_scope && !marks[c.number],
+        ),
+        DEMO_CHANGES,
       ),
     [data, tab, marks],
   );
