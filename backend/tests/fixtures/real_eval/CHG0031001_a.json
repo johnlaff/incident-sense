@@ -1,0 +1,10 @@
+{
+  "consistency_score": 8.0,
+  "problems": [
+    "O retorno cita apenas o pool de conexões e o timeout, mas o plano de implementação e as tarefas cadastradas (CTASK003100101 e CTASK003100102) mencionam também o congelamento do namespace; isso está coberto pela CTASK003100109, porém a tarefa de retorno não cobre o registro do snapshot de backup como parte do critério de reversão, e o snapshot é citado como pré-requisito sem que o retorno diga quando ele seria usado."
+  ],
+  "reasoning": "O objetivo, os benefícios, o plano de validação e o plano de implementação são coerentes entre si: todos tratam do aumento do pool de 40 para 80 conexões e da redução do timeout de 30s para 5s, com os mesmos gatilhos de retorno (erro acima de 0,5% por 5 minutos ou conexões acima de 1.000). A mudança não altera schema nem dados, então o rollback do chart 4.12.2 desfaz integralmente o que a implementação altera, e as tarefas CTASK003100106 a 109 espelham os quatro passos do plano de retorno.",
+  "guidance": "Vale explicitar no plano de retorno quem confirma a necessidade de rollback nas etapas de 50% e 100% (o plano já atribui à Renata, mas as tarefas de expansão poderiam repetir o gatilho), e esclarecer a relação do snapshot com o retorno. O plano de validação também poderia detalhar o critério de sucesso das 4 horas de observação. Os campos estão bem alinhados.",
+  "backout_adherence": "ADERENTE",
+  "backout_adherence_percent": 92
+}

@@ -103,9 +103,17 @@ export function mergeNotes(
   fresh: WorkNote | null | undefined,
 ): WorkNote[] {
   if (!fresh) return loaded;
-  // A second analysis replaces the visitor's AI note in place (same id).
-  if (loaded.some((n) => n.id === fresh.id))
-    return loaded.map((n) => (n.id === fresh.id ? fresh : n));
+  // A second analysis replaces the visitor's AI note in place: same id, or,
+  // after a server restart gave it a new id, same author (one AI note each).
+  const same = (n: WorkNote) => n.id === fresh.id || n.author === fresh.author;
+  if (loaded.some(same)) {
+    const at = loaded.findIndex(same);
+    return [
+      ...loaded.slice(0, at),
+      fresh,
+      ...loaded.slice(at + 1).filter((n) => !same(n)),
+    ];
+  }
   return [...loaded, fresh];
 }
 

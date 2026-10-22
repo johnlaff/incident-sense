@@ -54,6 +54,8 @@ import {
   decisionOf,
   firstSentence,
   missingFields,
+  editTag,
+  gradedTexts,
   nextDirty,
   recalledFields,
   rerunHint,
@@ -147,20 +149,6 @@ export default function ChangeDetailPage({
   return <ChangeWorkspace change={change.data} rubric={rubric.data} />;
 }
 
-/** Add the texts of one evaluation to the ones already graded, per field. */
-function withRead(
-  all: Partial<Record<FieldKey, string[]>>,
-  read: Partial<Record<FieldKey, string>>,
-  change: Change,
-): Partial<Record<FieldKey, string[]>> {
-  const next = { ...all };
-  for (const key of EVALUATED_FIELDS) {
-    const text = read[key] ?? change[key];
-    if (!next[key]?.includes(text)) next[key] = [...(next[key] ?? []), text];
-  }
-  return next;
-}
-
 function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric }) {
   const [edits, setEdits] = useState<Partial<Record<FieldKey, string>>>({});
   const [editing, setEditing] = useState<FieldKey | null>(null);
@@ -211,7 +199,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
     if (!saved) return;
     setEdits(saved.edits);
     setResultEdits(saved.edits);
-    setReadTexts((all) => withRead(all, saved.edits, change));
+    setReadTexts((all) => gradedTexts(all, saved.edits, change, saved.result.fields));
     if (MODELS.some((m) => m.id === saved.model)) setModel(saved.model);
     setReadWith(saved.model);
     setResult(saved.result);
@@ -380,7 +368,7 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
       setPrevious(result);
       setResult(res);
       setResultEdits(edits);
-      setReadTexts((all) => withRead(all, edits, change));
+      setReadTexts((all) => gradedTexts(all, edits, change, res.fields));
       setReadWith(model);
       setSavedAt(null);
       // /changes marks the Changes evaluated in this session, and the page
@@ -878,7 +866,12 @@ function ChangeWorkspace({ change, rubric }: { change: Change; rubric: Rubric })
                       </span>
                     )}
                     {isDirty && (
-                      <span className="chg-lock dirty">Editado: será reavaliado</span>
+                      <span className="chg-lock dirty">
+                        {editTag(
+                          readTexts[f.key]?.includes(edits[f.key] ?? change[f.key]) ??
+                            false,
+                        )}
+                      </span>
                     )}
                     {!isDirty && edited && !score && phase !== "running" && (
                       <span className="chg-lock dirty">Editado</span>

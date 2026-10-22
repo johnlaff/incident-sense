@@ -1,0 +1,10 @@
+{
+  "consistency_score": 8.0,
+  "problems": [
+    "O plano de implementação faz o canário, 50% e 100% dos pods com 'helm upgrade pix-core ./chart --version 4.12.3 --set canary.replicas=1 --set HIKARI_MAX_POOL_SIZE=80', mas o plano de retorno e a tarefa CTASK003100106 apontam para helm rollback restaurando o chart 4.12.2, sem que a implementação registre o momento em que o canário fica como release separada, então a expansão para 50% e 100% (passos 5 e 6) não tem uma etapa explícita que indique como o release ativo é alterado entre etapas."
+  ],
+  "reasoning": "A maior parte do pedido é coerente: objetivo, benefícios, testes de carga e timeout e o plano de retorno se encaixam, com gatilhos iguais nas partes de validação e retorno e sem alteração de schema, o que torna o rollback de chart suficiente. A incoerência real encontrada é que o plano de implementação usa canary.replicas, enquanto o retorno assume um único release helm sem descrever como as etapas de 50% e 100% substituem o canário.",
+  "guidance": "Descrever explicitamente, nos passos 5 e 6, como a expansão altera o release helm (por exemplo, com helm upgrade sem canary ou ajustando replicas) e confirmar que o rollback para 4.12.2 cobre também o canário. Incluir na validação o critério de conexões do banco na etapa 100% já citado no passo 6, mantendo o gatilho idêntico no plano de retorno. Anexar a saída de helm history antes do rollout para evidenciar a revisão 4.12.2 existente.",
+  "backout_adherence": "ADERENTE",
+  "backout_adherence_percent": 88
+}

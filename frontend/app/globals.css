@@ -2695,6 +2695,21 @@ body {
 .bubble-ai.followup .btn {
   margin-top: 8px;
 }
+/* A new analysis starts a new conversation: one quiet divider says so (E2E-5 P1-2). */
+.cop-restart {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.cop-restart::before,
+.cop-restart::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--border);
+}
 .bubble-ai.wide {
   max-width: 100%;
   flex: 1;
@@ -4713,6 +4728,25 @@ body {
   .topbar .search .kbd {
     display: none;
   }
+  /* The rail is 60 px of icons here: the assistant button joins it as a
+     44 px circle, so it never covers the record's text (logica-5 P2-5). */
+  .cop-fab {
+    left: 8px;
+    right: auto;
+    bottom: 24px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .cop-fab-t {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 }
 
 /* ----- 768-1099px: the service column folds under the title ----- */
@@ -5119,13 +5153,16 @@ body {
   scroll-padding-bottom: calc(var(--aula-bar-h, 0px) + 32px);
 }
 
-/* While the aula bar is shown the assistant button steps aside, at every
-   width: a 185 px pill next to (or above) the bar either hides behind it or
-   covers what the lesson points at (bugs-logica-3 P1-A, P2-1). The assistant
-   sheet keeps its input clear and, on a phone, the strip drops to the bottom
-   edge while the sheet is open. */
-:root[data-aula-bar] .cop-fab {
-  display: none;
+/* While the aula bar is shown on a phone the assistant button steps aside:
+   above the tab bar it would hide behind the strip or cover what the lesson
+   points at (bugs-logica-3 P1-A, P2-1); step 7 offers "Fazer uma pergunta"
+   instead. From 768 px it sits in the rail, clear of the strip, and stays
+   (E2E-5 P1-1). The assistant sheet keeps its input clear and, on a phone,
+   the strip drops to the bottom edge while the sheet is open. */
+@media (max-width: 767px) {
+  :root[data-aula-bar] .cop-fab {
+    display: none;
+  }
 }
 @media (max-width: 767px) {
   body:has(.cop-panel) .aula-bar-wrap {

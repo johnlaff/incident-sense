@@ -1,0 +1,13 @@
+{
+  "consistency_score": 6.0,
+  "problems": [
+    "O plano de retorno reverte apenas a imagem do contêiner para boleto-service:3.7.4, mas a implementação adiciona as colunas qr_code_payload e tipo_emissao em boleto_titulo e migra 1,9 milhão de boletos para tipo_emissao = HIBRIDO; a versão anterior não sabe lidar com essas alterações e nenhum passo reverte a migração de dados ou remove as colunas.",
+    "A tarefa CTASK003100202 (migração Flyway) e a CTASK003100203 (job de migração dos boletos) não têm rollback cadastrado, embora o plano de retorno seja descrito como cobrindo a falha dessas etapas.",
+    "O plano de retorno não cobre o cenário de falha da migração de dados descrito no plano de implementação (2 lotes com erro ou job acima de 120 minutos), que exige o retorno explícito dos boletos já alterados.",
+    "A CTASK003100201 e a CTASK003100205 não têm correspondência no plano de retorno: a retomada do consumidor e a validação pós-rollback não estão previstas no retorno."
+  ],
+  "reasoning": "O objetivo e o plano de implementação estão coerentes entre si, mas o plano de retorno só desfaz a imagem do serviço, enquanto a implementação altera o esquema e os dados de 1,9 milhão de boletos. Como a versão 3.7.4 não consegue operar sobre as colunas e os valores HIBRIDO criados, o retorno não desfaz de fato o que a mudança altera. Além disso, a tarefa de rollback cadastrada cobre apenas a imagem.",
+  "guidance": "Incluir no plano de retorno a reversão do esquema (DROP COLUMN qr_code_payload e tipo_emissao, ou script Flyway de reversão) e a reversão dos dados (restaurar boletos a partir do backup bkp-boleto-titulo-20261029-2230 ou reverter tipo_emissao e qr_code_payload para o estado anterior), com tempo estimado e responsável. Cadastrar tarefas de rollback para a migração de esquema e para o job de dados. Alinhar o tempo de 5 minutos ao tempo real de restauração do backup. Explicitar a retomada do consumidor e a validação pós-retorno. Considerar tornar a migração de dados compatível com a versão anterior (colunas aditivas e nulas) para que o retorno de imagem seja seguro.",
+  "backout_adherence": "NAO_ADERENTE",
+  "backout_adherence_percent": 25
+}

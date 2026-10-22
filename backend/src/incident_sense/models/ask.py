@@ -24,6 +24,13 @@ class AskRequest(BaseModel):
         ),
     )
     model: str | None = Field(default=None, description="Optional UI model id.")
+    analysis_id: str | None = Field(
+        default=None,
+        description=(
+            "The analysis the page shows. When it is not the one the server holds "
+            "(another tab ran a newer one), the answer is 409 and the page re-syncs."
+        ),
+    )
 
 
 class AskResponse(BaseModel):

@@ -339,8 +339,15 @@
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
 }
-.pipe-notes-btn {
+.pipe-notes-btn,
+.pipe-ask-btn {
   margin-top: 10px;
+}
+.pipe-notes-btn + .pipe-ask-btn {
+  margin-left: 8px;
+}
+.pipe-ask-btn svg {
+  color: var(--c-ai);
 }
 
 /* ----- Alerts ----- */

@@ -877,6 +877,18 @@ export function Coherence({
             <ProseMarkdown source={s.reasoning} />
           </>
         ) : null}
+        {s.attention && s.attention.length > 0 ? (
+          <>
+            {/* Gaps and suggestions the judge raised: worth a look, never a
+                reason to hold the Change back (E2E-5 P0-1). */}
+            <h3>Pontos de atenção</h3>
+            <ul className="chg-attention">
+              {s.attention.map((p, i) => (
+                <li key={`${i}-${p}`}>{p}</li>
+              ))}
+            </ul>
+          </>
+        ) : null}
         {s.guidance.trim() ? (
           <>
             <h3>Orientação ao autor</h3>

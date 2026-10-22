@@ -57,6 +57,15 @@ class _Scripted:
         return json.dumps({"score": score, "diagnosis": f"diag {key}", "guidance": ""})
 
 
+# A contradiction names two parts (logica-5 P1-2).
+INDEX_POINT = "O retorno não desfaz o índice que a implementação cria"
+
+
+def _contra(text: str) -> dict[str, str]:
+    """A typed contradiction: the only kind that blocks an aligned Change (e2e-5 P0-1)."""
+    return {"tipo": "contradicao", "descricao": text}
+
+
 def _semantic(**over: Any) -> dict[str, Any]:
     base: dict[str, Any] = {
         "consistency_score": 8.0,
@@ -171,10 +180,14 @@ def test_semantic_that_never_parses_degrades_only_the_semantic(client: TestClien
 def test_points_are_deduplicated_and_plain(client: TestClient) -> None:
     """P2-1, P2-3: duplicates, empties and markdown never reach the list."""
     sem = _semantic(
-        problems=["**Plano de retorno** não reverte", "**Plano de retorno** não reverte", " "]
+        problems=[
+            _contra("**Plano de retorno** não reverte a implementação"),
+            _contra("**Plano de retorno** não reverte a implementação"),
+            " ",
+        ]
     )
     _wire(client, _Scripted(sem))
-    assert _eval(client)["semantic"]["problems"] == ["Plano de retorno não reverte"]
+    assert _eval(client)["semantic"]["problems"] == ["Plano de retorno não reverte a implementação"]
 
 
 def test_repair_attempt_is_counted(client: TestClient) -> None:
@@ -240,7 +253,9 @@ def test_a_real_contradiction_holds_back_even_with_high_coherence(client: TestCl
     """P1-N3: "Pode seguir" next to a contradiction listed as "não impedem"."""
     sem = _semantic(
         consistency_score=9.0,
-        problems=["O plano de retorno não reverte a migração de dados que a implementação faz"],
+        problems=[
+            _contra("O plano de retorno não reverte a migração de dados que a implementação faz")
+        ],
     )
     _wire(client, _Scripted(sem))
     body = _eval(client)
@@ -294,8 +309,11 @@ def test_near_schema_semantic_is_read(client: TestClient, over: dict[str, Any]) 
 
 
 def test_a_single_problem_string_becomes_a_list(client: TestClient) -> None:
-    _wire(client, _Scripted(_semantic(problems="O retorno não desfaz o índice")))
-    assert _eval(client)["semantic"]["problems"] == ["O retorno não desfaz o índice"]
+    _wire(
+        client,
+        _Scripted(_semantic(consistency_score=7.0, problems=INDEX_POINT)),
+    )
+    assert _eval(client)["semantic"]["problems"] == [INDEX_POINT]
 
 
 def test_one_unreadable_field_degrades_only_that_field(client: TestClient) -> None:
@@ -421,7 +439,9 @@ def test_saying_there_is_no_contradiction_is_not_one(client: TestClient, empty: 
 
 
 def test_a_real_contradiction_that_starts_with_nao_ha_still_counts(client: TestClient) -> None:
-    sem = _semantic(problems=["Não há retorno para a migração de dados que a implementação faz."])
+    sem = _semantic(
+        problems=[_contra("Não há retorno para a migração de dados que a implementação faz.")]
+    )
     _wire(client, _Scripted(sem))
     assert _eval(client)["decision"]["reason_code"] == "contradictions"
 
@@ -450,7 +470,7 @@ def test_every_failing_gate_is_named(client: TestClient) -> None:
     """P2-4: a contradiction and a 30% back-out plan: both reasons, both codes."""
     sem = _semantic(
         consistency_score=9.0,
-        problems=["O retorno não desfaz o índice"],
+        problems=[INDEX_POINT],
         backout_adherence_percent=30,
     )
     _wire(client, _Scripted(sem))
@@ -462,7 +482,7 @@ def test_every_failing_gate_is_named(client: TestClient) -> None:
 
 
 def test_low_coherence_with_a_contradiction_names_both(client: TestClient) -> None:
-    sem = _semantic(consistency_score=6.0, problems=["O retorno não desfaz o índice"])
+    sem = _semantic(consistency_score=6.0, problems=[INDEX_POINT])
     _wire(client, _Scripted(sem))
     decision = _eval(client)["decision"]
     assert decision["failed"] == ["coherence_below", "contradictions"]
@@ -529,11 +549,11 @@ def test_embedding_client_has_the_same_short_deadline() -> None:
 )
 def test_a_short_real_contradiction_is_not_swallowed(client: TestClient, point: str) -> None:
     """logica-4 P2-5: only a phrase that denies a contradiction is filler."""
-    sem = _semantic(consistency_score=8.5, problems=[point])
+    sem = _semantic(consistency_score=7.5, problems=[point])
     _wire(client, _Scripted(sem))
     body = _eval(client)
     assert body["semantic"]["problems"] == [point]
-    assert body["decision"]["reason_code"] == "contradictions"
+    assert "contradictions" in body["decision"]["failed"]
 
 
 @pytest.mark.parametrize(

@@ -119,8 +119,8 @@ grade em `changes/rubrica.toml` (versão `2026-10-19`, pesos somando 13,5, corte
    avaliação volta 200 e só falha inteira quando todos os campos falham.
 4. **Média ponderada** pelos pesos da grade, com duas casas.
 5. **Conferência de coerência** só com média a partir de 8,0 e nenhum campo
-   faltando: nota de consistência, contradições reais (`problems`; sugestões
-   ficam em `guidance`) e aderência do plano de retorno às tarefas, em
+   faltando: nota de consistência, pontos tipados (`contradicao`, `lacuna`,
+   `sugestao`) e aderência do plano de retorno às tarefas, em
    percentual (`ADERENTE` a partir de 80%, `PARCIAL` a partir de 50%,
    `NAO_ADERENTE` abaixo).
 6. **Decisão.** `decide()` calcula o campo `decision` uma vez, e todas as telas
@@ -158,7 +158,17 @@ O resultado tem a forma:
 `failed` lista todas as portas que reprovaram, na ordem; `reason_code` é a
 primeira. A leitura das respostas do modelo é tolerante: "8/10", "9.0 (bom)" e
 "Nota: 9" viram número, 0,8 e 1.0 viram percentual, `null` vira lista vazia, e
-itens como "Nenhuma contradição encontrada" não contam como contradição. O
+itens como "Nenhuma contradição encontrada" não contam como contradição.
+
+Só reprova um ponto do tipo `contradicao` que nomeia duas partes diferentes do
+pedido; ele vai para `problems`. Lacunas, sugestões e observações sobre uma
+parte só vão para `attention` ("Pontos de atenção" na tela) e nunca reprovam.
+Um item sem tipo (respostas antigas, em texto) passa pela mesma regra das duas
+partes, exceto quando o próprio juiz diz que está alinhado (coerência a partir
+de 8,0 e retorno aderente): aí ele também vira ponto de atenção. Para conferir a
+calibragem contra o modelo real, `scripts/calibrar_mudanca.py` repete a
+avaliação N vezes com `fresh: true` e mostra o veredito, as portas que
+reprovaram e os pontos por tipo. O
 juiz pede à OpenRouter para não usar raciocínio oculto
 ([ADR 0022](decisions/0022-raciocinio-oculto-desligado.md)).
 

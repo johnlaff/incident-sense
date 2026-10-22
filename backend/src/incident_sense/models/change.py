@@ -151,7 +151,13 @@ class SemanticAnalysis(BaseModel):
     """Do the fields tell the same story? Runs only above the threshold."""
 
     consistency_score: float = Field(ge=0, le=10)
-    problems: list[str] = Field(default_factory=list)
+    problems: list[str] = Field(
+        default_factory=list, description="Real contradictions between two parts."
+    )
+    attention: list[str] = Field(
+        default_factory=list,
+        description="Gaps and suggestions (pontos de atenção): never block the Change.",
+    )
     reasoning: str
     guidance: str
     backout_adherence: BackoutAdherence

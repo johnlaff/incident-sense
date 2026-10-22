@@ -90,6 +90,7 @@
   "semantic": {
    "consistency_score": 8.5,
    "problems": [],
+   "attention": [],
    "reasoning": "O plano de retorno desfaz cada passo da implantação, e as tarefas cadastradas seguem a mesma ordem.",
    "guidance": "",
    "backout_adherence": "ADERENTE",
@@ -200,6 +201,7 @@
    "problems": [
     "O plano de retorno não desfaz a alteração da tabela nem a migração dos dados."
    ],
+   "attention": [],
    "reasoning": "A implementação muda dados; o retorno só troca a imagem.",
    "guidance": "Inclua a reversão da migração no plano de retorno.",
    "backout_adherence": "PARCIAL",

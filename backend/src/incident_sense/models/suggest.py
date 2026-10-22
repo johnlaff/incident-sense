@@ -208,6 +208,13 @@ class SuggestResponse(BaseModel):
     """The full result of the suggestion pipeline."""
 
     incident_number: str | None = Field(default=None, description="Loaded incident, if any.")
+    analysis_id: str | None = Field(
+        default=None,
+        description=(
+            "Id of this analysis. A follow-up question sends it back, so the answer is "
+            "about the analysis the page shows (logica-5 P2-2)."
+        ),
+    )
     summarized_query: str = Field(description="AI summary of the incident (step 2).")
     query_text: str = Field(
         default="", description="What was embedded: summary + categoria, subcategoria, empresa."

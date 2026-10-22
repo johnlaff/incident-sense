@@ -173,6 +173,21 @@ export function noteActivity(note: WorkNote): ActivityItem {
   };
 }
 
+/**
+ * The activity with the AI notes the page shows, before the resolution. The
+ * notes come from one source (the same list as "Notas de trabalho"), so a
+ * re-analysis that rewrote the note in place reads the same in both tabs.
+ */
+export function activityWithNotes(
+  base: ActivityItem[],
+  notes: WorkNote[],
+): ActivityItem[] {
+  const at = base.findIndex((i) => i.kind === "resolve");
+  const cut = at === -1 ? base.length : at;
+  return [...base.slice(0, cut), ...notes.map(noteActivity), ...base.slice(cut)];
+}
+
+/** The record's own history; the AI notes join it in activityWithNotes. */
 function synthActivity(d: IncidentDetail): ActivityItem[] {
   const items: ActivityItem[] = [
     {
@@ -190,7 +205,6 @@ function synthActivity(d: IncidentDetail): ActivityItem[] {
       text: d.work_notes,
     });
   }
-  (d.published_notes ?? []).forEach((note) => items.push(noteActivity(note)));
   if (d.resolved_at && d.resolution_notes) {
     items.push({
       kind: "resolve",

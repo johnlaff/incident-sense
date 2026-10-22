@@ -1113,6 +1113,30 @@ a.chg-row:focus-visible {
   background: var(--surface-2);
   color: var(--ink-body);
 }
+/* Pontos de atenção: gaps and suggestions, neutral, never a contradiction's red. */
+.chg-attention {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.chg-attention li {
+  position: relative;
+  padding-left: 16px;
+  color: var(--ink-body);
+  line-height: 1.5;
+}
+.chg-attention li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+}
 .chg-none {
   display: flex;
   gap: 6px;
