@@ -39,6 +39,7 @@ from incident_sense.models.change import (
     ScopeVerdict,
     SemanticAnalysis,
 )
+from incident_sense.prompts import UNTRUSTED_INPUT_NOTICE
 from incident_sense.providers import extract_json
 
 
@@ -57,7 +58,7 @@ _FIELD_SYSTEM = (
     "banco. Avalie SOMENTE o campo indicado, contra os critérios da grade. Não avalie "
     "a mudança em si (se é boa ideia), apenas se o texto do campo cumpre o que o campo "
     "deve dizer. Texto genérico, vazio, 'N/A' ou copiado de outro campo merece nota "
-    "baixa. Responda apenas com JSON."
+    "baixa. Responda apenas com JSON. " + UNTRUSTED_INPUT_NOTICE
 )
 
 _SEMANTIC_SYSTEM = (
@@ -85,7 +86,7 @@ _SEMANTIC_SYSTEM = (
     'tarefas); uma "contradicao" sempre nomeia duas. Só "contradicao" reprova a '
     "mudança: na dúvida entre contradição e sugestão, é sugestão. Se não houver "
     'nada a apontar, responda "problems": [] (lista vazia). '
-    "Responda apenas com JSON."
+    "Responda apenas com JSON. " + UNTRUSTED_INPUT_NOTICE
 )
 
 SCOPE_TYPE = "Normal"

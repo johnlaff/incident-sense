@@ -94,6 +94,14 @@ class Settings(BaseSettings):
     # analysis: their own budget, so a curious class does not lock analyses out.
     ai_ask_max_per_client: int = 40
     ai_ask_max_per_ip: int = 1200
+    # How many addresses at the end of X-Forwarded-For were appended by proxies
+    # we trust (Render's edge appends the caller's address last; the client can
+    # write anything before it). The visitor is the last trusted hop. Without
+    # the header, the connection's peer is the visitor.
+    trusted_proxy_hops: int = 1
+    # Largest request body the API reads, in bytes. No legitimate request is
+    # more than a few kilobytes; anything bigger is refused before parsing.
+    max_body_bytes: int = 64 * 1024
 
     # --- Logging --------------------------------------------------------------
     log_level: str = "INFO"

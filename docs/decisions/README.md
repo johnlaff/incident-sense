@@ -29,3 +29,4 @@ no status.
 - [0020: Trava de conteúdo e notas de trabalho por visitante](0020-escopo-por-visitante.md)
 - [0021: Pergunta de acompanhamento fundamentada só nos casos mantidos](0021-pergunta-de-acompanhamento-so-com-casos-mantidos.md)
 - [0022: Chamadas à IA sem raciocínio oculto e com prazo curto](0022-raciocinio-oculto-desligado.md)
+- [0023: Guarda de uso confiável, limites de tamanho e prompts blindados](0023-guarda-de-uso-confiavel-e-limites-de-tamanho.md)

@@ -39,16 +39,32 @@ class SuggestRequest(BaseModel):
     step 7 publishes the suggestion on its work notes.
     """
 
-    number: str | None = Field(default=None, description="Incident to load and publish to.")
-    short_description: str = Field(min_length=1, description="One-line problem summary.")
-    description: str = Field(min_length=1, description="Full problem details.")
-    category: str | None = Field(default=None, description="Optional pre-filter hint.")
-    subcategory: str | None = Field(default=None, description="Optional subcategory.")
-    empresa: str | None = Field(default=None, description="Group company; defaults to the bank.")
-    cmdb_ci: str | None = Field(default=None, description="Optional affected service.")
+    # Sizes are generous next to the base (titles up to 68 characters,
+    # descriptions up to 281) and small next to a model's context: the text is
+    # sent to up to four model calls, so its length is the request's cost.
+    number: str | None = Field(
+        default=None, max_length=120, description="Incident to load and publish to."
+    )
+    short_description: str = Field(
+        min_length=1, max_length=300, description="One-line problem summary."
+    )
+    description: str = Field(min_length=1, max_length=4000, description="Full problem details.")
+    category: str | None = Field(
+        default=None, max_length=120, description="Optional pre-filter hint."
+    )
+    subcategory: str | None = Field(
+        default=None, max_length=120, description="Optional subcategory."
+    )
+    empresa: str | None = Field(
+        default=None, max_length=120, description="Group company; defaults to the bank."
+    )
+    cmdb_ci: str | None = Field(
+        default=None, max_length=120, description="Optional affected service."
+    )
     priority: Priority | None = None
     model: str | None = Field(
         default=None,
+        max_length=64,
         description="Optional UI model id (see SELECTABLE_MODELS); unknown ids "
         "fall back to the default model.",
     )

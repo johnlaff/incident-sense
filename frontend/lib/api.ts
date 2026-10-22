@@ -103,6 +103,10 @@ export function errorDetail(status: number, detail: unknown): string {
       return `A pergunta passou de ${question.ctx?.max_length ?? 600} caracteres. Encurte e envie de novo.`;
     if (question)
       return "O servidor não aceitou esta pergunta. Reescreva e envie de novo.";
+    // Any other text past its limit (an edited Change field, a description).
+    const long = items.find((d) => d.type === "string_too_long");
+    if (long)
+      return `O texto passou de ${long.ctx?.max_length ?? 6000} caracteres. Encurte e tente de novo.`;
     return `O servidor recusou os dados enviados (erro ${status}). Recarregue a página e tente de novo.`;
   }
   return `O servidor respondeu com erro ${status}. Tente de novo em instantes.`;

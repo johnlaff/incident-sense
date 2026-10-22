@@ -46,6 +46,7 @@ from incident_sense.models import (
     VectorHit,
     VectorLayer,
 )
+from incident_sense.prompts import UNTRUSTED_INPUT_NOTICE
 from incident_sense.providers import extract_json
 from incident_sense.rag.clients import RagDeps, RetrievedHit
 from incident_sense.rag.postfilter import LLMPostFilter
@@ -59,14 +60,15 @@ _SUMMARIZE_SYSTEM = (
     "Você resume um chamado de incidente para ser a consulta de busca de uma base "
     "de incidentes resolvidos. Escreva, em português, uma ou duas frases com o "
     "sintoma, o serviço afetado e o impacto, sem ruído. Escolha também as tags "
-    "semânticas do assunto, somente da lista fornecida. Responda apenas com JSON."
+    "semânticas do assunto, somente da lista fornecida. Responda apenas com JSON. "
+    + UNTRUSTED_INPUT_NOTICE
 )
 _CLASSIFY_SYSTEM = (
     "Você é um analista de operações de TI de um banco. Decida se um chamado é um "
     "INCIDENTE de verdade (uma falha técnica em um sistema ou serviço que exige "
     "tratativa de operações) ou se é IMPROCEDENTE: um pedido de autoatendimento, "
     "dúvida, redefinição de senha, solicitação de acesso ou assunto administrativo "
-    "que não representa falha de sistema. Responda apenas com JSON."
+    "que não representa falha de sistema. Responda apenas com JSON. " + UNTRUSTED_INPUT_NOTICE
 )
 _SUGGEST_SYSTEM = (
     "Você é um analista sênior de operações de TI de um banco, escrevendo a "
@@ -104,7 +106,7 @@ _SUGGEST_SYSTEM = (
     "conexão ao pool mesmo quando ocorre um erro e reiniciar as instâncias aos "
     "poucos [INC0052110].\n\n"
     "2. **Ampliar o pool temporariamente**: aumentar o número de conexões "
-    "disponíveis enquanto a causa raiz é corrigida [PRB0004103]."
+    "disponíveis enquanto a causa raiz é corrigida [PRB0004103].\n\n" + UNTRUSTED_INPUT_NOTICE
 )
 
 

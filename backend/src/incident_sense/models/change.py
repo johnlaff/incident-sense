@@ -11,8 +11,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 
 EVALUATED_FIELDS: tuple[str, ...] = (
     "implementation_plan",
@@ -108,15 +109,21 @@ class Rubric(BaseModel):
         return sum(field.weight for field in self.fields)
 
 
+# Longest text the judge reads per field. The biggest field in the base has
+# 1864 characters; each field is one model call, so its length is the cost.
+FIELD_MAX_CHARS = 6000
+
+
 class EvaluateRequest(BaseModel):
     """Evaluate a Change, optionally with edited field values from the UI."""
 
-    fields: dict[str, str] = Field(
+    fields: dict[str, Annotated[str, StringConstraints(max_length=FIELD_MAX_CHARS)]] = Field(
         default_factory=dict,
+        max_length=len(EVALUATED_FIELDS),
         description="Edited values for any of the seven evaluated fields.",
     )
-    backout_plan: str | None = None
-    model: str | None = None
+    backout_plan: str | None = Field(default=None, max_length=FIELD_MAX_CHARS)
+    model: str | None = Field(default=None, max_length=64)
     fresh: bool = Field(
         default=False,
         description="Skip the content lock: every part goes back to the model.",

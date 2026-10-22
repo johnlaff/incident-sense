@@ -23,9 +23,10 @@ class AskRequest(BaseModel):
             "this visitor's last analysis."
         ),
     )
-    model: str | None = Field(default=None, description="Optional UI model id.")
+    model: str | None = Field(default=None, max_length=64, description="Optional UI model id.")
     analysis_id: str | None = Field(
         default=None,
+        max_length=64,
         description=(
             "The analysis the page shows. When it is not the one the server holds "
             "(another tab ran a newer one), the answer is 409 and the page re-syncs."

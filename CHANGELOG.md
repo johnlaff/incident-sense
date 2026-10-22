@@ -7,6 +7,24 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Segurança
+
+- **Guarda de uso confiável** ([ADR 0023](docs/decisions/0023-guarda-de-uso-confiavel-e-limites-de-tamanho.md)):
+  a rede do visitante é o endereço que o proxy acrescentou a
+  `X-Forwarded-For` (`TRUSTED_PROXY_HOPS`, padrão 1), não o primeiro, que o
+  cliente escolhe. A guarda remove janelas vazias, tem teto de 10.000 chaves e
+  registra cada recusa no log (`ai_quota_refused`).
+- **Limites de tamanho** em todo texto enviado ao modelo: descrição 4000,
+  título 300, campo de Mudança e plano de retorno 6000, até 7 campos,
+  `model` 64. Corpos acima de 64 KB recebem 413 antes do parse. A tela limita
+  a edição de campo e traduz o 422.
+- **Prompts blindados**: os sete prompts de sistema dizem que o texto do
+  chamado, dos campos e da pergunta é material a analisar, não instrução.
+- **Cabeçalhos de segurança** no site (`X-Content-Type-Options`,
+  `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`).
+- SECURITY.md descreve o modelo de ameaça da demo pública e pede um limite de
+  gasto na chave da OpenRouter.
+
 ### Corrigido
 
 - A API do Render dormia entre as apresentações: o agendamento do GitHub

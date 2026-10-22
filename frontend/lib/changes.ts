@@ -15,6 +15,9 @@ export const EVALUATED_FIELDS = [
 ] as const;
 export type FieldKey = (typeof EVALUATED_FIELDS)[number];
 
+/** The longest text the server judges per field; the editor stops there. */
+export const FIELD_MAX_CHARS = 6000;
+
 export interface ChangeTask {
   number: string;
   short_description: string;
