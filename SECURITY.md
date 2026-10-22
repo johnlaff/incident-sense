@@ -37,9 +37,9 @@ interna ([ADR 0023](docs/decisions/0023-guarda-de-uso-confiavel-e-limites-de-tam
    chamada ao provedor. Janela de 10 minutos: 20 análises e 40 perguntas por
    visitante (`X-Client-Id`), 300 análises e 1200 perguntas por rede, e um teto
    diário de 3000 análises. A rede é o endereço que **o proxy acrescentou** a
-   `X-Forwarded-For` (`TRUSTED_PROXY_HOPS`; 2 no Render, cuja cadeia é
-   visitante, borda da Cloudflare e um endereço privado interno, ignorado),
-   nunca o primeiro, que o cliente pode escrever. Acima do limite, 429 com o motivo em português, e um
+   `X-Forwarded-For` depois de descartar os saltos da plataforma no fim da
+   lista (endereços privados e as faixas publicadas da Cloudflare, que o
+   Render usa como borda), nunca o primeiro, que o cliente pode escrever. Acima do limite, 429 com o motivo em português, e um
    evento `ai_quota_refused` no log com o limite que segurou, o começo do
    identificador e o endereço resolvido.
 5. **Memória com teto.** Guarda, trava de conteúdo, notas e análises guardadas
