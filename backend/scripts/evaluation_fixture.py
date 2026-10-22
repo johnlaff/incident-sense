@@ -42,9 +42,8 @@ READINGS: dict[str, dict[str, tuple[float, str, str]]] = {
         "validation_plan": (
             8.6,
             "Tem métricas, limites e critério de retorno em cada etapa, e 4 horas de "
-            "observação com comparação no pico de sexta-feira.",
-            "Diga quem acompanha o painel nas 4 horas de observação e quem faz a "
-            "comparação de 31/10.",
+            "observação com quem recebe o alerta dentro e fora da janela.",
+            "Diga quem faz a comparação do pico de 31/10 e onde ela fica registrada.",
         ),
         "objective": (
             8.8,

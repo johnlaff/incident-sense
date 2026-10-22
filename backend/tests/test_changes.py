@@ -107,7 +107,7 @@ def test_one_call_per_field_then_semantic_when_eligible(wired: tuple[TestClient,
     assert body["overall"] == 9.0
     assert body["semantic"]["backout_adherence"] == "PARCIAL"
     assert body["semantic_skipped_reason"] is None
-    assert body["model_calls"] == 8 == len(judge.calls)
+    assert body["model_calls"] == 10 == len(judge.calls)
 
 
 def test_content_lock_only_resends_the_edited_field(wired: tuple[TestClient, _Judge]) -> None:
@@ -121,8 +121,8 @@ def test_content_lock_only_resends_the_edited_field(wired: tuple[TestClient, _Ju
     reused = {f["key"]: f["reused"] for f in body["fields"]}
     assert reused["benefits"] is False
     assert sum(not r for r in reused.values()) == 1
-    # One field call plus a fresh semantic analysis (one input changed).
-    assert body["model_calls"] == 2 == len(judge.calls)
+    # One field call plus a fresh semantic analysis (one input changed), run 3 times.
+    assert body["model_calls"] == 4 == len(judge.calls)
 
 
 def test_whitespace_only_edit_keeps_the_lock(wired: tuple[TestClient, _Judge]) -> None:
@@ -212,7 +212,7 @@ def test_truncated_semantic_reply_is_retried_once(client: TestClient) -> None:
 
     assert response.status_code == 200
     assert response.json()["semantic"]["backout_adherence"] == "PARCIAL"
-    assert judge.semantic_calls == 2
+    assert judge.semantic_calls == 4
 
 
 def test_skip_reason_never_rounds_up_to_the_cut(client: TestClient) -> None:

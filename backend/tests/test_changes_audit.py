@@ -196,7 +196,7 @@ def test_repair_attempt_is_counted(client: TestClient) -> None:
     judge = _Scripted(["{quebrado", good])
     _wire(client, judge)
     body = _eval(client)
-    assert body["model_calls"] == judge.calls == 9
+    assert body["model_calls"] == judge.calls == 11
 
 
 # ----- Content lock per visitor (P0-2) -----------------------------------------
@@ -208,7 +208,7 @@ def test_a_new_visitor_never_sees_reused(client: TestClient) -> None:
     _wire(client, judge, cache)
     _eval(client, client_id="ana")
     body = _eval(client, client_id="bia")
-    assert body["model_calls"] == 8
+    assert body["model_calls"] == 10
     assert not any(f["reused"] for f in body["fields"])
     assert body["semantic"]["reused"] is False
 
@@ -390,7 +390,7 @@ def test_fresh_bypasses_the_content_lock(client: TestClient) -> None:
     _wire(client, judge, cache)
     _eval(client, client_id="ana")
     body = _eval(client, client_id="ana", fresh=True)
-    assert body["model_calls"] == 8
+    assert body["model_calls"] == 10
     assert not any(f["reused"] for f in body["fields"])
     assert body["semantic"]["reused"] is False
     # The fresh reading is stored: a plain re-evaluation reuses it.
@@ -542,7 +542,7 @@ def test_embedding_client_has_the_same_short_deadline() -> None:
 @pytest.mark.parametrize(
     "point",
     [
-        "Nenhuma tarefa cobre o problema de certificado citado no objetivo.",
+        "Sem retorno para o certificado que a implementação troca.",
         "Sem retorno para a migração de dados que a implementação faz.",
         "Não foi previsto rollback do certificado que o plano troca.",
     ],

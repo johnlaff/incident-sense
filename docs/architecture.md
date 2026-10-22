@@ -160,8 +160,20 @@ primeira. A leitura das respostas do modelo é tolerante: "8/10", "9.0 (bom)" e
 "Nota: 9" viram número, 0,8 e 1.0 viram percentual, `null` vira lista vazia, e
 itens como "Nenhuma contradição encontrada" não contam como contradição.
 
+A conferência roda **três vezes em paralelo** (temperatura 0), porque um
+juízo isolado ainda oscila entre execuções. A nota de consistência e o
+percentual de aderência são a **mediana** das três; uma contradição só conta
+quando pelo menos duas execuções acharam contradição no **mesmo par de
+partes** (com duas execuções de volta, as duas; com uma, ela vale sozinha). As
+outras viram pontos de atenção. Texto, raciocínio e orientação vêm da execução
+cuja nota é a mediana. Se uma execução falhar, valem as que voltaram; se as
+três falharem, `semantic_missing`. O tempo é o de uma chamada, e
+`model_calls` conta as três (7 campos + 3).
+
 Só reprova um ponto do tipo `contradicao` que nomeia duas partes diferentes do
-pedido; ele vai para `problems`. Lacunas, sugestões e observações sobre uma
+pedido e afirma fatos incompatíveis; ele vai para `problems`. O que falta (uma
+tarefa, um detalhe, um responsável) é sempre `lacuna`, mesmo tipado como
+contradição e citando duas partes. Lacunas, sugestões e observações sobre uma
 parte só vão para `attention` ("Pontos de atenção" na tela) e nunca reprovam.
 Um item sem tipo (respostas antigas, em texto) passa pela mesma regra das duas
 partes, exceto quando o próprio juiz diz que está alinhado (coerência a partir

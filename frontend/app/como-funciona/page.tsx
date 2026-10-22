@@ -171,11 +171,11 @@ const CONTENT: Record<
           ],
           [
             "Entrada",
-            "Uma instrução só para a IA (o prompt), com os sete campos, o plano de retorno e as tarefas cadastradas.",
+            "Uma instrução só para a IA (o prompt), com os sete campos, o plano de retorno e as tarefas cadastradas. Ela vai três vezes ao mesmo tempo: a nota e o percentual são a mediana, e uma contradição só conta se aparecer em pelo menos duas.",
           ],
           [
             "Saída",
-            "Nota de coerência de 0 a 10, pontos que a IA anotou (só os que se contradizem pesam na nota), raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
+            "Nota de coerência de 0 a 10, contradições entre duas partes (só elas reprovam), pontos de atenção (o que falta e sugestões), raciocínio, orientação ao autor, aderência do retorno às tarefas (aderente, parcial ou não aderente) e o percentual.",
           ],
           [
             "Cache",

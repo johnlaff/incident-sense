@@ -16,7 +16,7 @@
     "diagnosis": "Nomeia a executora e o DBA, dá horário a cada passo e tem pontos de decisão com limites numéricos no canário e em cada expansão.",
     "guidance": "Diga no passo 4 quem decide parar; hoje isso só aparece no plano de retorno.",
     "reused": false,
-    "content_hash": "ab4e5c90e2deb319"
+    "content_hash": "ab63c33a04fe0d6a"
    },
    {
     "key": "validation_plan",
@@ -24,10 +24,10 @@
     "weight": 2.5,
     "score": 8.6,
     "failed": false,
-    "diagnosis": "Tem métricas, limites e critério de retorno em cada etapa, e 4 horas de observação com comparação no pico de sexta-feira.",
-    "guidance": "Diga quem acompanha o painel nas 4 horas de observação e quem faz a comparação de 31/10.",
+    "diagnosis": "Tem métricas, limites e critério de retorno em cada etapa, e 4 horas de observação com quem recebe o alerta dentro e fora da janela.",
+    "guidance": "Diga quem faz a comparação do pico de 31/10 e onde ela fica registrada.",
     "reused": false,
-    "content_hash": "ca13cd01bc532476"
+    "content_hash": "9f480b26b8519b98"
    },
    {
     "key": "objective",
@@ -105,7 +105,7 @@
    "failed": []
   },
   "model": "anthropic/claude-haiku-5.5",
-  "model_calls": 8,
+  "model_calls": 10,
   "duration_ms": 2
  },
  "CHG0031002": {
@@ -219,7 +219,7 @@
    ]
   },
   "model": "anthropic/claude-haiku-5.5",
-  "model_calls": 8,
+  "model_calls": 10,
   "duration_ms": 7
  },
  "CHG0031003": {

@@ -9,6 +9,21 @@ projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ### Alterado
 
+- **Coerência estável**: a conferência de coerência da Mudança roda três vezes
+  em paralelo. Nota e percentual de aderência são a mediana, e uma contradição
+  só reprova se aparecer no mesmo par de partes em pelo menos duas execuções;
+  as outras viram pontos de atenção. Com uma execução falhando, valem as que
+  voltaram. O tempo continua o de uma chamada; `model_calls` passa a contar 10
+  (7 campos + 3).
+- Tarefa, detalhe ou responsável que falta é sempre "lacuna", nunca
+  contradição, no prompt e na leitura da resposta.
+- CHG0031001 diz tudo o que as avaliações reais cobravam: tarefa de retorno
+  para conferir `helm get values` e as conexões no painel, como o canário
+  cresce (`canary.replicas` por etapa, com quem confirma), quem recebe o
+  alerta das 4 horas dentro e fora da janela, e que o retorno não restaura
+  dados (o snapshot fica só como contingência).
+- `scripts/calibrar_mudanca.py --paralelo K` roda K avaliações ao mesmo tempo.
+
 - O repositório e a demo não citam mais nenhum evento: o texto fala em
   demonstração ao vivo, apresentações e aulas.
 - As fontes viram referências no padrão autor-data, como "(Ferreira, 2026)", com

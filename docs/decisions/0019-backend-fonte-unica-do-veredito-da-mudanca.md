@@ -42,3 +42,18 @@ de 8.0".
   do pedido combinam?") e a frase do motivo.
 - O contrato da rota cresceu com um campo novo; nada foi removido.
 - Mudar a regra é mudar `decide()` e os testes, não as telas.
+
+## Nota (calibração ao vivo, 22/10/2026)
+
+Seis avaliações reais de CHG0031001 deram 5 "Pode seguir" e 1 "Não segue": uma
+execução isolada deu coerência 7,0 e tipou como contradição uma tarefa que
+faltava. A regra de `decide()` não mudou; mudou o que chega a ela:
+
+- a conferência de coerência roda três vezes em paralelo; a nota e o
+  percentual são a mediana, e uma contradição só conta se aparecer no mesmo
+  par de partes em pelo menos duas execuções (com uma falha, valem as duas que
+  voltaram; com uma só, ela);
+- o que falta (tarefa, detalhe, responsável) é sempre `lacuna`, no prompt e na
+  leitura da resposta;
+- `scripts/calibrar_mudanca.py --vezes N --paralelo K` repete a avaliação real
+  para conferir a estabilidade.
