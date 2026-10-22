@@ -14,7 +14,9 @@
 from __future__ import annotations
 
 import hashlib
+import itertools
 import re
+import statistics
 import threading
 import time
 import unicodedata
@@ -67,11 +69,14 @@ _SEMANTIC_SYSTEM = (
     "muda estrutura de dados, reverter só a imagem do contêiner não basta). Compare "
     "também o plano de retorno com as tarefas cadastradas.\n\n"
     'Cada item de "problems" tem um tipo:\n'
-    '- "contradicao": DUAS partes afirmam coisas incompatíveis. Exemplo: a '
+    '- "contradicao": DUAS partes afirmam fatos incompatíveis. Exemplo: a '
     "implementação migra o schema e os dados, mas o retorno só volta a imagem do "
     "contêiner; ou o objetivo fala em 30 segundos e os benefícios em 9 minutos.\n"
     '- "lacuna": algo que falta numa parte, sem que outra parte diga o contrário. '
-    "Exemplo: o plano de validação não diz quem confirma o sucesso.\n"
+    "Exemplo: o plano de validação não diz quem confirma o sucesso. Uma tarefa "
+    "que falta (mesmo para um passo do retorno), um detalhe que falta ou um "
+    'responsável que falta é SEMPRE "lacuna", nunca "contradicao", mesmo que '
+    "cite duas partes.\n"
     '- "sugestao": uma proteção extra ou um detalhe que "também poderia" entrar. '
     "Exemplo: registrar um snapshot de backup antes do retorno, ou explicitar como "
     "o canário vira 50%.\n"
@@ -196,6 +201,20 @@ _DENIAL = re.compile(
     r"discrepanc|incompatib)"
 )
 
+# Something missing: a task, a detail or an owner. It is a gap ("lacuna")
+# whatever the model typed it, even naming two parts: a contradiction needs two
+# parts that state incompatible facts (calibração ao vivo, run #5). A missing
+# undo ("o retorno não desfaz a migração") is not here: that is the definition
+# of a contradiction between implementation and back-out.
+_MISSING = re.compile(
+    r"\b(?:nao (?:tem|tem|ha|possui\w*|existe\w*)|nenhum\w*|sem|falta\w*)\b"
+    r"(?:\s+\w+){0,3}?\s+(?:tarefas?|responsave\w*|dono|detalh\w*)\b"
+    r"|\btarefas?\b(?:\s+\w+){0,4}?\s+nao (?:esta|estao|foi|foram) cadastrad"
+    r"|\bnao (?:diz|define|indica|informa|nomeia) (?:o |a |um |uma )?(?:quem|responsave\w*|dono)"
+    r"|\bnao (?:detalha|explicita|especifica)\b"
+)
+
+
 # The parts of a Change a contradiction can be between, by the words that name
 # them. A contradiction is between two parts; one part alone is a remark.
 _PARTS: dict[str, re.Pattern[str]] = {
@@ -248,6 +267,22 @@ def _kind(value: object) -> str | None:
     return _KINDS.get(word)
 
 
+def _read_point(item: object) -> tuple[str, str | None, set[str]]:
+    """One item as (plain text, kind or None, the Change parts it names)."""
+    named: set[str] = set()
+    kind: str | None = None
+    if isinstance(item, dict):
+        said = item.get("descricao") or item.get("description") or item.get("texto")
+        text = _plain(str(said or ""))
+        kind = _kind(item.get("tipo") or item.get("type"))
+        fields = item.get("campos") or item.get("fields") or []
+        for field in [fields] if isinstance(fields, str) else list(fields):
+            named |= parts_named(str(field))
+    else:
+        text = _plain("" if item is None else str(item))
+    return text, kind, named | parts_named(text)
+
+
 def classify_point(item: object, *, aligned: bool = False) -> tuple[str, str]:
     """Sort one item of "problems" into ("contradiction" | "attention" | "none", text).
 
@@ -264,21 +299,10 @@ def classify_point(item: object, *, aligned: bool = False) -> tuple[str, str]:
     stops a polite or advisory item from failing a Change (logica-3 P1-B,
     logica-4 P2-5, logica-5 P1-2, e2e-5 P0-1).
     """
-    named: set[str] = set()
-    kind: str | None = None
-    if isinstance(item, dict):
-        said = item.get("descricao") or item.get("description") or item.get("texto")
-        text = _plain(str(said or ""))
-        kind = _kind(item.get("tipo") or item.get("type"))
-        fields = item.get("campos") or item.get("fields") or []
-        for field in [fields] if isinstance(fields, str) else list(fields):
-            named |= parts_named(str(field))
-    else:
-        text = _plain("" if item is None else str(item))
+    text, kind, named = _read_point(item)
     if _says_nothing(text):
         return "none", ""
-    named |= parts_named(text)
-    if kind in ("lacuna", "sugestao"):
+    if kind in ("lacuna", "sugestao") or _MISSING.search(_bare(text)):
         return "attention", text
     if kind is None and aligned:
         return "attention", text
@@ -332,6 +356,9 @@ class _SemanticOut(BaseModel):
     consistency_score: float = Field(ge=0, le=10)
     problems: list[str] = Field(default_factory=list)
     attention: list[str] = Field(default_factory=list)
+    # The Change parts each kept problem names, in the same order: the three
+    # runs agree on a contradiction by its pair of parts.
+    problem_parts: list[list[str]] = Field(default_factory=list)
     reasoning: str = ""
     guidance: str = ""
     backout_adherence: BackoutAdherence | None = None
@@ -359,16 +386,21 @@ class _SemanticOut(BaseModel):
             and round(score, 1) >= ALIGNED_FROM
             and percent >= ADHERENT_FROM
         )
-        kept: dict[str, None] = {}
+        kept: dict[str, list[str]] = {}
         attention: dict[str, None] = {}
         extra = _points(data.get("attention"))
         for item in [*items, *(extra if isinstance(extra, list) else [])]:
             kind, text = classify_point(item, aligned=aligned)
             if kind == "contradiction":
-                kept.setdefault(text, None)
+                kept.setdefault(text, sorted(_read_point(item)[2]))
             elif kind == "attention":
                 attention.setdefault(text, None)
-        return {**data, "problems": list(kept), "attention": list(attention)}
+        return {
+            **data,
+            "problems": list(kept),
+            "problem_parts": list(kept.values()),
+            "attention": list(attention),
+        }
 
     def settled(self) -> _SemanticOut:
         """One decimal on the score, and the label read from the percent."""
@@ -380,6 +412,59 @@ class _SemanticOut(BaseModel):
                 "guidance": self.guidance.strip(),
             }
         )
+
+
+# The coherence judgement runs this many times in parallel (calibração ao vivo).
+SEMANTIC_RUNS = 3
+
+
+def _pairs(parts: list[str]) -> set[tuple[str, str]]:
+    return set(itertools.combinations(sorted(set(parts)), 2))
+
+
+def aggregate_semantic(runs: list[_SemanticOut]) -> _SemanticOut:
+    """One reading from up to three runs of the coherence judgement.
+
+    Coherence and back-out percent are the medians. A contradiction counts
+    only when at least two runs (both, with two; the one, with one) found a
+    contradiction on the same pair of parts; any other contradiction becomes a
+    point of attention. Text, reasoning and guidance come from the run whose
+    coherence is the median, so the card reads as one judgement.
+    """
+    if len(runs) == 1:
+        return runs[0]
+    score = round(statistics.median(r.consistency_score for r in runs), 1)
+    percent = int(round(statistics.median(r.backout_adherence_percent for r in runs)))
+    need = 2
+    seen: dict[tuple[str, str], int] = {}
+    for run in runs:
+        for pair in set().union(*(_pairs(p) for p in run.problem_parts)):
+            seen[pair] = seen.get(pair, 0) + 1
+    agreed = {pair for pair, n in seen.items() if n >= need}
+    rep = min(runs, key=lambda r: abs(r.consistency_score - score))
+    ordered = [rep, *(r for r in runs if r is not rep)]
+    problems: dict[str, list[str]] = {}
+    covered: set[tuple[str, str]] = set()
+    demoted: list[str] = []
+    for run in ordered:
+        for text, parts in zip(run.problems, run.problem_parts, strict=False):
+            mine = _pairs(parts) & agreed
+            if mine and not mine <= covered:
+                problems.setdefault(text, parts)
+                covered |= mine
+            elif not mine and run is rep:
+                demoted.append(text)
+    attention = list(dict.fromkeys([*rep.attention, *demoted]))
+    return rep.model_copy(
+        update={
+            "consistency_score": score,
+            "backout_adherence_percent": percent,
+            "backout_adherence": adherence_for(percent),
+            "problems": list(problems),
+            "problem_parts": list(problems.values()),
+            "attention": attention,
+        }
+    )
 
 
 def _fmt(n: float, places: int = 1) -> str:
@@ -825,15 +910,32 @@ class ChangeEvaluator:
         cached = None if fresh else self._cache.get_semantic(key)
         if cached is None:
             prompt = _semantic_prompt(change, values, backout)
-            try:
-                verdict = _judge_semantic(self._llm, prompt, self._count).settled()
-            except Exception as exc:  # noqa: BLE001 - only this part degrades.
+
+            def once(_: int) -> _SemanticOut | BaseException:
+                try:
+                    return _judge_semantic(self._llm, prompt, self._count).settled()
+                except Exception as exc:  # noqa: BLE001 - one run degrades, not all.
+                    return exc
+
+            # Three runs at once, so the wait is one call's: one judgement at
+            # temperature 0 still flips between runs (calibração ao vivo).
+            with ThreadPoolExecutor(max_workers=SEMANTIC_RUNS) as pool:
+                outcomes = list(pool.map(once, range(SEMANTIC_RUNS)))
+            runs = [o for o in outcomes if isinstance(o, _SemanticOut)]
+            if not runs:
                 # The field grades still stand; the decision says why and what to do.
-                return None, semantic_error_kind(exc)
+                first = next(o for o in outcomes if isinstance(o, BaseException))
+                return None, semantic_error_kind(first)
+            verdict = aggregate_semantic(runs)
             self._cache.put_semantic(key, verdict)
         else:
             verdict = cached
-        return SemanticAnalysis(**verdict.model_dump(), reused=cached is not None), None
+        return (
+            SemanticAnalysis(
+                **verdict.model_dump(exclude={"problem_parts"}), reused=cached is not None
+            ),
+            None,
+        )
 
     def _elapsed(self, started: float) -> int:
         return int((self._clock() - started) * 1000)

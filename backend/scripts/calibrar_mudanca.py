@@ -10,6 +10,7 @@ line counts the verdicts, which is what calibration looks at.
 Usage:
     uv run python scripts/calibrar_mudanca.py CHG0031001 --vezes 5
     uv run python scripts/calibrar_mudanca.py CHG0031002 --base https://exemplo.onrender.com
+    uv run python scripts/calibrar_mudanca.py CHG0031001 --vezes 10 --paralelo 5
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ import sys
 import urllib.request
 import uuid
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 DEFAULT_BASE = "http://localhost:8000"
@@ -65,19 +67,35 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--vezes", type=int, default=3, help="quantas avaliações (padrão 3)")
     parser.add_argument("--base", default=DEFAULT_BASE, help=f"URL da API (padrão {DEFAULT_BASE})")
     parser.add_argument("--timeout", type=float, default=120.0, help="segundos por chamada")
+    parser.add_argument(
+        "--paralelo",
+        type=int,
+        default=1,
+        help="quantas avaliações ao mesmo tempo (padrão 1, uma depois da outra)",
+    )
     args = parser.parse_args(argv)
 
     client_id = f"calibracao-{uuid.uuid4().hex[:8]}"
-    tally: Counter[str] = Counter()
-    for run in range(1, args.vezes + 1):
+
+    def one(run: int) -> tuple[int, dict[str, Any] | Exception]:
+        # Each run its own visitor id, so parallel runs never share a lock.
         try:
-            body = evaluate(args.base, args.numero, client_id, args.timeout)
+            return run, evaluate(args.base, args.numero, f"{client_id}-{run}", args.timeout)
         except Exception as error:  # noqa: BLE001 - a failed run is reported, not fatal
-            print(f"#{run} falhou: {error}")
+            return run, error
+
+    with ThreadPoolExecutor(max_workers=max(1, args.paralelo)) as pool:
+        results = list(pool.map(one, range(1, args.vezes + 1)))
+
+    tally: Counter[str] = Counter()
+    for run, outcome in results:
+        if isinstance(outcome, Exception):
+            print(f"#{run} falhou: {outcome}")
             tally["falhou"] += 1
             continue
-        print(report(run, body))
-        tally["Pode seguir" if (body.get("decision") or {}).get("passes") else "Não segue"] += 1
+        print(report(run, outcome))
+        passes = (outcome.get("decision") or {}).get("passes")
+        tally["Pode seguir" if passes else "Não segue"] += 1
     print("total: " + ", ".join(f"{verdict} {count}" for verdict, count in tally.items()))
     return 0
 

@@ -55,7 +55,7 @@ REMARKS = [  # one part only: advice, not a contradiction
     "O retorno não desfaz a migração de dados.",
 ]
 CONTRADICTIONS = [
-    "Nenhuma tarefa cobre o problema de certificado citado no objetivo.",
+    "O retorno volta o chart, mas a implementação também troca o certificado.",
     "Sem retorno para a migração de dados que a implementação faz.",
     "Não foi previsto rollback do certificado que o plano troca.",
     "O retorno não desfaz a migração de dados que a implementação faz.",
